@@ -11,6 +11,8 @@ begin
    condition is true, iff the given result's defer set has exactly n elements.
 *)
 fun Defer_eq_condition :: "nat \<Rightarrow> 'a Termination_condition" where
-  "Defer_eq_condition n result = (let (e, r, d) = result in card d = n)"
+  "Defer_eq_condition n result
+    = (let (e, r, d) = result in
+        card d = n)"
 
 end

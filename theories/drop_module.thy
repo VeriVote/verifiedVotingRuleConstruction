@@ -41,7 +41,8 @@ proof -
     by blast
   hence 1: "\<forall>A p. finite_profile A p \<longrightarrow> disjoint3 (?mod A p)"
     by simp
-  from 0 1 have "\<forall>A p. finite_profile A p \<longrightarrow> partition_of A (?mod A p)"
+  from 0 1
+  have "\<forall>A p. finite_profile A p \<longrightarrow> partition_of A (?mod A p)"
     by (simp add: partition_of_def)
   hence "\<forall>A p. finite_profile A p \<longrightarrow> partition_of A (?mod A p)"
     by simp
@@ -74,21 +75,42 @@ lemma drop_2_module_rejects_2[simp]:
   assumes order: "linear_order r"
   shows "rejects 2 (Drop_module 2 r)"
 proof -
-  have "reject (Drop_module 2 r) = defer (Pass_module 2 r)" by simp
-  thus ?thesis using pass_2_module_defers_2
-  proof - (*generated proof*)
-  obtain AA :: "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<Rightarrow> nat \<Rightarrow> 'a set" and rrs :: "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<Rightarrow> nat \<Rightarrow> ('a \<times> 'a) set list" where
-    "\<forall>x0 x1. (\<exists>v2 v3. (x1 \<le> card v2 \<and> finite_profile v2 v3) \<and> card (reject x0 v2 v3) \<noteq> x1) = ((x1 \<le> card (AA x0 x1) \<and> finite_profile (AA x0 x1) (rrs x0 x1)) \<and> card (reject x0 (AA x0 x1) (rrs x0 x1)) \<noteq> x1)"
-      by moura
-    then have "\<forall>n f. (\<not> rejects n f \<or> electoral_module f \<and> (\<forall>A rs. (\<not> n \<le> card A \<or> infinite A \<or> \<not> profile_on A rs) \<or> card (reject f A rs) = n)) \<and> (rejects n f \<or> \<not> electoral_module f \<or> (n \<le> card (AA f n) \<and> finite_profile (AA f n) (rrs f n)) \<and> card (reject f (AA f n) (rrs f n)) \<noteq> n)"
-      using rejects_def by force
-    then have f1: "\<forall>n f. (\<not> rejects n f \<or> electoral_module f \<and> (\<forall>A rs. \<not> n \<le> card A \<or> infinite A \<or> \<not> profile_on A rs \<or> card (reject f A rs) = n)) \<and> (rejects n f \<or> \<not> electoral_module f \<or> n \<le> card (AA f n) \<and> finite (AA f n) \<and> profile_on (AA f n) (rrs f n) \<and> card (reject f (AA f n) (rrs f n)) \<noteq> n)"
-      by presburger
-    have "\<not> 2 \<le> card (AA (Drop_module 2 r) 2) \<or> infinite (AA (Drop_module 2 r) 2) \<or> \<not> profile_on (AA (Drop_module 2 r) 2) (rrs (Drop_module 2 r) 2) \<or> card (reject (Drop_module 2 r) (AA (Drop_module 2 r) 2) (rrs (Drop_module 2 r) 2)) = 2"
-      by (metis (no_types) \<open>reject (Drop_module 2 r) = defer (Pass_module 2 r)\<close> defers_def order pass_2_module_defers_2)
-    then show ?thesis
-      using f1 drop_module_sound order by blast
-  qed
+  have "reject (Drop_module 2 r) = defer (Pass_module 2 r)"
+    by simp
+    { thus ?thesis
+        using pass_2_module_defers_2
+      proof - (*generated proof*)
+        obtain
+          AA :: "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<Rightarrow> nat \<Rightarrow> 'a set" and
+          rrs :: "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<Rightarrow>
+                    nat \<Rightarrow> ('a \<times> 'a) set list" where
+            "\<forall>x0 x1. (\<exists>v2 v3. (x1 \<le> card v2 \<and> finite_profile v2 v3) \<and> card (reject x0 v2 v3) \<noteq> x1)
+                = ((x1 \<le> card (AA x0 x1) \<and> finite_profile (AA x0 x1) (rrs x0 x1))
+                    \<and> card (reject x0 (AA x0 x1) (rrs x0 x1)) \<noteq> x1)"
+          by moura
+        hence "\<forall>n f. (\<not> rejects n f \<or> electoral_module f
+                \<and> (\<forall>A rs. (\<not> n \<le> card A \<or> infinite A \<or> \<not> profile_on A rs)
+                    \<or> card (reject f A rs) = n))
+              \<and> (rejects n f \<or> \<not> electoral_module f
+                \<or> (n \<le> card (AA f n) \<and> finite_profile (AA f n) (rrs f n))
+                    \<and> card (reject f (AA f n) (rrs f n)) \<noteq> n)"
+          using rejects_def
+          by force
+        hence f1: "\<forall>n f. (\<not> rejects n f \<or> electoral_module f
+                    \<and> (\<forall>A rs. \<not> n \<le> card A \<or> infinite A \<or> \<not> profile_on A rs
+                        \<or> card (reject f A rs) = n))
+                    \<and> (rejects n f \<or> \<not> electoral_module f \<or> n \<le> card (AA f n) \<and> finite (AA f n)
+                      \<and> profile_on (AA f n) (rrs f n) \<and> card (reject f (AA f n) (rrs f n)) \<noteq> n)"
+          by presburger
+        have "\<not> 2 \<le> card (AA (Drop_module 2 r) 2) \<or> infinite (AA (Drop_module 2 r) 2)
+          \<or> \<not> profile_on (AA (Drop_module 2 r) 2) (rrs (Drop_module 2 r) 2)
+          \<or> card (reject (Drop_module 2 r) (AA (Drop_module 2 r) 2) (rrs (Drop_module 2 r) 2)) = 2"
+          by (metis (no_types) \<open>reject (Drop_module 2 r) = defer (Pass_module 2 r)\<close> defers_def
+              order pass_2_module_defers_2)
+        then show ?thesis
+          using f1 drop_module_sound order
+          by blast
+      qed }
 qed
 
 end

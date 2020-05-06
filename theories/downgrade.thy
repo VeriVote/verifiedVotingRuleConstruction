@@ -17,8 +17,10 @@ theorem downgrade_sound[simp]:
   assumes module: "electoral_module m"
   shows "electoral_module (Downgrade m)"
 proof -
-  from module have "\<forall>A p. finite_profile A p \<longrightarrow> elect m A p \<subseteq> A"
-    using elect_from_input by auto
+  from module
+  have "\<forall>A p. finite_profile A p \<longrightarrow> elect m A p \<subseteq> A"
+    using elect_from_input
+    by auto
   hence "\<forall>A p. finite_profile A p \<longrightarrow> (A - elect m A p) \<union> elect m A p = A"
     by blast
   hence unity: "\<forall>A p. finite_profile A p \<longrightarrow> unify_to A (Downgrade m A p)"
@@ -27,9 +29,11 @@ proof -
     by blast
   hence disjoint: "\<forall>A p. finite_profile A p \<longrightarrow> disjoint3 (Downgrade m A p)"
     by simp
-  from unity disjoint show ?thesis
+  from unity disjoint
+  show ?thesis
     by (simp add: electoral_module_intro partition_of_def)
 qed
+
 abbreviation down :: "'a Electoral_module \<Rightarrow> 'a Electoral_module" ("_\<down>" 50) where
   "m\<down> == Downgrade m"
 
@@ -52,17 +56,21 @@ theorem invariant_monotone_downgrade[simp]:
 proof -
   have "\<forall>A p q w. (w \<in> defer (m\<down>) A p \<and> lifted A p q w) \<longrightarrow>
                   (defer (m\<down>) A q = defer (m\<down>) A p \<or> defer (m\<down>) A q = {w})"
-    using assms by (simp add: invariant_monotone_def)
+    using assms
+    by (simp add: invariant_monotone_def)
   moreover have "electoral_module (m\<down>)"
-    using assms downgrade_sound invariant_monotone_def by auto
+    using assms downgrade_sound invariant_monotone_def
+    by auto
   moreover have "non_electing (m\<down>)"
-    using assms downgrade_non_electing invariant_monotone_def by auto
+    using assms downgrade_non_electing invariant_monotone_def
+    by auto
   ultimately have "electoral_module (m\<down>) \<and> non_electing (m\<down>) \<and>
       (\<forall>A p q w. (w \<in> defer (m\<down>) A p \<and> lifted A p q w) \<longrightarrow>
                  (defer (m\<down>) A q = defer (m\<down>) A p \<or> defer (m\<down>) A q = {w}))"
     by blast
   thus ?thesis
-    using defer_invariant_monotone_def by (simp add: defer_invariant_monotone_def)
+    using defer_invariant_monotone_def
+    by (simp add: defer_invariant_monotone_def)
 qed
 
 (* Downgrading an electing electoral module results in a non blocking electoral module. *)

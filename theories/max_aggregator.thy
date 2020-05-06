@@ -45,12 +45,14 @@ proof -
     by auto
   ultimately have disjoint: "\<forall>A res1 res2. (partition_of A res1 \<and> partition_of A res2) \<longrightarrow>
       disjoint3 (Max_aggregator A res1 res2)"
-    using disjoint3.simps by auto
+    using disjoint3.simps
+    by auto
   hence "\<forall>A res1 res2. (partition_of A res1 \<and> partition_of A res2) \<longrightarrow>
       partition_of A (Max_aggregator A res1 res2)"
     by (metis partition_of_def unity)
   thus ?thesis
-    using aggregator_def by blast
+    using aggregator_def
+    by blast
 qed
 
 (****************************************)
@@ -80,7 +82,8 @@ theorem max_aggregator_conservative[simp]:
 proof -
   have "\<forall>A e1 e2 d1 d2 r1 r2. (partition_of A (e1, r1, d1) \<and> partition_of A (e2, r2, d2)) \<longrightarrow>
       reject_r (Max_aggregator A (e1, r1, d1) (e2, r2, d2)) = r1 \<inter> r2"
-    using max_aggregator_reject_set by blast
+    using max_aggregator_reject_set
+    by blast
   hence "\<forall>A e1 e2 d1 d2 r1 r2. (partition_of A (e1, r1, d1) \<and> partition_of A (e2, r2, d2)) \<longrightarrow>
       reject_r (Max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> r1 \<inter> r2"
     by blast
