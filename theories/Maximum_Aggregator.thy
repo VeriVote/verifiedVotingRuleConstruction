@@ -1,4 +1,4 @@
-(*  File:       Max_Aggregator.thy
+(*  File:       Maximum_Aggregator.thy
     Copyright   2021  Karlsruhe Institute of Technology (KIT)
 *)
 \<^marker>\<open>creator "Karsten Diekhoff, Karlsruhe Institute of Technology (KIT)"\<close>
