@@ -7,7 +7,7 @@
 section \<open>Copeland Module\<close>
 
 theory Copeland_Module
-  imports Condorcet_Module
+  imports Elimination_Module
 begin
 
 text

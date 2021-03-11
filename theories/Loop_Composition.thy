@@ -172,7 +172,7 @@ lemma loop_comp_helper_imp_partit:
     profile: "finite_profile A p"
   shows
     "electoral_module acc \<and> (n = card (defer acc A p)) \<longrightarrow>
-        partition A (loop_comp_helper acc m t A p)"
+        well_formed A (loop_comp_helper acc m t A p)"
 proof (induct arbitrary: acc rule: less_induct)
   case (less)
   thus ?case

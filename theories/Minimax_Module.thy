@@ -7,7 +7,7 @@
 section \<open>Minimax Module\<close>
 
 theory Minimax_Module
-  imports Condorcet_Module
+  imports Elimination_Module
 begin
 
 text

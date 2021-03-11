@@ -214,12 +214,12 @@ lemma pref_count_code_not_smaller_imp_constant:
   by simp
 
 fun wins :: "'a \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
-  "wins x p y \<longleftrightarrow>
-    prefer_count p x y > prefer_count p y x"
+  "wins x p y =
+    (prefer_count p x y > prefer_count p y x)"
 
 fun wins_code :: "'a \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
-  "wins_code x p y \<longleftrightarrow>
-    prefer_count_code p x y > prefer_count_code p y x"
+  "wins_code x p y =
+    (prefer_count_code p x y > prefer_count_code p y x)"
 
 (* Alternative a wins against b implies that b does not win against a. *)
 lemma wins_antisym: "wins a p b \<Longrightarrow> \<not> wins b p a"
@@ -232,13 +232,13 @@ lemma wins_irreflex: "\<not> wins w p w"
 subsection \<open>Condorcet Winner\<close>
 
 fun condorcet_winner :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
-  "condorcet_winner A p w \<longleftrightarrow>
-      finite_profile A p \<and>  w \<in> A \<and> (\<forall>x \<in> A - {w} . wins w p x)"
+  "condorcet_winner A p w =
+      (finite_profile A p \<and>  w \<in> A \<and> (\<forall>x \<in> A - {w} . wins w p x))"
 
 fun condorcet_winner_code :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
-  "condorcet_winner_code A p w \<longleftrightarrow>
-    finite_profile A p \<and>  w \<in> A \<and>
-      (\<forall>x \<in> A - {w} . wins_code w p x)"
+  "condorcet_winner_code A p w =
+    (finite_profile A p \<and>  w \<in> A \<and>
+      (\<forall>x \<in> A - {w} . wins_code w p x))"
 
 lemma cond_winner_unique:
   assumes winner_c: "condorcet_winner A p c" and
@@ -325,10 +325,10 @@ fun disjoint3 :: "'a Result \<Rightarrow> bool" where
       (r \<inter> d = {}))"
 
 fun set_equals_partition :: "'a set \<Rightarrow>'a Result \<Rightarrow> bool" where
-  "set_equals_partition A (e, r, d) \<longleftrightarrow> (e \<union> r \<union> d = A)"
+  "set_equals_partition A (e, r, d) = (e \<union> r \<union> d = A)"
 
-fun partition :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
-  "partition A result \<longleftrightarrow> (disjoint3 result \<and> set_equals_partition A result)"
+fun well_formed :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
+  "well_formed A result = (disjoint3 result \<and> set_equals_partition A result)"
 
 (*
    Electoral modules partition a given set of alternatives A into a set of
@@ -339,10 +339,10 @@ fun partition :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
    in multiple structures to create more complex electoral modules.
 *)
 definition electoral_module :: " 'a Electoral_Module \<Rightarrow> bool" where
-  "electoral_module m \<equiv> \<forall>A p. finite_profile A p \<longrightarrow> partition A (m A p)"
+  "electoral_module m \<equiv> \<forall>A p. finite_profile A p \<longrightarrow> well_formed A (m A p)"
 
 lemma electoral_modI:
-  "((\<And>A p. \<lbrakk> finite_profile A p \<rbrakk> \<Longrightarrow> partition A (m A p)) \<Longrightarrow>
+  "((\<And>A p. \<lbrakk> finite_profile A p \<rbrakk> \<Longrightarrow> well_formed A (m A p)) \<Longrightarrow>
        electoral_module m)"
   unfolding electoral_module_def
   by auto
@@ -472,7 +472,7 @@ lemma combine_ele_rej_def:
   using def ele rej
   by auto
 
-lemma result_imp_rej: "partition A (e, r, d) \<longrightarrow>  A - (e \<union> d) = r"
+lemma result_imp_rej: "well_formed A (e, r, d) \<longrightarrow>  A - (e \<union> d) = r"
 proof -
   have f1: "\<forall>A Aa. (Aa::'a set) - (A - Aa) = Aa"
     by auto
@@ -504,16 +504,16 @@ proof -
         by metis
     }
     hence
-      "disjoint3 (e, r, d) \<longrightarrow> partition A (e, r, d) \<longrightarrow>
+      "disjoint3 (e, r, d) \<longrightarrow> well_formed A (e, r, d) \<longrightarrow>
           A - (e \<union> d) = r"
       using f4 f3 f2 f1 Un_Diff Un_Diff_Int disjoint3.simps Int_Diff
-            partition.simps set_equals_partition.simps Diff_cancel Int_absorb
-            Int_Un_eq(2) Int_commute Un_commute Un_left_commute sup_assoc
-            Un_Int_eq(1) sup_bot_left calculation Un_empty_right
+            well_formed.simps set_equals_partition.simps Diff_cancel
+            Int_absorb Int_Un_eq(2) Int_commute Un_commute Un_left_commute
+            sup_assoc Un_Int_eq(1) sup_bot_left calculation Un_empty_right
       by metis
   }
   ultimately show ?thesis
-    using f3 partition.simps sup_bot.comm_neutral
+    using f3 well_formed.simps sup_bot.comm_neutral
     by (metis (no_types))
 qed
 
@@ -521,7 +521,7 @@ lemma par_comp_result_sound:
   assumes
     mod_m: "electoral_module m" and
     f_prof: "finite_profile A p"
-  shows "partition A (m A p)"
+  shows "well_formed A (m A p)"
   using electoral_module_def mod_m f_prof
   by auto
 
@@ -532,7 +532,7 @@ lemma result_presv_alts:
   shows "(elect m A p) \<union> (reject m A p) \<union> (defer m A p) = A"
 proof -
   from e_mod f_prof have "set_equals_partition A (m A p)"
-    using electoral_module_def partition.simps
+    using electoral_module_def well_formed.simps
     by blast
   hence "set_equals_partition A (elect m A p, reject m A p, defer m A p)"
     by simp
@@ -550,7 +550,7 @@ lemma result_disj:
         (elect m A p) \<inter> (defer m A p) = {} \<and>
         (reject m A p) \<inter> (defer m A p) = {}"
   using disjoint3.simps electoral_module_def module
-        partition.simps prod.exhaust_sel profile
+        well_formed.simps prod.exhaust_sel profile
   by metis
 
 lemma elect_in_alts:
@@ -604,10 +604,10 @@ lemma upper_card_bounds_for_result:
 
 lemma result_count:
   assumes
-    "partition A (e, r, d)" and
+    "well_formed A (e, r, d)" and
     "finite A"
   shows "card A = card e + card r + card d"
-  using partition.simps set_equals_partition.simps
+  using well_formed.simps set_equals_partition.simps
         Int_Un_distrib2 assms card_Un_disjoint
         disjoint3.simps finite_Un sup_bot.right_neutral
   by metis
@@ -618,12 +618,12 @@ lemma reject_not_elec_or_def:
     f_prof: "finite_profile A p"
   shows "reject m A p = A - (elect m A p) - (defer m A p)"
 proof -
-  from e_mod f_prof have 0: "partition A (m A p)"
+  from e_mod f_prof have 0: "well_formed A (m A p)"
     by (simp add: electoral_module_def)
   with e_mod f_prof
     have "(elect m A p) \<union> (reject m A p) \<union> (defer m A p) = A"
-      using e_mod partition.simps f_prof result_presv_alts
-      by blast
+      using result_presv_alts
+      by simp
     moreover from 0 have
       "(elect m A p) \<inter> (reject m A p) = {} \<and>
           (reject m A p) \<inter> (defer m A p) = {}"
@@ -639,11 +639,11 @@ lemma elec_and_def_not_rej:
     f_prof: "finite_profile A p"
   shows "elect m A p \<union> defer m A p = A - (reject m A p)"
 proof -
-  from e_mod f_prof have 0: "partition A (m A p)"
+  from e_mod f_prof have 0: "well_formed A (m A p)"
     by (simp add: electoral_module_def)
   with e_mod f_prof
   have "(elect m A p) \<union> (reject m A p) \<union> (defer m A p) = A"
-    using e_mod partition.simps f_prof result_presv_alts
+    using e_mod well_formed.simps f_prof result_presv_alts
     by blast
   moreover from 0 have
     "(elect m A p) \<inter> (reject m A p) = {} \<and>
@@ -660,7 +660,7 @@ lemma defer_not_elec_or_rej:
     f_prof: "finite_profile A p"
   shows "defer m A p = A - (elect m A p) - (reject m A p)"
 proof -
-  from e_mod f_prof have 0: "partition A (m A p)"
+  from e_mod f_prof have 0: "well_formed A (m A p)"
     by (simp add: electoral_module_def)
   hence "(elect m A p) \<union> (reject m A p) \<union> (defer m A p) = A"
     using e_mod f_prof result_presv_alts
@@ -767,7 +767,8 @@ proof -
     by (metis (mono_tags, hide_lams))
   moreover have
     "disjoint3 ((elect m A p),(reject m A p),(defer m A p))"
-    using assms(1) assms(3) electoral_module_def partition.simps prod.collapse
+    using assms(1) assms(3) electoral_module_def
+          well_formed.simps prod.collapse
     by metis
   ultimately have reject_p:
     "reject m A p = A - ((elect m A p) \<union> (defer m A p))"
@@ -781,7 +782,8 @@ proof -
     by (metis (mono_tags, hide_lams))
   moreover have
     "disjoint3 ((elect n A q),(reject n A q),(defer n A q))"
-    using assms(2) assms(4) electoral_module_def partition.simps prod.collapse
+    using assms(2) assms(4) electoral_module_def
+          well_formed.simps prod.collapse
     by metis
   ultimately have reject_q:
     "reject n A q = A - ((elect n A q) \<union> (defer n A q))"
@@ -985,7 +987,8 @@ definition decrementing :: "'a Electoral_Module \<Rightarrow> bool" where
    An electoral module is defer-deciding iff
    this module chooses exactly 1 alternative to defer and
    rejects any other alternative.
-   Note that `rejects n-1 m` can be omitted due to the partition property.
+   Note that `rejects n-1 m` can be omitted due to the
+   well-formedness property.
 *)
 definition defer_deciding :: "'a Electoral_Module \<Rightarrow> bool" where
   "defer_deciding m \<equiv>

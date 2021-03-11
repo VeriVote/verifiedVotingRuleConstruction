@@ -37,16 +37,16 @@ theorem par_comp_sound[simp]:
     agg_a: "aggregator a"
   shows "electoral_module (m \<parallel>\<^sub>a n)"
 proof -
-  have "\<forall>A p. finite_profile A p \<longrightarrow> partition A ((m \<parallel>\<^sub>a n) A p)"
+  have "\<forall>A p. finite_profile A p \<longrightarrow> well_formed A ((m \<parallel>\<^sub>a n) A p)"
   proof
     fix A
-    show "\<forall>p. finite_profile A p \<longrightarrow> partition A ((m \<parallel>\<^sub>a n) A p)"
+    show "\<forall>p. finite_profile A p \<longrightarrow> well_formed A ((m \<parallel>\<^sub>a n) A p)"
     proof
       fix p
-      show "finite_profile A p \<longrightarrow> partition A ((m \<parallel>\<^sub>a n) A p)"
+      show "finite_profile A p \<longrightarrow> well_formed A ((m \<parallel>\<^sub>a n) A p)"
       proof
         assume f_prof: "finite_profile A p"
-        show "partition A ((m \<parallel>\<^sub>a n) A p)"
+        show "well_formed A ((m \<parallel>\<^sub>a n) A p)"
         proof -
           obtain
             AA :: "'a set \<times> 'a set \<Rightarrow> 'a set" and
@@ -56,17 +56,17 @@ proof -
             by metis
           hence
             "\<forall>A Aa Ab Ac Ad p f.
-                partition (Ab::'a set) (f Ab (Ac, A, Ad) (Aa, p)) \<or>
-                \<not> partition Ab (Ac, A, Ad) \<or>
-                \<not> partition Ab (Aa, p) \<or>
+                well_formed (Ab::'a set) (f Ab (Ac, A, Ad) (Aa, p)) \<or>
+                \<not> well_formed Ab (Ac, A, Ad) \<or>
+                \<not> well_formed Ab (Aa, p) \<or>
                 \<not> aggregator f"
             using aggregator_def
             by (smt (verit, best))
           hence
             "\<forall>A p pa f.
-                partition (A::'a set) (f A p pa) \<or>
-                \<not> partition A p \<or>
-                \<not> partition A pa \<or>
+                well_formed (A::'a set) (f A p pa) \<or>
+                \<not> well_formed A p \<or>
+                \<not> well_formed A pa \<or>
                 \<not> aggregator f"
             by auto
           thus ?thesis
@@ -103,16 +103,18 @@ proof -
     "(\<forall>A p. finite_profile A p \<longrightarrow>
         elect_r (m A p) = {} \<and> elect_r (n A p) = {})"
     by simp
-  moreover have "\<forall>A p. finite_profile A p \<longrightarrow> partition A (m A p)"
+  moreover have
+    "\<forall>A p. finite_profile A p \<longrightarrow> well_formed A (m A p)"
     using electoral_module_def non_electing_def non_electing_m
     by auto
-  moreover have "\<forall>A p. finite_profile A p \<longrightarrow> partition A (n A p)"
+  moreover have
+    "\<forall>A p. finite_profile A p \<longrightarrow> well_formed A (n A p)"
     using electoral_module_def non_electing_def non_electing_n
     by auto
   moreover have conservative_def_inline:
     "aggregator a \<and>
       (\<forall>A e1 e2 d1 d2 r1 r2. 
-          ((partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+          ((well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
               elect_r (a A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (e1 \<union> e2) \<and>
               reject_r (a A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (r1 \<union> r2) \<and>
               defer_r (a A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (d1 \<union> d2)))"

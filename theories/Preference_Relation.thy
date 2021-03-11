@@ -25,7 +25,7 @@ type_synonym 'a Preference_Relation = "'a rel"
 
 fun is_less_preferred_than ::
   "'a \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> bool" ("_ \<preceq>\<^sub>_ _" [50, 1000, 51] 50) where
-    "x \<preceq>\<^sub>r y \<longleftrightarrow> (x, y) \<in> r"
+    "x \<preceq>\<^sub>r y = ((x, y) \<in> r)"
 
 lemma lin_imp_antisym:
   assumes "linear_order_on A r"

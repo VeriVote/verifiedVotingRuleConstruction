@@ -63,11 +63,11 @@ proof -
     by simp
   from 0 1 have
     "\<forall>A p. finite_profile A p \<longrightarrow>
-        partition A (?mod A p)"
+        well_formed A (?mod A p)"
     by simp
   hence
     "\<forall>A p. finite_profile A p \<longrightarrow>
-        partition A (?mod A p)"
+        well_formed A (?mod A p)"
     by simp
   thus ?thesis
     using electoral_modI

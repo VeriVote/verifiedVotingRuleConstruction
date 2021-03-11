@@ -146,7 +146,7 @@ proof -
   let ?plurality_defer = "(plurality\<down>) \<triangleright> ?tie_breaker"
   let ?compare_two = "?pass2 \<triangleright> ?plurality_defer"
   let ?drop2 = "drop_module 2 x"
-  let ?eliminator = "let a = max_aggregator in ?compare_two \<parallel>\<^sub>a ?drop2"
+  let ?eliminator = "maximum_parallel_composition ?compare_two ?drop2"
   let ?loop =
     "let t = defer_equal_condition 1 in (?eliminator \<circlearrowleft>\<^sub>t)"
 
@@ -239,9 +239,10 @@ proof -
   show ?thesis
     using 0 1 2 3
           Electoral_Module.monotonicity_def
+          maximum_parallel_composition.simps
           smc_sound smc.simps assms
           seq_comp_mono
-    by (smt (verit)) (*seq_comp_mono*)
+    by (smt (verit))
 qed
 
 end

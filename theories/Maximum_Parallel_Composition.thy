@@ -214,19 +214,6 @@ lemma max_agg_rej4:
         module_m module_n f_prof rejected
   by metis
 
-lemma dcompat_dec_by_one_mod:
-  assumes
-    compatible: "disjoint_compatibility m n" and
-    in_A: "x \<in> A"
-  shows
-    "(\<forall>p. finite_profile A p \<longrightarrow>
-          mod_contains_result m (maximum_parallel_composition m n) A p x) \<or>
-        (\<forall>p. finite_profile A p \<longrightarrow>
-          mod_contains_result n (maximum_parallel_composition m n) A p x)"
-  using DiffI compatible disjoint_compatibility_def
-        in_A max_agg_rej1 max_agg_rej3
-  by metis
-
 lemma max_agg_rej_intersect:
   assumes
     module_m: "electoral_module m" and
@@ -257,6 +244,19 @@ proof -
   thus ?thesis
     by auto
 qed
+
+lemma dcompat_dec_by_one_mod:
+  assumes
+    compatible: "disjoint_compatibility m n" and
+    in_A: "x \<in> A"
+  shows
+    "(\<forall>p. finite_profile A p \<longrightarrow>
+          mod_contains_result m (maximum_parallel_composition m n) A p x) \<or>
+        (\<forall>p. finite_profile A p \<longrightarrow>
+          mod_contains_result n (maximum_parallel_composition m n) A p x)"
+  using DiffI compatible disjoint_compatibility_def
+        in_A max_agg_rej1 max_agg_rej3
+  by metis
 
 subsection \<open>Composition Rules\<close>
 
@@ -577,7 +577,7 @@ proof -
           have "finite A"
             by (simp add: asm0)
           moreover have
-            "partition A
+            "well_formed A
               (elect m A p, reject m A p, defer m A p)"
             using asm0 electoral_module_def module
             by auto

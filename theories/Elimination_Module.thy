@@ -68,8 +68,8 @@ lemma elim_mod_sound[simp]: "electoral_module (elimination_module e t r)"
 proof (unfold electoral_module_def)
   show
     "\<forall>A p. finite_profile A p \<longrightarrow>
-        partition A (elimination_module e t r A p)"
-  proof (unfold partition.simps)
+        well_formed A (elimination_module e t r A p)"
+  proof (unfold well_formed.simps)
     show
       "\<forall>A p. finite_profile A p \<longrightarrow>
           disjoint3 (elimination_module e t r A p) \<and>
@@ -95,10 +95,10 @@ proof -
               ('a \<times> 'a) set list" where
     "\<forall>f.
       (electoral_module f \<or> 
-        \<not> Electoral_Module.partition (AA f) (f (AA f) (rrs f)) \<and>
+        \<not> well_formed (AA f) (f (AA f) (rrs f)) \<and>
             profile (AA f) (rrs f) \<and> finite (AA f)) \<and> 
       (electoral_module f \<longrightarrow> 
-        (\<forall>A rs. profile A rs \<and> finite A \<longrightarrow> Electoral_Module.partition A (f A rs)))"
+        (\<forall>A rs. profile A rs \<and> finite A \<longrightarrow> well_formed A (f A rs)))"
     using electoral_module_def
     by metis
   thus ?thesis
@@ -115,10 +115,10 @@ proof -
               ('a \<times> 'a) set list" where
     "\<forall>f.
       (electoral_module f \<or> 
-        \<not> Electoral_Module.partition (AA f) (f (AA f) (rrs f)) \<and>
+        \<not> well_formed (AA f) (f (AA f) (rrs f)) \<and>
             profile (AA f) (rrs f) \<and> finite (AA f)) \<and> 
       (electoral_module f \<longrightarrow> 
-        (\<forall>A rs. profile A rs \<and> finite A \<longrightarrow> Electoral_Module.partition A (f A rs)))"
+        (\<forall>A rs. profile A rs \<and> finite A \<longrightarrow> well_formed A (f A rs)))"
     using electoral_module_def
     by metis
   thus ?thesis

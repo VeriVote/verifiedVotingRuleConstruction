@@ -26,16 +26,17 @@ fun max_aggregator :: "'a Aggregator" where
 
 subsection \<open>Auxiliary Lemma\<close>
 
-lemma max_agg_rej_set: "(partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+lemma max_agg_rej_set: "(well_formed A (e1, r1, d1) \<and>
+                          well_formed A (e2, r2, d2)) \<longrightarrow>
            reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) = r1 \<inter> r2"
 proof -
-  have "partition A (e1, r1, d1) \<longrightarrow>  A - (e1 \<union> d1) = r1"
+  have "well_formed A (e1, r1, d1) \<longrightarrow>  A - (e1 \<union> d1) = r1"
     by (simp add: result_imp_rej)
   moreover have
-    "partition A (e2, r2, d2) \<longrightarrow>  A - (e2 \<union> d2) = r2"
+    "well_formed A (e2, r2, d2) \<longrightarrow>  A - (e2 \<union> d2) = r2"
     by (simp add: result_imp_rej)
   ultimately have
-    "(partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+    "(well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
         A - (e1 \<union> e2 \<union> d1 \<union> d2) = r1 \<inter> r2"
     by blast
   moreover have
@@ -51,13 +52,13 @@ theorem max_agg_sound[simp]: "aggregator max_aggregator"
 proof -
   have
     "\<forall>A e1 e2 d1 d2 r1 r2.
-          (partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+          (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
       set_equals_partition A (e1 \<union> e2,
                   A - (e1 \<union> e2 \<union> d1 \<union> d2),
                   (d1 \<union> d2) - (e1 \<union> e2))"
   proof -
     have
-      "\<forall>B p. Electoral_Module.partition (B::'b set) p =
+      "\<forall>B p. well_formed (B::'b set) p =
           (disjoint3 p \<and> set_equals_partition B p)"
       by simp
     thus ?thesis
@@ -66,32 +67,33 @@ proof -
       by auto
   qed
   hence unity:
-    "\<forall>A res1 res2. (partition A res1 \<and> partition A res2) \<longrightarrow>
+    "\<forall>A res1 res2. (well_formed A res1 \<and> well_formed A res2) \<longrightarrow>
           set_equals_partition A (max_aggregator A res1 res2)"
-    using max_aggregator.simps partition.simps set_equals_partition.elims(2)
+    using max_aggregator.simps well_formed.simps
+          set_equals_partition.elims(2)
     by (smt (z3))
   have
     "\<forall>A e1 e2 d1 d2 r1 r2.
-          (partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+          (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
       (e1 \<union> e2) \<inter> (A - (e1 \<union> e2 \<union> d1 \<union> d2)) = {}"
     by auto
   moreover have
     "\<forall>A e1 e2 d1 d2 r1 r2.
-          (partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+          (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
       (e1 \<union> e2) \<inter> ((d1 \<union> d2) - (e1 \<union> e2)) = {}"
     by auto
   moreover have
     "\<forall>A e1 e2 d1 d2 r1 r2.
-          (partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+          (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
       (A - (e1 \<union> e2 \<union> d1 \<union> d2)) \<inter> ((d1 \<union> d2) - (e1 \<union> e2)) = {}"
     by auto
   ultimately have disjoint:
-      "\<forall>A res1 res2. (partition A res1 \<and> partition A res2) \<longrightarrow>
+      "\<forall>A res1 res2. (well_formed A res1 \<and> well_formed A res2) \<longrightarrow>
             disjoint3 (max_aggregator A res1 res2)"
     using disjoint3.simps
     by auto
-  hence "\<forall>A res1 res2. (partition A res1 \<and> partition A res2) \<longrightarrow>
-            partition A (max_aggregator A res1 res2)"
+  hence "\<forall>A res1 res2. (well_formed A res1 \<and> well_formed A res2) \<longrightarrow>
+            well_formed A (max_aggregator A res1 res2)"
     by (simp add: disjoint unity)
     thus ?thesis
     using aggregator_def
@@ -105,34 +107,34 @@ theorem max_agg_consv[simp]: "agg_conservative max_aggregator"
 proof -
   have
     "\<forall>A e1 e2 d1 d2 r1 r2.
-          (partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+          (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
       reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) = r1 \<inter> r2"
     using max_agg_rej_set
     by blast
   hence
     "\<forall>A e1 e2 d1 d2 r1 r2.
-            (partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+            (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
         reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> r1 \<inter> r2"
     by blast
   moreover have
     "\<forall>A e1 e2 d1 d2 r1 r2.
-        (partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+        (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
             elect_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (e1 \<union> e2)"
     by (simp add: subset_eq)
   ultimately have
     "\<forall>A e1 e2 d1 d2 r1 r2.
-        (partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+        (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
             (elect_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (e1 \<union> e2) \<and>
              reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (r1 \<union> r2))"
     by blast
   moreover have
     "\<forall>A e1 e2 d1 d2 r1 r2.
-        (partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+        (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
             defer_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (d1 \<union> d2)"
     by auto
   ultimately have
     "\<forall>A e1 e2 d1 d2 r1 r2.
-        (partition A (e1, r1, d1) \<and> partition A (e2, r2, d2)) \<longrightarrow>
+        (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
             (elect_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (e1 \<union> e2) \<and>
             reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (r1 \<union> r2) \<and>
             defer_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (d1 \<union> d2))"

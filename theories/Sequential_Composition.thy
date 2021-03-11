@@ -42,11 +42,11 @@ proof -
   let ?new_A = "defer m A p"
   let ?new_p = "limit_profile ?new_A p"
   from module_m f_prof have disjoint_m: "disjoint3 (m A p)"
-    using electoral_module_def partition.simps
+    using electoral_module_def well_formed.simps
     by blast
   from module_m module_n def_presv_fin_prof f_prof have disjoint_n:
     "(disjoint3 (n ?new_A ?new_p))"
-    using electoral_module_def partition.simps
+    using electoral_module_def well_formed.simps
     by metis
   with disjoint_m module_m module_n f_prof have 0:
     "(elect m A p \<inter> reject n ?new_A ?new_p) = {}"
@@ -122,7 +122,7 @@ proof -
     by (simp add: result_presv_alts)
   from module_n def_presv_fin_prof f_prof module_m have
     "set_equals_partition ?new_A (n ?new_A ?new_p)"
-    using electoral_module_def partition.simps
+    using electoral_module_def well_formed.simps
     by metis
   with module_m module_n f_prof have 1:
     "elect n ?new_A ?new_p \<union>
@@ -153,9 +153,9 @@ theorem seq_comp_sound[simp]:
           module_n: "electoral_module n"
   shows "electoral_module (m \<triangleright> n)"
 proof -
-  have "\<forall>A p. partition (A::'a set) p =
+  have "\<forall>A p. well_formed (A::'a set) p =
           (disjoint3 p \<and> set_equals_partition A p)"
-    using partition.simps
+    using well_formed.simps
     by metis
   thus ?thesis
     using electoral_modI module_m module_n
@@ -296,16 +296,16 @@ lemma seq_comp_def_set_sound:
     "finite_profile A p"
   shows "defer (m \<triangleright> n) A p \<subseteq> defer m A p"
 proof -
-  have "\<forall>A p. finite_profile A p \<longrightarrow> partition A (n A p)"
+  have "\<forall>A p. finite_profile A p \<longrightarrow> well_formed A (n A p)"
     using assms(2) electoral_module_def
     by auto
   hence
     "finite_profile (defer m A p) (limit_profile (defer m A p) p) \<longrightarrow>
-        partition (defer m A p)
+        well_formed (defer m A p)
           (n (defer m A p) (limit_profile (defer m A p) p))"
     by simp
   hence
-    "partition (defer m A p) (n (defer m A p)
+    "well_formed (defer m A p) (n (defer m A p)
       (limit_profile (defer m A p) p))"
     using assms(1) assms(3) def_presv_fin_prof
     by metis
@@ -347,7 +347,7 @@ proof -
           reject_in_alts subset_antisym
     by metis
   from non_blocking_m have
-    "?input_sound \<longrightarrow> partition A (m A p)"
+    "?input_sound \<longrightarrow> well_formed A (m A p)"
     by (simp add: electoral_module_def non_blocking_def)
   hence
     "?input_sound \<longrightarrow>
