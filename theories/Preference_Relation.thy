@@ -164,14 +164,13 @@ lemma limit_presv_prefs1:
     x_in_A: "x \<in> A" and
     y_in_A: "y \<in> A"
   shows "let s = limit A r in x \<preceq>\<^sub>s y"
-  using is_less_preferred_than.simps
-        x_in_A x_less_y y_in_A
+  using x_in_A x_less_y y_in_A
   by simp
 
 lemma limit_presv_prefs2:
   assumes x_less_y: "(x, y) \<in> limit A r"
   shows "x \<preceq>\<^sub>r y"
-  using limit.simps mem_Collect_eq x_less_y
+  using mem_Collect_eq x_less_y
   by auto
 
 lemma limit_trans:
@@ -205,7 +204,6 @@ proof
             refl_on_domain split_beta
       by fastforce
     ultimately show "r = {(a, a)}"
-      using is_less_preferred_than.elims(2)
       by auto
   qed
 qed
@@ -632,8 +630,7 @@ proof -
               is_less_preferred_than.simps
         by metis
       ultimately show ?thesis
-        using a1 temp lifted_def equiv_rel_except_a_def
-              is_less_preferred_than.simps
+        using a1 temp
         by (simp add: lifted_def equiv_rel_except_a_def)
     next
       assume "\<not>(\<exists>x \<in> A - {a}. a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a)" (* \<and> a1: "a \<in> A" *)

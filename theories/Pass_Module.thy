@@ -194,11 +194,16 @@ proof -
               "x \<in> {a \<in> A. card (above (limit A r) a) \<le> 1}"
             hence x_in_A: "x \<in> A"
               by auto
-            hence "(x,x) \<in> limit A r"
-              using lin_ord_on_A pref_imp_in_above
-                    lin_ord_imp_connex above_connex
-                    is_less_preferred_than.simps
+            hence connex_limit:
+              "connex A (limit A r)"
+              using lin_ord_imp_connex lin_ord_on_A
+              by simp
+            hence "let q = limit A r in x \<preceq>\<^sub>q x"
+              using connex_limit above_connex
+                    pref_imp_in_above x_in_A
               by metis
+            hence "(x,x) \<in> limit A r"
+              by simp
             hence x_above_x: "x \<in> above (limit A r) x"
               by (simp add: above_def)
             have "above (limit A r) x \<subseteq> A"
@@ -275,12 +280,13 @@ proof -
           a: "above (limit A r) a = {a}"
           using above_one
           by blast
-        hence a_best: "\<forall>b \<in> A. (b, a) \<in> limit A r"
+        hence "\<forall>b \<in> A. let q = limit A r in (b \<preceq>\<^sub>q a)"
           using limitA_order pref_imp_in_above empty_iff
                 insert_iff insert_subset above_presv_limit
-                linear_order_on_def order total_on_def
-                is_less_preferred_than.simps
+                order connex_def lin_ord_imp_connex
           by metis
+        hence a_best: "\<forall>b \<in> A. (b, a) \<in> limit A r"
+          by simp
         hence a_above: "\<forall>b \<in> A. a \<in> above (limit A r) b"
           by (simp add: above_def)
         from a have a_in_defer: "a \<in> defer (pass_module 2 r) A p"
@@ -305,19 +311,19 @@ proof -
         ultimately obtain b where b: "above (limit (A-{a}) r) b = {b}"
           using above_one
           by metis
-        hence b_in_limit: "\<forall>c \<in> A-{a}. (c, b) \<in> limit (A-{a}) r"
+        hence "\<forall>c \<in> A-{a}. let q = limit (A-{a}) r in (c \<preceq>\<^sub>q b)"
           using limitAa_order pref_imp_in_above empty_iff insert_iff
                 insert_subset above_presv_limit order connex_def
-                is_less_preferred_than.simps lin_ord_imp_connex
+                lin_ord_imp_connex
           by metis
+        hence b_in_limit: "\<forall>c \<in> A-{a}. (c, b) \<in> limit (A-{a}) r"
+          by simp
         hence b_best: "\<forall>c \<in> A-{a}. (c, b) \<in> limit A r"
           by auto
         hence c_not_above_b: "\<forall>c \<in> A-{a, b}. c \<notin> above (limit A r) b"
-          using DiffD2 a_best above_def b insertCI limit_presv_prefs1
-                limit_presv_prefs2 mem_Collect_eq Diff_iff Diff_insert2
-                is_less_preferred_than.simps above_presv_limit
-                insert_subset order
-          by (metis (no_types, lifting))
+          using b Diff_iff Diff_insert2 subset_UNIV above_presv_limit
+                insert_subset order limit_presv_above limit_presv_above2
+          by metis
         moreover have above_subset: "above (limit A r) b \<subseteq> A"
           using above_presv_limit order
           by metis
@@ -336,7 +342,7 @@ proof -
           by auto
         from b_best have b_above:
           "\<forall>c \<in> A-{a}. b \<in> above (limit A r) c"
-          using pref_imp_in_above is_less_preferred_than.simps
+          using above_def mem_Collect_eq
           by metis
         have "connex A (limit A r)"
           using limitA_order lin_ord_imp_connex

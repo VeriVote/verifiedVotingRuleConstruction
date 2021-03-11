@@ -121,19 +121,79 @@ next
 qed
 termination
 proof -
-  have
+  have f0:
     "\<exists>r. wf r \<and>
         (\<forall>p f A rs fa.
           p (f (A::'a set) rs) \<or>
           \<not> defer (f \<triangleright> fa) A rs \<subset> defer f A rs \<or>
           infinite (defer f A rs) \<or>
-          (f \<triangleright> fa, fa, p, A, rs) \<preceq>\<^sub>r (f, fa, p, A, rs))"
-    using loop_termination_helper wf_measure is_less_preferred_than.simps
-
+          ((f \<triangleright> fa, fa, p, A, rs), (f, fa, p, A, rs)) \<in> r)"
+    using loop_termination_helper wf_measure "termination"
     by (metis (no_types))
+  hence
+    "\<forall>r p.
+      Ex ((\<lambda>ra. \<forall>f A rs pa fa. \<exists>ra pb rb pc pd fb Aa rsa fc pe.
+        \<not> wf r \<or>
+          loop_comp_helper_dom
+            (p::('a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
+              (_ set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
+              (_ set \<times> _ set \<times> _ set \<Rightarrow> bool) \<times> _ set \<times> (_ \<times> _) set list) \<or>
+          infinite (defer f (A::'a set) rs) \<or>
+          pa (f A rs) \<and>
+            wf
+              (ra::((
+                ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
+                ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
+                ('a set \<times> 'a set \<times> 'a set \<Rightarrow> bool) \<times>
+                'a set \<times> ('a \<times> 'a) set list) \<times> _) set) \<and>
+            \<not> loop_comp_helper_dom (pb::
+                ('a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
+                (_ set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
+                (_ set \<times> _ set \<times> _ set \<Rightarrow> bool) \<times>
+                _ set \<times> (_ \<times> _) set list) \<or>
+          wf rb \<and> \<not> defer (f \<triangleright> fa) A rs \<subset> defer f A rs \<and>
+            \<not> loop_comp_helper_dom
+                (pc::('a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
+                  (_ set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
+                  (_ set \<times> _ set \<times> _ set \<Rightarrow> bool) \<times>
+                  _ set \<times> (_ \<times> _) set list) \<or>
+            ((f \<triangleright> fa, fa, pa, A, rs), f, fa, pa, A, rs) \<in> rb \<and> wf rb \<and>
+            \<not> loop_comp_helper_dom
+                (pd::('a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
+                  (_ set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
+                  (_ set \<times> _ set \<times> _ set \<Rightarrow> bool) \<times>
+                  _ set \<times> (_ \<times> _) set list) \<or>
+            finite (defer fb (Aa::'a set) rsa) \<and>
+            defer (fb \<triangleright> fc) Aa rsa \<subset> defer fb Aa rsa \<and>
+            \<not> pe (fb Aa rsa) \<and>
+            ((fb \<triangleright> fc, fc, pe, Aa, rsa), fb, fc, pe, Aa, rsa) \<notin> r)
+        ::((('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
+            ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
+            ('a set \<times> 'a set \<times> 'a set \<Rightarrow> bool) \<times>
+            'a set \<times> ('a \<times> 'a) set list) \<times>
+            ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
+            ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
+            ('a set \<times> 'a set \<times> 'a set \<Rightarrow> bool) \<times>
+            'a set \<times> ('a \<times> 'a) set list) set \<Rightarrow> bool)"
+    by metis
+  obtain
+    rr ::
+          "((('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
+             ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
+             ('a set \<times> 'a set \<times> 'a set \<Rightarrow> bool) \<times>
+             'a set \<times> ('a \<times> 'a) set list) \<times>
+          ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
+          ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
+         ('a set \<times> 'a set \<times> 'a set \<Rightarrow> bool) \<times>
+          'a set \<times> ('a \<times> 'a) set list) set" where
+        "wf rr \<and> (\<forall>p f A rs fa. p (f A rs) \<or>
+        \<not> defer (f \<triangleright> fa) A rs \<subset> defer f A rs \<or> infinite (defer f A rs) \<or>
+        ((f \<triangleright> fa, fa, p, A, rs), f, fa, p, A, rs) \<in> rr)"
+    using f0
+    by presburger
   thus ?thesis
-    using "termination" is_less_preferred_than.simps
-    by (smt (verit, ccfv_SIG))
+    using "termination"
+    by metis
 qed
 
 lemma loop_comp_code_helper[code]:

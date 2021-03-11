@@ -116,10 +116,12 @@ proof -
     "\<forall> i::nat . i < size p \<longrightarrow> antisym  (p!i)"
     using lin_imp_antisym
     by metis
+  hence "\<forall> i::nat . i < size p \<longrightarrow> ((y, x) \<in> (p!i) \<longrightarrow> (x, y) \<notin> (p!i))"
+    using antisymD neq
+    by metis
   hence "\<forall> i::nat . i < size p \<longrightarrow>
           ((let r = (p!i) in (y \<preceq>\<^sub>r x)) \<longrightarrow> \<not> (let r = (p!i) in (x \<preceq>\<^sub>r y)))"
-    using antisymD neq is_less_preferred_than.simps
-    by metis
+    by simp
   with 1 have
     "\<forall> i::nat . i < size p \<longrightarrow>
       \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x)) = (let r = (p!i) in (x \<preceq>\<^sub>r y))"
@@ -204,13 +206,13 @@ lemma empty_prof_imp_zero_pref_count:
 lemma pref_count_code_incr:
   assumes "prefer_count_code ps x y = n \<and> y \<preceq>\<^sub>p x"
   shows "prefer_count_code (p#ps) x y = n+1"
-  using is_less_preferred_than.simps assms
+  using assms
   by simp
 
 lemma pref_count_code_not_smaller_imp_constant:
   assumes "prefer_count_code ps x y = n \<and> \<not>(y \<preceq>\<^sub>p x)"
   shows "prefer_count_code (p#ps) x y = n"
-  using is_less_preferred_than.simps assms
+  using assms
   by simp
 
 fun wins :: "'a \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
@@ -1230,7 +1232,6 @@ next
           {d \<in> A. \<forall>x\<in>A - {d}.
             card {i. i < length p \<and> (let r = (p!i) in (d \<preceq>\<^sub>r x))} <
                 card {i. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r d))}})"
-    using prefer_count.simps
     by simp
   thus
     "m A p =
@@ -1239,7 +1240,6 @@ next
           {d \<in> A. \<forall>x\<in>A - {d}.
             card {i. i < length p \<and> (d, x) \<in> (p!i)} <
               card {i. i < length p \<and> (x, d) \<in> (p!i)}})"
-    using is_less_preferred_than.simps
     by simp
 qed
 
