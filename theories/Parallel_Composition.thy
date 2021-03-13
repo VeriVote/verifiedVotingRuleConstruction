@@ -23,9 +23,9 @@ fun parallel_composition :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Modu
         'a Aggregator \<Rightarrow> 'a Electoral_Module" where
   "parallel_composition m n agg A p = agg A (m A p) (n A p)"
 
-abbreviation parallel ::
-"'a Electoral_Module \<Rightarrow>'a Aggregator \<Rightarrow> 'a Electoral_Module \<Rightarrow>
-    'a Electoral_Module"  ("_ \<parallel>\<^sub>_ _" [50, 1000, 51] 50) where
+abbreviation parallel :: "'a Electoral_Module \<Rightarrow> 'a Aggregator \<Rightarrow>
+        'a Electoral_Module \<Rightarrow> 'a Electoral_Module"
+      ("_ \<parallel>\<^sub>_ _" [50, 1000, 51] 50) where
   "m \<parallel>\<^sub>a n == parallel_composition m n a"
 
 subsection \<open>Soundness\<close>
@@ -39,10 +39,12 @@ theorem par_comp_sound[simp]:
 proof -
   have "\<forall>A p. finite_profile A p \<longrightarrow> well_formed A ((m \<parallel>\<^sub>a n) A p)"
   proof
-    fix A
+    fix
+      A :: "'a set"
     show "\<forall>p. finite_profile A p \<longrightarrow> well_formed A ((m \<parallel>\<^sub>a n) A p)"
     proof
-      fix p
+      fix
+        p :: "'a Profile"
       show "finite_profile A p \<longrightarrow> well_formed A ((m \<parallel>\<^sub>a n) A p)"
       proof
         assume f_prof: "finite_profile A p"

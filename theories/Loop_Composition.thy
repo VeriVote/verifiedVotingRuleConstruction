@@ -703,7 +703,8 @@ theorem loop_comp_presv_def_lift_inv[simp]:
   assumes monotone_m: "defer_lift_invariance m"
   shows "defer_lift_invariance (m \<circlearrowleft>\<^sub>t)"
 proof -
-  fix A
+  fix
+    A :: "'a set"
   have
     "\<forall> p q a. (a \<in> (defer (m \<circlearrowleft>\<^sub>t) A p) \<and> lifted A p q a) \<longrightarrow>
         (m \<circlearrowleft>\<^sub>t) A p = (m \<circlearrowleft>\<^sub>t) A q"

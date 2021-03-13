@@ -86,8 +86,11 @@ theorem non_cond_winner_not_max_eval:
           winner: "condorcet_winner A p w"
   shows "\<forall> l \<in> A . w \<noteq> l \<longrightarrow>  e l A p < Max {e a A p | a. a \<in> A}"
 proof (auto)
-  fix l
-  assume linA: "l \<in> A" and loser: "w \<noteq> l"
+  fix
+    l :: "'a"
+  assume
+    linA: "l \<in> A" and
+    loser: "w \<noteq> l"
   show "e l A p < Max {e a A p |a. a \<in> A}"
   proof -
     have "e l A p < e w A p"

@@ -336,7 +336,9 @@ theorem seq_comp_presv_non_blocking[simp]:
     non_blocking_n: "non_blocking n"
   shows "non_blocking (m \<triangleright> n)"
 proof -
-  fix A p
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
   let ?input_sound = "((A::'a set) \<noteq> {} \<and> finite_profile A p)"
   from non_blocking_m have
     "?input_sound \<longrightarrow> reject m A p \<noteq> A"
@@ -524,12 +526,14 @@ proof -
     "\<forall>A p. (card A \<ge> 1 \<and> finite_profile A p) \<longrightarrow>
       card (defer (m \<triangleright> n) A p) = 1"
   proof
-    fix A
+    fix
+      A :: "'a set"
     show
       "\<forall> p. (card A \<ge> 1 \<and> finite_profile A p) \<longrightarrow>
           card (defer (m \<triangleright> n) A p) = 1"
     proof
-      fix p
+      fix
+        p :: "'a Profile"
       show
         "(card A \<ge> 1 \<and> finite_profile A p) \<longrightarrow>
             card (defer (m \<triangleright> n) A p) = 1"
@@ -625,7 +629,8 @@ proof -
         (\<forall>a \<in> S-A. indep_of_alt n S a \<and>
           (\<forall>p. finite_profile S p \<longrightarrow> a \<in> reject n S p)))"
   proof
-    fix S
+    fix
+      S :: "'a set"
     show
       "finite S \<longrightarrow>
         (\<exists>A \<subseteq> S. (\<forall>a \<in> A. indep_of_alt (m \<triangleright> m2) S a \<and>
@@ -652,17 +657,20 @@ proof -
           "\<forall>a p q. a \<in> A \<and> equiv_prof_except_a S p q a \<longrightarrow>
             (m \<triangleright> m2) S p = (m \<triangleright> m2) S q"
         proof
-          fix a
+          fix
+            a :: "'a"
           show
             "\<forall>p q. a \<in> A \<and> equiv_prof_except_a S p q a \<longrightarrow>
               (m \<triangleright> m2) S p = (m \<triangleright> m2) S q"
           proof
-            fix p
+            fix
+              p :: "'a Profile"
             show
               "\<forall>q. a \<in> A \<and> equiv_prof_except_a S p q a \<longrightarrow>
                 (m \<triangleright> m2) S p = (m \<triangleright> m2) S q"
             proof
-              fix q
+              fix
+                q :: "'a Profile"
               show
                 "a \<in> A \<and> equiv_prof_except_a S p q a \<longrightarrow>
                   (m \<triangleright> m2) S p = (m \<triangleright> m2) S q"
@@ -738,22 +746,24 @@ proof -
       (finite A \<and> w \<in> elect (m \<triangleright> n) A p \<and> lifted A p q w) \<longrightarrow>
         w \<in> elect (m \<triangleright> n) A q"
   proof
-    fix A
+    fix
+      A :: "'a set"
     show
       "\<forall>p q w. (finite A \<and> w \<in> elect (m \<triangleright> n) A p \<and> lifted A p q w) \<longrightarrow>
         w \<in> elect (m \<triangleright> n) A q"
     proof
-      fix p
+      fix
+        p :: "'a Profile"
       show
         "\<forall>q w. (finite A \<and> w \<in> elect (m \<triangleright> n) A p \<and> lifted A p q w) \<longrightarrow>
           w \<in> elect (m \<triangleright> n) A q"
       proof
-        fix q
+        fix q :: "'a Profile"
         show
           "\<forall>w. (finite A \<and> w \<in> elect (m \<triangleright> n) A p \<and> lifted A p q w) \<longrightarrow>
             w \<in> elect (m \<triangleright> n) A q"
         proof
-          fix w
+          fix w :: "'a"
           show
             "(finite A \<and> w \<in> elect (m \<triangleright> n) A p \<and> lifted A p q w) \<longrightarrow>
               w \<in> elect (m \<triangleright> n) A q"
@@ -805,22 +815,26 @@ proof -
     "\<forall>A p q a. (a \<in> (defer (m \<triangleright> n) A p) \<and> lifted A p q a) \<longrightarrow>
         (m \<triangleright> n) A p = (m \<triangleright> n) A q"
   proof
-    fix A
+    fix
+      A :: "'a set"
     show
       "\<forall> p q a. (a \<in> (defer (m \<triangleright> n) A p) \<and> lifted A p q a) \<longrightarrow>
         (m \<triangleright> n) A p = (m \<triangleright> n) A q"
     proof
-      fix p
+      fix
+        p :: "'a Profile"
       show
         "\<forall> q a. (a \<in> (defer (m \<triangleright> n) A p) \<and> lifted A p q a) \<longrightarrow>
           (m \<triangleright> n) A p = (m \<triangleright> n) A q"
       proof
-        fix q
+        fix
+          q :: "'a Profile"
         show
           "\<forall> a. (a \<in> (defer (m \<triangleright> n) A p) \<and> lifted A p q a) \<longrightarrow>
             (m \<triangleright> n) A p = (m \<triangleright> n) A q"
         proof
-          fix a
+          fix
+            a :: "'a"
           show
             "(a \<in> (defer (m \<triangleright> n) A p) \<and> lifted A p q a) \<longrightarrow>
               (m \<triangleright> n) A p = (m \<triangleright> n) A q"

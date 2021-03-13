@@ -24,7 +24,12 @@ fun iter :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module" where
     (let t = defer_equal_condition 1 in
       (m \<circlearrowleft>\<^sub>t))"
 
+abbreviation defer_one_loop ::
+  "'a Electoral_Module \<Rightarrow> 'a Electoral_Module"
+    ("_\<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d" 50) where
+  "m \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d \<equiv> iter m"
+
 fun iterelect :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module" where
-  "iterelect m = elector (iter m)"
+  "iterelect m = elector (m \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d)"
 
 end

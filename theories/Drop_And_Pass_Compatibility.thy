@@ -88,7 +88,8 @@ proof -
               (\<forall>p. finite_profile S p \<longrightarrow>
                 a \<in> reject (pass_module n r) S p)))"
   proof
-    fix S
+    fix
+      S :: "'a set"
     show
       "finite S \<longrightarrow>
         (\<exists>A \<subseteq> S.
@@ -99,8 +100,11 @@ proof -
               (\<forall>p. finite_profile S p \<longrightarrow>
                   a \<in> reject (pass_module n r) S p)))"
     proof
-      assume fin: "finite S"
-      obtain p where "finite_profile S p"
+      assume
+        fin: "finite S"
+      obtain
+        p :: "'a Profile"
+        where "finite_profile S p"
         using empty_iff empty_set fin profile_set
         by metis
       show

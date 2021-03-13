@@ -19,10 +19,10 @@ subsection \<open>Definition\<close>
 
 fun nanson_baldwin_rule :: "'a Electoral_Module" where
   "nanson_baldwin_rule A p =
-    iter (min_eliminator borda_score) A p"
+    ((min_eliminator borda_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
 
 fun nanson_baldwin_rule_code :: "'a Electoral_Module" where
   "nanson_baldwin_rule_code A p =
-    iter (min_eliminator borda_score_code) A p"
+    ((min_eliminator borda_score_code) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
 
 end

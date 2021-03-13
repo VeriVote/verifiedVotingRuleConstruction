@@ -51,7 +51,7 @@ lemma rank_gt_zero:
   shows "rank r x \<ge> 1"
 proof -
   have "x \<in> {y \<in> Field r. (x, y) \<in> r}"
-    using FieldI2 local.refl
+    using FieldI2 refl
     by fastforce
   hence "{y \<in> Field r. (x, y) \<in> r} \<noteq> {}"
     by blast
@@ -211,16 +211,16 @@ next
 qed
 
 lemma limit_to_limits: "limited A (limit A r)"
-  unfolding limited_def limit.simps
-  by safe
+  unfolding limited_def
+  by auto
 
 lemma limit_presv_connex:
   assumes
     connex: "connex S r" and
     subset: "A \<subseteq> S"
   shows "connex A (limit A r)"
-  unfolding connex_def limited_def limit.simps
-proof (safe)
+  unfolding connex_def limited_def
+proof (simp, safe)
   let ?s = "{(a, b). (a, b) \<in> r \<and> a \<in> A \<and> b \<in> A}"
   fix
     x :: "'a" and
@@ -230,7 +230,7 @@ proof (safe)
   assume
     asm1: "x \<in> A" and
     asm2: "y \<in> A" and
-    asm3: "\<not> y \<preceq>\<^sub>?s x"
+    asm3: "(y, x) \<notin> r"
   have "y \<preceq>\<^sub>r x \<or> x \<preceq>\<^sub>r y"
     using asm1 asm2 connex connex_def in_mono subset
     by metis
@@ -238,9 +238,11 @@ proof (safe)
     "x \<preceq>\<^sub>?s y \<or> y \<preceq>\<^sub>?s x"
     using asm1 asm2
     by auto
-  thus "x \<preceq>\<^sub>?s y"
+  hence "x \<preceq>\<^sub>?s y"
     using asm3
-    by metis
+    by simp
+  thus "(x, y) \<in> r"
+    by simp
 qed
 
 lemma limit_presv_antisym:
@@ -256,10 +258,22 @@ lemma limit_presv_trans:
     transitive: "trans r" and
     subset:     "A \<subseteq> S"
   shows "trans (limit A r)"
-  using Product_Type.Collect_case_prodD case_prodI fst_conv
-        limit.simps local.transitive mem_Collect_eq snd_conv
-        trans_def
-  by (smt (verit, ccfv_threshold))
+  unfolding trans_def
+proof (simp, safe)
+  fix
+    x :: "'a" and
+    y :: "'a" and
+    z :: "'a"
+  assume
+    asm1: "(x, y) \<in> r" and
+    asm2: "x \<in> A" and
+    asm3: "y \<in> A" and
+    asm4: "(y, z) \<in> r" and
+    asm5: "z \<in> A"
+  show  "(x, z) \<in> r"
+    using asm1 asm4 transE transitive
+    by metis
+qed
 
 lemma limit_presv_lin_ord:
   assumes
@@ -619,8 +633,8 @@ qed
 lemma above_presv_limit:
   assumes "linear_order r"
   shows "above (limit A r) x \<subseteq> A"
-  unfolding above_def limit.simps
-  by safe
+  unfolding above_def
+  by auto
 
 subsection \<open>Lifting Property\<close>
 

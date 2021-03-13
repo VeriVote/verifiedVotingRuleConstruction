@@ -251,17 +251,16 @@ proof (rule ccontr)
     assumption: "w \<noteq> c"
   from winner_w
   have "wins w p c"
-    using assumption condorcet_winner.simps
-          insert_Diff insert_iff winner_c
-    by metis 
+    using assumption insert_Diff insert_iff winner_c
+    by simp
   hence "\<not> wins c p w"
     by (simp add: wins_antisym)
   moreover from winner_c
   have
     c_wins_against_w: "wins c p w"
-    using Diff_iff assumption condorcet_winner.simps
+    using Diff_iff assumption
           singletonD winner_w
-    by metis
+    by simp
   ultimately show False
     by simp
 qed
@@ -277,9 +276,88 @@ lemma cond_winner_unique2:
 lemma cond_winner_unique3:
   assumes "condorcet_winner A p w"
   shows "{a \<in> A. condorcet_winner A p a} = {w}"
-  using Collect_cong assms condorcet_winner.simps
-        singleton_conv cond_winner_unique
-  by (metis (mono_tags, lifting))
+proof (simp, safe, simp_all)
+  fix
+    x :: "'a"
+  assume
+    fin_A: "finite A" and
+    prof_A: "profile A p" and
+    x_in_A: "x \<in> A" and
+    x_wins:
+      "\<forall>xa \<in> A - {x}.
+        card {i. i < size p \<and> (x, xa) \<in> p!i} <
+          card {i. i < size p \<and> (xa, x) \<in> p!i}"
+  from assms have assm:
+    "finite_profile A p \<and>  w \<in> A \<and>
+      (\<forall>x \<in> A - {w}.
+        card {i::nat. i < size p \<and> (w, x) \<in> p!i} <
+          card {i::nat. i < size p \<and> (x, w) \<in> p!i})"
+    by simp
+  hence
+    "(\<forall>x \<in> A - {w}.
+      card {i::nat. i < size p \<and> (w, x) \<in> p!i} <
+        card {i::nat. i < size p \<and> (x, w) \<in> p!i})"
+    by simp
+  hence w_beats_x:
+    "x \<noteq> w \<Longrightarrow>
+      card {i::nat. i < size p \<and> (w, x) \<in> p!i} <
+        card {i::nat. i < size p \<and> (x, w) \<in> p!i}"
+    using x_in_A
+    by simp
+  also from assm have
+    "finite_profile A p"
+    by simp
+  moreover from assm have
+    "w \<in> A"
+    by simp
+  hence x_beats_w:
+    "x \<noteq> w \<Longrightarrow>
+      card {i. i < size p \<and> (x, w) \<in> p!i} <
+        card {i. i < size p \<and> (w, x) \<in> p!i}"
+    using x_wins
+    by simp
+  from w_beats_x x_beats_w show
+    "x = w"
+    by linarith
+next
+  fix
+    x :: "'a"
+  from assms show "w \<in> A"
+    by simp
+next
+  fix
+    x :: "'a"
+  from assms show "finite A"
+    by simp
+next
+  fix
+    x :: "'a"
+  from assms show "profile A p"
+    by simp
+next
+  fix
+    x :: "'a"
+  from assms show "w \<in> A"
+    by simp
+next
+  fix
+    x :: "'a" and
+    xa :: "'a"
+  assume
+    xa_in_A: "xa \<in> A" and
+    w_wins:
+      "\<not> card {i. i < length p \<and> (w, xa) \<in> p!i} <
+        card {i. i < length p \<and> (xa, w) \<in> p!i}"
+  from assms have
+    "finite_profile A p \<and>  w \<in> A \<and>
+      (\<forall>x \<in> A - {w} .
+        card {i::nat. i < size p \<and> (w, x) \<in> p!i} <
+          card {i::nat. i < size p \<and> (x, w) \<in> p!i})"
+    by simp
+  thus "xa = w"
+    using xa_in_A w_wins insert_Diff insert_iff
+    by (metis (no_types, lifting))
+qed
 
 subsection \<open>Limited Profile\<close>
 
@@ -304,9 +382,13 @@ lemma limit_profile_sound:
     profile: "finite_profile S p" and
     subset: "A \<subseteq> S"
   shows "finite_profile A (limit_profile A p)"
-  using assms(1) imageE infinite_super limit_presv_lin_ord
-        limit_profile.simps set_map subset profile_set
-  by (metis (no_types, lifting))
+proof (simp)
+  from profile
+  show "finite_profile A (map (limit A) p)"
+    using length_map limit_presv_lin_ord nth_map
+          profile_def subset infinite_super
+    by metis
+qed
 
 lemma limit_prof_presv_size:
   assumes f_prof: "finite_profile S p" and
@@ -474,49 +556,61 @@ lemma combine_ele_rej_def:
   using def ele rej
   by auto
 
-lemma result_imp_rej: "well_formed A (e, r, d) \<longrightarrow>  A - (e \<union> d) = r"
-proof -
-  have f1: "\<forall>A Aa. (Aa::'a set) - (A - Aa) = Aa"
-    by auto
-  hence f2: "\<forall>A Aa Ab. (Ab::'a set) - (Aa - Ab \<union> A) = Ab \<inter> (Ab - A)"
-    by (simp add: Diff_Un)
-  have f3: "\<forall>A. (A::'a set) - A = {}"
+lemma result_imp_rej:
+  assumes "well_formed A (e, r, d)"
+  shows "A - (e \<union> d) = r"
+proof (safe)
+  fix
+    x :: "'a"
+  assume
+    x_in_A: "x \<in> A" and
+    x_not_rej:   "x \<notin> r" and
+    x_not_def:   "x \<notin> d"
+  from assms have
+    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
+    (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
     by simp
-  have f4: "\<forall>A Aa Ab. (Ab::'a set) - Aa - A = Ab - (Aa \<union> A)"
-    by (simp add: Diff_eq inf_sup_aci(2))
-  {
-    assume "\<exists>A. r \<union> A - d \<noteq> r \<union> (A - d)"
-    hence "r - d \<noteq> r"
-      using Un_Diff
-      by metis
-    hence "\<not> disjoint3 (e, r, d)"
-      using Un_Diff_Int disjoint3.simps sup_bot.comm_neutral
-      by metis
-  }
-  moreover
-  {
-    assume "\<exists>Aa. r \<union> d - Aa \<noteq> A - (e \<union> Aa)"
-    {
-      assume "\<exists>A. A \<union> d - e \<noteq> A - e \<union> d"
-      hence "d - e \<noteq> d"
-        using Un_Diff
-        by metis
-      hence "\<not> disjoint3 (e, r, d)"
-        using f1 disjoint3.simps Diff_triv
-        by metis
-    }
-    hence
-      "disjoint3 (e, r, d) \<longrightarrow> well_formed A (e, r, d) \<longrightarrow>
-          A - (e \<union> d) = r"
-      using f4 f3 f2 f1 Un_Diff Un_Diff_Int disjoint3.simps Int_Diff
-            well_formed.simps set_equals_partition.simps Diff_cancel
-            Int_absorb Int_Un_eq(2) Int_commute Un_commute Un_left_commute
-            sup_assoc Un_Int_eq(1) sup_bot_left calculation Un_empty_right
-      by metis
-  }
-  ultimately show ?thesis
-    using f3 well_formed.simps sup_bot.comm_neutral
-    by (metis (no_types))
+  thus "x \<in> e"
+    using x_in_A x_not_rej x_not_def
+    by auto
+next
+  fix
+    x :: "'a"
+  assume
+    x_rej:   "x \<in> r"
+  from assms have
+    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
+    (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+    by simp
+  thus "x \<in> A"
+    using x_rej
+    by auto
+next
+  fix
+    x :: "'a"
+  assume
+    x_rej:  "x \<in> r" and
+    x_elec: "x \<in> e"
+  from assms have
+    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
+    (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+    by simp
+  thus "False"
+    using x_rej x_elec
+    by auto
+next
+  fix
+    x :: "'a"
+  assume
+    x_rej: "x \<in> r" and
+    x_def: "x \<in> d"
+  from assms have
+    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
+    (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+    by simp
+  thus "False"
+    using x_rej x_def
+    by auto
 qed
 
 lemma par_comp_result_sound:
@@ -532,14 +626,77 @@ lemma result_presv_alts:
     e_mod: "electoral_module m" and
     f_prof: "finite_profile A p"
   shows "(elect m A p) \<union> (reject m A p) \<union> (defer m A p) = A"
-proof -
-  from e_mod f_prof have "set_equals_partition A (m A p)"
-    using electoral_module_def well_formed.simps
-    by blast
-  hence "set_equals_partition A (elect m A p, reject m A p, defer m A p)"
+proof (safe)
+  fix
+    x :: "'a"
+  assume
+    asm: "x \<in> elect m A p"
+  have partit:
+    "\<forall>A p.
+      \<not> set_equals_partition (A::'a set) p \<or>
+        (\<exists>B C D E. A = B \<and> p = (C, D, E) \<and> C \<union> D \<union> E = B)"
     by simp
-  thus ?thesis
-    using set_equals_partition.simps
+  from e_mod f_prof have set_partit:
+    "set_equals_partition A (m A p)"
+    using electoral_module_def
+    by auto
+  thus "x \<in> A"
+    using UnI1 asm fstI set_partit partit
+    by (metis (no_types))
+next
+  fix
+    x :: "'a"
+  assume
+    asm: "x \<in> reject m A p"
+  have partit:
+    "\<forall>A p.
+      \<not> set_equals_partition (A::'a set) p \<or>
+        (\<exists>B C D E. A = B \<and> p = (C, D, E) \<and> C \<union> D \<union> E = B)"
+    by simp
+  from e_mod f_prof have set_partit:
+    "set_equals_partition A (m A p)"
+    using electoral_module_def
+    by auto
+  thus "x \<in> A"
+    using UnI1 asm fstI set_partit partit
+          sndI subsetD sup_ge2
+    by metis
+next
+  fix
+    x :: "'a"
+  assume
+    asm: "x \<in> defer m A p"
+  have partit:
+    "\<forall>A p.
+      \<not> set_equals_partition (A::'a set) p \<or>
+        (\<exists>B C D E. A = B \<and> p = (C, D, E) \<and> C \<union> D \<union> E = B)"
+    by simp
+  from e_mod f_prof have set_partit:
+    "set_equals_partition A (m A p)"
+    using electoral_module_def
+    by auto
+  thus "x \<in> A"
+    using asm set_partit partit sndI subsetD sup_ge2
+    by metis
+next
+  fix
+    x :: "'a"
+  assume
+    asm1: "x \<in> A" and
+    asm2: "x \<notin> defer m A p" and
+    asm3: "x \<notin> reject m A p"
+  have partit:
+    "\<forall>A p.
+      \<not> set_equals_partition (A::'a set) p \<or>
+        (\<exists>B C D E. A = B \<and> p = (C, D, E) \<and> C \<union> D \<union> E = B)"
+    by simp
+  from e_mod f_prof have set_partit:
+    "set_equals_partition A (m A p)"
+    using electoral_module_def
+    by auto
+  show "x \<in> elect m A p"
+    using asm1 asm2 asm3 fst_conv partit
+          set_partit snd_conv Un_iff
     by metis
 qed
 
@@ -551,9 +708,115 @@ lemma result_disj:
     "(elect m A p) \<inter> (reject m A p) = {} \<and>
         (elect m A p) \<inter> (defer m A p) = {} \<and>
         (reject m A p) \<inter> (defer m A p) = {}"
-  using disjoint3.simps electoral_module_def module
-        well_formed.simps prod.exhaust_sel profile
-  by metis
+proof (safe, simp_all)
+  fix
+    x :: "'a"
+  assume
+    asm1: "x \<in> elect m A p" and
+    asm2: "x \<in> reject m A p"
+  have partit:
+    "\<forall>A p.
+      \<not> set_equals_partition (A::'a set) p \<or>
+        (\<exists>B C D E. A = B \<and> p = (C, D, E) \<and> C \<union> D \<union> E = B)"
+    by simp
+  from module profile have set_partit:
+    "set_equals_partition A (m A p)"
+    using electoral_module_def
+    by auto
+  from profile have prof_p:
+    "finite A \<and> profile A p"
+    by simp
+  from module prof_p have wf_A_m:
+    "well_formed A (m A p)"
+    using electoral_module_def
+    by metis
+  show "False"
+    using prod.exhaust_sel DiffE UnCI asm1 asm2
+          module profile result_imp_rej wf_A_m
+          prof_p set_partit partit
+    by (metis (no_types))
+next
+  fix
+    x :: "'a"
+  assume
+    asm1: "x \<in> elect m A p" and
+    asm2: "x \<in> defer m A p"
+  have partit:
+    "\<forall>A p.
+      \<not> set_equals_partition (A::'a set) p \<or>
+        (\<exists>B C D E. A = B \<and> p = (C, D, E) \<and> C \<union> D \<union> E = B)"
+    by simp
+  have disj:
+    "\<forall>p. \<not> disjoint3 p \<or>
+      (\<exists>B C D. p = (B::'a set, C, D) \<and>
+        B \<inter> C = {} \<and> B \<inter> D = {} \<and> C \<inter> D = {})"
+    by simp
+  from profile have prof_p:
+    "finite A \<and> profile A p"
+    by simp
+  from module prof_p have wf_A_m:
+    "well_formed A (m A p)"
+    using electoral_module_def
+    by metis
+  hence wf_A_m_0:
+    "disjoint3 (m A p) \<and> set_equals_partition A (m A p)"
+    by simp
+  hence disj3:
+    "disjoint3 (m A p)"
+    by simp
+  have set_partit:
+    "set_equals_partition A (m A p)"
+    using wf_A_m_0
+    by simp
+  from disj3 obtain
+    AA :: "'a set \<times> 'a set \<times> 'a set \<Rightarrow> 'a set" and
+    AAa :: "'a set \<times> 'a set \<times> 'a set \<Rightarrow> 'a set" and
+    AAb :: "'a set \<times> 'a set \<times> 'a set \<Rightarrow> 'a set"
+    where
+    "m A p =
+      (AA (m A p), AAa (m A p), AAb (m A p)) \<and>
+        AA (m A p) \<inter> AAa (m A p) = {} \<and>
+        AA (m A p) \<inter> AAb (m A p) = {} \<and>
+        AAa (m A p) \<inter> AAb (m A p) = {}"
+    using asm1 asm2 disj
+    by metis
+  hence "((elect m A p) \<inter> (reject m A p) = {}) \<and>
+          ((elect m A p) \<inter> (defer m A p) = {}) \<and>
+          ((reject m A p) \<inter> (defer m A p) = {})"
+    using disj3 eq_snd_iff fstI
+    by metis
+  thus "False"
+    using asm1 asm2 module profile wf_A_m prof_p
+          set_partit partit disjoint_iff_not_equal
+    by (metis (no_types))
+next
+  fix
+    x :: "'a"
+  assume
+    asm1: "x \<in> reject m A p" and
+    asm2: "x \<in> defer m A p"
+  have partit:
+    "\<forall>A p.
+      \<not> set_equals_partition (A::'a set) p \<or>
+        (\<exists>B C D E. A = B \<and> p = (C, D, E) \<and> C \<union> D \<union> E = B)"
+    by simp
+  from module profile have set_partit:
+    "set_equals_partition A (m A p)"
+    using electoral_module_def
+    by auto
+  from profile have prof_p:
+    "finite A \<and> profile A p"
+    by simp
+  from module prof_p have wf_A_m:
+    "well_formed A (m A p)"
+    using electoral_module_def
+    by metis
+  show "False"
+    using prod.exhaust_sel DiffE UnCI asm1 asm2
+          module profile result_imp_rej wf_A_m
+          prof_p set_partit partit
+    by (metis (no_types))
+qed
 
 lemma elect_in_alts:
   assumes 
@@ -609,10 +872,18 @@ lemma result_count:
     "well_formed A (e, r, d)" and
     "finite A"
   shows "card A = card e + card r + card d"
-  using well_formed.simps set_equals_partition.simps
-        Int_Un_distrib2 assms card_Un_disjoint
-        disjoint3.simps finite_Un sup_bot.right_neutral
-  by metis
+proof -
+  from assms(1) have disj:
+    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {})"
+    by simp
+  from assms(1) have set_partit:
+    "e \<union> r \<union> d = A"
+    by simp
+  show ?thesis
+    using assms disj set_partit Int_Un_distrib2 finite_Un
+          card_Un_disjoint sup_bot.right_neutral
+    by metis
+qed
 
 lemma reject_not_elec_or_def:
   assumes
@@ -643,9 +914,12 @@ lemma elec_and_def_not_rej:
 proof -
   from e_mod f_prof have 0: "well_formed A (m A p)"
     by (simp add: electoral_module_def)
+  hence
+    "disjoint3 (m A p) \<and> set_equals_partition A (m A p)"
+    by simp
   with e_mod f_prof
   have "(elect m A p) \<union> (reject m A p) \<union> (defer m A p) = A"
-    using e_mod well_formed.simps f_prof result_presv_alts
+    using e_mod f_prof result_presv_alts
     by blast
   moreover from 0 have
     "(elect m A p) \<inter> (reject m A p) = {} \<and>
@@ -764,30 +1038,36 @@ lemma eq_def_and_elect_imp_eq:
     "defer m A p = defer n A q"
   shows "m A p = n A q"
 proof -
-  have "set_equals_partition A ((elect m A p),(reject m A p),(defer m A p))"
-    using assms(1) assms(3) result_presv_alts set_equals_partition.simps
-    by (metis (mono_tags, hide_lams))
+  have disj_m:
+    "disjoint3 (m A p)"
+    using assms(1) assms(3) electoral_module_def
+    by auto
+  have disj_n:
+    "disjoint3 (n A q)"
+    using assms(2) assms(4) electoral_module_def
+    by auto
+  have set_partit_m:
+    "set_equals_partition A ((elect m A p), (reject m A p), (defer m A p))"
+    using assms(1) assms(3) electoral_module_def
+    by auto
   moreover have
     "disjoint3 ((elect m A p),(reject m A p),(defer m A p))"
-    using assms(1) assms(3) electoral_module_def
-          well_formed.simps prod.collapse
+    using disj_m prod.collapse
     by metis
-  ultimately have reject_p:
+  have set_partit_n:
+    "set_equals_partition A ((elect n A q), (reject n A q), (defer n A q))"
+    using assms(2) assms(4) electoral_module_def
+    by auto
+  moreover have
+    "disjoint3 ((elect n A q),(reject n A q),(defer n A q))"
+    using disj_n prod.collapse
+    by metis
+  have reject_p:
     "reject m A p = A - ((elect m A p) \<union> (defer m A p))"
     using assms(1) assms(3) combine_ele_rej_def
           electoral_module_def result_imp_rej
     by metis
-  have
-    "set_equals_partition A
-      ((elect n A q),(reject n A q),(defer n A q))"
-    using assms(2) assms(4) result_presv_alts set_equals_partition.simps
-    by (metis (mono_tags, hide_lams))
-  moreover have
-    "disjoint3 ((elect n A q),(reject n A q),(defer n A q))"
-    using assms(2) assms(4) electoral_module_def
-          well_formed.simps prod.collapse
-    by metis
-  ultimately have reject_q:
+  have reject_q:
     "reject n A q = A - ((elect n A q) \<union> (defer n A q))"
     using assms(2) assms(4) combine_ele_rej_def
           electoral_module_def result_imp_rej
@@ -834,7 +1114,7 @@ proof -
     "\<forall>i::nat. i < size p \<longrightarrow>
       Preference_Relation.equiv_rel_except_a A (p!i) (q!i) a"
   proof
-    fix i::nat
+    fix i :: nat
     show
       "i < size p \<longrightarrow>
         Preference_Relation.equiv_rel_except_a A (p!i) (q!i) a"
@@ -868,11 +1148,12 @@ proof -
   hence "\<forall>i::nat. i < size p \<longrightarrow> limit A (p!i) = limit A (q!i)"
     using notInA negl_diff_imp_eq_limit subset
     by metis
-  thus ?thesis
+  hence "map (limit A) p = map (limit A) q"
     using change equiv_prof_except_a_def
-          length_map limit_profile.simps
-          nth_equalityI nth_map
+          length_map nth_equalityI nth_map
     by (metis (mono_tags, lifting))
+  thus ?thesis
+    by simp
 qed
 
 lemma limit_prof_eq_or_lifted:
@@ -1121,17 +1402,21 @@ lemma ccomp_and_dd_imp_def_only_winner:
   shows "defer m A p = {w}"
 proof (rule ccontr)
   assume not_w: "defer m A p \<noteq> {w}"
-  from dd have "defers 1 m"
+  from dd have def_1:
+    "defers 1 m"
     using defer_deciding_def
     by metis
+  hence c_win:
+    "finite_profile A p \<and>  w \<in> A \<and> (\<forall>x \<in> A - {w} . wins w p x)"
+    using winner
+    by simp
   hence "card (defer m A p) = 1"
-    using One_nat_def Suc_leI card_gt_0_iff condorcet_winner.simps
-          defers_def equals0D winner
+    using One_nat_def Suc_leI card_gt_0_iff
+          def_1 defers_def equals0D
     by metis
   hence 0: "\<exists>x \<in> A . defer m A p ={x}"
-    using card_1_singletonE condorcet_winner.simps dd
-          defer_deciding_def defer_in_alts insert_subset
-          winner
+    using card_1_singletonE dd defer_deciding_def
+          defer_in_alts insert_subset c_win
     by metis
   with not_w have "\<exists>l \<in> A . l \<noteq> w \<and> defer m A p = {l}"
     by metis
@@ -1141,14 +1426,15 @@ proof (rule ccontr)
     using dd defer_deciding_def
     by metis
   hence not_in_elect: "w \<notin> elect m A p"
-    using condorcet_winner.simps equals0D non_electing_def winner
+    using c_win equals0D non_electing_def
     by metis
-  from not_in_defer not_in_elect have one_side: "w \<in> reject m A p"
-    using ccomp condorcet_compatibility_def condorcet_winner.simps
-          electoral_mod_defer_elem winner
+  from not_in_defer not_in_elect have one_side:
+    "w \<in> reject m A p"
+    using ccomp condorcet_compatibility_def c_win
+          electoral_mod_defer_elem
     by metis
   from ccomp have other_side: "w \<notin> reject m A p"
-    using condorcet_compatibility_def condorcet_winner.simps winner
+    using condorcet_compatibility_def c_win winner
     by (metis (no_types, hide_lams))
   thus False
     by (simp add: one_side)
@@ -1175,9 +1461,7 @@ next
           card {i. i < length p \<and> (w, x) \<in> (p!i)} <
             card {i. i < length p \<and> (x, w) \<in> (p!i)}"
   have winner: "condorcet_winner A p w"
-    using prefer_count.simps wins.elims
-          condorcet_winner.simps assm
-          finiteness prof_A w_in_A
+    using assm finiteness prof_A w_in_A
     by simp
   hence
     "m A p =
@@ -1186,19 +1470,20 @@ next
         {d \<in> A. condorcet_winner A p d})"
   proof -
     (*Elect*)
-    from dd have 0: "elect m A p = {}"
-      using condorcet_winner.simps defer_deciding_def
-            non_electing_def winner
-      by metis
+    from dd have 0:
+      "elect m A p = {}"
+      using defer_deciding_def non_electing_def
+            winner
+      by fastforce
     (*Defers*)
     from dd ccomp have 1: "defer m A p = {w}"
       using ccomp_and_dd_imp_def_only_winner winner
       by simp
     (*Reject*)
     from 0 1 have 2: "reject m A p = A - defer m A p"
-      using Diff_empty condorcet_winner.simps dd defer_deciding_def
+      using Diff_empty dd defer_deciding_def
             reject_not_elec_or_def winner
-      by metis
+      by fastforce
     from 0 1 2 have 3: "m A p = ({}, A - defer m A p, {w})"
       using combine_ele_rej_def
       by metis
@@ -1215,7 +1500,6 @@ next
         A - defer m A p,
         {d \<in> A. \<forall>x\<in>A - {d}. wins d p x})"
     using finiteness prof_A winner Collect_cong
-          condorcet_winner.elims
     by auto
   hence
     "m A p =
@@ -1223,7 +1507,6 @@ next
           A - defer m A p,
           {d \<in> A. \<forall>x\<in>A - {d}.
             prefer_count p x d < prefer_count p d x})"
-    using wins.simps
     by simp
   hence
     "m A p =
@@ -1256,7 +1539,8 @@ proof -
           (\<forall>a \<in> S-A. indep_of_alt m S a \<and>
             (\<forall>p. finite_profile S p \<longrightarrow> a \<in> reject m S p)))"
   proof
-    fix S
+    fix
+      S :: "'a set"
     obtain A where old_A:
       "finite S \<longrightarrow>
           (A \<subseteq> S \<and>
@@ -1377,8 +1661,7 @@ next
             card {i. i < length p \<and> (x, w) \<in> (p!i)}) \<longrightarrow>
        m A p = ({w}, A - elect m A p, {}) \<Longrightarrow>
           condorcet_consistency m"
-    using wins.elims prefer_count.simps assm0 e_mod
-          condorcet_winner.elims(2)
+    using assm0 e_mod
     by simp
 qed
 

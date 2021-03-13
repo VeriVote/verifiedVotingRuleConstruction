@@ -24,7 +24,8 @@ fun condorcet_rule_code :: "'a Electoral_Module" where
   "condorcet_rule_code A p = elector condorcet_code A p"
 
 fun condorcet' :: "'a Electoral_Module" where
-"condorcet' A p = iter (min_eliminator condorcet_score) A p"
+"condorcet' A p =
+  ((min_eliminator condorcet_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
 
 fun condorcet_rule' :: "'a Electoral_Module" where
 "condorcet_rule' A p = iterelect condorcet' A p"

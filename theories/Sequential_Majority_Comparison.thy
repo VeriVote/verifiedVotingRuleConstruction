@@ -61,7 +61,7 @@ proof -
   let ?plurality_defer = "(plurality\<down>) \<triangleright> ?tie_breaker"
   let ?compare_two = "?pass2 \<triangleright> ?plurality_defer"
   let ?drop2 = "drop_module 2 x"
-  let ?eliminator = "maximum_parallel_composition ?compare_two ?drop2"
+  let ?eliminator = "?compare_two \<parallel>\<^sub>\<up> ?drop2"
   let ?loop =
     "let t = defer_equal_condition 1 in (?eliminator \<circlearrowleft>\<^sub>t)"
 
@@ -146,7 +146,7 @@ proof -
   let ?plurality_defer = "(plurality\<down>) \<triangleright> ?tie_breaker"
   let ?compare_two = "?pass2 \<triangleright> ?plurality_defer"
   let ?drop2 = "drop_module 2 x"
-  let ?eliminator = "maximum_parallel_composition ?compare_two ?drop2"
+  let ?eliminator = "?compare_two \<parallel>\<^sub>\<up> ?drop2"
   let ?loop =
     "let t = defer_equal_condition 1 in (?eliminator \<circlearrowleft>\<^sub>t)"
 
@@ -242,7 +242,7 @@ proof -
           maximum_parallel_composition.simps
           smc_sound smc.simps assms
           seq_comp_mono
-    by (smt (verit))
+    by (smt (verit, del_insts))
 qed
 
 end

@@ -28,13 +28,17 @@ fun maximum_parallel_composition :: "'a Electoral_Module \<Rightarrow>
   "maximum_parallel_composition m n =
     (let a = max_aggregator in (m \<parallel>\<^sub>a n))"
 
+abbreviation max_parallel :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module \<Rightarrow>
+        'a Electoral_Module" (infix "\<parallel>\<^sub>\<up>" 50) where
+  "m \<parallel>\<^sub>\<up> n == maximum_parallel_composition m n"
+
 subsection \<open>Soundness\<close>
 
 theorem max_par_comp_sound:
   assumes
     mod_m: "electoral_module m" and
     mod_n: "electoral_module n"
-  shows "electoral_module (maximum_parallel_composition m n)"
+  shows "electoral_module (m \<parallel>\<^sub>\<up> n)"
   using mod_m mod_n
   by simp
 
@@ -47,10 +51,10 @@ lemma max_agg_eq_result:
     f_prof: "finite_profile A p" and
     in_A: "x \<in> A"
   shows
-    "mod_contains_result (maximum_parallel_composition m n) m A p x \<or> 
-      mod_contains_result (maximum_parallel_composition m n) n A p x"
+    "mod_contains_result (m \<parallel>\<^sub>\<up> n) m A p x \<or>
+      mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p x"
 proof cases
-  assume a1: "x \<in> elect (maximum_parallel_composition m n) A p"
+  assume a1: "x \<in> elect (m \<parallel>\<^sub>\<up> n) A p"
   hence
     "let (e1, r1, d1) = m A p;
         (e2, r2, d2) = n A p in
@@ -64,10 +68,10 @@ proof cases
           f_prof result_disj maximum_parallel_composition.simps
     by (smt (verit, ccfv_threshold))
 next
-  assume not_a1: "x \<notin> elect (maximum_parallel_composition m n) A p"
+  assume not_a1: "x \<notin> elect (m \<parallel>\<^sub>\<up> n) A p"
   thus ?thesis
   proof cases
-    assume a2: "x \<in> defer (maximum_parallel_composition m n) A p"
+    assume a2: "x \<in> defer (m \<parallel>\<^sub>\<up> n) A p"
     thus ?thesis
       using CollectD DiffD1 DiffD2 max_aggregator.simps Un_iff 
             case_prod_conv defer_not_elec_or_rej max_agg_sound
@@ -77,9 +81,9 @@ next
             max_agg_rej_set prod.sel(1) maximum_parallel_composition.simps
       by (smt (verit, del_insts))
   next
-    assume not_a2: "x \<notin> defer (maximum_parallel_composition m n) A p"
+    assume not_a2: "x \<notin> defer (m \<parallel>\<^sub>\<up> n) A p"
     with not_a1 have a3:
-      "x \<in> reject (maximum_parallel_composition m n) A p"
+      "x \<in> reject (m \<parallel>\<^sub>\<up> n) A p"
       using electoral_mod_defer_elem in_A max_agg_sound module_m module_n
             par_comp_sound f_prof maximum_parallel_composition.simps
       by metis
@@ -113,14 +117,14 @@ lemma max_agg_rej_iff_both_reject:
     module_m: "electoral_module m" and
     module_n: "electoral_module n"
   shows
-    "x \<in> reject (maximum_parallel_composition m n) A p \<longleftrightarrow>
+    "x \<in> reject (m \<parallel>\<^sub>\<up> n) A p \<longleftrightarrow>
       (x \<in> reject m A p \<and> x \<in> reject n A p)"
 proof -
   have
-    "x \<in> reject (maximum_parallel_composition m n) A p \<longrightarrow>
+    "x \<in> reject (m \<parallel>\<^sub>\<up> n) A p \<longrightarrow>
       (x \<in> reject m A p \<and> x \<in> reject n A p)"
   proof
-    assume a: "x \<in> reject (maximum_parallel_composition m n) A p"
+    assume a: "x \<in> reject (m \<parallel>\<^sub>\<up> n) A p"
     hence
       "let (e1, r1, d1) = m A p;
           (e2, r2, d2) = n A p in
@@ -141,7 +145,7 @@ proof -
   qed
   moreover have
     "(x \<in> reject m A p \<and> x \<in> reject n A p) \<longrightarrow>
-        x \<in> reject (maximum_parallel_composition m n) A p"
+        x \<in> reject (m \<parallel>\<^sub>\<up> n) A p"
   proof
     assume a: "x \<in> reject m A p \<and> x \<in> reject n A p"
     hence
@@ -149,7 +153,7 @@ proof -
         x \<notin> elect n A p \<and> x \<notin> defer n A p"
       using IntI empty_iff module_m module_n f_prof result_disj
       by metis
-    thus "x \<in> reject (maximum_parallel_composition m n) A p"
+    thus "x \<in> reject (m \<parallel>\<^sub>\<up> n) A p"
       using CollectD DiffD1 max_aggregator.simps Un_iff a
             electoral_mod_defer_elem prod.simps max_agg_sound
             module_m module_n f_prof old.prod.inject par_comp_sound
@@ -168,7 +172,7 @@ lemma max_agg_rej1:
     module_n: "electoral_module n" and
     rejected: "x \<in> reject n A p"
   shows
-    "mod_contains_result m (maximum_parallel_composition m n) A p x"
+    "mod_contains_result m (m \<parallel>\<^sub>\<up> n) A p x"
   using Set.set_insert contra_subsetD disjoint_insert
         mod_contains_result_comm mod_contains_result_def
         max_agg_eq_result max_agg_rej_iff_both_reject
@@ -183,7 +187,7 @@ lemma max_agg_rej2:
     module_n: "electoral_module n" and
     rejected: "x \<in> reject n A p"
   shows
-    "mod_contains_result (maximum_parallel_composition m n) m A p x"
+    "mod_contains_result (m \<parallel>\<^sub>\<up> n) m A p x"
   using mod_contains_result_comm max_agg_rej1
         module_m module_n f_prof rejected
   by metis
@@ -195,7 +199,7 @@ lemma max_agg_rej3:
     module_n: "electoral_module n" and
     rejected: "x \<in> reject m A p"
   shows
-    "mod_contains_result n (maximum_parallel_composition m n) A p x"
+    "mod_contains_result n (m \<parallel>\<^sub>\<up> n) A p x"
   using contra_subsetD disjoint_iff_not_equal result_disj
         mod_contains_result_comm mod_contains_result_def
         max_agg_eq_result max_agg_rej_iff_both_reject
@@ -209,7 +213,7 @@ lemma max_agg_rej4:
     module_n: "electoral_module n" and
     rejected: "x \<in> reject m A p"
   shows
-    "mod_contains_result (maximum_parallel_composition m n) n A p x"
+    "mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p x"
   using mod_contains_result_comm max_agg_rej3
         module_m module_n f_prof rejected
   by metis
@@ -220,7 +224,7 @@ lemma max_agg_rej_intersect:
     module_n: "electoral_module n" and
     f_prof: "finite_profile A p"
   shows
-    "reject (maximum_parallel_composition m n) A p =
+    "reject (m \<parallel>\<^sub>\<up> n) A p =
       (reject m A p) \<inter> (reject n A p)"
 proof -
   have
@@ -251,9 +255,9 @@ lemma dcompat_dec_by_one_mod:
     in_A: "x \<in> A"
   shows
     "(\<forall>p. finite_profile A p \<longrightarrow>
-          mod_contains_result m (maximum_parallel_composition m n) A p x) \<or>
+          mod_contains_result m (m \<parallel>\<^sub>\<up> n) A p x) \<or>
         (\<forall>p. finite_profile A p \<longrightarrow>
-          mod_contains_result n (maximum_parallel_composition m n) A p x)"
+          mod_contains_result n (m \<parallel>\<^sub>\<up> n) A p x)"
   using DiffI compatible disjoint_compatibility_def
         in_A max_agg_rej1 max_agg_rej3
   by metis
@@ -268,7 +272,7 @@ theorem conserv_max_agg_presv_non_electing[simp]:
   assumes
     non_electing_m: "non_electing m" and
     non_electing_n: "non_electing n"
-  shows "non_electing (maximum_parallel_composition m n)"
+  shows "non_electing (m \<parallel>\<^sub>\<up> n)"
   using non_electing_m non_electing_n
   by simp
 
@@ -281,49 +285,44 @@ theorem par_comp_def_lift_inv[simp]:
     compatible: "disjoint_compatibility m n" and
     monotone_m: "defer_lift_invariance m" and
     monotone_n: "defer_lift_invariance n"
-  shows "defer_lift_invariance (maximum_parallel_composition m n)"
+  shows "defer_lift_invariance (m \<parallel>\<^sub>\<up> n)"
 proof -
   have
     "\<forall>S p q x.
-      (x \<in> (defer (maximum_parallel_composition m n) S p) \<and>
+      (x \<in> (defer (m \<parallel>\<^sub>\<up> n) S p) \<and>
           lifted S p q x) \<longrightarrow>
-        (maximum_parallel_composition m n) S p =
-          (maximum_parallel_composition m n) S q"
+        (m \<parallel>\<^sub>\<up> n) S p = (m \<parallel>\<^sub>\<up> n) S q"
   proof
-    fix S :: "'a set"
+    fix
+      S :: "'a set"
     show
       "\<forall>p q x.
-        (x \<in> (defer (maximum_parallel_composition m n) S p) \<and>
+        (x \<in> (defer (m \<parallel>\<^sub>\<up> n) S p) \<and>
             lifted S p q x) \<longrightarrow>
-          (maximum_parallel_composition m n) S p =
-            (maximum_parallel_composition m n) S q"
+          (m \<parallel>\<^sub>\<up> n) S p = (m \<parallel>\<^sub>\<up> n) S q"
     proof
-      fix p :: "'a Profile"
+      fix
+        p :: "'a Profile"
       show
         "\<forall>q x.
-          (x \<in> (defer (maximum_parallel_composition m n) S p) \<and>
-              lifted S p q x) \<longrightarrow>
-            (maximum_parallel_composition m n) S p =
-              (maximum_parallel_composition m n) S q"
+          (x \<in> (defer (m \<parallel>\<^sub>\<up> n) S p) \<and> lifted S p q x) \<longrightarrow>
+            (m \<parallel>\<^sub>\<up> n) S p = (m \<parallel>\<^sub>\<up> n) S q"
       proof
-        fix q :: "'a Profile"
+        fix
+          q :: "'a Profile"
         show
           "\<forall> x.
-            (x \<in> (defer (maximum_parallel_composition m n) S p) \<and>
-                lifted S p q x) \<longrightarrow>
-              (maximum_parallel_composition m n) S p =
-                (maximum_parallel_composition m n) S q"
+            (x \<in> (defer (m \<parallel>\<^sub>\<up> n) S p) \<and> lifted S p q x) \<longrightarrow>
+              (m \<parallel>\<^sub>\<up> n) S p = (m \<parallel>\<^sub>\<up> n) S q"
         proof
-          fix x :: "'a"
+          fix
+            x :: "'a"
           show
-            "(x \<in> (defer (maximum_parallel_composition m n) S p) \<and>
-                lifted S p q x) \<longrightarrow>
-              (maximum_parallel_composition m n) S p =
-                (maximum_parallel_composition m n) S q"
+            "(x \<in> (defer (m \<parallel>\<^sub>\<up> n) S p) \<and> lifted S p q x) \<longrightarrow>
+              (m \<parallel>\<^sub>\<up> n) S p = (m \<parallel>\<^sub>\<up> n) S q"
           proof
             assume a:
-              "x \<in> (defer (maximum_parallel_composition m n) S p) \<and>
-                lifted S p q x"
+              "x \<in> (defer (m \<parallel>\<^sub>\<up> n) S p) \<and> lifted S p q x"
             hence f_profs: "finite_profile S p \<and> finite_profile S q"
               by (simp add: lifted_def)
             from compatible obtain A::"'a set" where A:
@@ -336,7 +335,7 @@ proof -
             have
               "\<forall>x \<in> S.
                 prof_contains_result
-                  (maximum_parallel_composition m n) S p q x"
+                  (m \<parallel>\<^sub>\<up> n) S p q x"
             proof cases
               assume a0: "x \<in> A"
               hence "x \<in> reject m S p"
@@ -348,8 +347,7 @@ proof -
                 by metis
               have
                 "\<forall>x \<in> A.
-                  mod_contains_result
-                    (maximum_parallel_composition m n) n S p x"
+                  mod_contains_result (m \<parallel>\<^sub>\<up> n) n S p x"
                 using A compatible disjoint_compatibility_def
                       max_agg_rej4 f_profs
                 by metis
@@ -359,20 +357,17 @@ proof -
                 by (smt (verit, del_insts))
               moreover have
                 "\<forall>x \<in> A.
-                  mod_contains_result n
-                    (maximum_parallel_composition m n) S q x"
+                  mod_contains_result n (m \<parallel>\<^sub>\<up> n) S q x"
                 using A compatible disjoint_compatibility_def
                       max_agg_rej3 f_profs
                 by metis
               ultimately have 00:
                 "\<forall>x \<in> A.
-                  prof_contains_result
-                    (maximum_parallel_composition m n) S p q x"
+                  prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
                 by (simp add: mod_contains_result_def prof_contains_result_def)
               have
                 "\<forall>x \<in> S-A.
-                  mod_contains_result
-                    (maximum_parallel_composition m n) m S p x"
+                  mod_contains_result (m \<parallel>\<^sub>\<up> n) m S p x"
                 using A max_agg_rej2 monotone_m monotone_n f_profs
                       defer_lift_invariance_def
                 by metis
@@ -383,15 +378,13 @@ proof -
                 by (smt (verit, ccfv_threshold))
               moreover have
                 "\<forall>x \<in> S-A.
-                  mod_contains_result m
-                    (maximum_parallel_composition m n) S q x"
+                  mod_contains_result m (m \<parallel>\<^sub>\<up> n) S q x"
                 using A max_agg_rej1 monotone_m monotone_n f_profs
                       defer_lift_invariance_def
                 by metis
               ultimately have 01:
                 "\<forall>x \<in> S-A.
-                  prof_contains_result
-                    (maximum_parallel_composition m n) S p q x"
+                  prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
                 by (simp add: mod_contains_result_def prof_contains_result_def)
               from 00 01
               show ?thesis
@@ -414,8 +407,7 @@ proof -
                 by metis
               have
                 "\<forall>x \<in> A.
-                  mod_contains_result
-                    (maximum_parallel_composition m n) n S p x"
+                  mod_contains_result (m \<parallel>\<^sub>\<up> n) n S p x"
                 using A compatible disjoint_compatibility_def
                       max_agg_rej4 f_profs
                 by metis
@@ -427,19 +419,17 @@ proof -
               moreover have
                 "\<forall>x \<in> A.
                   mod_contains_result n
-                    (maximum_parallel_composition m n) S q x"
+                    (m \<parallel>\<^sub>\<up> n) S q x"
                 using A compatible disjoint_compatibility_def
                       max_agg_rej3 f_profs
                 by metis
               ultimately have 10:
                 "\<forall>x \<in> A.
-                  prof_contains_result
-                    (maximum_parallel_composition m n) S p q x"
+                  prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
                 by (simp add: mod_contains_result_def prof_contains_result_def)
               have
                 "\<forall>x \<in> S-A.
-                  mod_contains_result
-                    (maximum_parallel_composition m n) m S p x"
+                  mod_contains_result (m \<parallel>\<^sub>\<up> n) m S p x"
                 using A max_agg_rej2 monotone_m monotone_n
                       f_profs defer_lift_invariance_def
                 by metis
@@ -449,15 +439,13 @@ proof -
                 by (smt (verit, ccfv_threshold))
               moreover have
                 "\<forall>x \<in> S-A.
-                  mod_contains_result m
-                    (maximum_parallel_composition m n) S q x"
+                  mod_contains_result m (m \<parallel>\<^sub>\<up> n) S q x"
                 using A max_agg_rej1 monotone_m monotone_n
                       f_profs defer_lift_invariance_def
                 by metis
               ultimately have 11:
                 "\<forall>x \<in> S-A.
-                  prof_contains_result
-                    (maximum_parallel_composition m n) S p q x"
+                  prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
                 by (simp add: electoral_mod_defer_elem
                     mod_contains_result_def prof_contains_result_def)
               from 10 11
@@ -465,8 +453,7 @@ proof -
                 by blast
             qed
             thus
-              "(maximum_parallel_composition m n) S p =
-                (maximum_parallel_composition m n) S q"
+              "(m \<parallel>\<^sub>\<up> n) S p = (m \<parallel>\<^sub>\<up> n) S q"
               using compatible disjoint_compatibility_def f_profs
                     eq_alts_in_profs_imp_eq_results max_par_comp_sound
               by metis
@@ -486,7 +473,7 @@ lemma par_comp_rej_card:
     compatible: "disjoint_compatibility x y" and
     f_prof: "finite_profile S p" and
     reject_sum: "card (reject x S p) + card (reject y S p) = card S + n"
-  shows "card (reject (maximum_parallel_composition x y) S p) = n"
+  shows "card (reject (x \<parallel>\<^sub>\<up> y) S p) = n"
 proof -
   from compatible obtain A where A:
     "A \<subseteq> S \<and>
@@ -498,8 +485,7 @@ proof -
     by metis
   from f_prof compatible
   have reject_representation:
-    "reject (maximum_parallel_composition x y) S p =
-      (reject x S p) \<inter> (reject y S p)"
+    "reject (x \<parallel>\<^sub>\<up> y) S p = (reject x S p) \<inter> (reject y S p)"
     using max_agg_rej_intersect disjoint_compatibility_def
     by blast
   have "electoral_module x \<and> electoral_module y"
@@ -511,7 +497,7 @@ proof -
     using rev_finite_subset f_prof reject_in_alts
     by auto
   hence 0:
-    "card (reject (maximum_parallel_composition x y) S p) =
+    "card (reject (x \<parallel>\<^sub>\<up> y) S p) =
         card S + n -
           card ((reject x S p) \<union> (reject y S p))"
     using card_Un_Int reject_representation reject_sum
@@ -524,8 +510,7 @@ proof -
           sup.cobounded1 sup_left_commute
     by (smt (verit, best))
   from 0 1
-  show
-    "card (reject (maximum_parallel_composition x y) S p) = n"
+  show "card (reject (x \<parallel>\<^sub>\<up> y) S p) = n"
     by simp
 qed
 
@@ -541,21 +526,23 @@ theorem par_comp_elim_one[simp]:
     "non_electing m" and
     "rejects 2 n" and
     "disjoint_compatibility m n"
-  shows "eliminates 1 (maximum_parallel_composition m n)"
+  shows "eliminates 1 (m \<parallel>\<^sub>\<up> n)"
 proof -
   have
     "\<forall>A p. (card A > 1 \<and> finite_profile A p) \<longrightarrow>
-        card (reject (maximum_parallel_composition m n) A p) = 1"
+        card (reject (m \<parallel>\<^sub>\<up> n) A p) = 1"
   proof
-    fix A
+    fix
+      A :: "'a set"
     show
       "\<forall>p. (card A > 1 \<and> finite_profile A p) \<longrightarrow>
-          card (reject (maximum_parallel_composition m n) A p) = 1"
+          card (reject (m \<parallel>\<^sub>\<up> n) A p) = 1"
     proof
-      fix p
+      fix
+        p :: "'a Profile"
       show
         "(card A > 1 \<and> finite_profile A p) \<longrightarrow>
-            card (reject (maximum_parallel_composition m n) A p) = 1"
+            card (reject (m \<parallel>\<^sub>\<up> n) A p) = 1"
       proof
         assume asm0: "card A > 1 \<and> finite_profile A p"
         have card_geq_1: "card A \<ge> 1"
@@ -607,16 +594,14 @@ proof -
           by linarith
         with assms(4) asm0 card_reject_m card_reject_n
         show
-          "card
-            (reject
-              (maximum_parallel_composition m n) A p) = 1"
+          "card (reject (m \<parallel>\<^sub>\<up> n) A p) = 1"
           using par_comp_rej_card
           by blast
       qed
     qed
   qed
   moreover have
-    "electoral_module (maximum_parallel_composition m n)"
+    "electoral_module (m \<parallel>\<^sub>\<up> n)"
     using assms(4) disjoint_compatibility_def max_par_comp_sound
     by metis
   ultimately show ?thesis

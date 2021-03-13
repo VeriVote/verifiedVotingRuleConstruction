@@ -83,12 +83,14 @@ proof -
   have "\<forall>A p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow>
           reject (pass_module n r) A p \<noteq> A"
   proof
-    fix A
+    fix
+      A :: "'a set"
     show
       "\<forall>p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow>
           reject (pass_module n r) A p \<noteq> A"
     proof
-      fix p
+      fix
+        p :: "'a Profile"
       show
         "(A \<noteq> {} \<and> finite_profile A p) \<longrightarrow>
           reject (pass_module n r) A p \<noteq> A"
@@ -146,17 +148,20 @@ proof -
   have "\<forall>A p. (card A \<ge> 1 \<and> finite_profile A p) \<longrightarrow>
           card (defer (pass_module 1 r) A p) = 1"
   proof
-    fix A
+    fix
+      A :: "'a set"
     show
       "\<forall>p. (card A \<ge> 1 \<and> finite_profile A p) \<longrightarrow>
           card (defer (pass_module 1 r) A p) = 1"
     proof
-      fix p
+      fix
+        p :: "'a Profile"
       show
         "(card A \<ge> 1 \<and> finite_profile A p) \<longrightarrow>
             card (defer (pass_module 1 r) A p) = 1"
       proof
-        assume A_valid: "(card A \<ge> 1 \<and> finite_profile A p)"
+        assume
+          A_valid: "(card A \<ge> 1 \<and> finite_profile A p)"
         hence finite_A: "finite A"
           by simp
         moreover have "A \<noteq> {}"
@@ -189,7 +194,8 @@ proof -
           moreover have
             "{a \<in> A. card(above (limit A r) a) \<le> 1} \<subseteq> {w}"
           proof
-            fix x
+            fix
+              x :: "'a"
             assume x_in_winner_set:
               "x \<in> {a \<in> A. card (above (limit A r) a) \<le> 1}"
             hence x_in_A: "x \<in> A"
@@ -256,17 +262,20 @@ proof -
   have "\<forall>A p. (card A \<ge> 2 \<and> finite_profile A p) \<longrightarrow>
           card (defer (pass_module 2 r) A p) = 2"
   proof
-    fix A
+    fix
+      A :: "'a set"
     show
       "\<forall>p. (card A \<ge> 2 \<and> finite_profile A p) \<longrightarrow>
         card (defer (pass_module 2 r) A p) = 2"
     proof
-      fix p
+      fix
+        p :: "'a Profile"
       show
         "(card A \<ge> 2 \<and> finite_profile A p) \<longrightarrow>
             card (defer (pass_module 2 r) A p) = 2"
       proof
-        assume A_ok: "card A \<ge> 2 \<and> finite_profile A p"
+        assume
+          A_ok: "card A \<ge> 2 \<and> finite_profile A p"
         hence finA: "finite A"
           by simp
         moreover from A_ok

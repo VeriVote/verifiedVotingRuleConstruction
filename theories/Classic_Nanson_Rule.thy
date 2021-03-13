@@ -21,10 +21,10 @@ subsection \<open>Definition\<close>
 
 fun classic_nanson_rule :: "'a Electoral_Module" where
   "classic_nanson_rule A p =
-    iter (leq_average_eliminator borda_score) A p"
+    ((leq_average_eliminator borda_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
 
 fun classic_nanson_rule_code :: "'a Electoral_Module" where
   "classic_nanson_rule_code A p =
-    iter (leq_average_eliminator borda_score_code) A p"
+    ((leq_average_eliminator borda_score_code) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
 
 end

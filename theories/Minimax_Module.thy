@@ -81,7 +81,7 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe)
     A :: "'a set" and
     p :: "'a Profile" and
     w :: "'a" and 
-    l::"'a"
+    l :: "'a"
   assume
     winner: "condorcet_winner A p w" and
     l_in_A: "l \<in> A" and
