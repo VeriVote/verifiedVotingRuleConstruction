@@ -41,7 +41,7 @@ theorem cond_winner_imp_max_eval_val:
     rating: "condorcet_rating e" and
     f_prof: "finite_profile A p" and
     winner: "condorcet_winner A p w"
-  shows "e w A p = Max{e a A p | a. a \<in> A}"
+  shows "e w A p = Max {e a A p | a. a \<in> A}"
 proof -
   (*
     lemma eq_max_iff: "\<lbrakk> finite A; A \<noteq> {} \<rbrakk> \<Longrightarrow>

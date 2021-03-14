@@ -49,55 +49,43 @@ qed
 subsection \<open>Soundness\<close>
 
 theorem max_agg_sound[simp]: "aggregator max_aggregator"
-proof -
-  have
-    "\<forall>A e1 e2 d1 d2 r1 r2.
-          (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
-      set_equals_partition A (e1 \<union> e2,
-                  A - (e1 \<union> e2 \<union> d1 \<union> d2),
-                  (d1 \<union> d2) - (e1 \<union> e2))"
-  proof -
-    have
-      "\<forall>B p. well_formed (B::'b set) p =
-          (disjoint3 p \<and> set_equals_partition B p)"
-      by simp
-    thus ?thesis
-      using Un_Diff_cancel result_imp_rej set_equals_partition.simps
-            sup.left_commute sup_commute
-      by auto
-  qed
-  hence unity:
-    "\<forall>A res1 res2. (well_formed A res1 \<and> well_formed A res2) \<longrightarrow>
-          set_equals_partition A (max_aggregator A res1 res2)"
-    using max_aggregator.simps well_formed.simps
-          set_equals_partition.elims(2)
-    by (smt (z3))
-  have
-    "\<forall>A e1 e2 d1 d2 r1 r2.
-          (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
-      (e1 \<union> e2) \<inter> (A - (e1 \<union> e2 \<union> d1 \<union> d2)) = {}"
+  unfolding aggregator_def
+proof (simp, safe)
+  fix
+    A :: "'a set" and
+    e1 :: "'a set" and
+    e2 :: "'a set" and
+    d1 :: "'a set" and
+    d2 :: "'a set" and
+    r1 :: "'a set" and
+    r2 :: "'a set" and
+    x :: "'a"
+  assume
+    asm1: "e2 \<union> r2 \<union> d2 = e1 \<union> r1 \<union> d1" and
+    asm2: "x \<notin> d1" and
+    asm3: "x \<notin> r1" and
+    asm4: "x \<in> e2"
+  show "x \<in> e1"
+    using asm1 asm2 asm3 asm4
     by auto
-  moreover have
-    "\<forall>A e1 e2 d1 d2 r1 r2.
-          (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
-      (e1 \<union> e2) \<inter> ((d1 \<union> d2) - (e1 \<union> e2)) = {}"
+next
+  fix
+    A :: "'a set" and
+    e1 :: "'a set" and
+    e2 :: "'a set" and
+    d1 :: "'a set" and
+    d2 :: "'a set" and
+    r1 :: "'a set" and
+    r2 :: "'a set" and
+    x :: "'a"
+  assume
+    asm1: "e2 \<union> r2 \<union> d2 = e1 \<union> r1 \<union> d1" and
+    asm2: "x \<notin> d1" and
+    asm3: "x \<notin> r1" and
+    asm4: "x \<in> d2"
+  show "x \<in> e1"
+    using asm1 asm2 asm3 asm4
     by auto
-  moreover have
-    "\<forall>A e1 e2 d1 d2 r1 r2.
-          (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
-      (A - (e1 \<union> e2 \<union> d1 \<union> d2)) \<inter> ((d1 \<union> d2) - (e1 \<union> e2)) = {}"
-    by auto
-  ultimately have disjoint:
-      "\<forall>A res1 res2. (well_formed A res1 \<and> well_formed A res2) \<longrightarrow>
-            disjoint3 (max_aggregator A res1 res2)"
-    using disjoint3.simps
-    by auto
-  hence "\<forall>A res1 res2. (well_formed A res1 \<and> well_formed A res2) \<longrightarrow>
-            well_formed A (max_aggregator A res1 res2)"
-    by (simp add: disjoint unity)
-    thus ?thesis
-    using aggregator_def
-    by blast
 qed
 
 subsection \<open>Properties\<close>
@@ -145,8 +133,23 @@ qed
 
 (*The max-aggregator is commutative.*)
 theorem max_agg_comm[simp]: "agg_commutative max_aggregator"
-  using agg_commutative_def max_agg_sound max_aggregator.simps
-        sup_assoc sup_commute
-  by (smt (verit))
+  unfolding agg_commutative_def
+proof (safe)
+  show "aggregator max_aggregator"
+    by simp
+next
+  fix
+    A :: "'a set" and
+    e1 :: "'a set" and
+    e2 :: "'a set" and
+    d1 :: "'a set" and
+    d2 :: "'a set" and
+    r1 :: "'a set" and
+    r2 :: "'a set"
+  show
+    "max_aggregator A (e1, r1, d1) (e2, r2, d2) =
+      max_aggregator A (e2, r2, d2) (e1, r1, d1)"
+  by auto
+qed
 
 end

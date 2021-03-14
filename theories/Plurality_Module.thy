@@ -122,7 +122,6 @@ proof -
       by metis
   qed
   thus ?thesis
-      using electing_def plurality.simps
       by (simp add: electing_def)
 qed
 
@@ -256,11 +255,15 @@ proof (intro allI impI)
           \<forall>i::nat. i < size p \<longrightarrow>
             (above (p!i) x = {x} \<longrightarrow> above (q!i) x = {x})"
         by (simp add: above_pq)
-      have "\<forall>x \<in> A. win_count p x = win_count q x"
-        using win_count.simps Collect_cong DiffI above_pq
-              above_QtoP above_PtoQ insert_absorb insert_iff
-              insert_not_empty sizes
-        by (smt (verit, ccfv_SIG))
+      hence
+        "\<forall>x \<in> A.
+          card {i::nat. i < size p \<and> above (p!i) x = {x}} =
+            card {i::nat. i < size q \<and> above (q!i) x = {x}}"
+        using Collect_cong DiffI above_pq above_QtoP
+              insert_absorb insert_iff insert_not_empty sizes
+        by (smt (verit, ccfv_threshold))
+      hence "\<forall>x \<in> A. win_count p x = win_count q x"
+        by simp
       hence
         "{a \<in> A. \<forall>x \<in> A. win_count p x \<le> win_count p a} =
             {a \<in> A. \<forall>x \<in> A. win_count q x \<le> win_count q a}"

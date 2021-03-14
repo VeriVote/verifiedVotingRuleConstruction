@@ -64,10 +64,31 @@ theorem rev_comp_non_electing[simp]:
 theorem rev_comp_non_blocking[simp]:
   assumes "electing m"
   shows "non_blocking (m\<down>)"
-  using Diff_cancel Diff_empty revision_composition.simps assms
-        defer_not_elec_or_rej electing_def rev_comp_non_electing
-        non_blocking_def non_electing_def prod.sel(2)
-  by (metis (no_types, lifting))
+  unfolding non_blocking_def
+proof (safe, simp_all)
+  show "electoral_module (m\<down>)"
+    using assms electing_def rev_comp_sound
+    by (metis (no_types, lifting))
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    x :: "'a"
+  assume
+    fin_A: "finite A" and
+    prof_A: "profile A p" and
+    no_elect: "A - elect m A p = A" and
+    x_in_A: "x \<in> A"
+  from no_elect have non_elect:
+    "non_electing m"
+    using assms prof_A x_in_A fin_A electing_def empty_iff
+          Diff_disjoint Int_absorb2 elect_in_alts
+    by (metis (no_types, lifting))
+  show "False"
+    using non_elect assms electing_def empty_iff fin_A
+          non_electing_def prof_A x_in_A
+    by (metis (no_types, lifting))
+qed
 
 (*
    Revising an invariant monotone electoral module results in a

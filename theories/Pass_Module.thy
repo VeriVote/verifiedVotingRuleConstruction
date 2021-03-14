@@ -107,11 +107,12 @@ proof -
           "\<exists>a\<in>A. above (limit A r) a = {a} \<and>
                 (\<forall>x\<in>A. above (limit A r) x = {x} \<longrightarrow> x = a)"
           by (simp add: above_one)  
-        thus "reject (pass_module n r) A p \<noteq> A"
-          using One_nat_def pass_module.simps
-                Suc_leI assms(2) fst_conv is_singletonI
-                is_singleton_altdef leD mem_Collect_eq snd_conv
+        hence "{a \<in> A. card(above (limit A r) a) > n} \<noteq> A"
+          using One_nat_def Suc_leI assms(2) is_singletonI
+                is_singleton_altdef leD mem_Collect_eq
           by (metis (no_types, lifting))
+        thus "reject (pass_module n r) A p \<noteq> A"
+          by simp
       qed
     qed
   qed
@@ -298,13 +299,14 @@ proof -
           by simp
         hence a_above: "\<forall>b \<in> A. a \<in> above (limit A r) b"
           by (simp add: above_def)
-        from a have a_in_defer: "a \<in> defer (pass_module 2 r) A p"
-          using CollectI pass_module.simps Suc_leI not_empty_A a_above
-                card_UNIV_bool card_eq_0_iff card_gt_0_iff
-                card_insert_disjoint empty_iff empty_not_UNIV finA
-                finite.emptyI finite_UNIV insert_iff limitA_order
-                above_one UNIV_bool nat.simps(3) snd_conv zero_less_Suc
+        from a have "a \<in> {a \<in> A. card(above (limit A r) a) \<le> 2}"
+          using CollectI Suc_leI not_empty_A a_above card_UNIV_bool
+                card_eq_0_iff card_insert_disjoint empty_iff finA
+                finite.emptyI insert_iff limitA_order above_one
+                UNIV_bool nat.simps(3) zero_less_Suc
           by (metis (no_types, lifting))
+        hence a_in_defer: "a \<in> defer (pass_module 2 r) A p"
+          by simp
         have "finite (A-{a})"
           by (simp add: finA)
         moreover have A_not_only_a: "A-{a} \<noteq> {}"

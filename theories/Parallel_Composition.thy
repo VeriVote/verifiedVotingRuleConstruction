@@ -71,10 +71,11 @@ proof -
                 \<not> well_formed A pa \<or>
                 \<not> aggregator f"
             by auto
-          thus ?thesis
-            using agg_a electoral_module_def mod_m mod_n
-                  parallel_composition.simps f_prof
+          hence "well_formed A (a A (m A p) (n A p))"
+            using agg_a electoral_module_def mod_m mod_n f_prof
             by metis
+          thus ?thesis
+            by simp
         qed
       qed
     qed

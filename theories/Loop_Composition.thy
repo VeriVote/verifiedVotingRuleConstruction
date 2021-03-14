@@ -231,7 +231,7 @@ lemma loop_comp_helper_imp_partit:
     module_m: "electoral_module m" and
     profile: "finite_profile A p"
   shows
-    "electoral_module acc \<and> (n = card (defer acc A p)) \<longrightarrow>
+    "electoral_module acc \<and> (n = card (defer acc A p)) \<Longrightarrow>
         well_formed A (loop_comp_helper acc m t A p)"
 proof (induct arbitrary: acc rule: less_induct)
   case (less)
@@ -256,7 +256,7 @@ lemma loop_comp_helper_imp_no_def_incr:
     module_m: "electoral_module m" and
     profile: "finite_profile A p"
   shows
-    "(electoral_module acc \<and> n = card (defer acc A p)) \<longrightarrow>
+    "(electoral_module acc \<and> n = card (defer acc A p)) \<Longrightarrow>
         defer (loop_comp_helper acc m t) A p \<subseteq> defer acc A p"
 proof (induct arbitrary: acc rule: less_induct)
   case (less)
@@ -473,7 +473,7 @@ lemma loop_comp_presv_non_electing_helper:
     non_electing_m: "non_electing m" and
     f_prof: "finite_profile A p"
   shows
-    "(n = card (defer acc A p) \<and> non_electing acc) \<longrightarrow>
+    "(n = card (defer acc A p) \<and> non_electing acc) \<Longrightarrow>
         elect (loop_comp_helper acc m t) A p = {}"
 proof (induct n arbitrary: acc rule: less_induct)
   case(less n)
@@ -724,11 +724,26 @@ qed
 theorem loop_comp_presv_non_electing[simp]:
   assumes non_electing_m: "non_electing m"
   shows "non_electing (m \<circlearrowleft>\<^sub>t)"
-  using def_mod_non_electing loop_composition.simps(1)
-        loop_composition.simps(2) loop_comp_sound
-        loop_comp_presv_non_electing_helper
-        non_electing_def non_electing_m
+  unfolding non_electing_def
+proof (safe, simp_all)
+  show "electoral_module (m \<circlearrowleft>\<^sub>t)"
+    using loop_comp_sound non_electing_def non_electing_m
+    by metis
+next
+    fix
+      A :: "'a set" and
+      p :: "'a Profile" and
+      x :: "'a"
+    assume
+      fin_A: "finite A" and
+      prof_A: "profile A p" and
+      x_elect: "x \<in> elect (m \<circlearrowleft>\<^sub>t) A p"
+    show "False"
+  using def_mod_non_electing loop_comp_presv_non_electing_helper
+        non_electing_m empty_iff fin_A loop_comp_code
+        non_electing_def prof_A x_elect
   by metis
+qed
 
 theorem iter_elim_def_n[simp]:
   assumes

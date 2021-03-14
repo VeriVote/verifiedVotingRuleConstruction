@@ -23,9 +23,8 @@ subsection \<open>Definition\<close>
 
 fun smc :: "'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
   "smc x A p =
-        ((let a = max_aggregator; t = defer_equal_condition 1 in
-    ((((pass_module 2 x) \<triangleright> ((plurality\<down>) \<triangleright> (pass_module 1 x))) \<parallel>\<^sub>a
-      (drop_module 2 x)) \<circlearrowleft>\<^sub>t) \<triangleright> elect_module) A p)"
+      ((((((pass_module 2 x) \<triangleright> ((plurality\<down>) \<triangleright> (pass_module 1 x))) \<parallel>\<^sub>\<up>
+      (drop_module 2 x)) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) \<triangleright> elect_module) A p)"
 
 subsection \<open>Soundness\<close>
 
@@ -37,12 +36,164 @@ subsection \<open>Soundness\<close>
 theorem smc_sound:
   assumes order: "linear_order x"
   shows "electoral_module (smc x)"
-  using smc.simps drop_mod_sound elect_mod_sound
-        electoral_module_def loop_comp_sound
-        max_agg_sound order par_comp_sound
-        pass_mod_sound plurality_sound rev_comp_sound
-        seq_comp_sound
-  by metis
+  unfolding electoral_module_def
+proof (simp, safe, simp_all)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    xa :: "'a"
+  let ?a = "max_aggregator"
+  let ?t = "defer_equal_condition"
+  let ?smc =
+    "pass_module 2 x \<triangleright>
+       ((plurality\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
+         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
+  assume
+    fin_A: "finite A" and
+    prof_A: "profile A p" and
+    reject_xa:
+      "xa \<in> reject (?smc) A p" and
+    elect_xa:
+      "xa \<in> elect (?smc) A p"
+  show "False"
+    using IntI drop_mod_sound elect_xa emptyE fin_A
+          loop_comp_sound max_agg_sound order prof_A
+          par_comp_sound pass_mod_sound reject_xa
+          plurality_sound result_disj rev_comp_sound
+          seq_comp_sound
+    by metis
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    xa :: "'a"
+  let ?a = "max_aggregator"
+  let ?t = "defer_equal_condition"
+  let ?smc =
+    "pass_module 2 x \<triangleright>
+       ((plurality\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
+         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
+  assume
+    fin_A: "finite A" and
+    prof_A: "profile A p" and
+    reject_xa:
+      "xa \<in> reject (?smc) A p" and
+    defer_xa:
+      "xa \<in> defer (?smc) A p"
+  show "False"
+    using IntI drop_mod_sound defer_xa emptyE fin_A
+          loop_comp_sound max_agg_sound order prof_A
+          par_comp_sound pass_mod_sound reject_xa
+          plurality_sound result_disj rev_comp_sound
+          seq_comp_sound
+    by metis
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    xa :: "'a"
+  let ?a = "max_aggregator"
+  let ?t = "defer_equal_condition"
+  let ?smc =
+    "pass_module 2 x \<triangleright>
+       ((plurality\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
+         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
+  assume
+    fin_A: "finite A" and
+    prof_A: "profile A p" and
+    elect_xa:
+      "xa \<in> elect (?smc) A p"
+  show "xa \<in> A"
+    using drop_mod_sound elect_in_alts elect_xa fin_A
+          in_mono loop_comp_sound max_agg_sound order
+          par_comp_sound pass_mod_sound plurality_sound
+          prof_A rev_comp_sound seq_comp_sound
+    by metis
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    xa :: "'a"
+  let ?a = "max_aggregator"
+  let ?t = "defer_equal_condition"
+  let ?smc =
+    "pass_module 2 x \<triangleright>
+       ((plurality\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
+         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
+  assume
+    fin_A: "finite A" and
+    prof_A: "profile A p" and
+    defer_xa:
+      "xa \<in> defer (?smc) A p"
+  show "xa \<in> A"
+    using drop_mod_sound defer_in_alts defer_xa fin_A
+          in_mono loop_comp_sound max_agg_sound order
+          par_comp_sound pass_mod_sound plurality_sound
+          prof_A rev_comp_sound seq_comp_sound
+    by (metis (no_types, lifting))
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    xa :: "'a"
+  let ?a = "max_aggregator"
+  let ?t = "defer_equal_condition"
+  let ?smc =
+    "pass_module 2 x \<triangleright>
+       ((plurality\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
+         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
+  assume
+    fin_A: "finite A" and
+    prof_A: "profile A p" and
+    reject_xa:
+      "xa \<in> reject (?smc) A p"
+  have plurality_rev_sound:
+    "electoral_module
+      (plurality::'a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set\<down>)"
+    by simp
+  have par1_sound:
+    "electoral_module (pass_module 2 x \<triangleright> ((plurality\<down>) \<triangleright> pass_module 1 x))"
+    using order
+    by simp
+  also have par2_sound:
+      "electoral_module (drop_module 2 x)"
+    using order
+    by simp
+  show "xa \<in> A"
+    using reject_in_alts reject_xa fin_A in_mono
+          loop_comp_sound max_agg_sound order
+          par_comp_sound pass_mod_sound prof_A
+          seq_comp_sound pass_mod_sound par1_sound
+          par2_sound plurality_rev_sound
+    by (metis (no_types))
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    xa :: "'a"
+  let ?a = "max_aggregator"
+  let ?t = "defer_equal_condition"
+  let ?smc =
+    "pass_module 2 x \<triangleright>
+       ((plurality\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
+         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
+  assume
+    fin_A: "finite A" and
+    prof_A: "profile A p" and
+    xa_in_A: "xa \<in> A" and
+    not_defer_xa:
+      "xa \<notin> defer (?smc) A p" and
+    not_reject_xa:
+      "xa \<notin> reject (?smc) A p"
+  show "xa \<in> elect (?smc) A p"
+    using drop_mod_sound loop_comp_sound max_agg_sound
+          order par_comp_sound pass_mod_sound xa_in_A
+          plurality_sound rev_comp_sound seq_comp_sound
+          electoral_mod_defer_elem fin_A not_defer_xa
+          not_reject_xa prof_A
+    by metis
+qed
+
 
 subsection \<open>Electing Property\<close>
 
@@ -125,7 +276,7 @@ proof -
 
   show ?thesis
     using 2 3 smc_sound smc.simps electing_def
-          maximum_parallel_composition.simps
+          Defer_One_Loop_Composition.iter.simps
           order seq_comp_electing
     by metis
 qed
@@ -239,10 +390,9 @@ proof -
   show ?thesis
     using 0 1 2 3
           Electoral_Module.monotonicity_def
-          maximum_parallel_composition.simps
-          smc_sound smc.simps assms
-          seq_comp_mono
-    by (smt (verit, del_insts))
+          Defer_One_Loop_Composition.iter.simps
+          smc_sound smc.simps order seq_comp_mono
+    by (metis (full_types))
 qed
 
 end
