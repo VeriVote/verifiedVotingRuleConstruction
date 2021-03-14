@@ -9,7 +9,7 @@
 section \<open>Aggregator\<close>
 
 theory Aggregator
-  imports Result
+  imports "Social_Choice_Types/Result"
 begin
 
 text

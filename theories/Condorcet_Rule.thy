@@ -7,8 +7,8 @@
 section \<open>Condorcet Rule\<close>
 
 theory Condorcet_Rule
-  imports Condorcet_Module
-          Defer_One_Loop_Composition
+  imports "Compositional_Structures/Core_Modules/Condorcet_Module"
+          "Compositional_Structures/Defer_One_Loop_Composition"
 begin
 
 text

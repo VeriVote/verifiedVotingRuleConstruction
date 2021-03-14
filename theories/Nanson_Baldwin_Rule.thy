@@ -7,8 +7,8 @@
 section \<open>Nanson-Baldwin Rule\<close>
 
 theory Nanson_Baldwin_Rule
-  imports Borda_Module
-          Defer_One_Loop_Composition
+  imports "Compositional_Structures/Core_Modules/Borda_Module"
+          "Compositional_Structures/Defer_One_Loop_Composition"
 begin
 
 text

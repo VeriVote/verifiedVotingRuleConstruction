@@ -8,8 +8,8 @@
 section \<open>Loop Composition\<close>
 
 theory Loop_Composition
-  imports Termination_Condition
-          Defer_Module
+  imports "Core_Modules/Component_Types/Termination_Condition"
+          "Core_Modules/Defer_Module"
           Sequential_Composition
 begin
 

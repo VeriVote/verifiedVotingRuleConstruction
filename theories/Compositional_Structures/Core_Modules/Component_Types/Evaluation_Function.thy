@@ -7,7 +7,7 @@
 section \<open>Evaluation Function\<close>
 
 theory Evaluation_Function
-  imports Profile
+  imports "Social_Choice_Types/Profile"
 begin
 
 text

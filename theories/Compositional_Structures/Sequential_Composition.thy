@@ -8,7 +8,7 @@
 section \<open>Sequential Composition\<close>
 
 theory Sequential_Composition
-  imports Electoral_Module
+  imports "Core_Modules/Component_Types/Electoral_Module"
 begin
 
 text

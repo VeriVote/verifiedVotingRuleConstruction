@@ -8,11 +8,11 @@
 section \<open>Sequential Majority Comparison\<close>
 
 theory Sequential_Majority_Comparison
-  imports Plurality_Module
-          Drop_And_Pass_Compatibility
-          Revision_Composition
-          Maximum_Parallel_Composition
-          Defer_One_Loop_Composition
+  imports "Compositional_Structures/Core_Modules/Plurality_Module"
+          "Compositional_Structures/Drop_And_Pass_Compatibility"
+          "Compositional_Structures/Revision_Composition"
+          "Compositional_Structures/Maximum_Parallel_Composition"
+          "Compositional_Structures/Defer_One_Loop_Composition"
 begin
 
 text

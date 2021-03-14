@@ -7,7 +7,7 @@
 section \<open>Condorcet Module\<close>
 
 theory Condorcet_Module
-  imports Elimination_Module
+  imports "Component_Types/Elimination_Module"
 begin
 
 text

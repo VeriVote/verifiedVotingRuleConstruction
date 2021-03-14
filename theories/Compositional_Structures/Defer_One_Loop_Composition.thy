@@ -8,7 +8,7 @@
 section \<open>Defer One Loop Composition\<close>
 
 theory Defer_One_Loop_Composition
-  imports Defer_Equal_Condition
+  imports "Core_Modules/Component_Types/Defer_Equal_Condition"
           Loop_Composition
           Elect_Composition
 begin

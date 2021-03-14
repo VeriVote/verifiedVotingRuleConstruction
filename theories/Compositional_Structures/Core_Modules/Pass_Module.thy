@@ -8,7 +8,7 @@
 section \<open>Pass Module\<close>
 
 theory Pass_Module
-  imports Electoral_Module
+  imports "Component_Types/Electoral_Module"
 begin
 
 text

@@ -8,7 +8,7 @@
 section \<open>Defer Module\<close>
 
 theory Defer_Module
-  imports Electoral_Module
+  imports "Component_Types/Electoral_Module"
 begin
 
 text

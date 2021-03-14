@@ -1,49 +1,62 @@
 (*
  *  cd ..../theories
  *
- *  isabelle build -b -D `pwd`
+ *  isabelle build -b -P "output" -D `pwd`
  *    # compile sessions in the ROOT file to prebuilt images
  *
- *  isabelle jedit -d `pwd` -l Voting
+ *  isabelle jedit -d `pwd` -l Verified_Voting_Rule_Construction
  *    # use an image for interactive mode; probably similar for servermode.
  *
- * Theories can then be accessed as, e.g., "Voting.Preference_Relation"
+ * Theories can then be accessed as, e.g., "Verified_Voting_Rule_Construction.Preference_Relation"
  *)
 
-session Voting = HOL +
+chapter browser_info
+
+session Verified_Voting_Rule_Construction = HOL +
   description "
     Verified Construction of Fair Voting Rules
   "
 options [browser_info, timeout = 300, document = pdf, document_output = "output"]
 
+directories
+  "Compositional_Structures"
+  "Compositional_Structures/Core_Modules"
+  "Compositional_Structures/Core_Modules/Component_Types"
+  "Compositional_Structures/Core_Modules/Component_Types/Social_Choice_Types"
+
 theories
-  Preference_Relation
-  Result
-  Profile
-  Aggregator
-  Maximum_Aggregator
-  Termination_Condition
-  Defer_Equal_Condition
-  Evaluation_Function
-  Electoral_Module
-  Elimination_Module
-  Defer_Module
-  Drop_Module
-  Pass_Module
-  Elect_Module
-  Plurality_Module
-  Borda_Module
-  Condorcet_Module
-  Copeland_Module
-  Minimax_Module
-  Drop_And_Pass_Compatibility
-  Revision_Composition
-  Sequential_Composition
-  Parallel_Composition
-  Loop_Composition
-  Maximum_Parallel_Composition
-  Elect_Composition
-  Defer_One_Loop_Composition
+(* "Social-Choice Types" *)
+  "Compositional_Structures/Core_Modules/Component_Types/Social_Choice_Types/Preference_Relation"
+  "Compositional_Structures/Core_Modules/Component_Types/Social_Choice_Types/Result"
+  "Compositional_Structures/Core_Modules/Component_Types/Social_Choice_Types/Profile"
+(* "Component Types" *)
+  "Compositional_Structures/Core_Modules/Component_Types/Electoral_Module"
+  "Compositional_Structures/Core_Modules/Component_Types/Evaluation_Function"
+  "Compositional_Structures/Core_Modules/Component_Types/Elimination_Module"
+  "Compositional_Structures/Core_Modules/Component_Types/Aggregator"
+  "Compositional_Structures/Core_Modules/Component_Types/Maximum_Aggregator"
+  "Compositional_Structures/Core_Modules/Component_Types/Termination_Condition"
+  "Compositional_Structures/Core_Modules/Component_Types/Defer_Equal_Condition"
+(* "Core Modules" *)
+  "Compositional_Structures/Core_Modules/Defer_Module"
+  "Compositional_Structures/Core_Modules/Drop_Module"
+  "Compositional_Structures/Core_Modules/Pass_Module"
+  "Compositional_Structures/Core_Modules/Elect_Module"
+  "Compositional_Structures/Core_Modules/Plurality_Module"
+  "Compositional_Structures/Core_Modules/Borda_Module"
+  "Compositional_Structures/Core_Modules/Condorcet_Module"
+  "Compositional_Structures/Core_Modules/Copeland_Module"
+  "Compositional_Structures/Core_Modules/Minimax_Module"
+(* "Compositional Structures" *)
+  "Compositional_Structures/Drop_And_Pass_Compatibility"
+  "Compositional_Structures/Revision_Composition"
+  "Compositional_Structures/Sequential_Composition"
+  "Compositional_Structures/Parallel_Composition"
+  "Compositional_Structures/Loop_Composition"
+  "Compositional_Structures/Maximum_Parallel_Composition"
+  "Compositional_Structures/Elect_Composition"
+  "Compositional_Structures/Defer_One_Loop_Composition"
+(* "Voting Rules" *)
   Borda_Rule
   Condorcet_Rule
   Copeland_Rule

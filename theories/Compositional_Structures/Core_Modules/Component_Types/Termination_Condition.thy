@@ -8,7 +8,7 @@
 section \<open>Termination Condition\<close>
 
 theory Termination_Condition
-  imports Result
+  imports "Social_Choice_Types/Result"
 begin
 
 text

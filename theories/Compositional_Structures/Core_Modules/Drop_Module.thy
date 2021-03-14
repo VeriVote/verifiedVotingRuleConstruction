@@ -8,7 +8,7 @@
 section \<open>Drop Module\<close>
 
 theory Drop_Module
-  imports Electoral_Module
+  imports "Component_Types/Electoral_Module"
 begin
 
 text

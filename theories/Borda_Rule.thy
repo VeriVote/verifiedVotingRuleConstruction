@@ -7,8 +7,8 @@
 section \<open>Borda Rule\<close>
 
 theory Borda_Rule
-  imports Borda_Module
-          Elect_Composition
+  imports "Compositional_Structures/Core_Modules/Borda_Module"
+          "Compositional_Structures/Elect_Composition"
 begin
 
 text

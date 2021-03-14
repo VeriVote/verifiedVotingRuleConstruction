@@ -9,9 +9,9 @@
 section \<open>Electoral Module\<close>
 
 theory Electoral_Module
-  imports Preference_Relation
-          Profile
-          Result
+  imports "Social_Choice_Types/Preference_Relation"
+          "Social_Choice_Types/Profile"
+          "Social_Choice_Types/Result"
 begin
 
 text

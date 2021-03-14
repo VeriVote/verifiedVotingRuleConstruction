@@ -7,7 +7,7 @@
 section \<open>Copeland Module\<close>
 
 theory Copeland_Module
-  imports Elimination_Module
+  imports "Component_Types/Elimination_Module"
 begin
 
 text
