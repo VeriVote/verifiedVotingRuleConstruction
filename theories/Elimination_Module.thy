@@ -8,6 +8,7 @@ section \<open>Elimination Module\<close>
 
 theory Elimination_Module
   imports Evaluation_Function
+          Electoral_Module
 begin
 
 text

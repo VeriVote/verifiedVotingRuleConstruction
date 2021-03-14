@@ -478,14 +478,14 @@ proof -
     from def_and_lifted modules have
       "\<forall>i. (0 \<le> i \<and> i < size ?new_p) \<longrightarrow>
           (Preference_Relation.lifted A (p!i) (q!i) a \<or> (p!i) = (q!i))"
-      using defer_in_alts Electoral_Module.lifted_def limit_prof_presv_size
+      using defer_in_alts Profile.lifted_def limit_prof_presv_size
       by metis
     with def_and_lifted modules mono_m have
       "\<forall>i. (0 \<le> i \<and> i < size ?new_p) \<longrightarrow>
           (Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a \<or>
            (?new_p!i) = (?new_q!i))"
       using limit_lifted_imp_eq_or_lifted defer_in_alts
-            Electoral_Module.lifted_def limit_prof_presv_size
+            Profile.lifted_def limit_prof_presv_size
             limit_profile.simps nth_map
       by (metis (no_types, lifting))
     with 0 eql_lengths mono_m
@@ -847,20 +847,20 @@ proof -
             hence lifted: "lifted A p q a"
               by simp
             hence finite_profile_q: "finite_profile A q"
-              by (simp add: Electoral_Module.lifted_def lifted)
+              by (simp add: Profile.lifted_def lifted)
             from lifted have finite_profile_p: "profile A p"
-              by (simp add: Electoral_Module.lifted_def)
+              by (simp add: Profile.lifted_def)
             thus ?thesis
             proof cases
               assume
-                "\<not>(a \<in> defer (m \<triangleright> n) A p \<and> Electoral_Module.lifted A p q a)"
+                "\<not>(a \<in> defer (m \<triangleright> n) A p \<and> Profile.lifted A p q a)"
               thus ?thesis
                 by blast
             next
               assume
-                "\<not>\<not>(a \<in> defer (m \<triangleright> n) A p \<and> Electoral_Module.lifted A p q a)"
+                "\<not>\<not>(a \<in> defer (m \<triangleright> n) A p \<and> Profile.lifted A p q a)"
               hence def_and_lifted:
-                "(a \<in> defer (m \<triangleright> n) A p \<and> Electoral_Module.lifted A p q a)"
+                "(a \<in> defer (m \<triangleright> n) A p \<and> Profile.lifted A p q a)"
                 by simp
               thus ?thesis
               proof cases
@@ -885,7 +885,7 @@ proof -
                   by blast
                 moreover have
                   "(lifted A p q a) \<longrightarrow> finite_profile A q"
-                  by (simp add: Electoral_Module.lifted_def)
+                  by (simp add: Profile.lifted_def)
                 ultimately have
                   "((a \<in> defer m A p) \<and> (lifted A p q a)) \<longrightarrow>
                       defer (m \<triangleright> n) A q \<subseteq> {a}" (* lifted defer-subset of a *)

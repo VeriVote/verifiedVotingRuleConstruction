@@ -7,7 +7,8 @@
 section \<open>Black's Rule\<close>
 
 theory Blacks_Rule
-  imports Condorcet_Rule Borda_Rule
+  imports Condorcet_Rule
+          Borda_Rule
 begin
 
 text

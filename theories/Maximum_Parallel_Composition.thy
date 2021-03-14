@@ -8,7 +8,8 @@
 section \<open>Maximum Parallel Composition\<close>
 
 theory Maximum_Parallel_Composition
-  imports Parallel_Composition Maximum_Aggregator
+  imports Maximum_Aggregator
+          Parallel_Composition
 begin
 
 text
@@ -393,7 +394,7 @@ proof -
               assume "x \<notin> A"
               hence a1: "x \<in> S-A"
                 using DiffI a compatible f_profs
-                      Electoral_Module.lifted_def
+                      Profile.lifted_def
                 by (metis (no_types, lifting))
               hence "x \<in> reject n S p"
                 using A f_profs

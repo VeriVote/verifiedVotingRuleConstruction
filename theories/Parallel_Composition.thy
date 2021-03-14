@@ -9,6 +9,7 @@ section \<open>Parallel Composition\<close>
 
 theory Parallel_Composition
   imports Aggregator
+          Electoral_Module
 begin
 
 text

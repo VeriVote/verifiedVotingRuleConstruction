@@ -8,7 +8,9 @@
 section \<open>Loop Composition\<close>
 
 theory Loop_Composition
-  imports Sequential_Composition Defer_Module Termination_Condition
+  imports Termination_Condition
+          Defer_Module
+          Sequential_Composition
 begin
 
 text
@@ -362,9 +364,9 @@ proof (induct n arbitrary: acc rule: less_induct)
         have
           "\<forall>f. (defer_lift_invariance f \<or>
             (\<exists>A rs rsa a. f A rs \<noteq> f A rsa \<and>
-              Electoral_Module.lifted A rs rsa (a::'a) \<and>
+              Profile.lifted A rs rsa (a::'a) \<and>
               a \<in> defer f A rs) \<or> \<not> electoral_module f) \<and>
-              ((\<forall>A rs rsa a. f A rs = f A rsa \<or> \<not> Electoral_Module.lifted A rs rsa a \<or>
+              ((\<forall>A rs rsa a. f A rs = f A rsa \<or> \<not> Profile.lifted A rs rsa a \<or>
                   a \<notin> defer f A rs) \<and> electoral_module f \<or> \<not> defer_lift_invariance f)"
           using defer_lift_invariance_def
           by blast
@@ -378,7 +380,7 @@ proof (induct n arbitrary: acc rule: less_induct)
                 defer (acc \<triangleright> m) A q \<subset> defer acc A q)"
         using defer_card_acc defer_in_alts monotone_m prod.sel(2) f_prof
               psubsetI sequential_composition.simps def_presv_fin_prof
-              defer_lift_invariance_def subsetCE Electoral_Module.lifted_def
+              defer_lift_invariance_def subsetCE Profile.lifted_def
               seq_comp_def_set_bounded
         by (smt (verit))
       with t_not_satisfied_for_p have rec_step_q:
@@ -441,7 +443,7 @@ lemma loop_comp_helper_def_lift_inv2:
 lemma lifted_imp_fin_prof:
   assumes "lifted A p q a"
   shows "finite_profile A p"
-  using assms Electoral_Module.lifted_def
+  using assms Profile.lifted_def
   by fastforce
 
 lemma loop_comp_helper_presv_def_lift_inv:
@@ -453,10 +455,10 @@ proof -
   have
     "\<forall>f. (defer_lift_invariance f \<or>
          (\<exists>A rs rsa a. f A rs \<noteq> f A rsa \<and>
-              Electoral_Module.lifted A rs rsa (a::'a) \<and>
+              Profile.lifted A rs rsa (a::'a) \<and>
               a \<in> defer f A rs) \<or>
          \<not> electoral_module f) \<and>
-      ((\<forall>A rs rsa a. f A rs = f A rsa \<or> \<not> Electoral_Module.lifted A rs rsa a \<or>
+      ((\<forall>A rs rsa a. f A rs = f A rsa \<or> \<not> Profile.lifted A rs rsa a \<or>
           a \<notin> defer f A rs) \<and>
       electoral_module f \<or> \<not> defer_lift_invariance f)"
     using defer_lift_invariance_def

@@ -12,8 +12,8 @@ theory Preference_Relation
 begin
 
 text
-\<open>The very core of the composable modules voting framework:
-Types and functions, derivations, lemmata, operations on profiles, etc.\<close>
+\<open>The very core of the composable modules voting framework: types and
+functions, derivations, lemmata, operations on preference relations, etc.\<close>
 
 subsection \<open>Definition\<close>
 

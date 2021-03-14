@@ -8,7 +8,8 @@
 section \<open>Drop And Pass Compatibility\<close>
 
 theory Drop_And_Pass_Compatibility
-  imports Drop_Module Pass_Module
+  imports Drop_Module
+          Pass_Module
 begin
 
 text

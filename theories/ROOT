@@ -14,41 +14,44 @@ session Voting = HOL +
   description "
     Verified Construction of Fair Voting Rules
   "
-options [browser_info, timeout = 1200, document = pdf, document_output = "output"]
+options [browser_info, timeout = 300, document = pdf, document_output = "output"]
 
 theories
   Preference_Relation
-  Electoral_Module
-  Evaluation_Function
-  Elimination_Module
+  Result
+  Profile
   Aggregator
   Maximum_Aggregator
   Termination_Condition
   Defer_Equal_Condition
+  Evaluation_Function
+  Electoral_Module
+  Elimination_Module
   Defer_Module
   Drop_Module
   Pass_Module
-  Drop_And_Pass_Compatibility
   Elect_Module
   Plurality_Module
   Borda_Module
   Condorcet_Module
   Copeland_Module
   Minimax_Module
+  Drop_And_Pass_Compatibility
   Revision_Composition
   Sequential_Composition
   Parallel_Composition
-  Maximum_Parallel_Composition
   Loop_Composition
+  Maximum_Parallel_Composition
+  Elect_Composition
   Defer_One_Loop_Composition
   Borda_Rule
   Condorcet_Rule
+  Copeland_Rule
+  Minimax_Rule
   Blacks_Rule
   Nanson_Baldwin_Rule
   Classic_Nanson_Rule
   Schwartz_Rule
-  Copeland_Rule
-  Minimax_Rule
   Sequential_Majority_Comparison
 
 document_files

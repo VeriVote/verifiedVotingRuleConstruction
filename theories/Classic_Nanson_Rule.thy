@@ -7,7 +7,8 @@
 section \<open>Classic Nanson Rule\<close>
 
 theory Classic_Nanson_Rule
-  imports Borda_Module Defer_One_Loop_Composition
+  imports Borda_Module
+          Defer_One_Loop_Composition
 begin
 
 text

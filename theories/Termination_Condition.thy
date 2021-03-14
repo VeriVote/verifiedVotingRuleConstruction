@@ -8,7 +8,7 @@
 section \<open>Termination Condition\<close>
 
 theory Termination_Condition
-  imports Electoral_Module
+  imports Result
 begin
 
 text

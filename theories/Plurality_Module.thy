@@ -149,7 +149,7 @@ proof (intro allI impI)
          \<forall>i::nat. i < size p \<longrightarrow>
            (above (p!i) x = {x} \<longrightarrow>
               (above (q!i) x = {x} \<or> above (q!i) a = {a}))"
-      using asm1 Electoral_Module.lifted_def lifted_above_winner
+      using asm1 Profile.lifted_def lifted_above_winner
       by (metis (no_types, lifting))
     hence
       "\<forall>i::nat. i < size p \<longrightarrow>
@@ -162,20 +162,20 @@ proof (intro allI impI)
       by blast
     moreover have sizes:
       "size p = size q"
-      using asm1 Electoral_Module.lifted_def
+      using asm1 Profile.lifted_def
       by metis
     ultimately have win_count_a:
       "win_count p a \<le> win_count q a"
       by (simp add: card_mono)
     have fin_A:
       "finite A"
-      using asm1 Electoral_Module.lifted_def
+      using asm1 Profile.lifted_def
       by metis
     hence
       "\<forall>x \<in> A-{a}.
         \<forall>i::nat. i < size p \<longrightarrow>
           (above (q!i) a = {a} \<longrightarrow> above (q!i) x \<noteq> {x})"
-      using DiffE Electoral_Module.lifted_def above_one2
+      using DiffE Profile.lifted_def above_one2
             asm1 insertCI insert_absorb insert_not_empty
             profile_def sizes
       by metis
@@ -184,7 +184,7 @@ proof (intro allI impI)
         \<forall>i::nat. i < size p \<longrightarrow>
           (above (q!i) x = {x} \<longrightarrow> above (p!i) x = {x})"
       using lifted_above_winner3 asm1
-            Electoral_Module.lifted_def
+            Profile.lifted_def
       by metis
     hence
       "\<forall>x \<in> A-{a}.
@@ -242,7 +242,7 @@ proof (intro allI impI)
           by blast
         moreover from asm1 have
           "\<forall>i::nat. i < size p \<longrightarrow> linear_order_on A (p!i)"
-          by (simp add: Electoral_Module.lifted_def profile_def)
+          by (simp add: Profile.lifted_def profile_def)
         ultimately have
           "\<exists>x \<in> A-{a}. x = a"
           using above_one2
@@ -290,7 +290,7 @@ proof (intro allI impI)
         by metis
       hence
         "\<forall>x \<in> A-{a}. \<not>(\<forall>y \<in> A. win_count q y \<le> win_count q x)"
-        using asm1 Electoral_Module.lifted_def not_le
+        using asm1 Profile.lifted_def not_le
         by metis
       hence
         "\<forall>x \<in> A-{a}.

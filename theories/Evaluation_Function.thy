@@ -7,7 +7,7 @@
 section \<open>Evaluation Function\<close>
 
 theory Evaluation_Function
-  imports Electoral_Module
+  imports Profile
 begin
 
 text

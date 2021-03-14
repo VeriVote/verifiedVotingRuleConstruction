@@ -9,7 +9,7 @@
 section \<open>Aggregator\<close>
 
 theory Aggregator
-  imports Electoral_Module
+  imports Result
 begin
 
 text
