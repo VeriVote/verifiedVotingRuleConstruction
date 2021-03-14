@@ -179,4 +179,18 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe)
   qed
 qed
 
+theorem minimax_is_dcc: "defer_condorcet_consistency minimax"
+proof -
+  have max_mmaxscore_dcc:
+    "defer_condorcet_consistency (max_eliminator minimax_score)"
+    using cr_eval_imp_dcc_max_elim
+    by (simp add: minimax_score_cond_rating)
+  have mmax_eq_max_mmax:
+    "\<And>A p. (minimax A p \<equiv> max_eliminator minimax_score A p)"
+    by simp
+  from max_mmaxscore_dcc mmax_eq_max_mmax show ?thesis
+    using defer_condorcet_consistency_def electoral_module_def
+    by (smt (verit, ccfv_threshold))
+qed
+
 end

@@ -25,29 +25,17 @@ fun minimax_rule_code :: "'a Electoral_Module" where
 
 subsection \<open>Property\<close>
 
+(*Minimax rule is Condorcet consistent.*)
 theorem minimax_condorcet: "condorcet_consistency minimax_rule"
 proof -
-  have assm:
-    "defer_condorcet_consistency
-      (\<lambda>A. max_eliminator minimax_score (A::'a set)) \<longrightarrow>
-      condorcet_consistency
-        (minimax_rule ::'a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow>
-          _ set \<times> _ set \<times> _ set)"
-    using minimax.simps condorcet_consistency_def
-          defer_condorcet_consistency_def electoral_module_def
-          minimax_rule.simps dcc_imp_cc_elector
-    by (smt (verit, ccfv_threshold))
+  have
+    "condorcet_consistency (elector minimax)"
+    using minimax_is_dcc dcc_imp_cc_elector
+    by metis
   thus ?thesis
-  proof -
-    have
-      "defer_condorcet_consistency
-        (\<lambda>A. max_eliminator minimax_score (A::'a set))"
-      using cr_eval_imp_dcc_max_elim minimax_score_cond_rating
-      by blast
-    thus ?thesis
-      using assm
-      by linarith
-  qed
+    using condorcet_consistency2 electoral_module_def
+          minimax_rule.simps
+    by metis
 qed
 
 end

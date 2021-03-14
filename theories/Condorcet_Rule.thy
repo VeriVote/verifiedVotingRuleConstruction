@@ -33,22 +33,17 @@ fun condorcet_rule' :: "'a Electoral_Module" where
 
 subsection \<open>Property\<close>
 
+(*Condorcet rule is Condorcet consistent.*)
 theorem condorcet_condorcet: "condorcet_consistency condorcet_rule"
 proof -
   have
-    "defer_condorcet_consistency
-      (\<lambda>A. max_eliminator condorcet_score (A::'a set)) \<longrightarrow>
-        condorcet_consistency
-          (condorcet_rule ::'a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow>
-            _ set \<times> _ set \<times> _ set)"
-    using condorcet.simps condorcet_consistency_def
-          defer_condorcet_consistency_def electoral_module_def
-          condorcet_rule.simps dcc_imp_cc_elector
-    by (smt (verit, ccfv_threshold))
+    "condorcet_consistency (elector condorcet)"
+    using condorcet_is_dcc dcc_imp_cc_elector
+    by metis
   thus ?thesis
-    using condorcet_score_is_condorcet_rating
-          cr_eval_imp_dcc_max_elim
-    by blast
+    using condorcet_consistency2 electoral_module_def
+          condorcet_rule.simps
+    by metis
 qed
 
 end

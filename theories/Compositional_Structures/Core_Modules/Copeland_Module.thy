@@ -221,4 +221,18 @@ proof (unfold condorcet_rating_def copeland_score.simps, safe)
   qed
 qed
 
+theorem copeland_is_dcc: "defer_condorcet_consistency copeland"
+proof -
+  have max_cplscore_dcc:
+    "defer_condorcet_consistency (max_eliminator copeland_score)"
+    using cr_eval_imp_dcc_max_elim
+    by (simp add: copeland_score_is_cr)
+  have copel_eq_max_copel:
+    "\<And>A p. (copeland A p \<equiv> max_eliminator copeland_score A p)"
+    by simp
+  from max_cplscore_dcc copel_eq_max_copel show ?thesis
+    using defer_condorcet_consistency_def electoral_module_def
+    by (smt (verit, ccfv_threshold))
+qed
+
 end

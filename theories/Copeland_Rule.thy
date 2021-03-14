@@ -26,22 +26,17 @@ fun copeland_rule_code :: "'a Electoral_Module" where
 
 subsection \<open>Property\<close>
 
-(*Copeland is Condorcet consistent.*)
+(*Copeland rule is Condorcet consistent.*)
 theorem copeland_condorcet: "condorcet_consistency copeland_rule"
 proof -
   have
-    "defer_condorcet_consistency
-      (\<lambda>A. max_eliminator copeland_score (A::'a set)) \<longrightarrow>
-    condorcet_consistency (copeland_rule ::'a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow>
-      _ set \<times> _ set \<times> _ set)"
-    using copeland.simps condorcet_consistency_def
-          defer_condorcet_consistency_def electoral_module_def
-          copeland_rule.simps dcc_imp_cc_elector
-    by (smt (verit, ccfv_threshold))
+    "condorcet_consistency (elector copeland)"
+    using copeland_is_dcc dcc_imp_cc_elector
+    by metis
   thus ?thesis
-    using copeland_score_is_cr
-          cr_eval_imp_dcc_max_elim
-    by blast
+    using condorcet_consistency2 electoral_module_def
+          copeland_rule.simps
+    by metis
 qed
 
 end

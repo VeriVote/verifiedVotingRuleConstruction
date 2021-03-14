@@ -39,23 +39,35 @@ subsection \<open>Property\<close>
 
 (* Condorcet score is Condorcet rating. *)
 theorem condorcet_score_is_condorcet_rating: "condorcet_rating condorcet_score"
-  using condorcet_rating_def cond_winner_unique condorcet_score.simps
-        zero_less_one
-  proof -
-    have
-      "\<forall>f.
-        (\<not> condorcet_rating f \<longrightarrow>
+proof -
+  have
+    "\<forall>f.
+      (\<not> condorcet_rating f \<longrightarrow>
           (\<exists>A rs a.
             condorcet_winner A rs a \<and>
-            (\<exists>aa. \<not> f (aa::'a) A rs < f a A rs \<and> a \<noteq> aa \<and> aa \<in> A))) \<and>
+              (\<exists>aa. \<not> f (aa::'a) A rs < f a A rs \<and> a \<noteq> aa \<and> aa \<in> A))) \<and>
         (condorcet_rating f \<longrightarrow>
           (\<forall>A rs a. condorcet_winner A rs a \<longrightarrow>
             (\<forall>aa. f aa A rs < f a A rs \<or> a = aa \<or> aa \<notin> A)))"
-      using condorcet_rating_def
-      by (metis (mono_tags, hide_lams))
-    thus ?thesis
-      using cond_winner_unique condorcet_score.simps zero_less_one
-      by (metis (no_types))
-  qed
+    using condorcet_rating_def
+    by (metis (mono_tags, hide_lams))
+  thus ?thesis
+    using cond_winner_unique condorcet_score.simps zero_less_one
+    by (metis (no_types))
+qed
+
+theorem condorcet_is_dcc: "defer_condorcet_consistency condorcet"
+proof -
+  have max_cscore_dcc:
+    "defer_condorcet_consistency (max_eliminator condorcet_score)"
+    using cr_eval_imp_dcc_max_elim
+    by (simp add: condorcet_score_is_condorcet_rating)
+  have cond_eq_max_cond:
+    "\<And>A p. (condorcet A p \<equiv> max_eliminator condorcet_score A p)"
+    by simp
+  from max_cscore_dcc cond_eq_max_cond show ?thesis
+    using defer_condorcet_consistency_def electoral_module_def
+    by (smt (verit, ccfv_threshold))
+qed
 
 end
