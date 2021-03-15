@@ -392,7 +392,7 @@ lemma limit_presv_above2:
     "b \<in> above (limit B r) a" and
     "linear_order_on A r" and
     "B \<subseteq> A" and
-    "a \<in> B" and 
+    "a \<in> B" and
     "b \<in> B"
   shows "b \<in> above r a"
   unfolding above_def
@@ -826,40 +826,38 @@ proof (safe)
 qed
 
 lemma lifted_above2:
-  assumes "lifted A r s a"
-  shows "\<forall>x. x \<in> A-{a} \<longrightarrow> above r x \<subseteq> above s x \<union> {a}"
-proof
-  fix
-    x :: "'a"
-  show "x \<in> A-{a} \<longrightarrow> above r x \<subseteq> above s x \<union> {a}"
-  proof
-    assume "x \<in> A-{a}"
-    hence "\<forall>y \<in> A-{a}. x \<preceq>\<^sub>r y \<longleftrightarrow> x \<preceq>\<^sub>s y"
-      using assms lifted_def equiv_rel_except_a_def
-      by metis
-    hence "\<forall>y \<in> A-{a}. (x, y) \<in> r \<longleftrightarrow> (x, y) \<in> s"
-      by simp
-    hence "\<forall>y \<in> A-{a}. y \<in> above r x \<longleftrightarrow> y \<in> above s x"
-      by (simp add: above_def)
-    moreover have "a \<in> above r x \<longrightarrow> a \<in> above s x"
-      using assms lifted_mono2 pref_imp_in_above
-      by metis
-    moreover have "above r x \<subseteq> A \<and> above s x \<subseteq> A"
-      using CollectD above_def assms connex_imp_refl
-            lifted_def equiv_rel_except_a_def
-            lin_ord_imp_connex refl_on_domain subsetI
-      by metis
-    ultimately show "above r x \<subseteq> above s x \<union> {a}"
-      using Diff_iff UnI1 UnI2 in_mono subsetI
-      by blast
-  qed
+  assumes
+    "lifted A r s a" and
+    "x \<in> A-{a}"
+  shows "above r x \<subseteq> above s x \<union> {a}"
+proof (safe, simp)
+  fix y :: "'a"
+  assume
+    y_in_above_r: "y \<in> above r x" and
+    y_not_in_above_s: "y \<notin> above s x"
+  have "\<forall>z \<in> A-{a}. x \<preceq>\<^sub>r z \<longleftrightarrow> x \<preceq>\<^sub>s z"
+    using assms lifted_def equiv_rel_except_a_def
+    by metis
+  hence "\<forall>z \<in> A-{a}. (x, z) \<in> r \<longleftrightarrow> (x, z) \<in> s"
+    by simp
+  hence "\<forall>z \<in> A-{a}. z \<in> above r x \<longleftrightarrow> z \<in> above s x"
+    by (simp add: above_def)
+  hence "y \<in> above r x \<longleftrightarrow> y \<in> above s x"
+    using y_not_in_above_s assms(1) connex_def
+          equiv_rel_except_a_def lifted_def lifted_mono2
+          limited_dest lin_ord_imp_connex member_remove
+          pref_imp_in_above remove_def
+    by metis
+  thus "y = a"
+    using y_in_above_r y_not_in_above_s
+    by simp
 qed
 
 lemma limit_lifted_imp_eq_or_lifted:
   assumes
     lifted: "lifted S r s a" and
     subset: "A \<subseteq> S"
-  shows 
+  shows
     "limit A r = limit A s \<or>
       lifted A (limit A r) (limit A s) a"
 proof -
@@ -881,7 +879,7 @@ proof -
     proof cases
       (* (\<forall>x \<in> A - {a}. \<forall>y \<in> A - {a}. x \<preceq>\<^sub>r y \<longleftrightarrow> x \<preceq>\<^sub>s y) *)
       assume a1_1: "\<exists>x \<in> A - {a}. a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a" (* \<and> a1: "a \<in> A" *)
-      from lifted subset have 
+      from lifted subset have
         "linear_order_on A (limit A r) \<and> linear_order_on A (limit A s)"
         using lifted_def equiv_rel_except_a_def limit_presv_lin_ord
         by metis

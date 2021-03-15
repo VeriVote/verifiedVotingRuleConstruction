@@ -23,9 +23,8 @@ fun minimax_rule :: "'a Electoral_Module" where
 fun minimax_rule_code :: "'a Electoral_Module" where
   "minimax_rule_code A p = elector minimax_code A p"
 
-subsection \<open>Property\<close>
+subsection \<open>Condorcet Consistency Property\<close>
 
-(*Minimax rule is Condorcet consistent.*)
 theorem minimax_condorcet: "condorcet_consistency minimax_rule"
 proof -
   have

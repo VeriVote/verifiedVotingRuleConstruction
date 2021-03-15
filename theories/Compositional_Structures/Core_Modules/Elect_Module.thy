@@ -25,11 +25,13 @@ fun elect_module :: "'a Electoral_Module" where
 subsection \<open>Soundness\<close>
 
 theorem elect_mod_sound[simp]: "electoral_module elect_module"
-  by (simp add: electoral_module_def)
+  unfolding electoral_module_def
+  by simp
 
 subsection \<open>Electing\<close>
 
 theorem elect_mod_electing[simp]: "electing elect_module"
-  by (simp add: electing_def)
+  unfolding electing_def
+  by simp
 
 end

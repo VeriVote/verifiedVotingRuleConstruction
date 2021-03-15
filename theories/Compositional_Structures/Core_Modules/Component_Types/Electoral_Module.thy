@@ -324,9 +324,9 @@ next
     using wf_A_m_0
     by simp
   from disj3 obtain
-    AA :: "'a set \<times> 'a set \<times> 'a set \<Rightarrow> 'a set" and
-    AAa :: "'a set \<times> 'a set \<times> 'a set \<Rightarrow> 'a set" and
-    AAb :: "'a set \<times> 'a set \<times> 'a set \<Rightarrow> 'a set"
+    AA :: "'a Result \<Rightarrow> 'a set" and
+    AAa :: "'a Result \<Rightarrow> 'a set" and
+    AAb :: "'a Result \<Rightarrow> 'a set"
     where
     "m A p =
       (AA (m A p), AAa (m A p), AAb (m A p)) \<and>
@@ -374,7 +374,7 @@ next
 qed
 
 lemma elect_in_alts:
-  assumes 
+  assumes
     e_mod: "electoral_module m" and
     f_prof: "finite_profile A p"
   shows "elect m A p \<subseteq> A"
@@ -445,7 +445,7 @@ qed
 
 lemma elec_and_def_not_rej:
   assumes
-    e_mod: "electoral_module m" and 
+    e_mod: "electoral_module m" and
     f_prof: "finite_profile A p"
   shows "elect m A p \<union> defer m A p = A - (reject m A p)"
 proof -
@@ -530,7 +530,7 @@ lemma single_elim_imp_red_def_set:
   by metis
 
 lemma eq_alts_in_profs_imp_eq_results:
-  assumes 
+  assumes
     eq: "\<forall>a \<in> A. prof_contains_result m A p q a" and
     (*for empty A*)
     input: "electoral_module m \<and> finite_profile A p \<and> finite_profile A q"
@@ -723,7 +723,7 @@ subsection \<open>Properties\<close>
 definition defer_condorcet_consistency :: "'a Electoral_Module \<Rightarrow> bool" where
   "defer_condorcet_consistency m \<equiv>
     electoral_module m \<and>
-    (\<forall> A p w. condorcet_winner A p w \<and> finite A \<longrightarrow> 
+    (\<forall> A p w. condorcet_winner A p w \<and> finite A \<longrightarrow>
       (m A p =
         ({},
         A - (defer m A p),
@@ -1050,7 +1050,7 @@ next
 next
   have assm0:
     "electoral_module m \<Longrightarrow>
-      \<forall>A p w. condorcet_winner A p w \<longrightarrow> 
+      \<forall>A p w. condorcet_winner A p w \<longrightarrow>
           m A p = ({w}, A - elect m A p, {}) \<Longrightarrow>
             condorcet_consistency m"
     using condorcet_consistency_def cond_winner_unique3
@@ -1089,7 +1089,7 @@ definition homogeneity :: "'a Electoral_Module \<Rightarrow> bool" where
 "homogeneity m \<equiv>
   electoral_module m \<and>
     (\<forall> A p n .
-      (finite_profile A p \<and> n > 0 \<longrightarrow> 
+      (finite_profile A p \<and> n > 0 \<longrightarrow>
           (m A p = m A (times n p))))"
 
 end

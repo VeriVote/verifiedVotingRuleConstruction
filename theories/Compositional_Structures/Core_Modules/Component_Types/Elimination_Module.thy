@@ -68,45 +68,50 @@ fun leq_average_eliminator :: "'a Evaluation_Function \<Rightarrow>
 subsection \<open>Soundness\<close>
 
 lemma elim_mod_sound[simp]: "electoral_module (elimination_module e t r)"
-proof (unfold electoral_module_def)
-  show
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        well_formed A (elimination_module e t r A p)"
-  proof (unfold well_formed.simps)
-    show
-      "\<forall>A p. finite_profile A p \<longrightarrow>
-          disjoint3 (elimination_module e t r A p) \<and>
-          set_equals_partition A (elimination_module e t r A p)"
-      by auto
-  qed
+proof (unfold electoral_module_def, safe)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
+  have "set_equals_partition A (elimination_module e t r A p)"
+    by auto
+  thus "well_formed A (elimination_module e t r A p)"
+    by simp
 qed
 
 lemma less_elim_sound[simp]: "electoral_module (less_eliminator e t)"
-  using elim_mod_sound less_eliminator.simps electoral_module_def
-  by (metis (no_types))
+  unfolding electoral_module_def
+proof (safe, simp)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
+  show
+    "{a \<in> A. e a A p < t} \<noteq> A \<longrightarrow>
+      {a \<in> A. e a A p < t} \<union> A = A"
+    by safe
+qed
 
 lemma leq_elim_sound[simp]: "electoral_module (leq_eliminator e t)"
-  using elim_mod_sound leq_eliminator.simps electoral_module_def
-  by (metis (no_types))
+  unfolding electoral_module_def
+proof (safe, simp)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
+  show
+    "{a \<in> A. e a A p \<le> t} \<noteq> A \<longrightarrow>
+      {a \<in> A. e a A p \<le> t} \<union> A = A"
+    by safe
+qed
 
 lemma max_elim_sound[simp]: "electoral_module (max_eliminator e)"
-proof -
-  obtain
-    AA :: "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<Rightarrow>
-              'a set" and
-    rrs :: "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<Rightarrow>
-              ('a \<times> 'a) set list" where
-    "\<forall>f.
-      (electoral_module f \<or> 
-        \<not> well_formed (AA f) (f (AA f) (rrs f)) \<and>
-            profile (AA f) (rrs f) \<and> finite (AA f)) \<and> 
-      (electoral_module f \<longrightarrow> 
-        (\<forall>A rs. profile A rs \<and> finite A \<longrightarrow> well_formed A (f A rs)))"
-    using electoral_module_def
-    by metis
-  thus ?thesis
-    using electoral_module_def
-    by force
+  unfolding electoral_module_def
+proof (safe, simp)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
+  show
+    "{a \<in> A. e a A p < Max {e x A p |x. x \<in> A}} \<noteq> A \<longrightarrow>
+      {a \<in> A. e a A p < Max {e x A p |x. x \<in> A}} \<union> A = A"
+    by safe
 qed
 
 lemma min_elim_sound[simp]: "electoral_module (min_eliminator e)"
@@ -208,7 +213,7 @@ proof -
     by (simp add: non_electing_def)
 qed
 
-subsection \<open>Properties\<close>
+subsection \<open>Inference Rules\<close>
 
 (*** If the used evaluation function is Condorcet rating,
      max-eliminator is Condorcet compatible. ***)

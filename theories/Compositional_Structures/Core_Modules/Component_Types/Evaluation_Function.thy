@@ -26,7 +26,7 @@ subsection \<open>Property\<close>
    If a Condorcet Winner w exists, w and only w has the highest value.
 *)
 definition condorcet_rating :: "'a Evaluation_Function \<Rightarrow> bool" where
-  "condorcet_rating f \<equiv> 
+  "condorcet_rating f \<equiv>
     \<forall>A p w . condorcet_winner A p w \<longrightarrow>
       (\<forall>l \<in> A . l \<noteq> w \<longrightarrow> f l A p < f w A p)"
 
@@ -65,13 +65,13 @@ proof -
   have 3: "\<forall> e \<in> ?set . e \<le> ?eW"
     using CollectD condorcet_rating_def eq_iff
           order.strict_implies_order rating winner
-    by (smt (verit, best)) 
+    by (smt (verit, best))
   (*Result*)
   from 2 3 have 4:
     "?eW \<in> ?set \<and> (\<forall>a \<in> ?set. a \<le> ?eW)"
     by blast
   from 0 1 4 Max_eq_iff show ?thesis
-    by (metis (no_types, lifting)) 
+    by (metis (no_types, lifting))
 qed
 
 (*
@@ -81,27 +81,22 @@ qed
    evaluation value.
 *)
 theorem non_cond_winner_not_max_eval:
-  assumes rating: "condorcet_rating e" and
-          f_prof: "finite_profile A p" and
-          winner: "condorcet_winner A p w"
-  shows "\<forall> l \<in> A . w \<noteq> l \<longrightarrow>  e l A p < Max {e a A p | a. a \<in> A}"
-proof (auto)
-  fix
-    l :: "'a"
-  assume
+  assumes
+    rating: "condorcet_rating e" and
+    f_prof: "finite_profile A p" and
+    winner: "condorcet_winner A p w" and
     linA: "l \<in> A" and
     loser: "w \<noteq> l"
-  show "e l A p < Max {e a A p |a. a \<in> A}"
-  proof -
-    have "e l A p < e w A p"
-      using condorcet_rating_def linA loser rating winner
-      by metis
-    also have "e w A p = Max {e a A p |a. a \<in> A}"
-      using cond_winner_imp_max_eval_val f_prof rating winner
-      by fastforce
-    finally show ?thesis
-      by simp
-  qed
+  shows "e l A p < Max {e a A p | a. a \<in> A}"
+proof -
+  have "e l A p < e w A p"
+    using condorcet_rating_def linA loser rating winner
+    by metis
+  also have "e w A p = Max {e a A p |a. a \<in> A}"
+    using cond_winner_imp_max_eval_val f_prof rating winner
+    by fastforce
+  finally show ?thesis
+    by simp
 qed
 
 end

@@ -109,7 +109,7 @@ proof -
     using assms rev_comp_non_electing invariant_monotonicity_def
     by auto
   ultimately have "electoral_module (m\<down>) \<and> non_electing (m\<down>) \<and>
-      (\<forall>A p q w. (w \<in> defer (m\<down>) A p \<and> lifted A p q w) \<longrightarrow> 
+      (\<forall>A p q w. (w \<in> defer (m\<down>) A p \<and> lifted A p q w) \<longrightarrow>
                  (defer (m\<down>) A q = defer (m\<down>) A p \<or> defer (m\<down>) A q = {w}))"
     by blast
   thus ?thesis

@@ -55,7 +55,7 @@ proof -
             a \<in> {x \<in> A. card(above (limit A r) x) > n}))"
     by auto
   hence
-    "\<forall>A p. finite_profile A p \<longrightarrow> 
+    "\<forall>A p. finite_profile A p \<longrightarrow>
         {a \<in> A. card(above (limit A r) a) \<le> n} \<inter>
         {a \<in> A. card(above (limit A r) a) > n} = {}"
     by blast

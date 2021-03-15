@@ -31,12 +31,8 @@ proof -
   thus ?thesis
   proof - (*generated proof*)
     obtain
-      AA ::
-      "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set)
-          \<Rightarrow> nat \<Rightarrow> 'a set" and
-      rrs ::
-      "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set)
-          \<Rightarrow> nat \<Rightarrow> ('a \<times> 'a) set list" where
+      AA :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a set" and
+      rrs :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a Profile" where
       "\<forall>x0 x1. (\<exists>v2 v3. (x1 \<le> card v2 \<and> finite_profile v2 v3) \<and>
           card (reject x0 v2 v3) \<noteq> x1) =
               ((x1 \<le> card (AA x0 x1) \<and> finite_profile (AA x0 x1) (rrs x0 x1)) \<and>
@@ -78,81 +74,68 @@ qed
 theorem drop_pass_disj_compat[simp]:
   assumes order: "linear_order r"
   shows "disjoint_compatibility (drop_module n r) (pass_module n r)"
-proof -
-  have
-    "\<forall>S. finite S \<longrightarrow>
-        (\<exists>A \<subseteq> S.
-          (\<forall>a \<in> A. indep_of_alt (drop_module n r) S a \<and>
-              (\<forall>p. finite_profile S p \<longrightarrow>
-                a \<in> reject (drop_module n r) S p)) \<and>
-          (\<forall>a \<in> S-A. indep_of_alt (pass_module n r) S a \<and>
-              (\<forall>p. finite_profile S p \<longrightarrow>
-                a \<in> reject (pass_module n r) S p)))"
+  unfolding disjoint_compatibility_def
+proof (safe)
+  show "electoral_module (drop_module n r)"
+    using order
+    by simp
+next
+  show "electoral_module (pass_module n r)"
+    using order
+    by simp
+next
+  fix
+    S :: "'a set"
+  assume
+    fin: "finite S"
+  obtain
+    p :: "'a Profile"
+    where "finite_profile S p"
+    using empty_iff empty_set fin profile_set
+    by metis
+  show
+    "\<exists>A \<subseteq> S.
+      (\<forall>a \<in> A. indep_of_alt (drop_module n r) S a \<and>
+        (\<forall>p. finite_profile S p \<longrightarrow>
+          a \<in> reject (drop_module n r) S p)) \<and>
+      (\<forall>a \<in> S-A. indep_of_alt (pass_module n r) S a \<and>
+        (\<forall>p. finite_profile S p \<longrightarrow>
+          a \<in> reject (pass_module n r) S p))"
   proof
-    fix
-      S :: "'a set"
-    show
-      "finite S \<longrightarrow>
-        (\<exists>A \<subseteq> S.
-          (\<forall>a \<in> A. indep_of_alt (drop_module n r) S a \<and>
-              (\<forall>p. finite_profile S p \<longrightarrow>
-                  a \<in> reject (drop_module n r) S p)) \<and>
-          (\<forall>a \<in> S-A. indep_of_alt (pass_module n r) S a \<and>
-              (\<forall>p. finite_profile S p \<longrightarrow>
-                  a \<in> reject (pass_module n r) S p)))"
-    proof
-      assume
-        fin: "finite S"
-      obtain
-        p :: "'a Profile"
-        where "finite_profile S p"
-        using empty_iff empty_set fin profile_set
-        by metis
-      show
-        "\<exists>A \<subseteq> S.
-          (\<forall>a \<in> A. indep_of_alt (drop_module n r) S a \<and>
-              (\<forall>p. finite_profile S p \<longrightarrow>
-                  a \<in> reject (drop_module n r) S p)) \<and>
-          (\<forall>a \<in> S-A. indep_of_alt (pass_module n r) S a \<and>
-              (\<forall>p. finite_profile S p \<longrightarrow>
-                  a \<in> reject (pass_module n r) S p))"
-      proof
-        have same_A:
-          "\<forall>p q. (finite_profile S p \<and> finite_profile S q) \<longrightarrow>
-              reject (drop_module n r) S p =
-                reject (drop_module n r) S q"
-          by auto
-        let ?A = "reject (drop_module n r) S p"
-        have "?A \<subseteq> S"
-          by auto
-        moreover have
-          "(\<forall>a \<in> ?A. indep_of_alt (drop_module n r) S a)"
-          by (simp add: indep_of_alt_def order)
-        moreover have
-          "\<forall>a \<in> ?A. \<forall>p. finite_profile S p \<longrightarrow>
-              a \<in> reject (drop_module n r) S p"
-          by auto
-        moreover have
-          "(\<forall>a \<in> S-?A. indep_of_alt (pass_module n r) S a)"
-          by (simp add: indep_of_alt_def order)
-        moreover have
-          "\<forall>a \<in> S-?A. \<forall>p. finite_profile S p \<longrightarrow>
-              a \<in> reject (pass_module n r) S p"
-          by auto
-        ultimately show 
-          "?A \<subseteq> S \<and>
-              (\<forall>a \<in> ?A. indep_of_alt (drop_module n r) S a \<and>
-                  (\<forall>p. finite_profile S p \<longrightarrow>
-                    a \<in> reject (drop_module n r) S p)) \<and>
-              (\<forall>a \<in> S-?A. indep_of_alt (pass_module n r) S a \<and>
-                  (\<forall>p. finite_profile S p \<longrightarrow>
-                    a \<in> reject (pass_module n r) S p))"
-          by simp
-      qed
-    qed
+    have same_A:
+      "\<forall>p q. (finite_profile S p \<and> finite_profile S q) \<longrightarrow>
+        reject (drop_module n r) S p =
+          reject (drop_module n r) S q"
+      by auto
+    let ?A = "reject (drop_module n r) S p"
+    have "?A \<subseteq> S"
+      by auto
+    moreover have
+      "(\<forall>a \<in> ?A. indep_of_alt (drop_module n r) S a)"
+      using order
+      by (simp add: indep_of_alt_def)
+    moreover have
+      "\<forall>a \<in> ?A. \<forall>p. finite_profile S p \<longrightarrow>
+        a \<in> reject (drop_module n r) S p"
+      by auto
+    moreover have
+      "(\<forall>a \<in> S-?A. indep_of_alt (pass_module n r) S a)"
+      using order
+      by (simp add: indep_of_alt_def)
+    moreover have
+      "\<forall>a \<in> S-?A. \<forall>p. finite_profile S p \<longrightarrow>
+        a \<in> reject (pass_module n r) S p"
+      by auto
+    ultimately show
+      "?A \<subseteq> S \<and>
+        (\<forall>a \<in> ?A. indep_of_alt (drop_module n r) S a \<and>
+          (\<forall>p. finite_profile S p \<longrightarrow>
+            a \<in> reject (drop_module n r) S p)) \<and>
+        (\<forall>a \<in> S-?A. indep_of_alt (pass_module n r) S a \<and>
+          (\<forall>p. finite_profile S p \<longrightarrow>
+            a \<in> reject (pass_module n r) S p))"
+      by simp
   qed
-  thus ?thesis
-    by (simp add: disjoint_compatibility_def order)
 qed
 
 end

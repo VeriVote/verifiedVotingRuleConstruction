@@ -21,11 +21,11 @@ by the full voting rule.\<close>
 subsection \<open>Definition\<close>
 
 fun condorcet_score :: "'a Evaluation_Function" where
-  "condorcet_score x A p = 
+  "condorcet_score x A p =
     (if (condorcet_winner A p x) then 1 else 0)"
 
 fun condorcet_score_code :: "'a Evaluation_Function" where
-  "condorcet_score_code x A p = 
+  "condorcet_score_code x A p =
     (if (condorcet_winner_code A p x) then 1 else 0)"
 
 fun condorcet :: "'a Electoral_Module" where
@@ -49,7 +49,7 @@ proof -
         (condorcet_rating f \<longrightarrow>
           (\<forall>A rs a. condorcet_winner A rs a \<longrightarrow>
             (\<forall>aa. f aa A rs < f a A rs \<or> a = aa \<or> aa \<notin> A)))"
-    using condorcet_rating_def
+    unfolding condorcet_rating_def
     by (metis (mono_tags, hide_lams))
   thus ?thesis
     using cond_winner_unique condorcet_score.simps zero_less_one
@@ -66,7 +66,7 @@ proof -
     "\<And>A p. (condorcet A p \<equiv> max_eliminator condorcet_score A p)"
     by simp
   from max_cscore_dcc cond_eq_max_cond show ?thesis
-    using defer_condorcet_consistency_def electoral_module_def
+    unfolding defer_condorcet_consistency_def electoral_module_def
     by (smt (verit, ccfv_threshold))
 qed
 

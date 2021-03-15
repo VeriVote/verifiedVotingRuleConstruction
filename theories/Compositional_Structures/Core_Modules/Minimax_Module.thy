@@ -80,7 +80,7 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
-    w :: "'a" and 
+    w :: "'a" and
     l :: "'a"
   assume
     winner: "condorcet_winner A p w" and
@@ -188,8 +188,9 @@ proof -
   have mmax_eq_max_mmax:
     "\<And>A p. (minimax A p \<equiv> max_eliminator minimax_score A p)"
     by simp
-  from max_mmaxscore_dcc mmax_eq_max_mmax show ?thesis
-    using defer_condorcet_consistency_def electoral_module_def
+  from max_mmaxscore_dcc mmax_eq_max_mmax
+  show ?thesis
+    unfolding defer_condorcet_consistency_def electoral_module_def
     by (smt (verit, ccfv_threshold))
 qed
 

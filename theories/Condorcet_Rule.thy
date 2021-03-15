@@ -31,9 +31,8 @@ fun condorcet' :: "'a Electoral_Module" where
 fun condorcet_rule' :: "'a Electoral_Module" where
 "condorcet_rule' A p = iterelect condorcet' A p"
 
-subsection \<open>Property\<close>
+subsection \<open>Condorcet Consistency Property\<close>
 
-(*Condorcet rule is Condorcet consistent.*)
 theorem condorcet_condorcet: "condorcet_consistency condorcet_rule"
 proof -
   have

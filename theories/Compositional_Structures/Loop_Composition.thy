@@ -37,7 +37,7 @@ lemma loop_termination_helper:
    function.
 *)
 function loop_comp_helper ::
-    "'a Electoral_Module \<Rightarrow> 'a Electoral_Module \<Rightarrow> 
+    "'a Electoral_Module \<Rightarrow> 'a Electoral_Module \<Rightarrow>
         'a Termination_Condition \<Rightarrow> 'a Electoral_Module" where
   "t (acc A p) \<or> \<not>((defer (acc \<triangleright> m) A p) \<subset> (defer acc A p)) \<or>
     infinite (defer acc A p) \<Longrightarrow>
@@ -48,9 +48,8 @@ function loop_comp_helper ::
 proof -
   fix
     P :: bool and
-    x :: "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-          ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-          ('a set \<times> 'a set \<times> 'a set \<Rightarrow> bool) \<times> 'a set \<times> ('a \<times> 'a) set list"
+    x :: "('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
+          ('a Termination_Condition) \<times> 'a set \<times> 'a Profile"
   assume
     a1: "\<And>t acc A p m.
           \<lbrakk>t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or>
@@ -87,16 +86,16 @@ next
               acc A p = loop_comp_helper_sumC (acca \<triangleright> ma, ma, ta, Aa, pa)"
   proof -
     fix
-      t :: "'a set \<times> 'a set \<times> 'a set \<Rightarrow> bool" and
-      acc :: "'a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set" and
+      t :: "'a Termination_Condition" and
+      acc :: "'a Electoral_Module" and
       A :: "'a set" and
-      p :: "('a \<times> 'a) set list" and
-      m :: "'a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set" and
-      ta :: "'a set \<times> 'a set \<times> 'a set \<Rightarrow> bool" and
-      acca :: "'a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set" and
+      p :: "'a Profile" and
+      m :: "'a Electoral_Module" and
+      ta :: "'a Termination_Condition" and
+      acca :: "'a Electoral_Module" and
       Aa :: "'a set" and
-      pa :: "('a \<times> 'a) set list" and
-      ma :: "'a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set"
+      pa :: "'a Profile" and
+      ma :: "'a Electoral_Module"
     assume
       a1: "t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or>
             infinite (defer acc A p)" and
@@ -137,57 +136,40 @@ proof -
       Ex ((\<lambda>ra. \<forall>f A rs pa fa. \<exists>ra pb rb pc pd fb Aa rsa fc pe.
         \<not> wf r \<or>
           loop_comp_helper_dom
-            (p::('a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
-              (_ set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
-              (_ set \<times> _ set \<times> _ set \<Rightarrow> bool) \<times> _ set \<times> (_ \<times> _) set list) \<or>
+            (p::('a Electoral_Module) \<times> (_ Electoral_Module) \<times>
+              (_ Termination_Condition) \<times> _ set \<times> _ Profile) \<or>
           infinite (defer f (A::'a set) rs) \<or>
           pa (f A rs) \<and>
             wf
               (ra::((
-                ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-                ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-                ('a set \<times> 'a set \<times> 'a set \<Rightarrow> bool) \<times>
-                'a set \<times> ('a \<times> 'a) set list) \<times> _) set) \<and>
+                ('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
+                ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) \<times> _) set) \<and>
             \<not> loop_comp_helper_dom (pb::
-                ('a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
-                (_ set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
-                (_ set \<times> _ set \<times> _ set \<Rightarrow> bool) \<times>
-                _ set \<times> (_ \<times> _) set list) \<or>
+                ('a Electoral_Module) \<times> (_ Electoral_Module) \<times>
+                (_ Termination_Condition) \<times> _ set \<times> _ Profile) \<or>
           wf rb \<and> \<not> defer (f \<triangleright> fa) A rs \<subset> defer f A rs \<and>
             \<not> loop_comp_helper_dom
-                (pc::('a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
-                  (_ set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
-                  (_ set \<times> _ set \<times> _ set \<Rightarrow> bool) \<times>
-                  _ set \<times> (_ \<times> _) set list) \<or>
+                (pc::('a Electoral_Module) \<times> (_ Electoral_Module) \<times>
+                  (_ Termination_Condition) \<times> _ set \<times> _ Profile) \<or>
             ((f \<triangleright> fa, fa, pa, A, rs), f, fa, pa, A, rs) \<in> rb \<and> wf rb \<and>
             \<not> loop_comp_helper_dom
-                (pd::('a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
-                  (_ set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set) \<times>
-                  (_ set \<times> _ set \<times> _ set \<Rightarrow> bool) \<times>
-                  _ set \<times> (_ \<times> _) set list) \<or>
+                (pd::('a Electoral_Module) \<times> (_ Electoral_Module) \<times>
+                  (_ Termination_Condition) \<times> _ set \<times> _ Profile) \<or>
             finite (defer fb (Aa::'a set) rsa) \<and>
             defer (fb \<triangleright> fc) Aa rsa \<subset> defer fb Aa rsa \<and>
             \<not> pe (fb Aa rsa) \<and>
             ((fb \<triangleright> fc, fc, pe, Aa, rsa), fb, fc, pe, Aa, rsa) \<notin> r)
-        ::((('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-            ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-            ('a set \<times> 'a set \<times> 'a set \<Rightarrow> bool) \<times>
-            'a set \<times> ('a \<times> 'a) set list) \<times>
-            ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-            ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-            ('a set \<times> 'a set \<times> 'a set \<Rightarrow> bool) \<times>
-            'a set \<times> ('a \<times> 'a) set list) set \<Rightarrow> bool)"
+        ::((('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
+            ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) \<times>
+            ('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
+            ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) set \<Rightarrow> bool)"
     by metis
   obtain
     rr ::
-          "((('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-             ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-             ('a set \<times> 'a set \<times> 'a set \<Rightarrow> bool) \<times>
-             'a set \<times> ('a \<times> 'a) set list) \<times>
-          ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-          ('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<times>
-         ('a set \<times> 'a set \<times> 'a set \<Rightarrow> bool) \<times>
-          'a set \<times> ('a \<times> 'a) set list) set" where
+          "((('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
+             ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) \<times>
+          ('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
+         ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) set" where
         "wf rr \<and> (\<forall>p f A rs fa. p (f A rs) \<or>
         \<not> defer (f \<triangleright> fa) A rs \<subset> defer f A rs \<or> infinite (defer f A rs) \<or>
         ((f \<triangleright> fa, fa, p, A, rs), f, fa, p, A, rs) \<in> rr)"
@@ -375,7 +357,7 @@ proof (induct n arbitrary: acc rule: less_induct)
           by (metis (no_types, hide_lams))
       qed
       hence
-        "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance (acc) \<longrightarrow> 
+        "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance (acc) \<longrightarrow>
             (\<forall>q a. (a \<in> (defer (acc \<triangleright> m) A p) \<and> lifted A p q a) \<longrightarrow>
                 defer (acc \<triangleright> m) A q \<subset> defer acc A q)"
         using defer_card_acc defer_in_alts monotone_m prod.sel(2) f_prof
@@ -449,7 +431,7 @@ lemma lifted_imp_fin_prof:
 lemma loop_comp_helper_presv_def_lift_inv:
   assumes
     monotone_m: "defer_lift_invariance m" and
-    monotone_acc: "defer_lift_invariance acc"          
+    monotone_acc: "defer_lift_invariance acc"
   shows "defer_lift_invariance (loop_comp_helper acc m t)"
 proof -
   have
@@ -488,8 +470,8 @@ qed
 
 lemma loop_comp_helper_iter_elim_def_n_helper:
   assumes
-    non_electing_m: "non_electing m" and 
-    single_elimination: "eliminates 1 m" and 
+    non_electing_m: "non_electing m" and
+    single_elimination: "eliminates 1 m" and
     terminate_if_n_left: "\<forall> r. ((t r) \<longleftrightarrow> (card (defer_r r) = x))" and
     x_greater_zero: "x > 0" and
     f_prof: "finite_profile A p"
@@ -566,7 +548,7 @@ proof (induct n arbitrary: acc rule: less_induct)
         by metis
       hence "electoral_module acc \<longrightarrow> i \<ge> x"
         using card_too_big
-        by linarith 
+        by linarith
       hence new_card_still_big_enough: "electoral_module acc \<longrightarrow> x \<le> i"
         by blast
       have
@@ -641,8 +623,8 @@ qed
 
 lemma loop_comp_helper_iter_elim_def_n:
   assumes
-    non_electing_m: "non_electing m" and 
-    single_elimination: "eliminates 1 m" and 
+    non_electing_m: "non_electing m" and
+    single_elimination: "eliminates 1 m" and
     terminate_if_n_left: "\<forall> r. ((t r) \<longleftrightarrow> (card (defer_r r) = x))" and
     x_greater_zero: "x > 0" and
     f_prof: "finite_profile A p" and
@@ -658,8 +640,8 @@ lemma loop_comp_helper_iter_elim_def_n:
 
 lemma iter_elim_def_n_helper:
   assumes
-    non_electing_m: "non_electing m" and 
-    single_elimination: "eliminates 1 m" and 
+    non_electing_m: "non_electing m" and
+    single_elimination: "eliminates 1 m" and
     terminate_if_n_left: "\<forall> r. ((t r) \<longleftrightarrow> (card (defer_r r) = x))" and
     x_greater_zero: "x > 0" and
     f_prof: "finite_profile A p" and
@@ -717,7 +699,7 @@ proof -
   thus ?thesis
     using def_mod_def_lift_inv monotone_m loop_composition.simps(1)
           loop_composition.simps(2) defer_lift_invariance_def
-          loop_comp_sound loop_comp_helper_def_lift_inv2 
+          loop_comp_sound loop_comp_helper_def_lift_inv2
           lifted_imp_fin_prof
     by (smt (verit, best))
 qed
@@ -749,8 +731,8 @@ qed
 
 theorem iter_elim_def_n[simp]:
   assumes
-    non_electing_m: "non_electing m" and 
-    single_elimination: "eliminates 1 m" and 
+    non_electing_m: "non_electing m" and
+    single_elimination: "eliminates 1 m" and
     terminate_if_n_left: "\<forall> r. ((t r) \<longleftrightarrow> (card (defer_r r) = n))" and
     x_greater_zero: "n > 0"
   shows "defers n (m \<circlearrowleft>\<^sub>t)"

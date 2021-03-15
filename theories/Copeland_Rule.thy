@@ -24,9 +24,8 @@ fun copeland_rule :: "'a Electoral_Module" where
 fun copeland_rule_code :: "'a Electoral_Module" where
   "copeland_rule_code A p = elector copeland_code A p"
 
-subsection \<open>Property\<close>
+subsection \<open>Condorcet Consistency Property\<close>
 
-(*Copeland rule is Condorcet consistent.*)
 theorem copeland_condorcet: "condorcet_consistency copeland_rule"
 proof -
   have

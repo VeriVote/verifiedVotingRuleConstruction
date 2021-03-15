@@ -30,7 +30,7 @@ type_synonym 'a Profile = "('a Preference_Relation) list"
    A profile on a finite set of alternatives A contains only ballots that are
    linear orders on A.
 *)
-definition profile :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> bool" where 
+definition profile :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> bool" where
   "profile A p \<equiv> \<forall>i::nat. i < size p \<longrightarrow> linear_order_on A (p!i)"
 
 lemma profile_set : "profile A p \<equiv> (\<forall>b \<in> (set p). linear_order_on A b)"
@@ -55,7 +55,7 @@ fun win_count_code :: "'a Profile \<Rightarrow> 'a \<Rightarrow> nat" where
       (if (above p a = {a}) then 1 else 0) + win_count_code ps a"
 
 fun prefer_count :: "'a Profile \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> nat" where
-  "prefer_count p x y = 
+  "prefer_count p x y =
       card {i::nat. i < size p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))}"
 
 fun prefer_count_code :: "'a Profile \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> nat" where
@@ -115,7 +115,7 @@ proof -
     "{i::nat. i < size p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
         {i::nat. i < size p} - {i::nat. i < size p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}"
     using "10" "2"
-    by simp 
+    by simp
   have "{i::nat. i < size p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))} \<subseteq> {i::nat. i < size p}"
     by (simp add: Collect_mono)
   hence 30:
@@ -152,7 +152,7 @@ lemma pref_count_sym:
     assumes x_in_A: "x \<in> A"
     assumes neq1: "a \<noteq> x"
     assumes neq2: "x \<noteq> b"
-    shows "prefer_count p b x \<ge> prefer_count p x a" 
+    shows "prefer_count p b x \<ge> prefer_count p x a"
 proof -
   from prof a_in_A x_in_A neq1 have 0:
     "prefer_count p a x = (size p) - (prefer_count p x a)"
@@ -185,13 +185,17 @@ lemma empty_prof_imp_zero_pref_count:
   by simp
 
 lemma pref_count_code_incr:
-  assumes "prefer_count_code ps x y = n \<and> y \<preceq>\<^sub>p x"
+  assumes
+    "prefer_count_code ps x y = n" and
+    "y \<preceq>\<^sub>p x"
   shows "prefer_count_code (p#ps) x y = n+1"
   using assms
   by simp
 
 lemma pref_count_code_not_smaller_imp_constant:
-  assumes "prefer_count_code ps x y = n \<and> \<not>(y \<preceq>\<^sub>p x)"
+  assumes
+    "prefer_count_code ps x y = n" and
+    "\<not>(y \<preceq>\<^sub>p x)"
   shows "prefer_count_code (p#ps) x y = n"
   using assms
   by simp
@@ -205,7 +209,10 @@ fun wins_code :: "'a \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> boo
     (prefer_count_code p x y > prefer_count_code p y x)"
 
 (* Alternative a wins against b implies that b does not win against a. *)
-lemma wins_antisym: "wins a p b \<Longrightarrow> \<not> wins b p a"
+lemma wins_antisym:
+  assumes "wins a p b"
+  shows "\<not> wins b p a"
+  using assms
   by simp
 
 lemma wins_irreflex: "\<not> wins w p w"
@@ -257,7 +264,7 @@ lemma cond_winner_unique2:
 lemma cond_winner_unique3:
   assumes "condorcet_winner A p w"
   shows "{a \<in> A. condorcet_winner A p a} = {w}"
-proof (simp, safe, simp_all)
+proof (safe, simp_all, safe)
   fix
     x :: "'a"
   assume

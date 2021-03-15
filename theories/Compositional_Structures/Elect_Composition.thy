@@ -5,7 +5,7 @@
 \<^marker>\<open>contributor "Jonas Kraemer, Karlsruhe Institute of Technology (KIT)"\<close>
 \<^marker>\<open>contributor "Michael Kirsten, Karlsruhe Institute of Technology (KIT)"\<close>
 
-section \<open>Elector Module\<close>
+section \<open>Elect Composition\<close>
 
 theory Elect_Composition
   imports "Core_Modules/Elect_Module"
@@ -40,11 +40,8 @@ theorem elector_electing[simp]:
   shows "electing (elector m)"
 proof -
   obtain
-    AA ::
-    "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<Rightarrow> 'a set" and
-    rrs ::
-    "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<Rightarrow>
-        ('a \<times> 'a) set list" where
+    AA :: "'a Electoral_Module \<Rightarrow> 'a set" and
+    rrs :: "'a Electoral_Module \<Rightarrow> 'a Profile" where
     f1:
     "\<forall>f.
       (electing f \<or>
@@ -58,8 +55,8 @@ proof -
     using electing_def
     by metis
   have non_block:
-    "non_blocking (elect_module::'a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow>
-                      _ set \<times> _ set \<times> _ set)"
+    "non_blocking
+      (elect_module::'a set \<Rightarrow> _ Profile \<Rightarrow> _ Result)"
     by (simp add: electing_imp_non_blocking)
   thus ?thesis
     (* using f1 Diff_empty elect_module.elims elector.simps non_block_m
@@ -69,11 +66,8 @@ proof -
           empty_iff ex_in_conv seq_comp_def_set_trans *)
   proof -
     obtain
-      AAa ::
-      "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<Rightarrow> 'a set" and
-      rrsa ::
-      "('a set \<Rightarrow> ('a \<times> 'a) set list \<Rightarrow> 'a set \<times> 'a set \<times> 'a set) \<Rightarrow>
-          ('a \<times> 'a) set list" where
+      AAa :: "'a Electoral_Module \<Rightarrow> 'a set" and
+      rrsa :: "'a Electoral_Module \<Rightarrow> 'a Profile" where
       f1:
       "\<forall>f.
         (electing f \<or>
@@ -85,12 +79,9 @@ proof -
       using electing_def
       by metis
     obtain
-      AAb ::
-      "'a set \<times> 'a set \<times> 'a set \<Rightarrow> 'a set" and
-      AAc ::
-      "'a set \<times> 'a set \<times> 'a set \<Rightarrow> 'a set" and
-      AAd ::
-      "'a set \<times> 'a set \<times> 'a set \<Rightarrow> 'a set" where
+      AAb :: "'a Result \<Rightarrow> 'a set" and
+      AAc :: "'a Result \<Rightarrow> 'a set" and
+      AAd :: "'a Result \<Rightarrow> 'a set" where
       f2:
       "\<forall>p. (AAb p, AAc p, AAd p) = p"
       using disjoint3.cases
@@ -137,10 +128,11 @@ subsection \<open>Composition Rule\<close>
 lemma dcc_imp_cc_elector:
   assumes dcc: "defer_condorcet_consistency m"
   shows "condorcet_consistency (elector m)"
-proof (unfold defer_condorcet_consistency_def condorcet_consistency_def, auto)
+proof (unfold defer_condorcet_consistency_def
+              condorcet_consistency_def, auto)
   show "electoral_module (m \<triangleright> elect_module)"
-    using dcc defer_condorcet_consistency_def elect_mod_sound
-          seq_comp_sound elector.simps
+    using dcc defer_condorcet_consistency_def
+          elect_mod_sound seq_comp_sound
     by metis
 next
   show
@@ -152,13 +144,12 @@ next
   proof -
     fix
       A :: "'a set" and
-      p :: "('a \<times> 'a) set list" and
+      p :: "'a Profile" and
       w :: "'a" and
       x :: "'a"
     assume
       finite: "finite A" and
-      prof_A: "profile A p" and
-      w_in_A: "w \<in> A"
+      prof_A: "profile A p"
     show
       "\<forall>y\<in>A - {w}.
           card {i. i < length p \<and> (w, y) \<in> (p!i)} <
@@ -180,18 +171,15 @@ next
     prof_A: "profile A p" and
     w_in_A: "w \<in> A" and
     1: "x \<in> elect m A p" and
-    xa_in_A: "xa \<in> A" and
     2: "\<forall>y\<in>A - {w}.
           card {i. i < length p \<and> (w, y) \<in> (p!i)} <
-            card {i. i < length p \<and> (y, w) \<in> (p!i)}" and
-    3: "\<not> card {i. i < length p \<and> (x, xa) \<in> p ! i} <
-            card {i. i < length p \<and> (xa, x) \<in> p ! i}"
+            card {i. i < length p \<and> (y, w) \<in> (p!i)}"
   have "condorcet_winner A p w"
-    using condorcet_winner.simps dcc local.finite prof_A w_in_A "2"
+    using finite prof_A w_in_A "2"
     by simp
   thus "xa = x"
-    using condorcet_winner.simps dcc defer_condorcet_consistency_def
-          "1" fst_conv insert_Diff insert_not_empty
+    using condorcet_winner.simps dcc fst_conv insert_Diff "1"
+          defer_condorcet_consistency_def insert_not_empty
     by (metis (no_types, lifting))
 next
   fix
@@ -208,7 +196,7 @@ next
             card {i. i < length p \<and> (y, w) \<in> (p!i)}" and
     1: "x \<in> defer m A p"
   have "condorcet_winner A p w"
-    using condorcet_winner.simps dcc finite prof_A w_in_A "0"
+    using finite prof_A w_in_A "0"
     by simp
   thus "x \<in> A"
     using "0" "1" condorcet_winner.simps dcc defer_in_alts
@@ -234,7 +222,7 @@ next
     3: "\<not> card {i. i < length p \<and> (x, xa) \<in> (p!i)} <
             card {i. i < length p \<and> (xa, x) \<in> (p!i)}"
   have "condorcet_winner A p w"
-    using condorcet_winner.simps dcc finite prof_A w_in_A "2"
+    using finite prof_A w_in_A "2"
     by simp
   thus "xa = x"
     using "1" "2" condorcet_winner.simps dcc empty_iff xa_in_A
@@ -260,16 +248,15 @@ next
           card {i. i < length p \<and> (x, y) \<in> (p!i)} <
             card {i. i < length p \<and> (y, x) \<in> (p!i)}"
   have "condorcet_winner A p w"
-    using condorcet_winner.simps dcc finite prof_A w_in_A "2"
+    using finite prof_A w_in_A "2"
     by simp
   also have "condorcet_winner A p x"
-    using condorcet_winner.simps dcc finite prof_A x_in_A "3"
+    using finite prof_A x_in_A "3"
     by simp
   ultimately show "x \<in> elect m A p"
-    using "1" "2" "3" condorcet_winner.simps dcc
-          defer_condorcet_consistency_def empty_iff
+    using "1" condorcet_winner.simps dcc
+          defer_condorcet_consistency_def
           cond_winner_unique3 insert_iff eq_snd_iff
-          prod_cases3
     by (metis (no_types, lifting))
 next
   fix
@@ -286,7 +273,7 @@ next
           card {i. i < length p \<and> (w, y) \<in> (p!i)} <
             card {i. i < length p \<and> (y, w) \<in> (p!i)}"
   have "condorcet_winner A p w"
-    using condorcet_winner.simps dcc finite prof_A w_in_A "2"
+    using finite prof_A w_in_A "2"
     by simp
   thus "x \<in> A"
     using "1" dcc defer_condorcet_consistency_def finite
@@ -308,10 +295,10 @@ next
           card {i. i < length p \<and> (w, y) \<in> (p!i)} <
             card {i. i < length p \<and> (y, w) \<in> (p!i)}"
   have "condorcet_winner A p w"
-    using condorcet_winner.simps dcc finite prof_A w_in_A "2"
+    using finite prof_A w_in_A "2"
     by simp
   thus "False"
-    using "0" "1" "2" condorcet_winner.simps dcc IntI empty_iff
+    using "0" "1" condorcet_winner.simps dcc IntI empty_iff
           defer_condorcet_consistency_def result_disj
     by (metis (no_types, hide_lams))
 next
@@ -330,7 +317,7 @@ next
           card {i. i < length p \<and> (w, y) \<in> (p!i)} <
             card {i. i < length p \<and> (y, w) \<in> (p!i)}"
   have "condorcet_winner A p w"
-    using condorcet_winner.simps dcc finite prof_A w_in_A "2"
+    using finite prof_A w_in_A "2"
     by simp
   thus "False"
     using "0" "1" dcc defer_condorcet_consistency_def IntI
@@ -353,7 +340,7 @@ next
           card {i. i < length p \<and> (w, y) \<in> (p!i)} <
             card {i. i < length p \<and> (y, w) \<in> (p!i)}"
   have "condorcet_winner A p w"
-    using condorcet_winner.simps dcc finite prof_A w_in_A "2"
+    using finite prof_A w_in_A "2"
     by simp
   thus "x \<in> elect m A p"
     using "0" "1" condorcet_winner.simps dcc x_in_A

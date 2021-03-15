@@ -24,14 +24,17 @@ fun defer_module :: "'a Electoral_Module" where
 subsection \<open>Soundness\<close>
 
 theorem def_mod_sound[simp]: "electoral_module defer_module"
-  by (simp add: electoral_module_def)
+  unfolding electoral_module_def
+  by simp
 
 subsection \<open>Properties\<close>
 
 theorem def_mod_non_electing: "non_electing defer_module"
-  by (simp add: non_electing_def)
+  unfolding non_electing_def
+  by simp
 
 theorem def_mod_def_lift_inv: "defer_lift_invariance defer_module"
-  by (simp add: defer_lift_invariance_def)
+  unfolding defer_lift_invariance_def
+  by simp
 
 end

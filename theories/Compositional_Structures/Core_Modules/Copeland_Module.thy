@@ -110,11 +110,12 @@ lemma cond_winner_imp_loss_count:
 lemma cond_winner_imp_copeland_score:
   assumes winner: "condorcet_winner A p w"
   shows "copeland_score w A p = card A -1"
-proof(unfold copeland_score.simps)
+  unfolding copeland_score.simps
+proof -
   show
     "card {y \<in> A. wins w p y} - card {y \<in> A. wins y p w} =
       card A - 1"
-    using cond_winner_imp_loss_count 
+    using cond_winner_imp_loss_count
         cond_winner_imp_win_count winner
   proof -
     have f1: "card {a \<in> A. wins w p a} = card A - 1"
@@ -140,7 +141,7 @@ lemma non_cond_winner_imp_win_count:
     winner: "condorcet_winner A p w" and
     loser: "l \<noteq> w" and
     l_in_A: "l \<in> A"
-  shows "card{y \<in> A . wins l p y} <= card A - 2"
+  shows "card {y \<in> A . wins l p y} <= card A - 2"
 proof -
   from winner loser l_in_A
   have "wins w p l"
@@ -179,7 +180,8 @@ subsection \<open>Property\<close>
 
 (*The Copeland score is Condorcet rating*)
 theorem copeland_score_is_cr: "condorcet_rating copeland_score"
-proof (unfold condorcet_rating_def copeland_score.simps, safe)
+  unfolding condorcet_rating_def
+proof (unfold copeland_score.simps, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
@@ -199,7 +201,7 @@ proof (unfold condorcet_rating_def copeland_score.simps, safe)
       using cond_winner_imp_copeland_score
       by fastforce
     from winner l_neq_w l_in_A have 1:
-      "card {y \<in> A. wins l p y} - card {y \<in> A. wins y p l} \<le> 
+      "card {y \<in> A. wins l p y} - card {y \<in> A. wins y p l} \<le>
           card A -2"
       using non_cond_winner_imp_win_count
       by fastforce
@@ -211,7 +213,7 @@ proof (unfold condorcet_rating_def copeland_score.simps, safe)
             semiring_norm(76) winner zero_less_diff
       by metis
     hence
-      "card {y \<in> A. wins l p y} - card {y \<in> A. wins y p l} < 
+      "card {y \<in> A. wins l p y} - card {y \<in> A. wins y p l} <
         card A -1"
       using "1" le_less_trans
       by blast
@@ -230,8 +232,9 @@ proof -
   have copel_eq_max_copel:
     "\<And>A p. (copeland A p \<equiv> max_eliminator copeland_score A p)"
     by simp
-  from max_cplscore_dcc copel_eq_max_copel show ?thesis
-    using defer_condorcet_consistency_def electoral_module_def
+  from max_cplscore_dcc copel_eq_max_copel
+  show ?thesis
+    unfolding defer_condorcet_consistency_def electoral_module_def
     by (smt (verit, ccfv_threshold))
 qed
 
