@@ -5,7 +5,7 @@
 \<^marker>\<open>contributor "Karsten Diekhoff, Karlsruhe Institute of Technology (KIT)"\<close>
 \<^marker>\<open>contributor "Michael Kirsten, Karlsruhe Institute of Technology (KIT)"\<close>
 
-chapter \<open>Core Modules\<close>
+chapter \<open>Basic Modules\<close>
 
 section \<open>Defer Module\<close>
 

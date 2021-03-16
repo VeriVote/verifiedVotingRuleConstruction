@@ -7,7 +7,7 @@
 section \<open>Classic Nanson Rule\<close>
 
 theory Classic_Nanson_Rule
-  imports "Compositional_Structures/Core_Modules/Borda_Module"
+  imports "Compositional_Structures/Basic_Modules/Borda_Module"
           "Compositional_Structures/Defer_One_Loop_Composition"
 begin
 

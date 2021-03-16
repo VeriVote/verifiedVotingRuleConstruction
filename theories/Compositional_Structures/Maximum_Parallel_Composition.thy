@@ -8,7 +8,7 @@
 section \<open>Maximum Parallel Composition\<close>
 
 theory Maximum_Parallel_Composition
-  imports "Core_Modules/Component_Types/Maximum_Aggregator"
+  imports "Basic_Modules/Component_Types/Maximum_Aggregator"
           Parallel_Composition
 begin
 

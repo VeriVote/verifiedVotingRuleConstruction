@@ -8,8 +8,8 @@
 section \<open>Parallel Composition\<close>
 
 theory Parallel_Composition
-  imports "Core_Modules/Component_Types/Aggregator"
-          "Core_Modules/Component_Types/Electoral_Module"
+  imports "Basic_Modules/Component_Types/Aggregator"
+          "Basic_Modules/Component_Types/Electoral_Module"
 begin
 
 text

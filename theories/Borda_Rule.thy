@@ -9,7 +9,7 @@ chapter \<open>Voting Rules\<close>
 section \<open>Borda Rule\<close>
 
 theory Borda_Rule
-  imports "Compositional_Structures/Core_Modules/Borda_Module"
+  imports "Compositional_Structures/Basic_Modules/Borda_Module"
           "Compositional_Structures/Elect_Composition"
 begin
 

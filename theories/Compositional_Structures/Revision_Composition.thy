@@ -8,7 +8,7 @@
 section \<open>Revision Composition\<close>
 
 theory Revision_Composition
-  imports "Core_Modules/Component_Types/Electoral_Module"
+  imports "Basic_Modules/Component_Types/Electoral_Module"
 begin
 
 text

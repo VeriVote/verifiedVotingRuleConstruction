@@ -7,7 +7,7 @@
 section \<open>Copeland Rule\<close>
 
 theory Copeland_Rule
-  imports "Compositional_Structures/Core_Modules/Copeland_Module"
+  imports "Compositional_Structures/Basic_Modules/Copeland_Module"
           "Compositional_Structures/Elect_Composition"
 begin
 

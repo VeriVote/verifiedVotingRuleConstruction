@@ -1,0 +1,71 @@
+@InProceedings{adt2019,
+    author    = {Karsten Diekhoff and
+                 Michael Kirsten and
+                 Jonas Kr{\"{a}}mer},
+    editor    = {Sa{\v{s}}a Peke{\v{c}} and
+                 {Kristen Brent} Venable},
+    title     = {Formal Property-Oriented Design of
+                 Voting Rules Using Composable Modules},
+    booktitle = {6th International Conference on Algorithmic
+                 Decision Theory ({ADT} 2019)},
+    series    = {Lecture Notes in Artificial Intelligence},
+    part      = {Short Papers},
+    year      = {2019},
+    abstract  = {Voting rules aggregate multiple individual preferences in order to
+                 make a collective decision. Commonly, these mechanisms are expected
+                 to respect a multitude of different notions of fairness and reliability,
+                 which must be carefully balanced to avoid inconsistencies.
+
+                 We present an approach for the sound and flexible design of voting rules
+                 from composable modules. Formal composition rules guarantee social
+                 choice properties from properties of the individual components. The
+                 approach can be applied to many voting rules from the literature.},
+    publisher = {Springer},
+    volume    = {11834},
+    pages     = {164--166},
+    doi       = {10.1007/978-3-030-31489-7}
+}
+
+@InProceedings{lopstr2019,
+  author        = {Karsten Diekhoff and
+                   Michael Kirsten and
+                   Jonas Kr{\"{a}}mer},
+  title         = {Verified Construction of Fair Voting Rules},
+  booktitle     = {29th International Symposium on Logic-Based Program
+                   Synthesis and Transformation ({LOPSTR} 2019),
+                   Revised Selected Papers},
+  series        = {Lecture Notes in Computer Science},
+  editor        = {Maurizio Gabbrielli},
+  year          = {2020},
+  abstract      = {Voting rules aggregate multiple individual preferences in order to
+                   make collective decisions. Commonly, these mechanisms are expected
+                   to respect a multitude of different fairness and reliability
+                   properties, e.g., to ensure that each voter's ballot accounts for
+                   the same proportion of the elected alternatives, or that a voter
+                   cannot change the election outcome in her favor by insincerely
+                   filling out her ballot. However, no voting rule is fair in all
+                   respects, and trade-off attempts between such properties often
+                   bring out inconsistencies, which makes the construction of arguably
+                   practical and fair voting rules non-trivial and error-prone.
+ 
+                   In this paper, we present a formal and systematic approach for the
+                   flexible and verified construction of voting rules from composable
+                   core modules to respect such properties by construction. Formal
+                   composition rules guarantee resulting properties from properties of
+                   the individual components, which are of generic nature to be reused
+                   for various voting rules. We provide a prototypical logic-based
+                   implementation with proofs for a selected set of structures and
+                   composition rules within the theorem prover Isabelle/HOL. The
+                   approach can be readily extended in order to support many voting
+                   rules from the literature by extending the set of basic modules and
+                   composition rules. We exemplarily construct the well-known voting
+                   rule sequential majority comparison (SMC) from simple generic
+                   modules, and automatically produce a formal proof that SMC
+                   satisfies the fairness property monotonicity. Monotonicity is a
+                   well-known social-choice property that is easily violated by voting
+                   rules in practice.},
+  publisher     = {Springer},
+  doi           = {10.1007/978-3-030-45260-5_6},
+  volume        = {12042},
+  pages         = {90--104}
+}

@@ -8,7 +8,7 @@
 section \<open>Elect Composition\<close>
 
 theory Elect_Composition
-  imports "Core_Modules/Elect_Module"
+  imports "Basic_Modules/Elect_Module"
           Sequential_Composition
 begin
 

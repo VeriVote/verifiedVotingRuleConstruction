@@ -8,7 +8,7 @@
 section \<open>Sequential Majority Comparison\<close>
 
 theory Sequential_Majority_Comparison
-  imports "Compositional_Structures/Core_Modules/Plurality_Module"
+  imports "Compositional_Structures/Basic_Modules/Plurality_Module"
           "Compositional_Structures/Drop_And_Pass_Compatibility"
           "Compositional_Structures/Revision_Composition"
           "Compositional_Structures/Maximum_Parallel_Composition"

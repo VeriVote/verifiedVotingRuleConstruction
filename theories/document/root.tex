@@ -1,11 +1,7 @@
 \documentclass[11pt,a4paper,notitlepage]{report}
-\usepackage[T1]{fontenc}
-\usepackage{sectsty}
+\input{settings}
 \usepackage{isabelle,isabellesym}
-
 \usepackage{amssymb}
-\usepackage{upquote}
-
 \usepackage{pdfsetup}
 
 \urlstyle{rm}
@@ -18,25 +14,43 @@
 % It should be included in isabellesym.sty automatically, but it is not.
 \newcommand{\isasymcirclearrowleft}{\isamath{\circlearrowleft}}
 
-
 \begin{document}
 
 \title{Verified Construction of Fair Voting Rules}
-\author{}
+\author{Michael Kirsten}
+\institute{Karlsruhe Institute of Technology (KIT), Karlsruhe, Germany\\
+\email{kirsten@kit.edu}}
 \maketitle
 
-{%
-\sectionfont{\Huge}%
-\let\clearpage\relax\tableofcontents%
-\sectionfont{\Large}%
-}
+\begin{abstract}
+Voting rules aggregate multiple individual preferences in order to make a
+collective decision.
+Commonly, these mechanisms are expected to respect a multitude of different
+notions of fairness and reliability, which must be carefully balanced to avoid
+inconsistencies.
+
+This article contains a formalisation of a framework for the construction of
+such fair voting rules using composable modules~\cite{adt2019,lopstr2019}.
+The framework is a formal and systematic approach for the flexible and verified
+construction of voting rules from individual composable modules to respect such
+social-choice properties by construction.
+Formal composition rules guarantee resulting social-choice properties from
+properties of the individual components which are of generic nature to be
+reused for various voting rules.
+We provide proofs for a selected set of structures and composition rules.
+The approach can be readily extended in order to support more voting rules,
+e.g., from the literature by extending the sets of modules and composition
+rules.
+\end{abstract}
+
+\tableofcontents
 
 \parindent 0pt\parskip 0.5ex
 
 \input{session}
 
 % optional bibliography
-%\bibliographystyle{abbrv}
-%\bibliography{root}
+\bibliographystyle{abbrv}
+\bibliography{root}
 
 \end{document}

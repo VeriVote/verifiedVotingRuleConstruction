@@ -20,33 +20,33 @@ options [browser_info, timeout = 300, document = pdf, document_output = "output"
 
 directories
   "Compositional_Structures"
-  "Compositional_Structures/Core_Modules"
-  "Compositional_Structures/Core_Modules/Component_Types"
-  "Compositional_Structures/Core_Modules/Component_Types/Social_Choice_Types"
+  "Compositional_Structures/Basic_Modules"
+  "Compositional_Structures/Basic_Modules/Component_Types"
+  "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types"
 
 theories
 (* "Social-Choice Types" *)
-  "Compositional_Structures/Core_Modules/Component_Types/Social_Choice_Types/Preference_Relation"
-  "Compositional_Structures/Core_Modules/Component_Types/Social_Choice_Types/Result"
-  "Compositional_Structures/Core_Modules/Component_Types/Social_Choice_Types/Profile"
+  "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Preference_Relation"
+  "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Result"
+  "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Profile"
 (* "Component Types" *)
-  "Compositional_Structures/Core_Modules/Component_Types/Electoral_Module"
-  "Compositional_Structures/Core_Modules/Component_Types/Evaluation_Function"
-  "Compositional_Structures/Core_Modules/Component_Types/Elimination_Module"
-  "Compositional_Structures/Core_Modules/Component_Types/Aggregator"
-  "Compositional_Structures/Core_Modules/Component_Types/Maximum_Aggregator"
-  "Compositional_Structures/Core_Modules/Component_Types/Termination_Condition"
-  "Compositional_Structures/Core_Modules/Component_Types/Defer_Equal_Condition"
-(* "Core Modules" *)
-  "Compositional_Structures/Core_Modules/Defer_Module"
-  "Compositional_Structures/Core_Modules/Drop_Module"
-  "Compositional_Structures/Core_Modules/Pass_Module"
-  "Compositional_Structures/Core_Modules/Elect_Module"
-  "Compositional_Structures/Core_Modules/Plurality_Module"
-  "Compositional_Structures/Core_Modules/Borda_Module"
-  "Compositional_Structures/Core_Modules/Condorcet_Module"
-  "Compositional_Structures/Core_Modules/Copeland_Module"
-  "Compositional_Structures/Core_Modules/Minimax_Module"
+  "Compositional_Structures/Basic_Modules/Component_Types/Electoral_Module"
+  "Compositional_Structures/Basic_Modules/Component_Types/Evaluation_Function"
+  "Compositional_Structures/Basic_Modules/Component_Types/Elimination_Module"
+  "Compositional_Structures/Basic_Modules/Component_Types/Aggregator"
+  "Compositional_Structures/Basic_Modules/Component_Types/Maximum_Aggregator"
+  "Compositional_Structures/Basic_Modules/Component_Types/Termination_Condition"
+  "Compositional_Structures/Basic_Modules/Component_Types/Defer_Equal_Condition"
+(* "Basic Modules" *)
+  "Compositional_Structures/Basic_Modules/Defer_Module"
+  "Compositional_Structures/Basic_Modules/Drop_Module"
+  "Compositional_Structures/Basic_Modules/Pass_Module"
+  "Compositional_Structures/Basic_Modules/Elect_Module"
+  "Compositional_Structures/Basic_Modules/Plurality_Module"
+  "Compositional_Structures/Basic_Modules/Borda_Module"
+  "Compositional_Structures/Basic_Modules/Condorcet_Module"
+  "Compositional_Structures/Basic_Modules/Copeland_Module"
+  "Compositional_Structures/Basic_Modules/Minimax_Module"
 (* "Compositional Structures" *)
   "Compositional_Structures/Drop_And_Pass_Compatibility"
   "Compositional_Structures/Revision_Composition"
@@ -57,15 +57,17 @@ theories
   "Compositional_Structures/Elect_Composition"
   "Compositional_Structures/Defer_One_Loop_Composition"
 (* "Voting Rules" *)
-  Borda_Rule
-  Condorcet_Rule
-  Copeland_Rule
-  Minimax_Rule
-  Blacks_Rule
-  Nanson_Baldwin_Rule
-  Classic_Nanson_Rule
-  Schwartz_Rule
-  Sequential_Majority_Comparison
+  "Borda_Rule"
+  "Condorcet_Rule"
+  "Copeland_Rule"
+  "Minimax_Rule"
+  "Blacks_Rule"
+  "Nanson_Baldwin_Rule"
+  "Classic_Nanson_Rule"
+  "Schwartz_Rule"
+  "Sequential_Majority_Comparison"
 
 document_files
     "root.tex"
+    "settings.tex"
+    "root.bib"

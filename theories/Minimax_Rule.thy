@@ -7,7 +7,7 @@
 section \<open>Minimax Rule\<close>
 
 theory Minimax_Rule
-  imports "Compositional_Structures/Core_Modules/Minimax_Module"
+  imports "Compositional_Structures/Basic_Modules/Minimax_Module"
           "Compositional_Structures/Elect_Composition"
 begin
 

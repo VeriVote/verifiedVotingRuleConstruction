@@ -1,0 +1,30 @@
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{sectsty}
+\usepackage{xpatch}
+\usepackage{upquote}
+
+\makeatletter
+\xpatchcmd{\@maketitle}
+  {\@title}
+{%\vspace{-2.45\baselineskip}
+\bfseries\@title\vspace{.25\baselineskip}}
+  {}{}
+\makeatother
+
+\makeatletter
+\providecommand{\institute}[1]{%
+    \apptocmd{\@author}{\end{tabular}%
+    \vspace{.5\baselineskip}\par
+    \begin{tabular}[t]{c}
+    #1}{}{}
+}
+\makeatother
+
+\newcommand{\email}[1]{%
+    \texttt{\href{mailto:#1}{\color{black}{#1}}}%
+}
+
+\pretocmd{\tableofcontents}{\sectionfont{\Huge}}{}{}
+%\let\clearpage\relax
+\apptocmd{\tableofcontents}{\sectionfont{\Large}}{}{}
