@@ -87,15 +87,21 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe)
     l_in_A: "l \<in> A" and
     l_neq_w:"l \<noteq> w"
   show
-    "Min {card {i. i < length p \<and> (let r = (p ! i) in (y \<preceq>\<^sub>r l))} | y. y \<in> A - {l}} <
-      Min {card {i. i < length p \<and> (let r = (p ! i) in (y \<preceq>\<^sub>r w))} | y. y \<in> A - {w}}"
+    "Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r l))} |
+        y. y \<in> A - {l}} <
+      Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r w))} |
+          y. y \<in> A - {w}}"
   proof (rule ccontr)
     assume
-      "\<not> Min {card {i. i < length p \<and> (let r = (p ! i) in (y \<preceq>\<^sub>r l))} |y. y \<in> A - {l}} <
-        Min {card {i. i < length p \<and> (let r = (p ! i) in (y \<preceq>\<^sub>r w))} |y. y \<in> A - {w}}"
+      "\<not> Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r l))} |
+          y. y \<in> A - {l}} <
+        Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r w))} |
+            y. y \<in> A - {w}}"
     hence
-      "Min {card {i. i < length p \<and> (let r = (p ! i) in (y \<preceq>\<^sub>r l))} |y. y \<in> A - {l}} \<ge>
-        Min {card {i. i < length p \<and> (let r = (p ! i) in (y \<preceq>\<^sub>r w))} |y. y \<in> A - {w}}"
+      "Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r l))} |
+          y. y \<in> A - {l}} \<ge>
+        Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r w))} |
+            y. y \<in> A - {w}}"
       by linarith
     hence 000:
       "Min {prefer_count p l y |y . y \<in> A-{l}} \<ge>

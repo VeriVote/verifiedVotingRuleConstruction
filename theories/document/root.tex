@@ -1,12 +1,18 @@
-\documentclass[11pt,a4paper]{article}
+\documentclass[11pt,a4paper,notitlepage]{report}
+\usepackage[T1]{fontenc}
+\usepackage{sectsty}
 \usepackage{isabelle,isabellesym}
 
 \usepackage{amssymb}
+\usepackage{upquote}
 
 \usepackage{pdfsetup}
 
 \urlstyle{rm}
 \isabellestyle{it}
+
+% for uniform font size
+%\renewcommand{\isastyle}{\isastyleminor}
 
 % This is required due to some unusual behaviour by Isabelle.
 % It should be included in isabellesym.sty automatically, but it is not.
@@ -19,7 +25,11 @@
 \author{}
 \maketitle
 
-\tableofcontents
+{%
+\sectionfont{\Huge}%
+\let\clearpage\relax\tableofcontents%
+\sectionfont{\Large}%
+}
 
 \parindent 0pt\parskip 0.5ex
 

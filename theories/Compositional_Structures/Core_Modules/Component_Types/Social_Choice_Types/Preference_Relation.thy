@@ -5,6 +5,8 @@
 \<^marker>\<open>contributor "Karsten Diekhoff, Karlsruhe Institute of Technology (KIT)"\<close>
 \<^marker>\<open>contributor "Michael Kirsten, Karlsruhe Institute of Technology (KIT)"\<close>
 
+chapter \<open>Social-Choice Types\<close>
+
 section \<open>Preference Relation\<close>
 
 theory Preference_Relation
@@ -948,7 +950,8 @@ proof -
         using DiffD1 limit2 limit1 connex2 a1 a1_2 not_worse
         by metis
       hence
-        "\<forall>x \<in> A - {a}. (let q = limit A r in a \<preceq>\<^sub>q x) \<longleftrightarrow> (let q = limit A s in a \<preceq>\<^sub>q x)"
+        "\<forall>x \<in> A - {a}.
+          (let q = limit A r in a \<preceq>\<^sub>q x) \<longleftrightarrow> (let q = limit A s in a \<preceq>\<^sub>q x)"
         by simp
       moreover have
         "\<forall>x \<in> A - {a}. (x, a) \<in> (limit A r) \<longleftrightarrow> (x, a) \<in> (limit A s)"

@@ -6,6 +6,8 @@
 \<^marker>\<open>contributor "Michael Kirsten, Karlsruhe Institute of Technology (KIT)"\<close>
 \<^marker>\<open>contributor "Stephan Bohr, Karlsruhe Institute of Technology (KIT)"\<close>
 
+chapter \<open>Component Types\<close>
+
 section \<open>Electoral Module\<close>
 
 theory Electoral_Module
@@ -126,6 +128,16 @@ definition rejecting :: "'a Electoral_Module \<Rightarrow> bool" where
 definition eliminating :: "'a Electoral_Module \<Rightarrow> bool" where
   "eliminating m \<equiv>  \<exists> n . (n > 0 \<and> eliminates n m)"
 *)
+
+(*
+   An electoral module is independent of an alternative a iff
+   a's ranking does not influence the outcome.
+*)
+definition indep_of_alt :: "'a Electoral_Module \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" where
+  "indep_of_alt m A a \<equiv>
+    electoral_module m \<and> (\<forall>p q. equiv_prof_except_a A p q a \<longrightarrow> m A p = m A q)"
+
+subsection \<open>Equivalence Definitions\<close>
 
 definition prof_contains_result :: "'a Electoral_Module \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow>
                                        'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
@@ -613,17 +625,49 @@ proof -
     by (simp add: assms(5) assms(6) prod_eqI)
 qed
 
-subsection \<open>Lifting Property\<close>
+subsection \<open>Non-Blocking\<close>
 
 (*
-   An electoral module is independent of an alternative a iff
-   a's ranking does not influence the outcome.
+   An electoral module is non-blocking iff
+   this module never rejects all alternatives.
 *)
-definition indep_of_alt :: "'a Electoral_Module \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" where
-  "indep_of_alt m A a \<equiv>
-    electoral_module m \<and> (\<forall>p q. equiv_prof_except_a A p q a \<longrightarrow> m A p = m A q)"
+definition non_blocking :: "'a Electoral_Module \<Rightarrow> bool" where
+  "non_blocking m \<equiv>
+    electoral_module m \<and>
+      (\<forall>A p.
+          ((A \<noteq> {} \<and> finite_profile A p) \<longrightarrow> reject m A p \<noteq> A))"
 
-subsection \<open>(Non-)Electing, Decrementing, Defer-Deciding and Blocking\<close>
+subsection \<open>Electing\<close>
+
+(*
+   An electoral module is electing iff
+   it always elects at least one alternative.
+*)
+definition electing :: "'a Electoral_Module \<Rightarrow> bool" where
+  "electing m \<equiv>
+    electoral_module m \<and>
+      (\<forall>A p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow> elect m A p \<noteq> {})"
+
+lemma electing_for_only_alt:
+  assumes
+    one_alt: "card A = 1" and
+    electing: "electing m" and
+    f_prof: "finite_profile A p"
+  shows "elect m A p = A"
+  using Int_empty_right Int_insert_right card_1_singletonE
+        elect_in_alts electing electing_def inf.orderE
+        one_alt f_prof
+  by (smt (verit, del_insts))
+
+theorem electing_imp_non_blocking:
+  assumes electing: "electing m"
+  shows "non_blocking m"
+  using Diff_disjoint Diff_empty Int_absorb2 electing
+        defer_in_alts elect_in_alts electing_def
+        non_blocking_def reject_not_elec_or_def
+  by (smt (verit, ccfv_SIG))
+
+subsection \<open>Properties\<close>
 
 (*
    An electoral module is non-electing iff
@@ -660,16 +704,6 @@ lemma single_elim_decr_def_card2:
   by (smt (verit))
 
 (*
-   An electoral module decrements iff
-   this module rejects at least one alternative whenever possible (|A|>1).
-*)
-definition decrementing :: "'a Electoral_Module \<Rightarrow> bool" where
-  "decrementing m \<equiv>
-    electoral_module m \<and> (
-      \<forall> A p . finite_profile A p \<longrightarrow>
-          (card A > 1 \<longrightarrow> card (reject m A p) \<ge> 1))"
-
-(*
    An electoral module is defer-deciding iff
    this module chooses exactly 1 alternative to defer and
    rejects any other alternative.
@@ -681,44 +715,14 @@ definition defer_deciding :: "'a Electoral_Module \<Rightarrow> bool" where
     electoral_module m \<and> non_electing m \<and> defers 1 m"
 
 (*
-   An electoral module is non-blocking iff
-   this module never rejects all alternatives.
+   An electoral module decrements iff
+   this module rejects at least one alternative whenever possible (|A|>1).
 *)
-definition non_blocking :: "'a Electoral_Module \<Rightarrow> bool" where
-  "non_blocking m \<equiv>
-    electoral_module m \<and>
-      (\<forall>A p.
-          ((A \<noteq> {} \<and> finite_profile A p) \<longrightarrow> reject m A p \<noteq> A))"
-
-(*
-   An electoral module is electing iff
-   it always elects at least one alternative.
-*)
-definition electing :: "'a Electoral_Module \<Rightarrow> bool" where
-  "electing m \<equiv>
-    electoral_module m \<and>
-      (\<forall>A p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow> elect m A p \<noteq> {})"
-
-lemma electing_for_only_alt:
-  assumes
-    one_alt: "card A = 1" and
-    electing: "electing m" and
-    f_prof: "finite_profile A p"
-  shows "elect m A p = A"
-  using Int_empty_right Int_insert_right card_1_singletonE
-        elect_in_alts electing electing_def inf.orderE
-        one_alt f_prof
-  by (smt (verit, del_insts))
-
-theorem electing_imp_non_blocking:
-  assumes electing: "electing m"
-  shows "non_blocking m"
-  using Diff_disjoint Diff_empty Int_absorb2 electing
-        defer_in_alts elect_in_alts electing_def
-        non_blocking_def reject_not_elec_or_def
-  by (smt (verit, ccfv_SIG))
-
-subsection \<open>Properties\<close>
+definition decrementing :: "'a Electoral_Module \<Rightarrow> bool" where
+  "decrementing m \<equiv>
+    electoral_module m \<and> (
+      \<forall> A p . finite_profile A p \<longrightarrow>
+          (card A > 1 \<longrightarrow> card (reject m A p) \<ge> 1))"
 
 definition defer_condorcet_consistency :: "'a Electoral_Module \<Rightarrow> bool" where
   "defer_condorcet_consistency m \<equiv>

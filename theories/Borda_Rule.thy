@@ -4,6 +4,8 @@
 \<^marker>\<open>creator "Stephan Bohr, Karlsruhe Institute of Technology (KIT)"\<close>
 \<^marker>\<open>contributor "Michael Kirsten, Karlsruhe Institute of Technology (KIT)"\<close>
 
+chapter \<open>Voting Rules\<close>
+
 section \<open>Borda Rule\<close>
 
 theory Borda_Rule

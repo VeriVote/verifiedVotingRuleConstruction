@@ -158,21 +158,22 @@ proof -
             finite (defer fb (Aa::'a set) rsa) \<and>
             defer (fb \<triangleright> fc) Aa rsa \<subset> defer fb Aa rsa \<and>
             \<not> pe (fb Aa rsa) \<and>
-            ((fb \<triangleright> fc, fc, pe, Aa, rsa), fb, fc, pe, Aa, rsa) \<notin> r)
-        ::((('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
+            ((fb \<triangleright> fc, fc, pe, Aa, rsa), fb, fc, pe, Aa, rsa) \<notin> r)::
+          ((('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
             ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) \<times>
             ('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
             ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) set \<Rightarrow> bool)"
     by metis
   obtain
-    rr ::
-          "((('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
+    rr ::  "((('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
              ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) \<times>
-          ('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
-         ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) set" where
-        "wf rr \<and> (\<forall>p f A rs fa. p (f A rs) \<or>
-        \<not> defer (f \<triangleright> fa) A rs \<subset> defer f A rs \<or> infinite (defer f A rs) \<or>
-        ((f \<triangleright> fa, fa, p, A, rs), f, fa, p, A, rs) \<in> rr)"
+             ('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
+             ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) set" where
+      "wf rr \<and>
+        (\<forall>p f A rs fa. p (f A rs) \<or>
+          \<not> defer (f \<triangleright> fa) A rs \<subset> defer f A rs \<or>
+          infinite (defer f A rs) \<or>
+          ((f \<triangleright> fa, fa, p, A, rs), f, fa, p, A, rs) \<in> rr)"
     using f0
     by presburger
   thus ?thesis

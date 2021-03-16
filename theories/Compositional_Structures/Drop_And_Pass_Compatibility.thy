@@ -5,6 +5,8 @@
 \<^marker>\<open>contributor "Jonas Kraemer, Karlsruhe Institute of Technology (KIT)"\<close>
 \<^marker>\<open>contributor "Michael Kirsten, Karlsruhe Institute of Technology (KIT)"\<close>
 
+chapter \<open>Compositional Structures\<close>
+
 section \<open>Drop And Pass Compatibility\<close>
 
 theory Drop_And_Pass_Compatibility

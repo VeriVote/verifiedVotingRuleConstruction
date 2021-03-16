@@ -197,7 +197,7 @@ next
 qed
 
 
-subsection \<open>Electing Property\<close>
+subsection \<open>Electing\<close>
 
 (*
    The sequential majority comparison electoral module is electing.
