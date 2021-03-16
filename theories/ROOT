@@ -58,7 +58,7 @@ theories
   "Compositional_Structures/Defer_One_Loop_Composition"
 (* "Voting Rules" *)
   "Borda_Rule"
-  "Condorcet_Rule"
+  "Pairwise_Majority_Rule"
   "Copeland_Rule"
   "Minimax_Rule"
   "Blacks_Rule"
