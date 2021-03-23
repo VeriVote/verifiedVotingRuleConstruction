@@ -78,46 +78,45 @@ subsection \<open>Non-Blocking\<close>
 theorem pass_mod_non_blocking[simp]:
   assumes order: "linear_order r" and
           g0_n:  "n > 0"
-  shows "non_blocking (pass_module n r)"
-proof -
-  have "\<forall>A p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow>
-          reject (pass_module n r) A p \<noteq> A"
-  proof
-    fix
-      A :: "'a set"
-    show
-      "\<forall>p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow>
-          reject (pass_module n r) A p \<noteq> A"
-    proof
-      fix
-        p :: "'a Profile"
-      show
-        "(A \<noteq> {} \<and> finite_profile A p) \<longrightarrow>
-          reject (pass_module n r) A p \<noteq> A"
-      proof
-        assume input_fine: "A \<noteq> {} \<and> finite_profile A p"
-        hence "finite A"
-          by simp
-        moreover have "A \<noteq> {}"
-          by (simp add: input_fine)
-        moreover have "linear_order_on A (limit A r)"
-          using limit_presv_lin_ord order
-          by auto
-        ultimately have
-          "\<exists>a\<in>A. above (limit A r) a = {a} \<and>
-                (\<forall>x\<in>A. above (limit A r) x = {x} \<longrightarrow> x = a)"
-          by (simp add: above_one)
-        hence "{a \<in> A. card(above (limit A r) a) > n} \<noteq> A"
-          using One_nat_def Suc_leI assms(2) is_singletonI
-                is_singleton_altdef leD mem_Collect_eq
-          by (metis (no_types, lifting))
-        thus "reject (pass_module n r) A p \<noteq> A"
-          by simp
-      qed
-    qed
-  qed
-  thus ?thesis
-    by (simp add: non_blocking_def order)
+        shows "non_blocking (pass_module n r)"
+  unfolding non_blocking_def
+proof (safe, simp_all)
+  show "electoral_module (pass_module n r)"
+    using pass_mod_sound order
+    by simp
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    x :: "'a"
+  assume
+    fin_A: "finite A" and
+    prof_A: "profile A p" and
+    card_A:
+    "{a \<in> A. n <
+      card (above
+        {(a, b). (a, b) \<in> r \<and>
+          a \<in> A \<and> b \<in> A} a)} = A" and
+    x_in_A: "x \<in> A"
+  have lin_ord_A:
+    "linear_order_on A (limit A r)"
+    using limit_presv_lin_ord order top_greatest
+    by metis
+  have
+    "\<exists>a\<in>A. above (limit A r) a = {a} \<and>
+      (\<forall>x\<in>A. above (limit A r) x = {x} \<longrightarrow> x = a)"
+    using above_one fin_A lin_ord_A x_in_A
+    by blast
+  hence not_all:
+    "{a \<in> A. card(above (limit A r) a) > n} \<noteq> A"
+    using One_nat_def Suc_leI assms(2) is_singletonI
+          is_singleton_altdef leD mem_Collect_eq
+    by (metis (no_types, lifting))
+  hence "reject (pass_module n r) A p \<noteq> A"
+    by simp
+  thus "False"
+    using order card_A
+    by simp
 qed
 
 subsection \<open>Non-Electing\<close>
@@ -145,115 +144,107 @@ theorem pass_mod_dl_inv[simp]:
 theorem pass_one_mod_def_one[simp]:
   assumes order: "linear_order r"
   shows "defers 1 (pass_module 1 r)"
-proof -
-  have "\<forall>A p. (card A \<ge> 1 \<and> finite_profile A p) \<longrightarrow>
-          card (defer (pass_module 1 r) A p) = 1"
-  proof
-    fix
-      A :: "'a set"
-    show
-      "\<forall>p. (card A \<ge> 1 \<and> finite_profile A p) \<longrightarrow>
-          card (defer (pass_module 1 r) A p) = 1"
+  unfolding defers_def
+proof (safe)
+  show "electoral_module (pass_module 1 r)"
+    using pass_mod_sound order
+    by simp
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
+  assume
+    card_pos: "1 \<le> card A" and
+    finite_A: "finite A" and
+    prof_A: "profile A p"
+  show
+    "card (defer (pass_module 1 r) A p) = 1"
+  proof -
+    have "A \<noteq> {}"
+      using card_pos
+      by auto
+    moreover have lin_ord_on_A:
+      "linear_order_on A (limit A r)"
+      using order limit_presv_lin_ord
+      by blast
+    ultimately have winner_exists:
+      "\<exists>a\<in>A. above (limit A r) a = {a} \<and>
+        (\<forall>x\<in>A. above (limit A r) x = {x} \<longrightarrow> x = a)"
+      using finite_A
+      by (simp add: above_one)
+    then obtain w where w_unique_top:
+      "above (limit A r) w = {w} \<and>
+        (\<forall>x\<in>A. above (limit A r) x = {x} \<longrightarrow> x = w)"
+      using above_one
+      by auto
+    hence "{a \<in> A. card(above (limit A r) a) \<le> 1} = {w}"
     proof
-      fix
-        p :: "'a Profile"
-      show
-        "(card A \<ge> 1 \<and> finite_profile A p) \<longrightarrow>
-            card (defer (pass_module 1 r) A p) = 1"
+      assume
+        w_top: "above (limit A r) w = {w}" and
+        w_unique: "\<forall>x\<in>A. above (limit A r) x = {x} \<longrightarrow> x = w"
+      have "card (above (limit A r) w) \<le> 1"
+        using w_top
+        by auto
+      hence "{w} \<subseteq> {a \<in> A. card(above (limit A r) a) \<le> 1}"
+        using winner_exists w_unique_top
+        by blast
+      moreover have
+        "{a \<in> A. card(above (limit A r) a) \<le> 1} \<subseteq> {w}"
       proof
-        assume
-          A_valid: "(card A \<ge> 1 \<and> finite_profile A p)"
-        hence finite_A: "finite A"
-          by simp
-        moreover have "A \<noteq> {}"
-          using A_valid
+        fix
+          x :: "'a"
+        assume x_in_winner_set:
+          "x \<in> {a \<in> A. card (above (limit A r) a) \<le> 1}"
+        hence x_in_A: "x \<in> A"
           by auto
-        moreover have lin_ord_on_A:
-          "linear_order_on A (limit A r)"
-          using order limit_presv_lin_ord
-          by blast
-        ultimately have winner_exists:
-          "\<exists>a\<in>A. above (limit A r) a = {a} \<and>
-            (\<forall>x\<in>A. above (limit A r) x = {x} \<longrightarrow> x = a)"
-          by (simp add: above_one)
-        then obtain w where w_unique_top:
-          "above (limit A r) w = {w} \<and>
-            (\<forall>x\<in>A. above (limit A r) x = {x} \<longrightarrow> x = w)"
-          using above_one
-          by auto
-        hence "{a \<in> A. card(above (limit A r) a) \<le> 1} = {w}"
-        proof
-          assume
-            w_top: "above (limit A r) w = {w}" and
-            w_unique: "\<forall>x\<in>A. above (limit A r) x = {x} \<longrightarrow> x = w"
-          have "card (above (limit A r) w) \<le> 1"
-            using w_top
-            by auto
-          hence "{w} \<subseteq> {a \<in> A. card(above (limit A r) a) \<le> 1}"
-            using winner_exists w_unique_top
-            by blast
-          moreover have
-            "{a \<in> A. card(above (limit A r) a) \<le> 1} \<subseteq> {w}"
-          proof
-            fix
-              x :: "'a"
-            assume x_in_winner_set:
-              "x \<in> {a \<in> A. card (above (limit A r) a) \<le> 1}"
-            hence x_in_A: "x \<in> A"
-              by auto
-            hence connex_limit:
-              "connex A (limit A r)"
-              using lin_ord_imp_connex lin_ord_on_A
-              by simp
-            hence "let q = limit A r in x \<preceq>\<^sub>q x"
-              using connex_limit above_connex
-                    pref_imp_in_above x_in_A
-              by metis
-            hence "(x,x) \<in> limit A r"
-              by simp
-            hence x_above_x: "x \<in> above (limit A r) x"
-              by (simp add: above_def)
-            have "above (limit A r) x \<subseteq> A"
-              using above_presv_limit order
-              by fastforce
-            hence above_finite: "finite (above (limit A r) x)"
-              by (simp add: A_valid finite_subset)
-            have "card (above (limit A r) x) \<le> 1"
-              using x_in_winner_set
-              by simp
-            moreover have
-              "card (above (limit A r) x) \<ge> 1"
-              using One_nat_def Suc_leI above_finite card_eq_0_iff
-                    equals0D neq0_conv x_above_x
-              by metis
-            ultimately have
-              "card (above (limit A r) x) = 1"
-              by simp
-            hence "{x} = above (limit A r) x"
-              using is_singletonE is_singleton_altdef singletonD x_above_x
-              by metis
-            hence "x = w"
-              using w_unique
-              by (simp add: x_in_A)
-            thus "x \<in> {w}"
-              by simp
-          qed
-          ultimately have
-            "{w} = {a \<in> A. card (above (limit A r) a) \<le> 1}"
-            by auto
-          thus ?thesis
-            by simp
-        qed
-        hence "defer (pass_module 1 r) A p = {w}"
+        hence connex_limit:
+          "connex A (limit A r)"
+          using lin_ord_imp_connex lin_ord_on_A
           by simp
-        thus "card (defer (pass_module 1 r) A p) = 1"
+        hence "let q = limit A r in x \<preceq>\<^sub>q x"
+          using connex_limit above_connex
+                pref_imp_in_above x_in_A
+          by metis
+        hence "(x,x) \<in> limit A r"
+          by simp
+        hence x_above_x: "x \<in> above (limit A r) x"
+          by (simp add: above_def)
+        have "above (limit A r) x \<subseteq> A"
+          using above_presv_limit order
+          by fastforce
+        hence above_finite: "finite (above (limit A r) x)"
+          by (simp add: finite_A finite_subset)
+        have "card (above (limit A r) x) \<le> 1"
+          using x_in_winner_set
+          by simp
+        moreover have
+          "card (above (limit A r) x) \<ge> 1"
+          using One_nat_def Suc_leI above_finite card_eq_0_iff
+                equals0D neq0_conv x_above_x
+          by metis
+        ultimately have
+          "card (above (limit A r) x) = 1"
+          by simp
+        hence "{x} = above (limit A r) x"
+          using is_singletonE is_singleton_altdef singletonD x_above_x
+          by metis
+        hence "x = w"
+          using w_unique
+          by (simp add: x_in_A)
+        thus "x \<in> {w}"
           by simp
       qed
+      ultimately have
+        "{w} = {a \<in> A. card (above (limit A r) a) \<le> 1}"
+        by auto
+      thus ?thesis
+        by simp
     qed
+    hence "defer (pass_module 1 r) A p = {w}"
+      by simp
+    thus "card (defer (pass_module 1 r) A p) = 1"
+      by simp
   qed
-  thus ?thesis
-    using defers_def order pass_mod_sound
-    by blast
 qed
 
 theorem pass_two_mod_def_two:
