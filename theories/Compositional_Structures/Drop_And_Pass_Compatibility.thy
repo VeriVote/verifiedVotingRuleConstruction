@@ -28,17 +28,19 @@ theorem drop_two_mod_rej_two[simp]:
   assumes order: "linear_order r"
   shows "rejects 2 (drop_module 2 r)"
 proof -
-  have "reject (drop_module 2 r) = defer (pass_module 2 r)"
+  have rej_drop_eq_def_pass:
+    "reject (drop_module 2 r) = defer (pass_module 2 r)"
     by simp
   thus ?thesis
-  proof - (*generated proof*)
+  proof -
     obtain
       AA :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a set" and
       rrs :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a Profile" where
       "\<forall>x0 x1. (\<exists>v2 v3. (x1 \<le> card v2 \<and> finite_profile v2 v3) \<and>
           card (reject x0 v2 v3) \<noteq> x1) =
-              ((x1 \<le> card (AA x0 x1) \<and> finite_profile (AA x0 x1) (rrs x0 x1)) \<and>
-              card (reject x0 (AA x0 x1) (rrs x0 x1)) \<noteq> x1)"
+              ((x1 \<le> card (AA x0 x1) \<and>
+                finite_profile (AA x0 x1) (rrs x0 x1)) \<and>
+                card (reject x0 (AA x0 x1) (rrs x0 x1)) \<noteq> x1)"
       by moura
     hence
       "\<forall>n f. (\<not> rejects n f \<or> electoral_module f \<and>
@@ -63,8 +65,8 @@ proof -
           \<not> profile (AA (drop_module 2 r) 2) (rrs (drop_module 2 r) 2) \<or>
           card (reject (drop_module 2 r) (AA (drop_module 2 r) 2)
               (rrs (drop_module 2 r) 2)) = 2"
-      using \<open>reject (drop_module 2 r) = defer (pass_module 2 r)\<close>
-            defers_def order pass_two_mod_def_two
+      using rej_drop_eq_def_pass defers_def order
+            pass_two_mod_def_two
       by (metis (no_types))
     thus ?thesis
       using f1 drop_mod_sound order
