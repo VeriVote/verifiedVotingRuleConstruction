@@ -146,22 +146,22 @@ proof (intro allI impI)
   proof -
     have lifted_winner:
       "\<forall>x \<in> A.
-         \<forall>i::nat. i < size p \<longrightarrow>
+         \<forall>i::nat. i < length p \<longrightarrow>
            (above (p!i) x = {x} \<longrightarrow>
               (above (q!i) x = {x} \<or> above (q!i) a = {a}))"
       using asm1 Profile.lifted_def lifted_above_winner
       by (metis (no_types, lifting))
     hence
-      "\<forall>i::nat. i < size p \<longrightarrow>
+      "\<forall>i::nat. i < length p \<longrightarrow>
           (above (p!i) a = {a} \<longrightarrow> above (q!i) a = {a})"
       using asm1
       by auto
     hence a_win_subset:
-      "{i::nat. i < size p \<and> above (p!i) a = {a}} \<subseteq>
-          {i::nat. i < size p \<and> above (q!i) a = {a}}"
+      "{i::nat. i < length p \<and> above (p!i) a = {a}} \<subseteq>
+          {i::nat. i < length p \<and> above (q!i) a = {a}}"
       by blast
     moreover have sizes:
-      "size p = size q"
+      "length p = length q"
       using asm1 Profile.lifted_def
       by metis
     ultimately have win_count_a:
@@ -173,7 +173,7 @@ proof (intro allI impI)
       by metis
     hence
       "\<forall>x \<in> A-{a}.
-        \<forall>i::nat. i < size p \<longrightarrow>
+        \<forall>i::nat. i < length p \<longrightarrow>
           (above (q!i) a = {a} \<longrightarrow> above (q!i) x \<noteq> {x})"
       using DiffE Profile.lifted_def above_one2
             asm1 insertCI insert_absorb insert_not_empty
@@ -181,15 +181,15 @@ proof (intro allI impI)
       by metis
     with lifted_winner have above_QtoP:
       "\<forall>x \<in> A-{a}.
-        \<forall>i::nat. i < size p \<longrightarrow>
+        \<forall>i::nat. i < length p \<longrightarrow>
           (above (q!i) x = {x} \<longrightarrow> above (p!i) x = {x})"
       using lifted_above_winner3 asm1
             Profile.lifted_def
       by metis
     hence
       "\<forall>x \<in> A-{a}.
-        {i::nat. i < size p \<and> above (q!i) x = {x}} \<subseteq>
-          {i::nat. i < size p \<and> above (p!i) x = {x}}"
+        {i::nat. i < length p \<and> above (q!i) x = {x}} \<subseteq>
+          {i::nat. i < length p \<and> above (p!i) x = {x}}"
       by (simp add: Collect_mono)
     hence win_count_other:
       "\<forall>x \<in> A-{a}. win_count p x \<ge> win_count q x"
@@ -200,48 +200,48 @@ proof (intro allI impI)
     proof cases
       assume "win_count p a = win_count q a"
       hence
-        "card {i::nat. i < size p \<and> above (p!i) a = {a}} =
-              card {i::nat. i < size p \<and> above (q!i) a = {a}}"
+        "card {i::nat. i < length p \<and> above (p!i) a = {a}} =
+              card {i::nat. i < length p \<and> above (q!i) a = {a}}"
         by (simp add: sizes)
       moreover have
-        "finite {i::nat. i < size p \<and> above (q!i) a = {a}}"
+        "finite {i::nat. i < length p \<and> above (q!i) a = {a}}"
         by simp
       ultimately have
-        "{i::nat. i < size p \<and> above (p!i) a = {a}} =
-              {i::nat. i < size p \<and> above (q!i) a = {a}}"
+        "{i::nat. i < length p \<and> above (p!i) a = {a}} =
+              {i::nat. i < length p \<and> above (q!i) a = {a}}"
         using a_win_subset
         by (simp add: card_subset_eq)
       hence above_pq:
-        "\<forall>i::nat. i < size p \<longrightarrow>
+        "\<forall>i::nat. i < length p \<longrightarrow>
             above (p!i) a = {a} \<longleftrightarrow> above (q!i) a = {a}"
         by blast
       moreover have
         "\<forall>x \<in> A-{a}.
-          \<forall>i::nat. i < size p \<longrightarrow>
+          \<forall>i::nat. i < length p \<longrightarrow>
             (above (p!i) x = {x} \<longrightarrow>
               (above (q!i) x = {x} \<or> above (q!i) a = {a}))"
         using lifted_winner
         by auto
       moreover have
         "\<forall>x \<in> A-{a}.
-          \<forall>i::nat. i < size p \<longrightarrow>
+          \<forall>i::nat. i < length p \<longrightarrow>
             (above (p!i) x = {x} \<longrightarrow> above (p!i) a \<noteq> {a})"
       proof (rule ccontr)
         assume
           "\<not>(\<forall>x \<in> A-{a}.
-              \<forall>i::nat. i < size p \<longrightarrow>
+              \<forall>i::nat. i < length p \<longrightarrow>
                 (above (p!i) x = {x} \<longrightarrow> above (p!i) a \<noteq> {a}))"
         hence
           "\<exists>x \<in> A-{a}.
             \<exists>i::nat.
-              i < size p \<and> above (p!i) x = {x} \<and> above (p!i) a = {a}"
+              i < length p \<and> above (p!i) x = {x} \<and> above (p!i) a = {a}"
           by auto
         moreover from this have
           "finite A \<and> A \<noteq> {}"
           using fin_A
           by blast
         moreover from asm1 have
-          "\<forall>i::nat. i < size p \<longrightarrow> linear_order_on A (p!i)"
+          "\<forall>i::nat. i < length p \<longrightarrow> linear_order_on A (p!i)"
           by (simp add: Profile.lifted_def profile_def)
         ultimately have
           "\<exists>x \<in> A-{a}. x = a"
@@ -252,13 +252,13 @@ proof (intro allI impI)
       qed
       ultimately have above_PtoQ:
         "\<forall>x \<in> A-{a}.
-          \<forall>i::nat. i < size p \<longrightarrow>
+          \<forall>i::nat. i < length p \<longrightarrow>
             (above (p!i) x = {x} \<longrightarrow> above (q!i) x = {x})"
         by (simp add: above_pq)
       hence
         "\<forall>x \<in> A.
-          card {i::nat. i < size p \<and> above (p!i) x = {x}} =
-            card {i::nat. i < size q \<and> above (q!i) x = {x}}"
+          card {i::nat. i < length p \<and> above (p!i) x = {x}} =
+            card {i::nat. i < length q \<and> above (q!i) x = {x}}"
         using Collect_cong DiffI above_pq above_QtoP
               insert_absorb insert_iff insert_not_empty sizes
         by (smt (verit, ccfv_threshold))

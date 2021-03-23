@@ -31,7 +31,7 @@ type_synonym 'a Profile = "('a Preference_Relation) list"
    linear orders on A.
 *)
 definition profile :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> bool" where
-  "profile A p \<equiv> \<forall>i::nat. i < size p \<longrightarrow> linear_order_on A (p!i)"
+  "profile A p \<equiv> \<forall>i::nat. i < length p \<longrightarrow> linear_order_on A (p!i)"
 
 lemma profile_set : "profile A p \<equiv> (\<forall>b \<in> (set p). linear_order_on A b)"
   by (simp add: all_set_conv_all_nth profile_def)
@@ -47,7 +47,7 @@ subsection \<open>Preference Counts and Comparisons\<close>
 *)
 fun win_count :: "'a Profile \<Rightarrow> 'a \<Rightarrow> nat" where
   "win_count p a =
-    card {i::nat. i < size p \<and> above (p!i) a = {a}}"
+    card {i::nat. i < length p \<and> above (p!i) a = {a}}"
 
 fun win_count_code :: "'a Profile \<Rightarrow> 'a \<Rightarrow> nat" where
   "win_count_code Nil a = 0" |
@@ -56,12 +56,144 @@ fun win_count_code :: "'a Profile \<Rightarrow> 'a \<Rightarrow> nat" where
 
 fun prefer_count :: "'a Profile \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> nat" where
   "prefer_count p x y =
-      card {i::nat. i < size p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))}"
+      card {i::nat. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))}"
 
 fun prefer_count_code :: "'a Profile \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> nat" where
   "prefer_count_code Nil x y = 0" |
   "prefer_count_code (p#ps) x y =
       (if y \<preceq>\<^sub>p x then 1 else 0) + prefer_count_code ps x y"
+
+lemma pref_count_equiv: "prefer_count p x y = prefer_count_code p x y"
+proof (induction p rule: rev_induct, simp)
+  case (snoc a p)
+  fix
+    a :: "'a Preference_Relation" and
+    p :: "'a Profile"
+  assume
+    base_case:
+    "prefer_count p x y = prefer_count_code p x y"
+  have size_one: "length [a] = 1"
+    by simp
+  have p_pos_in_ps:
+    "\<forall>i<length p. p!i = (p@[a])!i"
+    by (simp add: nth_append)
+  have
+    "prefer_count [a] x y =
+      (let q = [a] in
+        card {i::nat. i < length q \<and>
+              (let r = (q!i) in (y \<preceq>\<^sub>r x))})"
+    by simp
+  hence one_ballot_equiv:
+    "prefer_count [a] x y = prefer_count_code [a] x y"
+    using size_one
+    by (simp add: nth_Cons')
+  have pref_count_induct:
+    "prefer_count (p@[a]) x y =
+      prefer_count p x y + prefer_count [a] x y"
+  proof (simp)
+    have
+      "{i. i = 0 \<and> (y, x) \<in> [a]!i} =
+        (if ((y, x) \<in> a) then {0} else {})"
+      by (simp add: Collect_conv_if)
+    hence shift_idx_a:
+      "card {i. i = length p \<and> (y, x) \<in> [a]!0} =
+        card {i. i = 0 \<and> (y, x) \<in> [a]!i}"
+      by simp
+    have set_prof_eq:
+      "{i. i < Suc (length p) \<and> (y, x) \<in> (p@[a])!i} =
+        {i. i < length p \<and> (y, x) \<in> p!i} \<union>
+          {i. i = length p \<and> (y, x) \<in> [a]!0}"
+    proof (safe, simp_all)
+      fix
+        xa :: nat
+      assume
+        "xa < Suc (length p)" and
+        "(y, x) \<in> (p@[a])!xa" and
+        "xa \<noteq> length p"
+      thus "(y, x) \<in> p!xa"
+        using less_antisym p_pos_in_ps
+        by metis
+    next
+      fix
+        xa :: nat
+      assume
+        "xa < Suc (length p)" and
+        "(y, x) \<in> (p@[a])!xa" and
+        "(y, x) \<notin> a"
+      thus "xa < length p"
+        using less_antisym nth_append_length
+        by metis
+    next
+      fix
+        xa :: nat
+      assume
+        "xa < Suc (length p)" and
+        "(y, x) \<in> (p@[a])!xa" and
+        "(y, x) \<notin> a"
+      thus "(y, x) \<in> p!xa"
+        using less_antisym nth_append_length p_pos_in_ps
+        by metis
+    next
+      fix
+        xa :: nat
+      assume
+        "xa < length p" and
+        "(y, x) \<in> p!xa"
+      thus "(y, x) \<in> (p@[a])!xa"
+        using less_antisym p_pos_in_ps
+        by metis
+    qed
+    have f1:
+      "finite {n. n < length p \<and> (y, x) \<in> p!n}"
+      by simp
+    have f2:
+      "finite {n. n = length p \<and> (y, x) \<in> [a]!0}"
+      by simp
+    have
+      "card ({i. i < length p \<and> (y, x) \<in> p!i} \<union>
+        {i. i = length p \<and> (y, x) \<in> [a]!0}) =
+          card {i. i < length p \<and> (y, x) \<in> p!i} +
+            card {i. i = length p \<and> (y, x) \<in> [a]!0}"
+      using f1 f2 card_Un_disjoint
+      by blast
+    thus
+      "card {i. i < Suc (length p) \<and> (y, x) \<in> (p@[a])!i} =
+        card {i. i < length p \<and> (y, x) \<in> p!i} +
+          card {i. i = 0 \<and> (y, x) \<in> [a]!i}"
+      using set_prof_eq shift_idx_a
+      by auto
+  qed
+  have pref_count_code_induct:
+    "prefer_count_code (p@[a]) x y =
+      prefer_count_code p x y + prefer_count_code [a] x y"
+  proof (simp, safe)
+    assume
+      assm: "(y, x) \<in> a"
+    show
+      "prefer_count_code (p@[a]) x y = Suc (prefer_count_code p x y)"
+    proof (induction p, simp_all)
+      show "(y, x) \<in> a"
+        using assm
+        by simp
+    qed
+  next
+    assume
+      assm: "(y, x) \<notin> a"
+    show
+      "prefer_count_code (p@[a]) x y = prefer_count_code p x y"
+    proof (induction p, simp_all, safe)
+      assume
+        "(y, x) \<in> a"
+      thus "False"
+        using assm
+        by simp
+    qed
+  qed
+  show "prefer_count (p@[a]) x y = prefer_count_code (p@[a]) x y"
+    using pref_count_code_induct pref_count_induct
+          base_case one_ballot_equiv
+    by presburger
+qed
 
 lemma set_compr: "{ f x | x . x \<in> S } = f ` S"
   by auto
@@ -75,70 +207,73 @@ lemma pref_count:
   assumes x_in_A: "x \<in> A"
   assumes y_in_A: "y \<in> A"
   assumes neq: "x \<noteq> y"
-  shows "prefer_count p x y = (size p) - (prefer_count p y x)"
+  shows "prefer_count p x y = (length p) - (prefer_count p y x)"
 proof -
-  have 00: "card {i::nat. i < size p} = size p"
+  have 00: "card {i::nat. i < length p} = length p"
     by simp
   have 10:
-    "{i::nat. i < size p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
-        {i::nat. i < size p} -
-          {i::nat. i < size p \<and> \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x))}"
+    "{i::nat. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
+        {i::nat. i < length p} -
+          {i::nat. i < length p \<and> \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x))}"
     by auto
-  have 0: "\<forall> i::nat . i < size p \<longrightarrow> linear_order_on A (p!i)"
+  have 0: "\<forall> i::nat . i < length p \<longrightarrow> linear_order_on A (p!i)"
     using prof profile_def
     by metis
-  hence "\<forall> i::nat . i < size p \<longrightarrow> connex A (p!i)"
+  hence "\<forall> i::nat . i < length p \<longrightarrow> connex A (p!i)"
     by (simp add: lin_ord_imp_connex)
-  hence 1: "\<forall> i::nat . i < size p \<longrightarrow>
+  hence 1: "\<forall> i::nat . i < length p \<longrightarrow>
               \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x)) \<longrightarrow> (let r = (p!i) in (x \<preceq>\<^sub>r y))"
     using connex_def x_in_A y_in_A
     by metis
   from 0 have
-    "\<forall> i::nat . i < size p \<longrightarrow> antisym  (p!i)"
+    "\<forall> i::nat . i < length p \<longrightarrow> antisym  (p!i)"
     using lin_imp_antisym
     by metis
-  hence "\<forall> i::nat . i < size p \<longrightarrow> ((y, x) \<in> (p!i) \<longrightarrow> (x, y) \<notin> (p!i))"
+  hence "\<forall> i::nat . i < length p \<longrightarrow> ((y, x) \<in> (p!i) \<longrightarrow> (x, y) \<notin> (p!i))"
     using antisymD neq
     by metis
-  hence "\<forall> i::nat . i < size p \<longrightarrow>
+  hence "\<forall> i::nat . i < length p \<longrightarrow>
           ((let r = (p!i) in (y \<preceq>\<^sub>r x)) \<longrightarrow> \<not> (let r = (p!i) in (x \<preceq>\<^sub>r y)))"
     by simp
   with 1 have
-    "\<forall> i::nat . i < size p \<longrightarrow>
+    "\<forall> i::nat . i < length p \<longrightarrow>
       \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x)) = (let r = (p!i) in (x \<preceq>\<^sub>r y))"
     by metis
   hence 2:
-    "{i::nat. i < size p \<and> \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
-        {i::nat. i < size p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}"
+    "{i::nat. i < length p \<and> \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
+        {i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}"
     by metis
   hence 20:
-    "{i::nat. i < size p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
-        {i::nat. i < size p} - {i::nat. i < size p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}"
+    "{i::nat. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
+        {i::nat. i < length p} -
+          {i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}"
     using "10" "2"
     by simp
-  have "{i::nat. i < size p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))} \<subseteq> {i::nat. i < size p}"
+  have
+    "{i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))} \<subseteq>
+        {i::nat. i < length p}"
     by (simp add: Collect_mono)
   hence 30:
-    "card ({i::nat. i < size p} -
-        {i::nat. i < size p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}) =
-      (card {i::nat. i < size p}) -
-        card({i::nat. i < size p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))})"
+    "card ({i::nat. i < length p} -
+        {i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}) =
+      (card {i::nat. i < length p}) -
+        card({i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))})"
     by (simp add: card_Diff_subset)
   have "prefer_count p x y =
-          card {i::nat. i < size p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))}"
+          card {i::nat. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))}"
     by simp
   also have
-    "... = card({i::nat. i < size p} -
-            {i::nat. i < size p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))})"
+    "... = card({i::nat. i < length p} -
+            {i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))})"
     using "20"
     by simp
   also have
-    "... = (card {i::nat. i < size p}) -
-              card({i::nat. i < size p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))})"
+    "... = (card {i::nat. i < length p}) -
+              card({i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))})"
     using "30"
     by metis
   also have
-    "... = size p - (prefer_count p y x)"
+    "... = length p - (prefer_count p y x)"
     by simp
   finally show ?thesis
     by (simp add: "20" "30")
@@ -155,19 +290,19 @@ lemma pref_count_sym:
     shows "prefer_count p b x \<ge> prefer_count p x a"
 proof -
   from prof a_in_A x_in_A neq1 have 0:
-    "prefer_count p a x = (size p) - (prefer_count p x a)"
+    "prefer_count p a x = (length p) - (prefer_count p x a)"
     using pref_count
     by metis
   moreover from prof x_in_A b_in_A neq2 have 1:
-    "prefer_count p x b = (size p) - (prefer_count p b x)"
+    "prefer_count p x b = (length p) - (prefer_count p b x)"
     using pref_count
     by (metis (mono_tags, lifting))
-  hence 2: "(size p) - (prefer_count p x a) \<ge>
-              (size p) - (prefer_count p b x)"
+  hence 2: "(length p) - (prefer_count p x a) \<ge>
+              (length p) - (prefer_count p b x)"
     using calculation p1
     by auto
-  hence 3: "(prefer_count p x a) - (size p) \<le>
-              (prefer_count p b x) - (size p)"
+  hence 3: "(prefer_count p x a) - (length p) \<le>
+              (prefer_count p b x) - (length p)"
     using a_in_A diff_is_0_eq diff_le_self neq1
           pref_count prof x_in_A
     by (metis (no_types))
@@ -181,6 +316,12 @@ qed
 lemma empty_prof_imp_zero_pref_count:
   assumes "p = []"
   shows "\<forall> x y. prefer_count p x y = 0"
+  using assms
+  by simp
+
+lemma empty_prof_imp_zero_pref_count_code:
+  assumes "p = []"
+  shows "\<forall> x y. prefer_count_code p x y = 0"
   using assms
   by simp
 
@@ -273,23 +414,23 @@ proof (safe, simp_all, safe)
     x_in_A: "x \<in> A" and
     x_wins:
       "\<forall>xa \<in> A - {x}.
-        card {i. i < size p \<and> (x, xa) \<in> p!i} <
-          card {i. i < size p \<and> (xa, x) \<in> p!i}"
+        card {i. i < length p \<and> (x, xa) \<in> p!i} <
+          card {i. i < length p \<and> (xa, x) \<in> p!i}"
   from assms have assm:
     "finite_profile A p \<and>  w \<in> A \<and>
       (\<forall>x \<in> A - {w}.
-        card {i::nat. i < size p \<and> (w, x) \<in> p!i} <
-          card {i::nat. i < size p \<and> (x, w) \<in> p!i})"
+        card {i::nat. i < length p \<and> (w, x) \<in> p!i} <
+          card {i::nat. i < length p \<and> (x, w) \<in> p!i})"
     by simp
   hence
     "(\<forall>x \<in> A - {w}.
-      card {i::nat. i < size p \<and> (w, x) \<in> p!i} <
-        card {i::nat. i < size p \<and> (x, w) \<in> p!i})"
+      card {i::nat. i < length p \<and> (w, x) \<in> p!i} <
+        card {i::nat. i < length p \<and> (x, w) \<in> p!i})"
     by simp
   hence w_beats_x:
     "x \<noteq> w \<Longrightarrow>
-      card {i::nat. i < size p \<and> (w, x) \<in> p!i} <
-        card {i::nat. i < size p \<and> (x, w) \<in> p!i}"
+      card {i::nat. i < length p \<and> (w, x) \<in> p!i} <
+        card {i::nat. i < length p \<and> (x, w) \<in> p!i}"
     using x_in_A
     by simp
   also from assm have
@@ -300,8 +441,8 @@ proof (safe, simp_all, safe)
     by simp
   hence x_beats_w:
     "x \<noteq> w \<Longrightarrow>
-      card {i. i < size p \<and> (x, w) \<in> p!i} <
-        card {i. i < size p \<and> (w, x) \<in> p!i}"
+      card {i. i < length p \<and> (x, w) \<in> p!i} <
+        card {i. i < length p \<and> (w, x) \<in> p!i}"
     using x_wins
     by simp
   from w_beats_x x_beats_w show
@@ -339,8 +480,8 @@ next
   from assms have
     "finite_profile A p \<and>  w \<in> A \<and>
       (\<forall>x \<in> A - {w} .
-        card {i::nat. i < size p \<and> (w, x) \<in> p!i} <
-          card {i::nat. i < size p \<and> (x, w) \<in> p!i})"
+        card {i::nat. i < length p \<and> (w, x) \<in> p!i} <
+          card {i::nat. i < length p \<and> (x, w) \<in> p!i})"
     by simp
   thus "xa = w"
     using xa_in_A w_wins insert_Diff insert_iff
@@ -381,7 +522,7 @@ qed
 lemma limit_prof_presv_size:
   assumes f_prof: "finite_profile S p" and
           subset:  "A \<subseteq> S"
-  shows "size p = size (limit_profile A p)"
+  shows "length p = length (limit_profile A p)"
   by simp
 
 subsection \<open>Lifting Property\<close>
@@ -389,10 +530,11 @@ subsection \<open>Lifting Property\<close>
 definition equiv_prof_except_a :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Profile \<Rightarrow>
                                         'a \<Rightarrow> bool" where
   "equiv_prof_except_a A p q a \<equiv>
-    finite_profile A p \<and> finite_profile A q \<and> a \<in> A \<and> size p = size q \<and>
-    (\<forall>i::nat.
-      i < size p \<longrightarrow>
-        equiv_rel_except_a A (p!i) (q!i) a)"
+    finite_profile A p \<and> finite_profile A q \<and>
+      a \<in> A \<and> length p = length q \<and>
+      (\<forall>i::nat.
+        i < length p \<longrightarrow>
+          equiv_rel_except_a A (p!i) (q!i) a)"
 
 (*
    An alternative gets lifted from one profile to another iff
@@ -400,26 +542,27 @@ definition equiv_prof_except_a :: "'a set \<Rightarrow> 'a Profile \<Rightarrow>
 *)
 definition lifted :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "lifted A p q a \<equiv>
-    finite_profile A p \<and> finite_profile A q \<and> a \<in> A \<and> size p = size q \<and>
-    (\<forall>i::nat.
-      (i < size p \<and> \<not>Preference_Relation.lifted A (p!i) (q!i) a) \<longrightarrow>
-        (p!i) = (q!i)) \<and>
-    (\<exists>i::nat. i < size p \<and> Preference_Relation.lifted A (p!i) (q!i) a)"
+    finite_profile A p \<and> finite_profile A q \<and>
+      a \<in> A \<and> length p = length q \<and>
+      (\<forall>i::nat.
+        (i < length p \<and> \<not>Preference_Relation.lifted A (p!i) (q!i) a) \<longrightarrow>
+          (p!i) = (q!i)) \<and>
+      (\<exists>i::nat. i < length p \<and> Preference_Relation.lifted A (p!i) (q!i) a)"
 
 lemma lifted_imp_equiv_prof_except_a:
   assumes lifted: "lifted A p q a"
   shows "equiv_prof_except_a A p q a"
 proof -
   have
-    "\<forall>i::nat. i < size p \<longrightarrow>
+    "\<forall>i::nat. i < length p \<longrightarrow>
       equiv_rel_except_a A (p!i) (q!i) a"
   proof
     fix i :: nat
     show
-      "i < size p \<longrightarrow>
+      "i < length p \<longrightarrow>
         equiv_rel_except_a A (p!i) (q!i) a"
     proof
-      assume i_ok: "i < size p"
+      assume i_ok: "i < length p"
       show "equiv_rel_except_a A (p!i) (q!i) a"
         using lifted_def i_ok lifted profile_def trivial_equiv_rel
               lifted_imp_equiv_rel_except_a
@@ -439,11 +582,11 @@ lemma negl_diff_imp_eq_limit_prof:
   shows "limit_profile A p = limit_profile A q"
 proof -
   have
-    "\<forall>i::nat. i < size p \<longrightarrow>
+    "\<forall>i::nat. i < length p \<longrightarrow>
       equiv_rel_except_a S (p!i) (q!i) a"
     using change equiv_prof_except_a_def
     by metis
-  hence "\<forall>i::nat. i < size p \<longrightarrow> limit A (p!i) = limit A (q!i)"
+  hence "\<forall>i::nat. i < length p \<longrightarrow> limit A (p!i) = limit A (q!i)"
     using notInA negl_diff_imp_eq_limit subset
     by metis
   hence "map (limit A) p = map (limit A) q"
@@ -464,42 +607,42 @@ lemma limit_prof_eq_or_lifted:
 proof cases
   assume inA: "a \<in> A"
   have
-    "\<forall>i::nat. i < size p \<longrightarrow>
+    "\<forall>i::nat. i < length p \<longrightarrow>
         (Preference_Relation.lifted S (p!i) (q!i) a \<or> (p!i) = (q!i))"
     using lifted_def lifted
     by metis
   hence one:
-    "\<forall>i::nat. i < size p \<longrightarrow>
+    "\<forall>i::nat. i < length p \<longrightarrow>
          (Preference_Relation.lifted A (limit A (p!i)) (limit A (q!i)) a \<or>
            (limit A (p!i)) = (limit A (q!i)))"
     using limit_lifted_imp_eq_or_lifted subset
     by metis
   thus ?thesis
   proof cases
-    assume "\<forall>i::nat. i < size p \<longrightarrow> (limit A (p!i)) = (limit A (q!i))"
+    assume "\<forall>i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (q!i))"
     thus ?thesis
       using lifted_def length_map lifted
             limit_profile.simps nth_equalityI nth_map
       by (metis (mono_tags, lifting))
   next
     assume assm:
-      "\<not>(\<forall>i::nat. i < size p \<longrightarrow> (limit A (p!i)) = (limit A (q!i)))"
+      "\<not>(\<forall>i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (q!i)))"
     let ?p = "limit_profile A p"
     let ?q = "limit_profile A q"
     have "profile A ?p \<and> profile A ?q"
       using lifted_def lifted limit_profile_sound subset
       by metis
-    moreover have "size ?p = size ?q"
+    moreover have "length ?p = length ?q"
       using lifted_def lifted
       by fastforce
     moreover have
-      "\<exists>i::nat. i < size ?p \<and> Preference_Relation.lifted A (?p!i) (?q!i) a"
+      "\<exists>i::nat. i < length ?p \<and> Preference_Relation.lifted A (?p!i) (?q!i) a"
       using assm lifted_def length_map lifted
             limit_profile.simps nth_map one
       by (metis (no_types, lifting))
     moreover have
       "\<forall>i::nat.
-        (i < size ?p \<and> \<not>Preference_Relation.lifted A (?p!i) (?q!i) a) \<longrightarrow>
+        (i < length ?p \<and> \<not>Preference_Relation.lifted A (?p!i) (?q!i) a) \<longrightarrow>
           (?p!i) = (?q!i)"
       using lifted_def length_map lifted
             limit_profile.simps nth_map one

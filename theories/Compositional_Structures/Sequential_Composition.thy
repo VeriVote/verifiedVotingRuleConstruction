@@ -471,23 +471,23 @@ proof -
     have 2: "a \<in> ?new_Ap"
       by blast
     moreover from def_and_lifted have eql_lengths:
-      "size ?new_p = size ?new_q"
+      "length ?new_p = length ?new_q"
       by (simp add: lifted_def)
     ultimately have 0:
-      "(\<forall>i::nat. i < size ?new_p \<longrightarrow>
+      "(\<forall>i::nat. i < length ?new_p \<longrightarrow>
           \<not>Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a) \<or>
-       (\<exists>i::nat. i < size ?new_p \<and>
+       (\<exists>i::nat. i < length ?new_p \<and>
           \<not>Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a \<and>
               (?new_p!i) \<noteq> (?new_q!i))"
       using a2 lifted_def
       by (metis (no_types, lifting))
     from def_and_lifted modules have
-      "\<forall>i. (0 \<le> i \<and> i < size ?new_p) \<longrightarrow>
+      "\<forall>i. (0 \<le> i \<and> i < length ?new_p) \<longrightarrow>
           (Preference_Relation.lifted A (p!i) (q!i) a \<or> (p!i) = (q!i))"
       using defer_in_alts Profile.lifted_def limit_prof_presv_size
       by metis
     with def_and_lifted modules mono_m have
-      "\<forall>i. (0 \<le> i \<and> i < size ?new_p) \<longrightarrow>
+      "\<forall>i. (0 \<le> i \<and> i < length ?new_p) \<longrightarrow>
           (Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a \<or>
            (?new_p!i) = (?new_q!i))"
       using limit_lifted_imp_eq_or_lifted defer_in_alts
