@@ -54,6 +54,202 @@ fun win_count_code :: "'a Profile \<Rightarrow> 'a \<Rightarrow> nat" where
   "win_count_code (p#ps) a =
       (if (above p a = {a}) then 1 else 0) + win_count_code ps a"
 
+lemma win_count_equiv[code]: "win_count p x = win_count_code p x"
+proof (induction p rule: rev_induct, simp)
+  case (snoc a p)
+  fix
+    a :: "'a Preference_Relation" and
+    p :: "'a Profile"
+  assume
+    base_case:
+    "win_count p x = win_count_code p x"
+  have size_one: "length [a] = 1"
+    by simp
+  have p_pos_in_ps:
+    "\<forall>i<length p. p!i = (p@[a])!i"
+    by (simp add: nth_append)
+  have
+    "win_count [a] x =
+      (let q = [a] in
+        card {i::nat. i < length q \<and>
+              (let r = (q!i) in (above r x = {x}))})"
+    by simp
+  hence one_ballot_equiv:
+    "win_count [a] x = win_count_code [a] x"
+    using size_one
+    by (simp add: nth_Cons')
+  have pref_count_induct:
+    "win_count (p@[a]) x =
+      win_count p x + win_count [a] x"
+  proof (simp)
+    have
+      "{i. i = 0 \<and> (above ([a]!i) x = {x})} =
+        (if (above a x = {x}) then {0} else {})"
+      by (simp add: Collect_conv_if)
+    hence shift_idx_a:
+      "card {i. i = length p \<and> (above ([a]!0) x = {x})} =
+        card {i. i = 0 \<and> (above ([a]!i) x = {x})}"
+      by simp
+    have set_prof_eq:
+      "{i. i < Suc (length p) \<and> (above ((p@[a])!i) x = {x})} =
+        {i. i < length p \<and> (above (p!i) x = {x})} \<union>
+          {i. i = length p \<and> (above ([a]!0) x = {x})}"
+    proof (safe, simp_all)
+      fix
+        xa :: nat and
+        xaa :: "'a"
+      assume
+        "xa < Suc (length p)" and
+        "above ((p@[a])!xa) x = {x}" and
+        "xa \<noteq> length p" and
+        "xaa \<in> above (p!xa) x"
+      thus "xaa = x"
+        using less_antisym p_pos_in_ps singletonD
+        by metis
+    next
+      fix
+        xa :: nat
+      assume
+        "xa < Suc (length p)" and
+        "above ((p@[a])!xa) x = {x}" and
+        "xa \<noteq> length p"
+      thus "x \<in> above (p!xa) x"
+        using less_antisym insertI1 p_pos_in_ps
+        by metis
+    next
+      fix
+        xa :: nat and
+        xaa :: "'a"
+      assume
+        "xa < Suc (length p)" and
+        "above ((p@[a])!xa) x = {x}" and
+        "xaa \<in> above a x" and
+        "xaa \<noteq> x"
+      thus "xa < length p"
+        using less_antisym nth_append_length
+              p_pos_in_ps singletonD
+        by metis
+    next
+      fix
+        xa :: nat and
+        xaa :: "'a" and
+        xb :: "'a"
+      assume
+        "xa < Suc (length p)" and
+        "above ((p@[a])!xa) x = {x}" and
+        "xaa \<in> above a x" and
+        "xaa \<noteq> x" and
+        "xb \<in> above (p!xa) x"
+      thus "xb = x"
+        using less_antisym p_pos_in_ps
+              nth_append_length singletonD
+        by metis
+    next
+      fix
+        xa :: nat and
+        xaa :: "'a"
+      assume
+        "xa < Suc (length p)" and
+        "above ((p@[a])!xa) x = {x}" and
+        "xaa \<in> above a x" and
+        "xaa \<noteq> x"
+      thus "x \<in> above (p!xa) x"
+        using insertI1 less_antisym nth_append
+              nth_append_length singletonD
+        by metis
+    next
+      fix
+        xa :: nat
+      assume
+        "xa < Suc (length p)" and
+        "above ((p@[a])!xa) x = {x}" and
+        "x \<notin> above a x"
+      thus "xa < length p"
+        using insertI1 less_antisym nth_append_length
+        by metis
+    next
+      fix
+        xa :: nat and
+        xb :: "'a"
+      assume
+        "xa < Suc (length p)" and
+        "above ((p@[a])!xa) x = {x}" and
+        "x \<notin> above a x" and
+        "xb \<in> above (p!xa) x"
+      thus "xb = x"
+        using insertI1 less_antisym nth_append_length
+              p_pos_in_ps singletonD
+        by metis
+    next
+      fix
+        xa :: nat
+      assume
+        "xa < Suc (length p)" and
+        "above ((p@[a])!xa) x = {x}" and
+        "x \<notin> above a x"
+      thus "x \<in> above (p!xa) x"
+        using insertI1 less_antisym nth_append_length p_pos_in_ps
+        by metis
+    next
+      fix
+        xa :: nat and
+        xaa :: "'a"
+      assume
+        "xa < length p" and
+        "above (p!xa) x = {x}" and
+        "xaa \<in> above ((p@[a])!xa) x"
+      thus "xaa = x"
+        by (simp add: nth_append)
+    next
+      fix
+        xa :: nat
+      assume
+        "xa < length p" and
+        "above (p!xa) x = {x}"
+      thus "x \<in> above ((p@[a])!xa) x"
+        by (simp add: nth_append)
+    qed
+    have f1:
+      "finite {n. n < length p \<and> (above (p!n) x = {x})}"
+      by simp
+    have f2:
+      "finite {n. n = length p \<and> (above ([a]!0) x = {x})}"
+      by simp
+    have
+      "card ({i. i < length p \<and> (above (p!i) x = {x})} \<union>
+        {i. i = length p \<and> (above ([a]!0) x = {x})}) =
+          card {i. i < length p \<and> (above (p!i) x = {x})} +
+            card {i. i = length p \<and> (above ([a]!0) x = {x})}"
+      using f1 f2 card_Un_disjoint
+      by blast
+    thus
+      "card {i. i < Suc (length p) \<and> (above ((p@[a])!i) x = {x})} =
+        card {i. i < length p \<and> (above (p!i) x = {x})} +
+          card {i. i = 0 \<and> (above ([a]!i) x = {x})}"
+      using set_prof_eq shift_idx_a
+      by auto
+  qed
+  have pref_count_code_induct:
+    "win_count_code (p@[a]) x =
+      win_count_code p x + win_count_code [a] x"
+  proof (induction p, simp)
+    fix
+      aa :: "'a Preference_Relation" and
+      p :: "'a Profile"
+    assume
+      "win_count_code (p@[a]) x =
+        win_count_code p x + win_count_code [a] x"
+    thus
+      "win_count_code ((aa#p)@[a]) x =
+        win_count_code (aa#p) x + win_count_code [a] x"
+      by simp
+  qed
+  show "win_count (p@[a]) x = win_count_code (p@[a]) x"
+    using pref_count_code_induct pref_count_induct
+          base_case one_ballot_equiv
+    by presburger
+qed
+
 fun prefer_count :: "'a Profile \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> nat" where
   "prefer_count p x y =
       card {i::nat. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))}"

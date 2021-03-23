@@ -26,12 +26,6 @@ fun plurality :: "'a Electoral_Module" where
      {a \<in> A. \<exists>x \<in> A. win_count p x > win_count p a},
      {})"
 
-fun plurality_code :: "'a Electoral_Module" where
-  "plurality_code A p =
-    ({a \<in> A. \<forall>x \<in> A. win_count_code p x \<le> win_count_code p a},
-     {a \<in> A. \<exists>x \<in> A. win_count_code p x > win_count_code p a},
-     {})"
-
 subsection \<open>Soundness\<close>
 
 theorem plurality_sound[simp]: "electoral_module plurality"
