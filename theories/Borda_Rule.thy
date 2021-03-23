@@ -24,7 +24,4 @@ subsection \<open>Definition\<close>
 fun borda_rule :: "'a Electoral_Module" where
   "borda_rule A p = elector borda A p"
 
-fun borda_rule_code :: "'a Electoral_Module" where
-  "borda_rule_code A p = elector borda_code A p"
-
 end

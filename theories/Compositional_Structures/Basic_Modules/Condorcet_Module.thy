@@ -24,16 +24,8 @@ fun condorcet_score :: "'a Evaluation_Function" where
   "condorcet_score x A p =
     (if (condorcet_winner A p x) then 1 else 0)"
 
-fun condorcet_score_code :: "'a Evaluation_Function" where
-  "condorcet_score_code x A p =
-    (if (condorcet_winner_code A p x) then 1 else 0)"
-
 fun condorcet :: "'a Electoral_Module" where
   "condorcet A p = (max_eliminator condorcet_score) A p"
-
-fun condorcet_code :: "'a Electoral_Module" where
-  "condorcet_code A p =
-    (max_eliminator condorcet_score_code) A p"
 
 subsection \<open>Property\<close>
 

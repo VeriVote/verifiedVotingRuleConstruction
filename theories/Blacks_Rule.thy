@@ -22,7 +22,4 @@ subsection \<open>Definition\<close>
 fun blacks_rule :: "'a Electoral_Module" where
   "blacks_rule A p = (pairwise_majority_rule \<triangleright> borda_rule) A p"
 
-fun blacks_rule_code :: "'a Electoral_Module" where
-  "blacks_rule_code A p = (pairwise_majority_rule_code \<triangleright> borda_rule_code) A p"
-
 end

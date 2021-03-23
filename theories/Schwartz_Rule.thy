@@ -23,8 +23,4 @@ fun schwartz_rule :: "'a Electoral_Module" where
   "schwartz_rule A p =
     ((less_average_eliminator borda_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
 
-fun schwartz_rule_code :: "'a Electoral_Module" where
-  "schwartz_rule_code A p =
-    ((less_average_eliminator borda_score_code) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
-
 end

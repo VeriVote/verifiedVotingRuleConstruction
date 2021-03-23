@@ -21,9 +21,6 @@ subsection \<open>Definition\<close>
 fun copeland_rule :: "'a Electoral_Module" where
   "copeland_rule A p = elector copeland A p"
 
-fun copeland_rule_code :: "'a Electoral_Module" where
-  "copeland_rule_code A p = elector copeland_code A p"
-
 subsection \<open>Condorcet Consistency Property\<close>
 
 theorem copeland_condorcet: "condorcet_consistency copeland_rule"

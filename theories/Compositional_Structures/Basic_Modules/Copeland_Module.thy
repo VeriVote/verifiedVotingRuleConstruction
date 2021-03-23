@@ -24,16 +24,8 @@ fun copeland_score :: "'a Evaluation_Function" where
   "copeland_score x A p =
     card{y \<in> A . wins x p y} - card{y \<in> A . wins y p x}"
 
-fun copeland_score_code :: "'a Evaluation_Function" where
-  "copeland_score_code x A p =
-    card{y \<in> A . wins_code x p y} - card{y \<in> A . wins_code y p x}"
-
 fun copeland :: "'a Electoral_Module" where
   "copeland A p = max_eliminator copeland_score A p"
-
-fun copeland_code :: "'a Electoral_Module" where
-  "copeland_code A p =
-    max_eliminator copeland_score_code A p"
 
 subsection \<open>Lemmata\<close>
 

@@ -63,7 +63,7 @@ fun prefer_count_code :: "'a Profile \<Rightarrow> 'a \<Rightarrow> 'a \<Rightar
   "prefer_count_code (p#ps) x y =
       (if y \<preceq>\<^sub>p x then 1 else 0) + prefer_count_code ps x y"
 
-lemma pref_count_equiv: "prefer_count p x y = prefer_count_code p x y"
+lemma pref_count_equiv[code]: "prefer_count p x y = prefer_count_code p x y"
 proof (induction p rule: rev_induct, simp)
   case (snoc a p)
   fix
@@ -345,10 +345,6 @@ fun wins :: "'a \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" wh
   "wins x p y =
     (prefer_count p x y > prefer_count p y x)"
 
-fun wins_code :: "'a \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
-  "wins_code x p y =
-    (prefer_count_code p x y > prefer_count_code p y x)"
-
 (* Alternative a wins against b implies that b does not win against a. *)
 lemma wins_antisym:
   assumes "wins a p b"
@@ -365,11 +361,6 @@ subsection \<open>Condorcet Winner\<close>
 fun condorcet_winner :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "condorcet_winner A p w =
       (finite_profile A p \<and>  w \<in> A \<and> (\<forall>x \<in> A - {w} . wins w p x))"
-
-fun condorcet_winner_code :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
-  "condorcet_winner_code A p w =
-    (finite_profile A p \<and>  w \<in> A \<and>
-      (\<forall>x \<in> A - {w} . wins_code w p x))"
 
 lemma cond_winner_unique:
   assumes winner_c: "condorcet_winner A p c" and

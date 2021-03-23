@@ -20,9 +20,6 @@ subsection \<open>Definition\<close>
 fun minimax_rule :: "'a Electoral_Module" where
   "minimax_rule A p = elector minimax A p"
 
-fun minimax_rule_code :: "'a Electoral_Module" where
-  "minimax_rule_code A p = elector minimax_code A p"
-
 subsection \<open>Condorcet Consistency Property\<close>
 
 theorem minimax_condorcet: "condorcet_consistency minimax_rule"

@@ -21,9 +21,6 @@ subsection \<open>Definition\<close>
 fun pairwise_majority_rule :: "'a Electoral_Module" where
   "pairwise_majority_rule A p = elector condorcet A p"
 
-fun pairwise_majority_rule_code :: "'a Electoral_Module" where
-  "pairwise_majority_rule_code A p = elector condorcet_code A p"
-
 fun condorcet' :: "'a Electoral_Module" where
 "condorcet' A p =
   ((min_eliminator condorcet_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"

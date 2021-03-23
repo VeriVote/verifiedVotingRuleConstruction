@@ -24,13 +24,7 @@ subsection \<open>Definition\<close>
 fun borda_score :: "'a Evaluation_Function" where
   "borda_score x A p = (\<Sum>y \<in> A. (prefer_count p x y))"
 
-fun borda_score_code :: "'a Evaluation_Function" where
-  "borda_score_code x A p = (\<Sum>y \<in> A. (prefer_count_code p x y))"
-
 fun borda :: "'a Electoral_Module" where
   "borda A p = max_eliminator borda_score A p"
-
-fun borda_code :: "'a Electoral_Module" where
-  "borda_code A p = (max_eliminator borda_score_code) A p"
 
 end

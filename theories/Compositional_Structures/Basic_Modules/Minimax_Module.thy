@@ -22,15 +22,8 @@ fun minimax_score :: "'a Evaluation_Function" where
   "minimax_score x A p =
     Min {prefer_count p x y |y . y \<in> A-{x}}"
 
-fun minimax_score_code :: "'a Evaluation_Function" where
-  "minimax_score_code x A p =
-    Min {prefer_count_code p x y |y . y \<in> A-{x}}"
-
 fun minimax :: "'a Electoral_Module" where
   "minimax A p = max_eliminator minimax_score A p"
-
-fun minimax_code :: "'a Electoral_Module" where
-  "minimax_code A p = max_eliminator minimax_score_code A p"
 
 subsection \<open>Lemma\<close>
 
