@@ -135,6 +135,56 @@ theorem pass_mod_dl_inv[simp]:
   shows "defer_lift_invariance (pass_module n r)"
   by (simp add: order defer_lift_invariance_def)
 
+theorem pass_zero_mod_def_zero[simp]:
+  assumes order: "linear_order r"
+  shows "defers 0 (pass_module 0 r)"
+  unfolding defers_def
+proof (safe)
+  show "electoral_module (pass_module 0 r)"
+    using pass_mod_sound order
+    by simp
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
+  assume
+    card_pos: "0 \<le> card A" and
+    finite_A: "finite A" and
+    prof_A: "profile A p"
+  show
+    "card (defer (pass_module 0 r) A p) = 0"
+  proof -
+    have lin_ord_on_A:
+      "linear_order_on A (limit A r)"
+      using order limit_presv_lin_ord
+      by blast
+    have f1: "connex A (limit A r)"
+      using lin_ord_imp_connex lin_ord_on_A
+      by simp
+    obtain aa :: "('a \<Rightarrow> bool) \<Rightarrow> 'a" where
+      f2:
+      "\<forall>p. (Collect p = {} \<longrightarrow> (\<forall>a. \<not> p a)) \<and>
+            (Collect p \<noteq> {} \<longrightarrow> p (aa p))"
+      by moura
+    have "\<forall>n. \<not> (n::nat) \<le> 0 \<or> n = 0"
+      by blast
+    hence
+      "\<forall>a Aa. \<not> connex Aa (limit A r) \<or> a \<notin> Aa \<or> a \<notin> A \<or>
+                  \<not> card (above (limit A r) a) \<le> 0"
+      using above_connex above_presv_limit card_eq_0_iff
+            equals0D finite_A order rev_finite_subset
+      by (metis (no_types))
+    hence "{a \<in> A. card(above (limit A r) a) \<le> 0} = {}"
+      using f1
+      by auto
+    hence "card {a \<in> A. card(above (limit A r) a) \<le> 0} = 0"
+      using card.empty
+      by metis
+    thus "card (defer (pass_module 0 r) A p) = 0"
+      by simp
+  qed
+qed
+
 (*
    For any natural number n and any linear order, the according pass module
    defers n alternatives (if there are n alternatives).

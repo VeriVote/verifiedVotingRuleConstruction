@@ -20,6 +20,57 @@ of both the drop module and the pass module.\<close>
 
 subsection \<open>Properties\<close>
 
+theorem drop_zero_mod_rej_zero[simp]:
+  assumes order: "linear_order r"
+  shows "rejects 0 (drop_module 0 r)"
+  unfolding rejects_def
+proof (safe)
+  show "electoral_module (drop_module 0 r)"
+    using order
+    by simp
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
+  assume
+    card_pos: "0 \<le> card A" and
+    finite_A: "finite A" and
+    prof_A: "profile A p"
+  have f1: "connex UNIV r"
+    using assms lin_ord_imp_connex
+    by auto
+  obtain aa :: "('a \<Rightarrow> bool) \<Rightarrow> 'a" where
+    f2:
+    "\<forall>p. (Collect p = {} \<longrightarrow> (\<forall>a. \<not> p a)) \<and>
+          (Collect p \<noteq> {} \<longrightarrow> p (aa p))"
+    by moura
+  have f3: "\<forall>a. (a::'a) \<notin> {}"
+    using empty_iff
+    by simp
+  have connex:
+    "connex A (limit A r)"
+    using f1 limit_presv_connex subset_UNIV
+    by metis
+  have rej_drop_eq_def_pass:
+    "reject (drop_module 0 r) = defer (pass_module 0 r)"
+    by simp
+  have f4:
+    "\<forall>a Aa.
+      \<not> connex Aa (limit A r) \<or> a \<notin> Aa \<or> a \<notin> A \<or>
+        \<not> card (above (limit A r) a) \<le> 0"
+    using above_connex above_presv_limit bot_nat_0.extremum_uniqueI
+          card_0_eq emptyE finite_A order rev_finite_subset
+    by (metis (lifting))
+  have "{a \<in> A. card(above (limit A r) a) \<le> 0} = {}"
+    using connex f4
+    by auto
+  hence "card {a \<in> A. card(above (limit A r) a) \<le> 0} = 0"
+    using card.empty
+    by (metis (full_types))
+  thus "card (reject (drop_module 0 r) A p) = 0"
+    by simp
+qed
+
 (*
   The drop module rejects n alternatives (if there are n alternatives).
   NOTE: The induction proof is still missing. Following is the proof for n=2.
