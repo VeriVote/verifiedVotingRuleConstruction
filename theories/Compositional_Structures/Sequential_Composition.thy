@@ -71,20 +71,23 @@ proof -
           inf.order_iff inf_sup_aci(1) subsetD
     by (smt (verit, ccfv_threshold))
   from disjoint_m disjoint_n def_presv_fin_prof f_prof
-       module_m module_n have 3:
+       module_m module_n
+  have 3:
     "(reject m A p \<inter> elect n ?new_A ?new_p) = {}"
     using disjoint_iff_not_equal elect_in_alts set_rev_mp
           result_disj Int_commute boolean_algebra_cancel.inf2
           defer_not_elec_or_rej inf.commute inf.orderE inf_commute
     by (smt (verit, ccfv_threshold))
-  from 0 1 2 3 disjoint_m disjoint_n module_m module_n f_prof have
+  from 0 1 2 3 disjoint_m disjoint_n module_m module_n f_prof
+  have
     "(elect m A p \<union> elect n ?new_A ?new_p) \<inter>
           (reject m A p \<union> reject n ?new_A ?new_p) = {}"
     using inf_sup_aci(1) inf_sup_distrib2 def_presv_fin_prof
           result_disj sup_inf_absorb sup_inf_distrib1
           distrib(3) sup_eq_bot_iff
     by (smt (verit, ccfv_threshold))
-  moreover from 0 1 2 3 disjoint_n module_m module_n f_prof have
+  moreover from 0 1 2 3 disjoint_n module_m module_n f_prof
+  have
     "(elect m A p \<union> elect n ?new_A ?new_p) \<inter>
           (defer n ?new_A ?new_p) = {}"
     using Int_Un_distrib2 Un_empty def_presv_fin_prof result_disj

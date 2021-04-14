@@ -95,12 +95,40 @@ next
     using non_electing_n
     by (simp add: non_electing_def)
   have
+    "\<forall>x0 x1 x2 x3 x4 x5 x6 x7.
+      (well_formed (x6::'a set) (x5, x1, x3) \<and> well_formed x6 (x4, x0, x2) \<longrightarrow>
+        elect_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x5 \<union> x4 \<and>
+          reject_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x1 \<union> x0 \<and>
+          defer_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x3 \<union> x2) =
+            ((\<not> well_formed x6 (x5, x1, x3) \<or> \<not> well_formed x6 (x4, x0, x2)) \<or>
+              elect_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x5 \<union> x4 \<and>
+                reject_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x1 \<union> x0 \<and>
+                defer_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x3 \<union> x2)"
+    by linarith
+  hence
+    "\<forall>f. agg_conservative f =
+      (aggregator f \<and>
+        (\<forall>A Aa Ab Ac Ad Ae Af. (\<not> well_formed (A::'a set) (Aa, Ae, Ac) \<or>
+            \<not> well_formed A (Ab, Af, Ad)) \<or>
+          elect_r (f A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Aa \<union> Ab \<and>
+            reject_r (f A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Ae \<union> Af \<and>
+            defer_r (f A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Ac \<union> Ad))"
+    by (simp add: agg_conservative_def)
+  hence
+    "aggregator a \<and>
+      (\<forall>A Aa Ab Ac Ad Ae Af. \<not> well_formed A (Aa, Ae, Ac) \<or>
+          \<not> well_formed A (Ab, Af, Ad) \<or>
+          elect_r (a A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Aa \<union> Ab \<and>
+            reject_r (a A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Ae \<union> Af \<and>
+            defer_r (a A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Ac \<union> Ad)"
+    using conservative
+    by presburger
+  hence
     "let c = (a A (m A p) (n A p)) in
       (elect_r c \<subseteq> ((elect m A p) \<union> (elect n A p)))"
-    using conservative agg_conservative_def
-          emod_m emod_n par_comp_result_sound
-          combine_ele_rej_def fin_A prof_A
-    by (smt (verit, ccfv_SIG))
+    using emod_m emod_n fin_A par_comp_result_sound
+          prod.collapse prof_A
+    by metis
   hence "x \<in> ((elect m A p) \<union> (elect n A p))"
     using x_wins
     by auto

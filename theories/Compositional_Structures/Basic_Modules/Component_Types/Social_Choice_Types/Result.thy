@@ -134,4 +134,76 @@ proof -
     by metis
 qed
 
+lemma defer_subset:
+  assumes "well_formed A result"
+  shows "defer_r result \<subseteq> A"
+proof (safe)
+  fix x :: "'a"
+  assume assm0: "x \<in> defer_r result"
+  obtain
+    AA :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
+    pp :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
+    assm1: "A = AA result A \<and> result = pp result A \<and>
+            disjoint3 (pp result A) \<and>
+            set_equals_partition (AA result A) (pp result A)"
+    using assms
+    by simp
+  hence
+    "\<forall>p A. \<exists>Aa Ab Ac.
+      (\<not> set_equals_partition (A::'a set) p \<or> (Aa, Ab, Ac) = p) \<and>
+        (\<not> set_equals_partition A p \<or> Aa \<union> Ab \<union> Ac = A)"
+    by auto
+  thus "x \<in> A"
+    using UnCI assm0 assm1 snd_conv
+    by metis
+qed
+
+lemma elect_subset:
+  assumes "well_formed A result"
+  shows "elect_r result \<subseteq> A"
+proof (safe)
+  fix x :: "'a"
+  assume assm0: "x \<in> elect_r result"
+  obtain
+    AA :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
+    pp :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
+    assm1: "A = AA result A \<and> result = pp result A \<and>
+            disjoint3 (pp result A) \<and>
+            set_equals_partition (AA result A) (pp result A)"
+    using assms
+    by simp
+  hence
+    "\<forall>p A. \<exists>Aa Ab Ac.
+      (\<not> set_equals_partition (A::'a set) p \<or> (Aa, Ab, Ac) = p) \<and>
+        (\<not> set_equals_partition A p \<or> Aa \<union> Ab \<union> Ac = A)"
+    by auto
+  thus "x \<in> A"
+    using UnCI assm0 assm1 assms fst_conv
+    by metis
+qed
+
+lemma reject_subset:
+  assumes "well_formed A result"
+  shows "reject_r result \<subseteq> A"
+proof (safe)
+  fix x :: "'a"
+  assume assm0: "x \<in> reject_r result"
+  obtain
+    AA :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
+    pp :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
+    assm1: "A = AA result A \<and> result = pp result A \<and>
+            disjoint3 (pp result A) \<and>
+            set_equals_partition (AA result A) (pp result A)"
+    using assms
+    by simp
+  hence
+    "\<forall>p A. \<exists>Aa Ab Ac.
+      (\<not> set_equals_partition (A::'a set) p \<or> (Aa, Ab, Ac) = p) \<and>
+        (\<not> set_equals_partition A p \<or> Aa \<union> Ab \<union> Ac = A)"
+    by auto
+  thus "x \<in> A"
+    using UnCI assms assm0 assm1 fst_conv snd_conv disjoint3.cases
+    by metis
+qed
+
 end

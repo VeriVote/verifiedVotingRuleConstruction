@@ -515,9 +515,46 @@ lemma electoral_mod_defer_elem:
 lemma mod_contains_result_comm:
   assumes "mod_contains_result m n A p a"
   shows "mod_contains_result n m A p a"
-  using IntI assms electoral_mod_defer_elem empty_iff
-        mod_contains_result_def result_disj
-  by (smt (verit, ccfv_threshold))
+  unfolding mod_contains_result_def
+proof (safe)
+  show "electoral_module n"
+    using assms mod_contains_result_def
+    by metis
+next
+  show "electoral_module m"
+    using assms mod_contains_result_def
+    by metis
+next
+  show "finite A"
+    using assms mod_contains_result_def
+    by metis
+next
+  show "profile A p"
+    using assms mod_contains_result_def
+    by metis
+next
+  show "a \<in> A"
+    using assms mod_contains_result_def
+    by metis
+next
+  assume "a \<in> elect n A p"
+  thus "a \<in> elect m A p"
+    using IntI assms electoral_mod_defer_elem empty_iff
+          mod_contains_result_def result_disj
+    by (metis (mono_tags, lifting))
+next
+  assume "a \<in> reject n A p"
+  thus "a \<in> reject m A p"
+    using IntI assms electoral_mod_defer_elem empty_iff
+          mod_contains_result_def result_disj
+    by (metis (mono_tags, lifting))
+next
+  assume "a \<in> defer n A p"
+  thus "a \<in> defer m A p"
+    using IntI assms electoral_mod_defer_elem empty_iff
+          mod_contains_result_def result_disj
+    by (metis (mono_tags, lifting))
+qed
 
 lemma not_rej_imp_elec_or_def:
   assumes
@@ -555,15 +592,70 @@ proof -
     using contra_subsetD disjoint_iff_not_equal elect_in_alts
           electoral_mod_defer_elem eq prof_contains_result_def input
           result_disj
-    by (smt (verit, best))
-  moreover have "\<forall>a \<in> reject m A p. a \<in> reject m A q"
+  proof -
+    fix aa :: 'a
+    have "\<forall> A Aa. (Aa::'a set) \<inter> A = {} \<or> Aa \<noteq> {}"
+      by blast
+    moreover have f1: "elect m A q - A = {}"
+      using Diff_eq_empty_iff elect_in_alts input
+      by metis
+    moreover have f2: "defer m A q \<inter> elect m A q = {}"
+      using disjoint_iff_not_equal input result_disj
+      by (metis (no_types))
+    moreover have f3: "reject m A q \<inter> elect m A q = {}"
+      using disjoint_iff_not_equal input result_disj
+      by (metis (no_types))
+    ultimately have f4:
+      "(\<exists> Aa. Aa \<inter> elect m A q = {} \<and> aa \<in> Aa) \<or>
+          aa \<notin> elect m A q \<or> aa \<in> elect m A p"
+      using DiffI electoral_mod_defer_elem eq prof_contains_result_def
+      by (metis (no_types))
+    hence f5:
+      "aa \<notin> elect m A q \<or> aa \<in> elect m A p"
+      using disjoint_iff_not_equal
+      by metis
+    from f1 f2 f3
+    show ?thesis
+      using Diff_iff Int_iff empty_iff eq not_rej_imp_elec_or_def
+            prof_contains_result_def
+      by metis
+  qed
+  moreover have
+    "\<forall>a \<in> reject m A p. a \<in> reject m A q"
     using reject_in_alts eq prof_contains_result_def input in_mono
     by fastforce
-  moreover have "\<forall>a \<in> reject m A q. a \<in> reject m A p"
-    using contra_subsetD disjoint_iff_not_equal reject_in_alts
-          electoral_mod_defer_elem eq prof_contains_result_def
-          input result_disj
-    by (smt (verit, ccfv_SIG))
+  moreover have
+    "\<forall>a \<in> reject m A q. a \<in> reject m A p"
+  proof -
+    {
+      fix aa :: 'a
+      have ff1:
+        "\<forall> f. reject f A q \<subseteq> A \<or> \<not> electoral_module f"
+        using input reject_in_alts
+        by metis
+      have ff2:
+        "\<forall> f. reject f A q \<inter> defer f A q = {} \<or> \<not> electoral_module f"
+        using input result_disj
+        by metis
+      have "electoral_module m \<and> profile A p \<and> finite_profile A q"
+        using input
+        by blast
+      hence ff3:
+        "elect m A q \<inter> reject m A q = {} \<and> elect m A q \<inter> defer m A q = {} \<and>
+          reject m A q \<inter> defer m A q = {}"
+        by (simp add: result_disj)
+      hence
+        "aa \<in> elect m A q \<longrightarrow> aa \<notin> reject m A q \<or> aa \<in> reject m A p"
+        using disjoint_iff_not_equal ff3
+        by metis
+      hence "aa \<notin> reject m A q \<or> aa \<in> reject m A p"
+        using ff2 ff1 electoral_mod_defer_elem eq
+              input prof_contains_result_def
+        by fastforce
+    }
+    thus ?thesis
+      by metis
+  qed
   moreover have "\<forall>a \<in> defer m A p. a \<in> defer m A q"
     using defer_in_alts eq prof_contains_result_def input in_mono
     by fastforce
@@ -621,7 +713,8 @@ proof -
     using assms(2) assms(4) combine_ele_rej_def
           electoral_module_def result_imp_rej
     by metis
-  from reject_p reject_q show ?thesis
+  from reject_p reject_q
+  show ?thesis
     by (simp add: assms(5) assms(6) prod_eqI)
 qed
 
@@ -684,11 +777,26 @@ lemma single_elim_decr_def_card:
     non_electing: "non_electing m" and
     f_prof: "finite_profile A p"
   shows "card (defer m A p) = card A - 1"
-  using Diff_empty One_nat_def Suc_leI card_Diff_subset card_gt_0_iff
-        defer_not_elec_or_rej finite_subset non_electing
-        non_electing_def not_empty f_prof reject_in_alts rejecting
-        rejects_def
-  by (smt (verit, ccfv_threshold))
+proof -
+  have "rejects 1 m"
+    using One_nat_def rejecting
+    by metis
+  moreover have
+    "electoral_module m \<and>
+      (\<forall> A rs. infinite A \<or> \<not> profile A rs \<or> elect m A rs = {})"
+    using non_electing
+    unfolding non_electing_def
+    by metis
+  moreover from this have
+    "reject m A p \<subseteq> A"
+    using f_prof reject_in_alts
+    by metis
+  ultimately show ?thesis
+    using f_prof not_empty
+    by (simp add: Suc_leI card_Diff_subset card_gt_0_iff
+                  defer_not_elec_or_rej finite_subset
+                  rejects_def)
+qed
 
 lemma single_elim_decr_def_card2:
   assumes
@@ -697,11 +805,38 @@ lemma single_elim_decr_def_card2:
     non_electing: "non_electing m" and
     f_prof: "finite_profile A p"
   shows "card (defer m A p) = card A - 1"
-  using Diff_empty One_nat_def Suc_leI card_Diff_subset card_gt_0_iff
-        defer_not_elec_or_rej finite_subset non_electing
-        non_electing_def not_empty f_prof reject_in_alts
-        eliminating eliminates_def
-  by (smt (verit))
+proof -
+  have
+    "\<forall>f. (non_electing f \<or>
+            (\<exists>A rs. ({}::'a set) \<noteq> elect f A rs \<and> profile A rs \<and> finite A) \<or>
+            \<not> electoral_module f) \<and>
+          ((\<forall>A rs. {} = elect f A rs \<or> \<not> profile A rs \<or> infinite A) \<and>
+            electoral_module f \<or> \<not> non_electing f)"
+    using non_electing_def
+    by metis
+  moreover from this have
+    "electoral_module m \<and>
+      (\<forall>A rs. infinite A \<or> \<not> profile A rs \<or> elect m A rs = {})"
+    using non_electing
+    by (metis (no_types))
+  moreover from this have
+    "reject m A p \<subseteq> A"
+    using f_prof reject_in_alts
+    by metis
+  moreover have "1 < card A"
+    using not_empty
+    by presburger
+  moreover have "eliminates 1 m"
+    using One_nat_def eliminating
+    by presburger
+  moreover have "eliminates 1 m"
+    using eliminating
+    by force
+  ultimately show ?thesis
+    using f_prof
+    by (simp add: card_Diff_subset defer_not_elec_or_rej
+                  eliminates_def finite_subset)
+qed
 
 (*
    An electoral module is defer-deciding iff
@@ -1019,8 +1154,9 @@ lemma condorcet_consistency2:
         (\<forall> A p w. condorcet_winner A p w \<longrightarrow>
             (m A p =
               ({w}, A - (elect m A p), {})))"
-proof (auto)
-  show "condorcet_consistency m \<Longrightarrow> electoral_module m"
+proof (safe)
+  assume "condorcet_consistency m"
+  thus "electoral_module m"
     using condorcet_consistency_def
     by metis
 next
@@ -1029,47 +1165,36 @@ next
     p :: "'a Profile" and
     w :: "'a"
   assume
-    cc: "condorcet_consistency m"
-  have assm0:
-    "condorcet_winner A p w \<Longrightarrow> m A p = ({w}, A - elect m A p, {})"
-    using cond_winner_unique3 condorcet_consistency_def cc
+    cc: "condorcet_consistency m" and
+    cwin: "condorcet_winner A p w"
+  show
+    "m A p = ({w}, A - elect m A p, {})"
+    using cond_winner_unique3 condorcet_consistency_def cc cwin
     by (metis (mono_tags, lifting))
-  assume
-    finite_A: "finite A" and
-    prof_A: "profile A p" and
-    w_in_A: "w \<in> A"
-  also have
-    "\<forall>x\<in>A - {w}.
-      prefer_count p w x > prefer_count p x w \<Longrightarrow>
-        condorcet_winner A p w"
-    using finite_A prof_A w_in_A wins.elims
-    by simp
-  ultimately show
-    "\<forall>x\<in>A - {w}.
-        card {i. i < length p \<and> (w, x) \<in> (p!i)} <
-            card {i. i < length p \<and> (x, w) \<in> (p!i)} \<Longrightarrow>
-                m A p = ({w}, A - elect m A p, {})"
-    using assm0
-    by auto
 next
-  have assm0:
-    "electoral_module m \<Longrightarrow>
-      \<forall>A p w. condorcet_winner A p w \<longrightarrow>
-          m A p = ({w}, A - elect m A p, {}) \<Longrightarrow>
-            condorcet_consistency m"
-    using condorcet_consistency_def cond_winner_unique3
-    by (smt (verit, del_insts))
-  assume e_mod:
-    "electoral_module m"
-  thus
-    "\<forall>A p w. finite A \<and> profile A p \<and> w \<in> A \<and>
-       (\<forall>x\<in>A - {w}.
-          card {i. i < length p \<and> (w, x) \<in> (p!i)} <
-            card {i. i < length p \<and> (x, w) \<in> (p!i)}) \<longrightarrow>
-       m A p = ({w}, A - elect m A p, {}) \<Longrightarrow>
-          condorcet_consistency m"
-    using assm0 e_mod
-    by simp
+  assume
+    e_mod: "electoral_module m" and
+    cwin:
+    "\<forall>A p w. condorcet_winner A p w \<longrightarrow>
+      m A p = ({w}, A - elect m A p, {})"
+  have
+    "\<forall>f. condorcet_consistency f =
+      (electoral_module f \<and>
+        (\<forall>A rs a. \<not> condorcet_winner A rs (a::'a) \<or>
+          f A rs = ({a \<in> A. condorcet_winner A rs a},
+                    A - elect f A rs, {})))"
+    unfolding condorcet_consistency_def
+    by blast
+  moreover have
+    "\<forall>A rs a. \<not> condorcet_winner A rs (a::'a) \<or>
+        {a \<in> A. condorcet_winner A rs a} = {a}"
+    using cond_winner_unique3
+    by (metis (full_types))
+  ultimately show
+    "condorcet_consistency m"
+    unfolding condorcet_consistency_def
+    using cond_winner_unique3 e_mod cwin
+    by presburger
 qed
 
 subsubsection \<open>(Weak) Monotonicity\<close>

@@ -339,9 +339,9 @@ proof (induct n arbitrary: acc rule: less_induct)
         using monotone_m f_prof defer_lift_invariance_def seq_comp_def_set_trans
         by metis
       from card_changed defer_card_comp defer_card_acc
-      have
+      have f0:
         "(defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance (acc)) \<longrightarrow>
-            (\<forall>q a. (a \<in> (defer (acc \<triangleright> m) A p) \<and> lifted A p q a) \<longrightarrow>
+            (\<forall>q a. (a \<in> (defer (acc \<triangleright> m) A p) \<and> Profile.lifted A p q a) \<longrightarrow>
                 card (defer (acc \<triangleright> m) A q) \<noteq> (card (defer acc A q)))"
       proof -
         have
@@ -361,11 +361,22 @@ proof (induct n arbitrary: acc rule: less_induct)
         "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance (acc) \<longrightarrow>
             (\<forall>q a. (a \<in> (defer (acc \<triangleright> m) A p) \<and> lifted A p q a) \<longrightarrow>
                 defer (acc \<triangleright> m) A q \<subset> defer acc A q)"
-        using defer_card_acc defer_in_alts monotone_m prod.sel(2) f_prof
-              psubsetI sequential_composition.simps def_presv_fin_prof
-              defer_lift_invariance_def subsetCE Profile.lifted_def
-              seq_comp_def_set_bounded
-        by (smt (verit))
+      proof -
+        {
+          fix
+            aa :: 'a and
+            rrs :: "('a \<times> 'a) set list"
+          have
+            "(\<not> defer_lift_invariance (acc \<triangleright> m) \<or> \<not> defer_lift_invariance acc) \<or>
+              (aa \<notin> defer (acc \<triangleright> m) A p \<or> \<not> Profile.lifted A p rrs aa) \<or>
+              defer (acc \<triangleright> m) A rrs \<subset> defer acc A rrs"
+            using Profile.lifted_def f0 defer_lift_invariance_def
+                  monotone_m psubsetI seq_comp_def_set_bounded
+            by (metis (no_types))
+        }
+        thus ?thesis
+          by metis
+      qed
       with t_not_satisfied_for_p have rec_step_q:
         "(defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance (acc)) \<longrightarrow>
             (\<forall>q a. (a \<in> (defer (acc \<triangleright> m) A p) \<and> lifted A p q a) \<longrightarrow>

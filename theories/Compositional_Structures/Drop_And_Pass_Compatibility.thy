@@ -51,16 +51,16 @@ next
     "connex A (limit A r)"
     using f1 limit_presv_connex subset_UNIV
     by metis
-  have rej_drop_eq_def_pass:
-    "reject (drop_module 0 r) = defer (pass_module 0 r)"
+  have
+    "\<forall>A a. A \<noteq> {} \<or> (a::'a) \<notin> A"
     by simp
-  have f4:
+  hence f4:
     "\<forall>a Aa.
       \<not> connex Aa (limit A r) \<or> a \<notin> Aa \<or> a \<notin> A \<or>
         \<not> card (above (limit A r) a) \<le> 0"
-    using above_connex above_presv_limit bot_nat_0.extremum_uniqueI
-          card_0_eq emptyE finite_A order rev_finite_subset
-    by (metis (lifting))
+    using above_connex above_presv_limit card_eq_0_iff
+          finite_A finite_subset le_0_eq order
+    by (metis (no_types))
   have "{a \<in> A. card(above (limit A r) a) \<le> 0} = {}"
     using connex f4
     by auto
