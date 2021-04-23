@@ -45,10 +45,27 @@ proof (safe)
   assume
     fin_A: "finite A" and
     prof_A: "profile A p"
+  have wf_quant:
+    "\<forall>f. aggregator f =
+      (\<forall>a_set elec1 rej1 def1 elec2 rej2 def2.
+        (\<not> well_formed (a_set::'a set) (elec1, rej2, def1) \<or>
+          \<not> well_formed a_set (rej1, def2, elec2)) \<or>
+        well_formed a_set
+          (f a_set (elec1, rej2, def1) (rej1, def2, elec2)))"
+    unfolding aggregator_def
+    by blast
+  have wf_imp:
+    "\<forall>e_mod a_set prof.
+      (electoral_module e_mod \<and> finite (a_set::'a set) \<and>
+        profile a_set prof) \<longrightarrow>
+        well_formed a_set (e_mod a_set prof)"
+    using par_comp_result_sound
+    by (metis (no_types))
+  from mod_m mod_n fin_A prof_A agg_a
   have "well_formed A (a A (m A p) (n A p))"
-    using aggregator_def combine_ele_rej_def par_comp_result_sound
-          electoral_module_def mod_m mod_n fin_A prof_A agg_a
-    by (smt (verit, ccfv_threshold))
+    using agg_a combine_ele_rej_def fin_A
+          mod_m mod_n prof_A wf_imp wf_quant
+    by metis
   thus "well_formed A ((m \<parallel>\<^sub>a n) A p)"
     by simp
 qed

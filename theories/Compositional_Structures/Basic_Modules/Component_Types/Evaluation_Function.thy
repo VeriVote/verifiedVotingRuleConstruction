@@ -63,14 +63,22 @@ proof -
     by (metis (mono_tags, lifting))
   (*4. (\<forall>a \<in> A. a \<le> m)*)
   have 3: "\<forall> e \<in> ?set . e \<le> ?eW"
-    using CollectD condorcet_rating_def eq_iff
-          order.strict_implies_order rating winner
-    by (smt (verit, best))
+  proof (safe)
+    fix a :: "'a"
+    assume aInA: "a \<in> A"
+    have "\<forall>n na. (n::nat) \<noteq> na \<or> n \<le> na"
+      by simp
+    with aInA show "e a A p \<le> e w A p"
+      using condorcet_rating_def
+            less_imp_le rating winner
+      by (metis (no_types))
+  qed
   (*Result*)
   from 2 3 have 4:
     "?eW \<in> ?set \<and> (\<forall>a \<in> ?set. a \<le> ?eW)"
     by blast
-  from 0 1 4 Max_eq_iff show ?thesis
+  from 0 1 4 Max_eq_iff
+  show ?thesis
     by (metis (no_types, lifting))
 qed
 

@@ -190,7 +190,7 @@ proof -
   from max_mmaxscore_dcc mmax_eq_max_mmax
   show ?thesis
     unfolding defer_condorcet_consistency_def electoral_module_def
-    by (smt (verit, ccfv_threshold))
+    by (smt (verit))
 qed
 
 end

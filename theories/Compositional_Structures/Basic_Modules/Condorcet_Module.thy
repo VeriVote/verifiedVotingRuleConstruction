@@ -59,7 +59,7 @@ proof -
     by simp
   from max_cscore_dcc cond_eq_max_cond show ?thesis
     unfolding defer_condorcet_consistency_def electoral_module_def
-    by (smt (verit, ccfv_threshold))
+    by (smt (verit))
 qed
 
 end

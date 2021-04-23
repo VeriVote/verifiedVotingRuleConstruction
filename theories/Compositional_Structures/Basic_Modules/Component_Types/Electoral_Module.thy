@@ -660,10 +660,14 @@ proof -
     using defer_in_alts eq prof_contains_result_def input in_mono
     by fastforce
   moreover have "\<forall>a \<in> defer m A q. a \<in> defer m A p"
-    using contra_subsetD disjoint_iff_not_equal defer_in_alts
-          electoral_mod_defer_elem eq prof_contains_result_def
-          input result_disj
-    by (smt (verit, best))
+  proof (safe)
+    fix a :: "'a"
+    assume "a \<in> defer m A q"
+    thus "a \<in> defer m A p"
+      using calculation defer_not_elec_or_rej
+            input subsetI subset_antisym
+      by (metis)
+  qed
   ultimately show ?thesis
     using prod.collapse subsetI subset_antisym
     by metis
@@ -747,18 +751,67 @@ lemma electing_for_only_alt:
     electing: "electing m" and
     f_prof: "finite_profile A p"
   shows "elect m A p = A"
-  using Int_empty_right Int_insert_right card_1_singletonE
-        elect_in_alts electing electing_def inf.orderE
-        one_alt f_prof
-  by (smt (verit, del_insts))
+proof (safe)
+  fix x :: "'a"
+  assume
+    electX: "x \<in> elect m A p"
+  have
+    "\<not> electoral_module m \<or> elect m A p \<subseteq> A"
+    using elect_in_alts f_prof
+    by (simp add: elect_in_alts)
+  with electing have "elect m A p \<subseteq> A"
+    unfolding electing_def
+    by metis
+  with electX show "x \<in> A"
+    by auto
+next
+  fix x :: "'a"
+  assume "x \<in> A"
+  with electing f_prof one_alt
+  show "x \<in> elect m A p"
+    unfolding electing_def
+    using One_nat_def Suc_leI card_seteq
+          card_gt_0_iff elect_in_alts
+          infinite_super
+    by metis
+qed
 
 theorem electing_imp_non_blocking:
   assumes electing: "electing m"
   shows "non_blocking m"
-  using Diff_disjoint Diff_empty Int_absorb2 electing
-        defer_in_alts elect_in_alts electing_def
-        non_blocking_def reject_not_elec_or_def
-  by (smt (verit, ccfv_SIG))
+  unfolding non_blocking_def
+proof (safe)
+  from electing
+  show "electoral_module m"
+    using electing_def
+    by metis
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    x :: "'a"
+  assume
+    finA: "finite A" and
+    profA: "profile A p" and
+    rejA: "reject m A p = A" and
+    xInA: "x \<in> A"
+  from electing have
+    "electoral_module m \<and>
+      (\<forall>A rs. A = {} \<or> infinite A \<or>
+        \<not> profile A rs \<or> elect m A rs \<noteq> {})"
+    unfolding electing_def
+    by metis
+  hence f1: "A = {}"
+    using Diff_cancel Un_empty
+          elec_and_def_not_rej
+          finA profA rejA
+    by (metis (no_types))
+  from  xInA
+  have "x \<in> A"
+    by metis
+  with f1 show "x \<in> {}"
+    by metis
+qed
 
 subsection \<open>Properties\<close>
 

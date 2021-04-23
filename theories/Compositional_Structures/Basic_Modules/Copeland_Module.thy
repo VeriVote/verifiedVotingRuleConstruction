@@ -227,7 +227,7 @@ proof -
   from max_cplscore_dcc copel_eq_max_copel
   show ?thesis
     unfolding defer_condorcet_consistency_def electoral_module_def
-    by (smt (verit, ccfv_threshold))
+    by (smt (verit, best))
 qed
 
 end

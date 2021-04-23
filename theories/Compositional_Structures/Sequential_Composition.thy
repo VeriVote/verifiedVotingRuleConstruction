@@ -48,11 +48,20 @@ proof -
     "(disjoint3 (n ?new_A ?new_p))"
     using electoral_module_def well_formed.simps
     by metis
+  have f1:
+    "elect m A p \<inter> reject m A p = {} \<and>
+      elect m A p \<inter> defer m A p = {} \<and>
+      reject m A p \<inter> defer m A p = {}"
+    using f_prof module_m
+    by (simp add: result_disj)
+  from f_prof module_m module_n
+  have "reject n (defer m A p) (limit_profile (defer m A p) p) \<subseteq> defer m A p"
+    using def_presv_fin_prof reject_in_alts
+    by metis
   with disjoint_m module_m module_n f_prof have 0:
     "(elect m A p \<inter> reject n ?new_A ?new_p) = {}"
-    using disjoint_iff_not_equal reject_in_alts
-          def_presv_fin_prof result_disj subset_eq
-    by (smt (verit, best))
+    using f1
+    by (simp add: disjoint_iff_not_equal subset_eq)
   from disjoint_m disjoint_n def_presv_fin_prof f_prof
        module_m module_n have 1:
     "(elect m A p \<inter> defer n ?new_A ?new_p) = {}"

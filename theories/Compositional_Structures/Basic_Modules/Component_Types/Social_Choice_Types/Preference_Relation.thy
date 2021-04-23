@@ -451,6 +451,12 @@ proof -
         by metis
       then obtain b where b: "above (limit B r) b = {b}"
         by blast
+      hence b1: "{a. (b, a) \<in> limit B r} = {b}"
+        using above_def
+        by metis
+      hence b2: "b \<preceq>\<^sub>r b"
+        using CollectD limit_presv_prefs2 singletonI
+        by (metis (lifting))
       show "\<exists>a. a \<in> A \<and> above r a = {a}"
       proof cases
         assume
@@ -558,22 +564,21 @@ proof -
                 (a, aa) \<in> limit B r \<or> (aa, a) \<in> limit B r)"
           using g3
           by simp
-        have "\<forall>x \<in> B. b \<in> above r x"
-          using limit_presv_above2 B pref_imp_in_above asm b above_def
-                limit_presv_lin_ord order_on_defs(3) singletonD
-                singletonI total_on_def mem_Collect_eq g2
-          by (smt (verit, ccfv_threshold))
-        hence b_wins2:
+        hence "\<forall>x \<in> B. b \<in> above r x"
+          using limit_presv_prefs2 pref_imp_in_above singletonD mem_Collect_eq
+                asm b b1 b2 B g2
+          by (metis (lifting))
+        hence
           "\<forall>x \<in> B. x \<preceq>\<^sub>r b"
           by (simp add: above_def)
-        hence b_wins2_0:
+        hence b_wins2:
           "\<forall>x \<in> B. (x, b) \<in> r"
           by simp
         have "trans r"
           using asm lin_imp_trans
           by metis
         hence "\<forall>x \<in> B. (x, a) \<in> r"
-          using transE b_smaller_a_0 b_wins2_0
+          using transE b_smaller_a_0 b_wins2
           by metis
         hence "\<forall>x \<in> B. x \<preceq>\<^sub>r a"
           by simp
@@ -603,10 +608,9 @@ proof -
     using assms n
     by blast
   thus ?thesis
-    using Diff_eq_empty_iff above_trans assms(1) empty_Diff insertE
-          insert_Diff_if insert_absorb insert_not_empty order_on_defs(1)
-          order_on_defs(2) order_on_defs(3) total_on_def
-    by (smt (verit, ccfv_SIG))
+    using assms connex_def lin_ord_imp_connex
+          pref_imp_in_above singletonD
+    by metis
 qed
 
 lemma above_one2:

@@ -131,199 +131,207 @@ proof (intro allI impI)
     p :: "'a Profile" and
     q :: "'a Profile" and
     a :: "'a"
-  assume
-    asm1:
+  assume asm1:
     "a \<in> elect plurality A p \<and> lifted A p q a"
+  have ab1: "\<forall>a b. (a::'a) \<notin> {b} \<or> a = b"
+    by force
+  have lifted_winner:
+    "\<forall>x \<in> A.
+      \<forall>i::nat. i < length p \<longrightarrow>
+        (above (p!i) x = {x} \<longrightarrow>
+          (above (q!i) x = {x} \<or> above (q!i) a = {a}))"
+    using asm1 Profile.lifted_def lifted_above_winner
+    by (metis (no_types, lifting))
+  hence
+    "\<forall>i::nat. i < length p \<longrightarrow>
+      (above (p!i) a = {a} \<longrightarrow> above (q!i) a = {a})"
+    using asm1
+    by auto
+  hence a_win_subset:
+    "{i::nat. i < length p \<and> above (p!i) a = {a}} \<subseteq>
+      {i::nat. i < length p \<and> above (q!i) a = {a}}"
+    by blast
+  moreover have sizes:
+    "length p = length q"
+    using asm1 Profile.lifted_def
+    by metis
+  ultimately have win_count_a:
+    "win_count p a \<le> win_count q a"
+    by (simp add: card_mono)
+  have fin_A:
+    "finite A"
+    using asm1 Profile.lifted_def
+    by metis
+  hence
+    "\<forall>x \<in> A-{a}.
+      \<forall>i::nat. i < length p \<longrightarrow>
+        (above (q!i) a = {a} \<longrightarrow> above (q!i) x \<noteq> {x})"
+    using DiffE Profile.lifted_def above_one2
+          asm1 insertCI insert_absorb insert_not_empty
+          profile_def sizes
+    by metis
+  with lifted_winner
+  have above_QtoP:
+    "\<forall>x \<in> A-{a}.
+      \<forall>i::nat. i < length p \<longrightarrow>
+        (above (q!i) x = {x} \<longrightarrow> above (p!i) x = {x})"
+    using lifted_above_winner3 asm1
+          Profile.lifted_def
+    by metis
+  hence
+    "\<forall>x \<in> A-{a}.
+      {i::nat. i < length p \<and> above (q!i) x = {x}} \<subseteq>
+        {i::nat. i < length p \<and> above (p!i) x = {x}}"
+    by (simp add: Collect_mono)
+  hence win_count_other:
+    "\<forall>x \<in> A-{a}. win_count p x \<ge> win_count q x"
+    by (simp add: card_mono sizes)
   show
     "elect plurality A q = elect plurality A p \<or>
-        elect plurality A q = {a}"
-  proof -
-    have lifted_winner:
-      "\<forall>x \<in> A.
-         \<forall>i::nat. i < length p \<longrightarrow>
-           (above (p!i) x = {x} \<longrightarrow>
-              (above (q!i) x = {x} \<or> above (q!i) a = {a}))"
-      using asm1 Profile.lifted_def lifted_above_winner
-      by (metis (no_types, lifting))
+      elect plurality A q = {a}"
+  proof cases
+    assume "win_count p a = win_count q a"
     hence
+      "card {i::nat. i < length p \<and> above (p!i) a = {a}} =
+        card {i::nat. i < length p \<and> above (q!i) a = {a}}"
+      by (simp add: sizes)
+    moreover have
+      "finite {i::nat. i < length p \<and> above (q!i) a = {a}}"
+      by simp
+    ultimately have
+      "{i::nat. i < length p \<and> above (p!i) a = {a}} =
+        {i::nat. i < length p \<and> above (q!i) a = {a}}"
+      using a_win_subset
+      by (simp add: card_subset_eq)
+    hence above_pq:
       "\<forall>i::nat. i < length p \<longrightarrow>
-          (above (p!i) a = {a} \<longrightarrow> above (q!i) a = {a})"
+        above (p!i) a = {a} \<longleftrightarrow> above (q!i) a = {a}"
+      by blast
+    hence above_pq2:
+      "\<forall>n. \<not> n < length p \<or>
+        (above (p!n) a = {a}) = (above (q!n) a = {a})"
+      by presburger
+    moreover have
+      "\<forall>x \<in> A-{a}.
+        \<forall>i::nat. i < length p \<longrightarrow>
+          (above (p!i) x = {x} \<longrightarrow>
+            (above (q!i) x = {x} \<or> above (q!i) a = {a}))"
+      using lifted_winner
+      by auto
+    moreover have
+      "\<forall>x \<in> A-{a}.
+        \<forall>i::nat. i < length p \<longrightarrow>
+          (above (p!i) x = {x} \<longrightarrow> above (p!i) a \<noteq> {a})"
+    proof (rule ccontr, simp, safe, simp)
+      fix
+        x :: "'a" and
+        i :: "nat"
+      assume
+        x_in_A: "x \<in> A" and
+        i_in_range: "i < length p" and
+        abv_x: "above (p!i) x = {x}" and
+        abv_a: "above (p!i) a = {a}"
+      have not_empty:
+        "A \<noteq> {}"
+        using x_in_A
+        by auto
+      have
+        "linear_order_on A (p!i)"
+        using Profile.lifted_def asm1 i_in_range profile_def
+        by (metis (no_types))
+      thus "x = a"
+        using not_empty abv_a abv_x fin_A
+        by (simp add: above_one2)
+    qed
+    ultimately have above_PtoQ:
+      "\<forall>x \<in> A-{a}.
+        \<forall>i::nat. i < length p \<longrightarrow>
+          (above (p!i) x = {x} \<longrightarrow> above (q!i) x = {x})"
+      by (simp add: above_pq)
+    hence
+      "\<forall>x \<in> A.
+        card {i::nat. i < length p \<and> above (p!i) x = {x}} =
+          card {i::nat. i < length q \<and> above (q!i) x = {x}}"
+    proof (safe)
+      fix
+        x :: "'a"
+      assume
+        "\<forall>y \<in> A-{a}. \<forall> i<length p.
+          above (p!i) y = {y} \<longrightarrow> above (q!i) y = {y}" and
+        x_in_A: "x \<in> A"
+      show
+        "card {i. i < length p \<and> above (p ! i) x = {x}} =
+          card {i. i < length q \<and> above (q ! i) x = {x}}"
+        using DiffI x_in_A ab1 above_PtoQ above_QtoP above_pq2 sizes
+        by (metis (no_types, lifting))
+    qed
+    hence "\<forall>x \<in> A. win_count p x = win_count q x"
+      by simp
+    hence
+      "{a \<in> A. \<forall>x \<in> A. win_count p x \<le> win_count p a} =
+        {a \<in> A. \<forall>x \<in> A. win_count q x \<le> win_count q a}"
+      by auto
+    thus ?thesis
+      by simp
+  next
+    assume "win_count p a \<noteq> win_count q a"
+    hence strict_less:
+      "win_count p a < win_count q a"
+      using win_count_a
+      by auto
+    have a_in_win_p:
+      "a \<in> {a \<in> A. \<forall>x \<in> A. win_count p x \<le> win_count p a}"
       using asm1
       by auto
-    hence a_win_subset:
-      "{i::nat. i < length p \<and> above (p!i) a = {a}} \<subseteq>
-          {i::nat. i < length p \<and> above (q!i) a = {a}}"
+    hence "\<forall>x \<in> A. win_count p x \<le> win_count p a"
+      by simp
+    with strict_less win_count_other
+    have less:
+      "\<forall>x \<in> A-{a}. win_count q x < win_count q a"
+      using DiffD1 antisym dual_order.trans
+            not_le_imp_less win_count_a
+      by metis
+    hence
+      "\<forall>x \<in> A-{a}. \<not>(\<forall>y \<in> A. win_count q y \<le> win_count q x)"
+      using asm1 Profile.lifted_def not_le
+      by metis
+    hence
+      "\<forall>x \<in> A-{a}.
+        x \<notin> {a \<in> A. \<forall>x \<in> A. win_count q x \<le> win_count q a}"
       by blast
-    moreover have sizes:
-      "length p = length q"
-      using asm1 Profile.lifted_def
-      by metis
-    ultimately have win_count_a:
-      "win_count p a \<le> win_count q a"
-      by (simp add: card_mono)
-    have fin_A:
-      "finite A"
-      using asm1 Profile.lifted_def
-      by metis
     hence
-      "\<forall>x \<in> A-{a}.
-        \<forall>i::nat. i < length p \<longrightarrow>
-          (above (q!i) a = {a} \<longrightarrow> above (q!i) x \<noteq> {x})"
-      using DiffE Profile.lifted_def above_one2
-            asm1 insertCI insert_absorb insert_not_empty
-            profile_def sizes
-      by metis
-    with lifted_winner have above_QtoP:
-      "\<forall>x \<in> A-{a}.
-        \<forall>i::nat. i < length p \<longrightarrow>
-          (above (q!i) x = {x} \<longrightarrow> above (p!i) x = {x})"
-      using lifted_above_winner3 asm1
-            Profile.lifted_def
-      by metis
-    hence
-      "\<forall>x \<in> A-{a}.
-        {i::nat. i < length p \<and> above (q!i) x = {x}} \<subseteq>
-          {i::nat. i < length p \<and> above (p!i) x = {x}}"
-      by (simp add: Collect_mono)
-    hence win_count_other:
-      "\<forall>x \<in> A-{a}. win_count p x \<ge> win_count q x"
-      by (simp add: card_mono sizes)
-    show
-      "elect plurality A q = elect plurality A p \<or>
-           elect plurality A q = {a}"
-    proof cases
-      assume "win_count p a = win_count q a"
-      hence
-        "card {i::nat. i < length p \<and> above (p!i) a = {a}} =
-              card {i::nat. i < length p \<and> above (q!i) a = {a}}"
-        by (simp add: sizes)
+      "\<forall>x \<in> A-{a}. x \<notin> elect plurality A q"
+      by simp
+    moreover have
+      "a \<in> elect plurality A q"
+    proof -
+      from less
+      have
+        "\<forall>x \<in> A-{a}. win_count q x \<le> win_count q a"
+        using less_imp_le
+        by metis
       moreover have
-        "finite {i::nat. i < length p \<and> above (q!i) a = {a}}"
+        "win_count q a \<le> win_count q a"
         by simp
       ultimately have
-        "{i::nat. i < length p \<and> above (p!i) a = {a}} =
-              {i::nat. i < length p \<and> above (q!i) a = {a}}"
-        using a_win_subset
-        by (simp add: card_subset_eq)
-      hence above_pq:
-        "\<forall>i::nat. i < length p \<longrightarrow>
-            above (p!i) a = {a} \<longleftrightarrow> above (q!i) a = {a}"
-        by blast
-      moreover have
-        "\<forall>x \<in> A-{a}.
-          \<forall>i::nat. i < length p \<longrightarrow>
-            (above (p!i) x = {x} \<longrightarrow>
-              (above (q!i) x = {x} \<or> above (q!i) a = {a}))"
-        using lifted_winner
+        "\<forall>x \<in> A. win_count q x \<le> win_count q a"
         by auto
       moreover have
-        "\<forall>x \<in> A-{a}.
-          \<forall>i::nat. i < length p \<longrightarrow>
-            (above (p!i) x = {x} \<longrightarrow> above (p!i) a \<noteq> {a})"
-      proof (rule ccontr)
-        assume
-          "\<not>(\<forall>x \<in> A-{a}.
-              \<forall>i::nat. i < length p \<longrightarrow>
-                (above (p!i) x = {x} \<longrightarrow> above (p!i) a \<noteq> {a}))"
-        hence
-          "\<exists>x \<in> A-{a}.
-            \<exists>i::nat.
-              i < length p \<and> above (p!i) x = {x} \<and> above (p!i) a = {a}"
-          by auto
-        moreover from this have
-          "finite A \<and> A \<noteq> {}"
-          using fin_A
-          by blast
-        moreover from asm1 have
-          "\<forall>i::nat. i < length p \<longrightarrow> linear_order_on A (p!i)"
-          by (simp add: Profile.lifted_def profile_def)
-        ultimately have
-          "\<exists>x \<in> A-{a}. x = a"
-          using above_one2
-          by metis
-        thus "False"
-          by simp
-      qed
-      ultimately have above_PtoQ:
-        "\<forall>x \<in> A-{a}.
-          \<forall>i::nat. i < length p \<longrightarrow>
-            (above (p!i) x = {x} \<longrightarrow> above (q!i) x = {x})"
-        by (simp add: above_pq)
-      hence
-        "\<forall>x \<in> A.
-          card {i::nat. i < length p \<and> above (p!i) x = {x}} =
-            card {i::nat. i < length q \<and> above (q!i) x = {x}}"
-        using Collect_cong DiffI above_pq above_QtoP
-              insert_absorb insert_iff insert_not_empty sizes
-        by (smt (verit, ccfv_threshold))
-      hence "\<forall>x \<in> A. win_count p x = win_count q x"
-        by simp
-      hence
-        "{a \<in> A. \<forall>x \<in> A. win_count p x \<le> win_count p a} =
-            {a \<in> A. \<forall>x \<in> A. win_count q x \<le> win_count q a}"
+        "a \<in> A"
+        using a_in_win_p
+        by auto
+      ultimately have
+        "a \<in> {a \<in> A.
+            \<forall>x \<in> A. win_count q x \<le> win_count q a}"
         by auto
       thus ?thesis
         by simp
-    next
-      assume "win_count p a \<noteq> win_count q a"
-      hence strict_less:
-        "win_count p a < win_count q a"
-        using win_count_a
-        by auto
-      have a_in_win_p:
-        "a \<in> {a \<in> A. \<forall>x \<in> A. win_count p x \<le> win_count p a}"
-        using asm1
-        by auto
-      hence "\<forall>x \<in> A. win_count p x \<le> win_count p a"
-        by simp
-      with strict_less win_count_other
-      have less:
-        "\<forall>x \<in> A-{a}. win_count q x < win_count q a"
-        using DiffD1 antisym dual_order.trans
-              not_le_imp_less win_count_a
-        by metis
-      hence
-        "\<forall>x \<in> A-{a}. \<not>(\<forall>y \<in> A. win_count q y \<le> win_count q x)"
-        using asm1 Profile.lifted_def not_le
-        by metis
-      hence
-        "\<forall>x \<in> A-{a}.
-          x \<notin> {a \<in> A. \<forall>x \<in> A. win_count q x \<le> win_count q a}"
-        by blast
-      hence
-        "\<forall>x \<in> A-{a}. x \<notin> elect plurality A q"
-        by simp
-      moreover have
-        "a \<in> elect plurality A q"
-      proof -
-        from less
-        have
-          "\<forall>x \<in> A-{a}. win_count q x \<le> win_count q a"
-          using less_imp_le
-          by metis
-        moreover have
-          "win_count q a \<le> win_count q a"
-          by simp
-        ultimately have
-          "\<forall>x \<in> A. win_count q x \<le> win_count q a"
-          by auto
-        moreover have
-          "a \<in> A"
-          using a_in_win_p
-          by auto
-        ultimately have
-          "a \<in> {a \<in> A.
-              \<forall>x \<in> A. win_count q x \<le> win_count q a}"
-          by auto
-        thus ?thesis
-          by simp
-      qed
-      moreover have
-        "elect plurality A q \<subseteq> A"
-        by simp
-      ultimately show ?thesis
-        by auto
     qed
+    moreover have
+      "elect plurality A q \<subseteq> A"
+      by simp
+    ultimately show ?thesis
+      by auto
   qed
 qed
 
