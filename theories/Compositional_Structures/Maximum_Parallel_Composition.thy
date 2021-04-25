@@ -89,15 +89,147 @@ next
   assume not_a1: "x \<notin> elect (m \<parallel>\<^sub>\<up> n) A p"
   thus ?thesis
   proof cases
-    assume a2: "x \<in> defer (m \<parallel>\<^sub>\<up> n) A p"
+    assume x_in_def: "x \<in> defer (m \<parallel>\<^sub>\<up> n) A p"
     thus ?thesis
-      using CollectD DiffD1 DiffD2 Un_iff case_prod_conv sndI Int_iff
-            defer_not_elec_or_rej max_agg_sound module_m module_n
-            mod_contains_result_def par_comp_sound prod.collapse
-            f_prof electoral_mod_defer_elem electoral_module_def
-            max_agg_rej_set prod.sel(1) parallel_composition.simps
-            maximum_parallel_composition.simps max_aggregator.simps
-      by (smt (verit, del_insts))
+    proof (safe)
+      assume not_mod_cont_mn:
+        "\<not> mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p x"
+      have par_emod:
+        "\<forall>f g.
+          (electoral_module (f::'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) \<and>
+            electoral_module g) \<longrightarrow>
+              electoral_module (f \<parallel>\<^sub>\<up> g)"
+        using max_par_comp_sound
+        by blast
+      hence "electoral_module (m \<parallel>\<^sub>\<up> n)"
+        using module_m module_n
+        by blast
+      hence max_par_emod:
+        "electoral_module (m \<parallel>\<^sub>max_aggregator n)"
+        by simp
+      have set_intersect:
+        "\<forall>(a::'a) A B. (a \<in> A \<inter> B) = (a \<in> A \<and> a \<in> B)"
+        by blast
+      obtain
+        s_func :: "('a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) \<Rightarrow> 'a set" and
+        p_func :: "('a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) \<Rightarrow> 'a Profile" where
+        well_f:
+        "\<forall>f.
+          (\<not> electoral_module f \<or>
+            (\<forall>A prof. (finite A \<and> profile A prof) \<longrightarrow> well_formed A (f A prof))) \<and>
+          (electoral_module f \<or> finite (s_func f) \<and> profile (s_func f) (p_func f) \<and>
+            \<not> well_formed (s_func f) (f (s_func f) (p_func f)))"
+        using electoral_module_def
+        by moura
+      hence wf_n: "well_formed A (n A p)"
+        using f_prof module_n
+        by blast
+      have wf_m: "well_formed A (m A p)"
+        using well_f f_prof module_m
+        by blast
+      have a_exists: "\<forall>(a::'a). a \<notin> {}"
+        by blast
+      have e_mod_par:
+        "electoral_module (m \<parallel>\<^sub>\<up> n)"
+        using par_emod module_m module_n
+        by blast
+      hence "electoral_module (m \<parallel>\<^sub>max_aggregator n)"
+        by simp
+      hence result_disj_max:
+        "elect (m \<parallel>\<^sub>max_aggregator n) A p \<inter> reject (m \<parallel>\<^sub>max_aggregator n) A p = {} \<and>
+          elect (m \<parallel>\<^sub>max_aggregator n) A p \<inter> defer (m \<parallel>\<^sub>max_aggregator n) A p = {} \<and>
+          reject (m \<parallel>\<^sub>max_aggregator n) A p \<inter> defer (m \<parallel>\<^sub>max_aggregator n) A p = {}"
+        using f_prof result_disj
+        by metis
+      have x_not_elect:
+        "x \<notin> elect (m \<parallel>\<^sub>max_aggregator n) A p"
+        using result_disj_max x_in_def
+        by force
+      have result_m:
+        "(elect m A p, reject m A p, defer m A p) = m A p"
+        by auto
+      have result_n:
+        "(elect n A p, reject n A p, defer n A p) = n A p"
+        by auto
+      have max_pq:
+        "\<forall>(A::'a set) p q.
+          elect_r (max_aggregator A p q) = elect_r p \<union> elect_r q"
+        by force
+      have
+        "x \<notin> elect (m \<parallel>\<^sub>max_aggregator n) A p"
+        using x_not_elect
+        by blast
+      with max_pq
+      have "x \<notin> elect m A p \<union> elect n A p"
+        by (simp add: max_pq)
+      hence x_not_elect_mn:
+        "x \<notin> elect m A p \<and> x \<notin> elect n A p"
+        by blast
+      have x_not_mpar_rej:
+        "x \<notin> reject (m \<parallel>\<^sub>max_aggregator n) A p"
+        using result_disj_max x_in_def
+        by fastforce
+      hence x_not_par_rej:
+        "x \<notin> reject (m \<parallel>\<^sub>\<up> n) A p"
+        by auto
+      have mod_cont_res_fg:
+        "\<forall>f g A prof (a::'a).
+          mod_contains_result f g A prof a =
+            (electoral_module f \<and> electoral_module g \<and>
+              finite A \<and> profile A prof \<and> a \<in> A \<and>
+                (a \<notin> elect f A prof \<or> a \<in> elect g A prof) \<and>
+                (a \<notin> reject f A prof \<or> a \<in> reject g A prof) \<and>
+                (a \<notin> defer f A prof \<or> a \<in> defer g A prof))"
+        by (simp add: mod_contains_result_def)
+      have max_agg_res:
+        "max_aggregator A (elect m A p, reject m A p, defer m A p)
+          (elect n A p, reject n A p, defer n A p) = (m \<parallel>\<^sub>max_aggregator n) A p"
+        by simp
+      have well_f_max:
+        "\<forall>r2 r1 e2 e1 d2 d1 A.
+          well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2) \<longrightarrow>
+            reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) = r1 \<inter> r2"
+        using max_agg_rej_set
+        by metis
+      have e_mod_disj:
+        "\<forall>f (A::'a set) prof.
+          (electoral_module f \<and> finite (A::'a set) \<and> profile A prof) \<longrightarrow>
+            elect f A prof \<union> reject f A prof \<union> defer f A prof = A"
+        using result_presv_alts
+        by blast
+      hence e_mod_disj_n:
+        "elect n A p \<union> reject n A p \<union> defer n A p = A"
+        using f_prof module_n
+        by metis
+      have
+        "\<forall>f g A prof (a::'a).
+          mod_contains_result f g A prof a =
+            (electoral_module f \<and> electoral_module g \<and>
+              finite A \<and> profile A prof \<and> a \<in> A \<and>
+              (a \<notin> elect f A prof \<or> a \<in> elect g A prof) \<and>
+              (a \<notin> reject f A prof \<or> a \<in> reject g A prof) \<and>
+              (a \<notin> defer f A prof \<or> a \<in> defer g A prof))"
+        by (simp add: mod_contains_result_def)
+      with e_mod_disj_n
+      have "x \<in> reject n A p"
+        using e_mod_par f_prof in_A module_n not_mod_cont_mn
+              x_not_elect x_not_elect_mn x_not_mpar_rej
+        by auto
+      hence "x \<notin> reject m A p"
+        using well_f_max max_agg_res result_m result_n
+              set_intersect wf_m wf_n x_not_mpar_rej
+        by (metis (no_types))
+      with max_agg_res
+      have
+        "x \<notin> defer (m \<parallel>\<^sub>\<up> n) A p \<or> x \<in> defer m A p"
+          using e_mod_disj f_prof in_A module_m x_not_elect_mn
+          by blast
+      with x_not_mpar_rej
+      show "mod_contains_result (m \<parallel>\<^sub>\<up> n) m A p x"
+        using mod_cont_res_fg x_not_par_rej e_mod_par f_prof
+              in_A module_m x_not_elect
+        by auto
+    qed
   next
     assume not_a2: "x \<notin> defer (m \<parallel>\<^sub>\<up> n) A p"
     have el_rej_defer:
@@ -219,32 +351,64 @@ next
     using f_prof module_n reject_in_alts rejected
     by auto
 next
-  assume "x \<in> elect m A p"
-  thus "x \<in> elect (m \<parallel>\<^sub>\<up> n) A p"
-    using Set.set_insert contra_subsetD disjoint_insert
-          contra_subsetD disjoint_iff_not_equal result_disj
-          mod_contains_result_comm mod_contains_result_def
-          max_agg_eq_result max_agg_rej_iff_both_reject
-          module_m module_n f_prof reject_in_alts rejected
-    by (smt (verit, ccfv_SIG))
+  assume
+    x_in_elect: "x \<in> elect m A p"
+  hence x_not_reject:
+    "x \<notin> reject m A p"
+    using disjoint_iff_not_equal f_prof module_m result_disj
+    by metis
+  have rej_in_A:
+    "reject n A p \<subseteq> A"
+    using f_prof module_n
+    by (simp add: reject_in_alts)
+  have x_in_A: "x \<in> A"
+    using rej_in_A in_mono rejected
+    by metis
+  with x_in_elect x_not_reject
+  show "x \<in> elect (m \<parallel>\<^sub>\<up> n) A p"
+    using f_prof max_agg_eq_result module_m module_n rejected
+          max_agg_rej_iff_both_reject mod_contains_result_comm
+          mod_contains_result_def
+      by metis
 next
   assume "x \<in> reject m A p"
+  hence
+    "x \<in> reject m A p \<and> x \<in> reject n A p"
+    using rejected
+    by simp
   thus "x \<in> reject (m \<parallel>\<^sub>\<up> n) A p"
-    using Set.set_insert contra_subsetD disjoint_insert
-          contra_subsetD disjoint_iff_not_equal result_disj
-          mod_contains_result_comm mod_contains_result_def
-          max_agg_eq_result max_agg_rej_iff_both_reject
-          module_m module_n f_prof reject_in_alts rejected
-    by (smt (verit, ccfv_SIG))
+    using f_prof max_agg_rej_iff_both_reject module_m module_n
+    by (metis (no_types))
 next
-  assume "x \<in> defer m A p"
-  thus "x \<in> defer (m \<parallel>\<^sub>\<up> n) A p"
-    using Set.set_insert contra_subsetD disjoint_insert
-          contra_subsetD disjoint_iff_not_equal result_disj
-          mod_contains_result_comm mod_contains_result_def
-          max_agg_eq_result max_agg_rej_iff_both_reject
-          module_m module_n f_prof reject_in_alts rejected
-    by (smt (verit, ccfv_SIG))
+  assume x_in_defer: "x \<in> defer m A p"
+  hence defer_a:
+    "\<exists>a. a \<in> defer m A p \<and> x = a"
+    by simp
+  then obtain x_inst :: 'a where
+    inst_x: "x = x_inst \<and> x_inst \<in> defer m A p"
+    by metis
+  hence x_not_rej:
+    "x \<notin> reject m A p"
+    using disjoint_iff_not_equal f_prof inst_x module_m result_disj
+    by (metis (no_types))
+  have
+    "\<forall>f A prof.
+      (electoral_module f \<and> finite (A::'a set) \<and> profile A prof) \<longrightarrow>
+        elect f A prof \<union> reject f A prof \<union> defer f A prof = A"
+    using result_presv_alts
+    by metis
+  with x_in_defer
+  have "x \<in> A"
+    using f_prof module_m
+    by blast
+  with inst_x x_not_rej
+  show "x \<in> defer (m \<parallel>\<^sub>\<up> n) A p"
+    using f_prof max_agg_eq_result
+          max_agg_rej_iff_both_reject
+          mod_contains_result_comm
+          mod_contains_result_def
+          module_m module_n rejected
+    by metis
 qed
 
 lemma max_agg_rej2:
@@ -267,11 +431,52 @@ lemma max_agg_rej3:
     rejected: "x \<in> reject m A p"
   shows
     "mod_contains_result n (m \<parallel>\<^sub>\<up> n) A p x"
-  using contra_subsetD disjoint_iff_not_equal result_disj
-        mod_contains_result_comm mod_contains_result_def
-        max_agg_eq_result max_agg_rej_iff_both_reject
-        module_m module_n f_prof reject_in_alts rejected
-  by (smt (verit, ccfv_SIG))
+  unfolding mod_contains_result_def
+proof (safe)
+  show "electoral_module n"
+    using module_n
+    by simp
+next
+  show "electoral_module (m \<parallel>\<^sub>\<up> n)"
+    using module_m module_n
+    by simp
+next
+  show "finite A"
+    using f_prof
+    by simp
+next
+  show "profile A p"
+    using f_prof
+    by simp
+next
+  show "x \<in> A"
+    using f_prof in_mono module_m reject_in_alts rejected
+    by (metis (no_types))
+next
+  assume "x \<in> elect n A p"
+  thus "x \<in> elect (m \<parallel>\<^sub>\<up> n) A p"
+    using Un_iff combine_ele_rej_def fst_conv
+          maximum_parallel_composition.simps
+          max_aggregator.simps
+          parallel_composition.simps
+    by (metis (mono_tags, lifting))
+next
+  assume "x \<in> reject n A p"
+  thus "x \<in> reject (m \<parallel>\<^sub>\<up> n) A p"
+    using f_prof max_agg_rej_iff_both_reject module_m module_n rejected
+    by metis
+next
+  assume x_in_def: "x \<in> defer n A p"
+  have "x \<in> A"
+    using f_prof max_agg_rej1 mod_contains_result_def module_m rejected
+    by metis
+  thus "x \<in> defer (m \<parallel>\<^sub>\<up> n) A p"
+    using x_in_def disjoint_iff_not_equal f_prof
+          max_agg_eq_result max_agg_rej_iff_both_reject
+          mod_contains_result_comm mod_contains_result_def
+          module_m module_n rejected result_disj
+      by metis
+qed
 
 lemma max_agg_rej4:
   assumes
