@@ -435,7 +435,7 @@ proof (induct n arbitrary: acc rule: less_induct)
             prof :: "'a Profile"
           have
             "(\<not> defer_lift_invariance (acc \<triangleright> m) \<or> \<not> defer_lift_invariance acc) \<or>
-              (alt \<notin> defer (acc \<triangleright> m) A p \<or> \<not> Profile.lifted A p prof alt) \<or>
+              (alt \<notin> defer (acc \<triangleright> m) A p \<or> \<not> lifted A p prof alt) \<or>
               defer (acc \<triangleright> m) A prof \<subset> defer acc A prof"
             using Profile.lifted_def dli_card_def defer_lift_invariance_def
                   monotone_m psubsetI seq_comp_def_set_bounded
@@ -450,29 +450,93 @@ proof (induct n arbitrary: acc rule: less_induct)
             (\<forall>q a. (a \<in> (defer (acc \<triangleright> m) A p) \<and> lifted A p q a) \<longrightarrow>
                 loop_comp_helper acc m t A q =
                   loop_comp_helper (acc \<triangleright> m) m t A q)"
-        using defer_in_alts loop_comp_helper.simps(2) monotone_m subsetCE
-              prod.sel(2) f_prof sequential_composition.simps card_eq_0_iff
-              def_presv_fin_prof defer_lift_invariance_def card_changed_for_q
-              gr_implies_not0 t_not_satisfied_for_q
-        by (smt (verit, ccfv_SIG))
+      proof (safe)
+        fix
+          q :: "'a Profile" and
+          a :: "'a"
+        assume
+          a_in_def_impl_def_subset:
+          "\<forall>q a. a \<in> defer (acc \<triangleright> m) A p \<and> lifted A p q a \<longrightarrow>
+            defer (acc \<triangleright> m) A q \<subset> defer acc A q" and
+          dli_acc: "defer_lift_invariance acc" and
+          a_in_def_seq_acc_m: "a \<in> defer (acc \<triangleright> m) A p" and
+          lifted_pq_a: "lifted A p q a"
+        have defer_subset_acc:
+          "defer (acc \<triangleright> m) A q \<subset> defer acc A q"
+          using a_in_def_impl_def_subset lifted_pq_a
+                a_in_def_seq_acc_m
+          by metis
+        have "electoral_module acc"
+          using dli_acc defer_lift_invariance_def
+          by auto
+        hence "finite (defer acc A q) \<and> \<not> t (acc A q)"
+          using lifted_def dli_acc a_in_def_seq_acc_m
+                lifted_pq_a def_presv_fin_prof
+                t_not_satisfied_for_q
+          by metis
+        with defer_subset_acc
+        show
+          "loop_comp_helper acc m t A q =
+            loop_comp_helper (acc \<triangleright> m) m t A q"
+          using loop_comp_code_helper
+          by metis
+      qed
       have rec_step_p:
         "electoral_module acc \<longrightarrow>
             loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p"
-        using card_changed defer_in_alts loop_comp_helper.simps(2)
-              monotone_m prod.sel(2) f_prof psubsetI def_presv_fin_prof
-              sequential_composition.simps defer_lift_invariance_def
-              t_not_satisfied_for_p seq_comp_def_set_bounded
-        by (smt (verit, best))
-      thus ?thesis
-        using card_smaller_for_p less.hyps
-              loop_comp_helper_imp_no_def_incr monotone_m
-              seq_comp_presv_def_lift_inv f_prof rec_step_q
-              defer_lift_invariance_def subsetCE subset_eq
-        by (smt (verit, ccfv_threshold))
+      proof (safe)
+        assume emod_acc: "electoral_module acc"
+        have emod_implies_defer_subset:
+          "electoral_module m \<longrightarrow> defer (acc \<triangleright> m) A p \<subseteq> defer acc A p"
+          using emod_acc f_prof seq_comp_def_set_bounded
+          by blast
+        have card_ineq: "card (defer (acc \<triangleright> m) A p) < card (defer acc A p)"
+          using card_smaller_for_p emod_acc
+          by force
+        have fin_def_limited_acc:
+          "finite_profile (defer acc A p) (limit_profile (defer acc A p) p)"
+          using def_presv_fin_prof emod_acc f_prof
+          by metis
+        have "defer (acc \<triangleright> m) A p \<subseteq> defer acc A p"
+          using emod_implies_defer_subset defer_lift_invariance_def monotone_m
+          by blast
+        hence "defer (acc \<triangleright> m) A p \<subset> defer acc A p"
+          using fin_def_limited_acc card_ineq card_psubset
+          by metis
+        with fin_def_limited_acc
+        show "loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p"
+          using loop_comp_code_helper t_not_satisfied_for_p
+          by (metis (no_types))
+      qed
+      show ?thesis
+      proof (safe)
+        fix
+          q :: "'a Profile" and
+          a :: "'a"
+        assume
+          dli_acc: "defer_lift_invariance acc" and
+          n_card_acc: "n = card (defer acc A p)" and
+          a_in_defer_lch: "a \<in> defer (loop_comp_helper acc m t) A p" and
+          a_lifted: "Profile.lifted A p q a"
+        hence emod_acc: "electoral_module acc"
+          using defer_lift_invariance_def
+          by metis
+        have "defer_lift_invariance (acc \<triangleright> m) \<and> a \<in> defer (acc \<triangleright> m) A p"
+          using a_in_defer_lch defer_lift_invariance_def dli_acc
+                f_prof loop_comp_helper_imp_no_def_incr monotone_m
+                rec_step_p seq_comp_presv_def_lift_inv subsetD
+          by (metis (no_types))
+        with emod_acc
+        show "loop_comp_helper acc m t A p = loop_comp_helper acc m t A q"
+          using a_in_defer_lch a_lifted card_smaller_for_p dli_acc
+                less.hyps n_card_acc rec_step_p rec_step_q
+          by (metis (full_types))
+      qed
     next
-      assume t_satisfied_for_p: "\<not> \<not>t (acc A p)"
-      thus ?thesis
-        using loop_comp_helper.simps(1) defer_lift_invariance_def
+      assume "\<not> \<not>t (acc A p)"
+      with defer_lift_invariance_def
+      show ?thesis
+        using loop_comp_helper.simps(1)
         by metis
     qed
   qed

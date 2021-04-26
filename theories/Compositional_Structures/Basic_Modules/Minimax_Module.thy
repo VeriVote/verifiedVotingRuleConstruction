@@ -108,24 +108,6 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe)
       "prefer_count p l w  \<ge> Min {prefer_count p l y |y . y \<in> A-{l}}"
       using non_cond_winner_minimax_score minimax_score.simps
       by metis
-(*
-    have l_in_A: "l \<in> A"
-    using condorcet_winner_def winner
-    by metis
-    then l_neq_w have "w \<in> A-{l}" by blast
-    hence 2: "{prefer_count p l y |y . y \<in> A-{l}} \<noteq> {}" by blast
-    have "finite (A-{l})" using prof profile_def by auto
-    hence 3: "finite {prefer_count p l y |y . y \<in> A-{l}}"
-      by simp
-    from 2 3
-    have
-      "\<exists> n \<in> A-{l} . prefer_count p l n =
-        Min {prefer_count p l y |y . y \<in> A-{l}}"
-      using Min_in by fastforce
-    then obtain n where 4:
-      "prefer_count p l n = Min {prefer_count p l y |y . y \<in> A-{l}}"
-      by blast
-*)
     from l_in_A
     have l_in_A_without_w: "l \<in> A-{w}"
       by (simp add: l_neq_w)
@@ -179,18 +161,45 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe)
 qed
 
 theorem minimax_is_dcc: "defer_condorcet_consistency minimax"
-proof -
+unfolding defer_condorcet_consistency_def electoral_module_def
+proof (safe)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
+  assume
+    finA: "finite A" and
+    profA: "profile A p"
+  have "well_formed A (max_eliminator minimax_score A p)"
+    using finA max_elim_sound par_comp_result_sound profA
+    by metis
+  thus "well_formed A (minimax A p)"
+    by simp
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    w :: "'a"
+  assume
+    cwin_w: "condorcet_winner A p w" and
+    finA: "finite A"
   have max_mmaxscore_dcc:
     "defer_condorcet_consistency (max_eliminator minimax_score)"
     using cr_eval_imp_dcc_max_elim
     by (simp add: minimax_score_cond_rating)
-  have mmax_eq_max_mmax:
-    "\<And>A p. (minimax A p \<equiv> max_eliminator minimax_score A p)"
+  with defer_condorcet_consistency_def
+  have
+    "max_eliminator minimax_score A p =
+      ({},
+       A - defer (max_eliminator minimax_score) A p,
+       {a \<in> A. condorcet_winner A p a})"
+    using cwin_w finA
+    by (metis (no_types))
+  thus
+    "minimax A p =
+      ({},
+       A - defer minimax A p,
+       {d \<in> A. condorcet_winner A p d})"
     by simp
-  from max_mmaxscore_dcc mmax_eq_max_mmax
-  show ?thesis
-    unfolding defer_condorcet_consistency_def electoral_module_def
-    by (smt (verit))
 qed
 
 end

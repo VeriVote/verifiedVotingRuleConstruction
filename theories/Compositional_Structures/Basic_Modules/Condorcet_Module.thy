@@ -49,17 +49,45 @@ proof -
 qed
 
 theorem condorcet_is_dcc: "defer_condorcet_consistency condorcet"
-proof -
+unfolding defer_condorcet_consistency_def electoral_module_def
+proof (safe)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
+  assume
+    finA: "finite A" and
+    profA: "profile A p"
+  have "well_formed A (max_eliminator condorcet_score A p)"
+    using finA profA electoral_module_def max_elim_sound
+    by metis
+  thus "well_formed A (condorcet A p)"
+    by simp
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    w :: "'a"
+  assume
+    cwin_w: "condorcet_winner A p w" and
+    finA: "finite A"
   have max_cscore_dcc:
     "defer_condorcet_consistency (max_eliminator condorcet_score)"
     using cr_eval_imp_dcc_max_elim
     by (simp add: condorcet_score_is_condorcet_rating)
-  have cond_eq_max_cond:
-    "\<And>A p. (condorcet A p \<equiv> max_eliminator condorcet_score A p)"
+  from defer_condorcet_consistency_def
+  have
+    "max_eliminator condorcet_score A p =
+  ({},
+  A - defer (max_eliminator condorcet_score) A p,
+  {a \<in> A. condorcet_winner A p a})"
+    using cwin_w finA max_cscore_dcc
+    by (metis (no_types))
+  thus
+    "condorcet A p =
+      ({},
+       A - defer condorcet A p,
+       {d \<in> A. condorcet_winner A p d})"
     by simp
-  from max_cscore_dcc cond_eq_max_cond show ?thesis
-    unfolding defer_condorcet_consistency_def electoral_module_def
-    by (smt (verit))
 qed
 
 end

@@ -216,18 +216,42 @@ proof (unfold copeland_score.simps, safe)
 qed
 
 theorem copeland_is_dcc: "defer_condorcet_consistency copeland"
-proof -
+unfolding defer_condorcet_consistency_def electoral_module_def
+proof (safe)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
+  assume
+    finA: "finite A" and
+    profA: "profile A p"
+  have "well_formed A (max_eliminator copeland_score A p)"
+    using electoral_module_def finA max_elim_sound profA
+    by blast
+  thus "well_formed A (copeland A p)"
+    by simp
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    w :: "'a"
+  assume
+    cwin_w: "condorcet_winner A p w" and
+    finA: "finite A"
   have max_cplscore_dcc:
     "defer_condorcet_consistency (max_eliminator copeland_score)"
     using cr_eval_imp_dcc_max_elim
     by (simp add: copeland_score_is_cr)
-  have copel_eq_max_copel:
-    "\<And>A p. (copeland A p \<equiv> max_eliminator copeland_score A p)"
+  have
+    "\<forall>A p. (copeland A p = max_eliminator copeland_score A p)"
     by simp
-  from max_cplscore_dcc copel_eq_max_copel
-  show ?thesis
-    unfolding defer_condorcet_consistency_def electoral_module_def
-    by (smt (verit, best))
+  with defer_condorcet_consistency_def
+  show
+    "copeland A p =
+      ({},
+       A - defer copeland A p,
+       {d \<in> A. condorcet_winner A p d})"
+    using Collect_cong cwin_w finA max_cplscore_dcc
+    by (metis (no_types, lifting))
 qed
 
 end
