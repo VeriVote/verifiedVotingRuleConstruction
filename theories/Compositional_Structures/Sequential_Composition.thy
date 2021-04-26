@@ -118,11 +118,13 @@ proof -
           inf.order_iff inf_sup_aci(1) subsetD
           rej_n_in_def_m disj_n
     by auto
-  from disjoint_m disjoint_n def_presv_fin_prof f_prof
+  have "\<forall>A Aa. \<not> (A::'a set) \<subseteq> Aa \<or> A = A \<inter> Aa"
+    by blast
+  with disjoint_m disjoint_n def_presv_fin_prof f_prof
        module_m module_n elec_n_in_def_m
   have 3:
     "(reject m A p \<inter> elect n ?new_A ?new_p) = {}"
-    using disj_n disjoint_iff subset_iff
+    using disj_n
     by blast
   have
     "(elect m A p \<union> elect n ?new_A ?new_p) \<inter>
@@ -168,7 +170,8 @@ proof -
       "x \<in> reject n (defer m A p) (limit_profile (defer m A p) p)"
     from elec_lim_x rej_lim_x
     show "x \<in> {}"
-      using disjoint_iff fin_def module_n prof_def_lim result_disj
+      using disjoint_iff_not_equal elec_lim_x fin_def
+            module_n prof_def_lim rej_lim_x result_disj
       by metis
   qed
   moreover from 0 1 2 3 disjoint_n module_m module_n f_prof
@@ -364,8 +367,10 @@ next
     "profile {} (limit_profile (defer m A p) p)"
     using empty_defer f_prof module_m limit_profile_sound
     by auto
-  have "(reject m A p, defer n {} (limit_profile {} p)) = snd (m A p)"
-    using bot.extremum_uniqueI defer_in_alts empty_defer prof_no_alt
+  hence
+    "(reject m A p, defer n {} (limit_profile {} p)) =
+        snd (m A p)"
+    using bot.extremum_uniqueI defer_in_alts empty_defer
           infinite_imp_nonempty module_n prod.collapse
     by (metis (no_types))
   thus "snd ((m \<triangleright> n) A p) = snd (m A p)"
@@ -567,15 +572,14 @@ proof -
   show ?thesis
   proof (unfold non_blocking_def)
     assume
-      asm0:
+      emod_reject_m:
       "electoral_module m \<and>
-        (\<forall>A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> reject m A p \<noteq> A)" and
-      asm1:
+        (\<forall>A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow>
+          reject m A p \<noteq> A)" and
+      emod_reject_n:
       "electoral_module n \<and>
-        (\<forall>A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> reject n A p \<noteq> A)" and
-      asm2:
-      "A \<noteq> {} \<and> finite_profile A p \<longrightarrow>
-        elect m A p \<noteq> {} \<or> defer m A p \<noteq> {}"
+        (\<forall>A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow>
+          reject n A p \<noteq> A)"
     show
       "electoral_module (m \<triangleright> n) \<and>
         (\<forall>A p.
@@ -583,7 +587,7 @@ proof -
             reject (m \<triangleright> n) A p \<noteq> A)"
     proof (safe)
       show "electoral_module (m \<triangleright> n)"
-        using asm0 asm1
+        using emod_reject_m emod_reject_n
         by simp
     next
       fix
@@ -595,25 +599,25 @@ proof -
         prof_A: "profile A p" and
         rej_mn: "reject (m \<triangleright> n) A p = A" and
         x_in_A: "x \<in> A"
-      from asm0 fin_A prof_A
+      from emod_reject_m fin_A prof_A
       have fin_defer:
         "finite_profile (defer m A p) (limit_profile (defer m A p) p)"
         using def_presv_fin_prof
         by (metis (no_types))
-      from asm0 asm1 fin_A prof_A
+      from emod_reject_m emod_reject_n fin_A prof_A
       have seq_elect:
         "elect (m \<triangleright> n) A p =
           elect n (defer m A p) (limit_profile (defer m A p) p) \<union>
             elect m A p"
         using seq_comp_def_then_elect_elec_set
         by metis
-      from asm1 asm0 fin_A prof_A
+      from emod_reject_n emod_reject_m fin_A prof_A
       have def_limit:
         "defer (m \<triangleright> n) A p =
           defer n (defer m A p) (limit_profile (defer m A p) p)"
         using seq_comp_defers_def_set
         by metis
-      from asm1 asm0 fin_A prof_A
+      from emod_reject_n emod_reject_m fin_A prof_A
       have
         "elect (m \<triangleright> n) A p \<union> defer (m \<triangleright> n) A p = A - reject (m \<triangleright> n) A p"
         using elec_and_def_not_rej seq_comp_sound
@@ -622,15 +626,14 @@ proof -
         "elect n (defer m A p) (limit_profile (defer m A p) p) \<union>
           elect m A p \<union>
           defer n (defer m A p) (limit_profile (defer m A p) p) = {}"
-        using def_limit seq_elect
-        using Diff_cancel rej_mn
+        using def_limit seq_elect Diff_cancel rej_mn
         by auto
       have rej_def_eq_set:
         "defer n (defer m A p) (limit_profile (defer m A p) p) -
           defer n (defer m A p) (limit_profile (defer m A p) p) = {} \<longrightarrow>
             reject n (defer m A p) (limit_profile (defer m A p) p) =
               defer m A p"
-        using elect_def_disj asm1 fin_defer
+        using elect_def_disj emod_reject_n fin_defer
         by (simp add: reject_not_elec_or_def)
       have
         "defer n (defer m A p) (limit_profile (defer m A p) p) -
@@ -640,8 +643,8 @@ proof -
         by blast
       thus "x \<in> {}"
         using rej_def_eq_set result_disj fin_defer
-        using Diff_cancel Diff_empty asm0 asm1 fin_A
-              prof_A reject_not_elec_or_def x_in_A
+        using Diff_cancel Diff_empty emod_reject_m emod_reject_n
+              fin_A prof_A reject_not_elec_or_def x_in_A
         by metis
     qed
   qed
@@ -712,7 +715,9 @@ proof -
       f_mod:
       "\<forall>f.
         (\<not> electing f \<or> electoral_module f \<and>
-          (\<forall>A prof. (A \<noteq> {} \<and> finite A \<and> profile A prof) \<longrightarrow> elect f A prof \<noteq> {})) \<and>
+          (\<forall>A prof.
+            (A \<noteq> {} \<and> finite A \<and> profile A prof) \<longrightarrow>
+              elect f A prof \<noteq> {})) \<and>
         (electing f \<or> \<not> electoral_module f \<or> f_set f \<noteq> {} \<and> finite (f_set f) \<and>
           profile (f_set f) (f_prof f) \<and> elect f (f_set f) (f_prof f) = {})"
       unfolding electing_def
@@ -784,9 +789,11 @@ proof -
       by (metis (no_types, lifting))
   next
     assume a2: "\<not>lifted ?new_Ap ?new_p ?new_q a"
-    from def_and_lifted have "finite_profile A q"
+    from def_and_lifted
+    have "finite_profile A q"
       by (simp add: lifted_def)
-    with modules new_A_eq have 1:
+    with modules new_A_eq
+    have 1:
       "finite_profile ?new_Ap ?new_q"
       using def_presv_fin_prof
       by (metis (no_types))
@@ -798,7 +805,8 @@ proof -
     moreover from defer_subset def_and_lifted
     have 2: "a \<in> ?new_Ap"
       by blast
-    moreover from def_and_lifted have eql_lengths:
+    moreover from def_and_lifted
+    have eql_lengths:
       "length ?new_p = length ?new_q"
       by (simp add: lifted_def)
     ultimately have 0:
@@ -935,7 +943,8 @@ theorem disj_compat_seq[simp]:
   unfolding disjoint_compatibility_def
 proof (safe)
   show "electoral_module (m \<triangleright> m2)"
-    using compatible disjoint_compatibility_def module_m2 seq_comp_sound
+    using compatible disjoint_compatibility_def
+          module_m2 seq_comp_sound
     by metis
 next
   show "electoral_module n"
@@ -948,7 +957,8 @@ next
     fin_S: "finite S"
   have modules:
     "electoral_module (m \<triangleright> m2) \<and> electoral_module n"
-    using compatible disjoint_compatibility_def module_m2 seq_comp_sound
+    using compatible disjoint_compatibility_def
+          module_m2 seq_comp_sound
     by metis
   obtain A where A:
     "A \<subseteq> S \<and>
