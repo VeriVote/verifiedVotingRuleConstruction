@@ -21,7 +21,7 @@ subsection \<open>Definition\<close>
 
 type_synonym Threshold_Value = nat
 
-type_synonym Threshold_Relation = "nat \<Rightarrow> Threshold_Value \<Rightarrow> bool"
+type_synonym Threshold_Relation = "nat \<Rightarrow> nat \<Rightarrow> bool"
 
 type_synonym 'a Electoral_Set = "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a set"
 
