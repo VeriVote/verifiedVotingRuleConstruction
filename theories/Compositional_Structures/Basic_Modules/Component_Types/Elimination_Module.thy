@@ -21,15 +21,16 @@ subsection \<open>Definition\<close>
 
 type_synonym Threshold_Value = nat
 
+type_synonym Threshold_Relation = "nat \<Rightarrow> Threshold_Value \<Rightarrow> bool"
+
 type_synonym 'a Electoral_Set = "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a set"
 
 fun elimination_set :: "'a Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow>
-                            (nat \<Rightarrow> Threshold_Value \<Rightarrow> bool) \<Rightarrow>
-                              'a Electoral_Set" where
+                            Threshold_Relation \<Rightarrow> 'a Electoral_Set" where
  "elimination_set e t r A p = {a \<in> A . r (e a A p) t }"
 
 fun elimination_module :: "'a Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow>
-        (nat \<Rightarrow> nat \<Rightarrow> bool) \<Rightarrow> 'a Electoral_Module" where
+                            Threshold_Relation \<Rightarrow> 'a Electoral_Module" where
   "elimination_module e t r A p =
       (if (elimination_set e t r A p) \<noteq> A
         then ({}, (elimination_set e t r A p), A - (elimination_set e t r A p))
