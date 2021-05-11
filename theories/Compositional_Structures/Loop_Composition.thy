@@ -557,13 +557,15 @@ lemma loop_comp_helper_def_lift_inv:
 lemma loop_comp_helper_def_lift_inv2:
   assumes
     monotone_m: "defer_lift_invariance m" and
-    monotone_acc: "defer_lift_invariance acc"
+    monotone_acc: "defer_lift_invariance acc" and
+    finite_A_p: "finite_profile A p" and
+    lifted_A_pq: "lifted A p q a" and
+    a_in_defer_acc: "a \<in> defer (loop_comp_helper acc m t) A p"
   shows
-    "\<forall>A p q a. (finite_profile A p \<and>
-        lifted A p q a \<and>
-        a \<in> (defer (loop_comp_helper acc m t) A p)) \<longrightarrow>
-            (loop_comp_helper acc m t) A p = (loop_comp_helper acc m t) A q"
-  using loop_comp_helper_def_lift_inv monotone_acc monotone_m
+    "(loop_comp_helper acc m t) A p = (loop_comp_helper acc m t) A q"
+  using finite_A_p lifted_A_pq a_in_defer_acc
+        loop_comp_helper_def_lift_inv
+        monotone_acc monotone_m
   by blast
 
 lemma lifted_imp_fin_prof:
@@ -601,62 +603,68 @@ qed
 lemma loop_comp_presv_non_electing_helper:
   assumes
     non_electing_m: "non_electing m" and
-    f_prof: "finite_profile A p"
-  shows
-    "(n = card (defer acc A p) \<and> non_electing acc) \<Longrightarrow>
-        elect (loop_comp_helper acc m t) A p = {}"
+    non_electing_acc: "non_electing acc" and
+    f_prof: "finite_profile A p" and
+    acc_defer_card: "n = card (defer acc A p)"
+  shows "elect (loop_comp_helper acc m t) A p = {}"
+  using acc_defer_card non_electing_acc
 proof (induct n arbitrary: acc rule: less_induct)
-  case(less n)
+  case (less n)
   thus ?case
   proof (safe)
     fix x :: "'a"
     assume
       y_acc_no_elect:
       "(\<And>y acc'. y < card (defer acc A p) \<Longrightarrow>
-        y = card (defer acc' A p) \<and> non_electing acc' \<Longrightarrow>
+        y = card (defer acc' A p) \<Longrightarrow> non_electing acc' \<Longrightarrow>
           elect (loop_comp_helper acc' m t) A p = {})" and
       acc_non_elect:
       "non_electing acc" and
-      n_card_def:
-      "n = card (defer acc A p)" and
       x_in_acc_elect:
       "x \<in> elect (loop_comp_helper acc m t) A p"
-    show "x \<in> {}"
-    proof -
-      have
-        "\<forall>(f::'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) g.
-          (non_electing f \<and> non_electing g) \<longrightarrow>
-            non_electing (f \<triangleright> g)"
-        by simp
-      hence seq_acc_m_non_elect: "non_electing (acc \<triangleright> m)"
-        using acc_non_elect non_electing_m
-        by blast
-      have "\<forall>A B. (infinite (A::'a set) \<or> \<not> B \<subset> A) \<or> card B < card A"
-        using psubset_card_mono
-        by metis
-      hence card_ineq:
-        "\<forall>A B. infinite (A::'a set) \<or> \<not> B \<subset> A \<or> card B < card A"
-        by presburger
-      have no_elect_acc: "elect acc A p = {}"
-        using acc_non_elect f_prof non_electing_def
-        by auto
-      have card_n_no_elect:
-        "\<forall>n f.
-          (n < card (defer acc A p) \<and> n = card (defer f A p) \<and> non_electing f) \<longrightarrow>
-            elect (loop_comp_helper f m t) A p = {}"
-        using y_acc_no_elect
-        by blast
-      have
-        "(\<not> t (acc A p) \<and> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<and>
+    have
+      "\<forall>(f::'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) g.
+        (non_electing f \<and> non_electing g) \<longrightarrow>
+          non_electing (f \<triangleright> g)"
+      by simp
+    hence seq_acc_m_non_elect: "non_electing (acc \<triangleright> m)"
+      using acc_non_elect non_electing_m
+      by blast
+    have "\<forall>A B. (finite (A::'a set) \<and> B \<subset> A) \<longrightarrow> card B < card A"
+      using psubset_card_mono
+      by metis
+    hence card_ineq:
+      "\<forall>A B. (finite (A::'a set) \<and> B \<subset> A) \<longrightarrow> card B < card A"
+      by presburger
+    have no_elect_acc: "elect acc A p = {}"
+      using acc_non_elect f_prof non_electing_def
+      by auto
+    have card_n_no_elect:
+      "\<forall>n f.
+        (n < card (defer acc A p) \<and> n = card (defer f A p) \<and> non_electing f) \<longrightarrow>
+          elect (loop_comp_helper f m t) A p = {}"
+      using y_acc_no_elect
+      by blast
+    have
+      "\<And>f.
+        (finite (defer acc A p) \<and> defer f A p \<subset> defer acc A p \<and> non_electing f) \<longrightarrow>
+          elect (loop_comp_helper f m t) A p = {}"
+      using card_n_no_elect psubset_card_mono
+      by metis
+    hence f0:
+      "(\<not> t (acc A p) \<and> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<and>
             finite (defer acc A p)) \<and>
           \<not> t (acc A p) \<longrightarrow>
-            elect (loop_comp_helper acc m t) A p = {}"
-        using card_ineq loop_comp_helper.simps(2) seq_acc_m_non_elect card_n_no_elect
-        by (metis (no_types))
-      thus ?thesis
-        using loop_comp_helper.simps(1) no_elect_acc x_in_acc_elect
-        by (metis (no_types))
-    qed
+        elect (loop_comp_helper acc m t) A p = {}"
+      using loop_comp_code_helper seq_acc_m_non_elect
+      by (metis (no_types))
+    obtain set_func :: "'a set \<Rightarrow> 'a" where
+      "\<forall>A. (A = {} \<longrightarrow> (\<forall>a. a \<notin> A)) \<and> (A \<noteq> {} \<longrightarrow> set_func A \<in> A)"
+      using all_not_in_conv
+      by (metis (no_types))
+    thus "x \<in> {}"
+      using loop_comp_code_helper no_elect_acc x_in_acc_elect f0
+      by (metis (no_types))
   qed
 qed
 
@@ -666,13 +674,15 @@ lemma loop_comp_helper_iter_elim_def_n_helper:
     single_elimination: "eliminates 1 m" and
     terminate_if_n_left: "\<forall> r. ((t r) \<longleftrightarrow> (card (defer_r r) = x))" and
     x_greater_zero: "x > 0" and
-    f_prof: "finite_profile A p"
-  shows
-    "(n = card (defer acc A p) \<and> n \<ge> x \<and> card (defer acc A p) > 1 \<and>
-      non_electing acc) \<longrightarrow>
-          card (defer (loop_comp_helper acc m t) A p) = x"
+    f_prof: "finite_profile A p" and
+    n_acc_defer_card: "n = card (defer acc A p)" and
+    n_ge_x: "n \<ge> x" and
+    def_card_gt_one: "card (defer acc A p) > 1" and
+    acc_nonelect: "non_electing acc"
+  shows "card (defer (loop_comp_helper acc m t) A p) = x"
+  using n_ge_x def_card_gt_one acc_nonelect n_acc_defer_card
 proof (induct n arbitrary: acc rule: less_induct)
-  case(less n)
+  case (less n)
   have subset:
     "(card (defer acc A p) > 1 \<and> finite_profile A p \<and> electoral_module acc) \<longrightarrow>
         defer (acc \<triangleright> m) A p \<subset> defer acc A p"
@@ -704,19 +714,22 @@ proof (induct n arbitrary: acc rule: less_induct)
       by metis
     thus ?case
     proof cases
-      assume card_too_small: "card (defer acc A p) < x"
+      assume card_too_small:
+        "card (defer acc A p) < x"
       thus ?thesis
-        using not_le
-        by blast
+        using not_le card_too_small less.prems(1) less.prems(4) not_le
+        by (metis (no_types))
     next
       assume old_card_at_least_x: "\<not>(card (defer acc A p) < x)"
       obtain i where i_is_new_card: "i = card (defer (acc \<triangleright> m) A p)"
         by blast
-      with card_not_eq_x have card_too_big:
+      with card_not_eq_x
+      have card_too_big:
         "card (defer acc A p) > x"
         using nat_neq_iff old_card_at_least_x
         by blast
-      hence enough_leftover: "card (defer acc A p) > 1"
+      hence enough_leftover:
+        "card (defer acc A p) > 1"
         using x_greater_zero
         by auto
       have "electoral_module acc \<longrightarrow> (defer acc A p) \<subseteq> A"
@@ -781,15 +794,21 @@ proof (induct n arbitrary: acc rule: less_induct)
         moreover have non_electing_new:
           "non_electing acc \<longrightarrow> non_electing (acc \<triangleright> m)"
           by (simp add: non_electing_m)
-        ultimately have
+        ultimately have card_x:
           "(n = card (defer acc A p) \<and> non_electing acc \<and>
               electoral_module acc) \<longrightarrow>
                   card (defer (loop_comp_helper (acc \<triangleright> m) m t) A p) = x"
           using less.hyps i_is_new_card new_card_greater_x
           by blast
+        have f1: "loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p"
+          using enough_leftover f_prof less.prems(3) rec_step
+          by blast
+        have "electoral_module acc"
+          using less.prems(3) non_electing_def
+          by blast
         thus ?thesis
-          using f_prof rec_step non_electing_def
-          by metis
+          using f1 card_x less.prems(3) less.prems(4)
+          by presburger
       next
         assume i_not_gt_x: "\<not>(electoral_module acc \<longrightarrow> i > x)"
         hence "electoral_module acc \<and> electoral_module m \<longrightarrow> i = x"
@@ -807,6 +826,7 @@ proof (induct n arbitrary: acc rule: less_induct)
           using i_not_gt_x dual_order.strict_iff_order i_is_new_card
                 loop_comp_helper.simps(1) new_card_still_big_enough
                 f_prof rec_step terminate_if_n_left
+                enough_leftover less.prems(3)
           by metis
       qed
     qed
@@ -867,7 +887,8 @@ next
       by (simp add: card_not_x terminate_if_n_left)
     thus ?thesis
       using card_big_enough_m non_electing_m f_prof single_elimination
-            terminate_if_n_left x_greater_zero loop_comp_helper_iter_elim_def_n
+            terminate_if_n_left x_greater_zero
+            loop_comp_helper_iter_elim_def_n
       by metis
   qed
 qed
