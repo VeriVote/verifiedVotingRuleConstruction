@@ -7,6 +7,10 @@
 
 section \<open>Loop Composition\<close>
 
+(* Hint: If you are spooked by some of the proofs here, look at
+  loop_comp_helper_iter_elim_def_n_helper first, which is a slightly easier to read proof.
+  Todo: Normalize the rest of the proofs. *)
+
 theory Loop_Composition
   imports "Basic_Modules/Component_Types/Termination_Condition"
           "Basic_Modules/Defer_Module"
@@ -669,166 +673,101 @@ proof (induct n arbitrary: acc rule: less_induct)
 qed
 
 lemma loop_comp_helper_iter_elim_def_n_helper:
-  assumes
-    non_electing_m: "non_electing m" and
-    single_elimination: "eliminates 1 m" and
-    terminate_if_n_left: "\<forall> r. ((t r) \<longleftrightarrow> (card (defer_r r) = x))" and
-    x_greater_zero: "x > 0" and
-    f_prof: "finite_profile A p" and
-    n_acc_defer_card: "n = card (defer acc A p)" and
-    n_ge_x: "n \<ge> x" and
-    def_card_gt_one: "card (defer acc A p) > 1" and
-    acc_nonelect: "non_electing acc"
-  shows "card (defer (loop_comp_helper acc m t) A p) = x"
-  using n_ge_x def_card_gt_one acc_nonelect n_acc_defer_card
+  assumes non_electing_m: "non_electing m"
+      and single_elimination: "eliminates 1 m"
+      and terminate_if_n_left: "\<And>r. t r = (card (defer_r r) = x)"
+      and x_greater_zero: "x > 0"
+      and f_prof: "finite_profile A p"
+      and n_card: "n = card (defer acc A p)"
+      and n_ge_x: "n \<ge> x"
+      and def1: "card (defer acc A p) > 1"
+      and acc_nonelect: "non_electing acc"
+  shows "card (defer (loop_comp_helper acc m t) A p) = x" using n_ge_x def1 acc_nonelect n_card
 proof (induct n arbitrary: acc rule: less_induct)
+  (*Note that the induction we are doing here makes very little sense. We are inducing over
+    the size of the defer set.
+    You'd think with the loop composition, we would be going a step forward, as in (acc \<triangleright> m),
+    but that would mean the defer set is shrinking with each step.
+    Instead, we are inducing over the size of the defer set, but so that it grows.
+    I am not the person who wrote this proof, I do not understand fully how it works. *)
   case (less n)
-  have subset:
-    "(card (defer acc A p) > 1 \<and> finite_profile A p \<and> electoral_module acc) \<longrightarrow>
-        defer (acc \<triangleright> m) A p \<subset> defer acc A p"
-    using seq_comp_elim_one_red_def_set single_elimination
-    by blast
-  hence step_reduces_defer_set:
-    "(card (defer acc A p) > 1 \<and> finite_profile A p \<and> non_electing acc) \<longrightarrow>
-        defer (acc \<triangleright> m) A p \<subset> defer acc A p"
-    using non_electing_def
+  have "electoral_module acc"
+    using less.prems(3) non_electing_def by auto
+  hence subset: "defer (acc \<triangleright> m) A p \<subset> defer acc A p"
+    using seq_comp_elim_one_red_def_set single_elimination f_prof less.prems(2) by fastforce
+  hence step_reduces_defer_set: "defer (acc \<triangleright> m) A p \<subset> defer acc A p"
     by auto
-  thus ?case
-  proof cases
-    assume term_satisfied: "t (acc A p)"
-    have "card (defer_r (loop_comp_helper acc m t A p)) = x"
-      using loop_comp_helper.simps(1) term_satisfied terminate_if_n_left
-      by metis
-    thus ?case
-      by blast
+  then show ?case
+  proof (cases "t (acc A p)")
+    case True (* Terminate now. *)
+    have "(loop_comp_helper acc m t A p) = acc A p"
+      by (simp add: True)
+    show "card (defer_r (loop_comp_helper acc m t A p)) = x"
+      using terminate_if_n_left True by simp
   next
-    assume term_not_satisfied: "\<not>(t (acc A p))"
+    case False (* Termination condition not met *)
     hence card_not_eq_x: "card (defer acc A p) \<noteq> x"
       by (simp add: terminate_if_n_left)
-    have rec_step:
-      "(card (defer acc A p) > 1 \<and> finite_profile A p \<and> non_electing acc) \<longrightarrow>
-          loop_comp_helper acc m t A p =
-              loop_comp_helper (acc \<triangleright> m) m t A p" (*needed for step*)
-      using loop_comp_helper.simps(2) non_electing_def def_presv_fin_prof
-            step_reduces_defer_set term_not_satisfied
-      by metis
-    thus ?case
-    proof cases
-      assume card_too_small:
-        "card (defer acc A p) < x"
+
+    have **: "defer (acc \<triangleright> m) A p \<subset> defer acc A p"
+      using subset by auto
+    have ***: "\<not>(infinite (defer acc A p))"
+      by (meson \<open>electoral_module acc\<close> def_presv_fin_prof f_prof)
+    text \<open>And with "False" (the case, not the boolean value), **, and *** we can prove the
+          preconditions to loop_comp_helper.simps(2)\<close>
+    have rec_step: "loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p" (*needed for step*)
+      by (metis "***" False loop_comp_helper.simps(2) subset)
+
+    have card_too_big: "card (defer acc A p) > x"
+      using less.prems(1) less.prems(4)
+      by (simp add: card_not_eq_x dual_order.order_iff_strict)
+    hence enough_leftover: "card (defer acc A p) > 1"
+      using less.prems(2) by auto
+
+    obtain i where i_is_new_card: "i = card (defer (acc \<triangleright> m) A p)"
+      by blast
+
+    have "defer acc A p \<subseteq> A"
+      by (simp add: \<open>electoral_module acc\<close> defer_in_alts f_prof)
+    hence step_profile: "finite_profile (defer acc A p) (limit_profile (defer acc A p) p)"
+      using f_prof limit_profile_sound by auto
+    hence "card (defer m (defer acc A p) (limit_profile (defer acc A p) p)) = card (defer acc A p) - 1"
+      using enough_leftover non_electing_m single_elim_decr_def_card2 single_elimination by blast
+    hence "i = card (defer acc A p) - 1"
+      by (metis \<open>electoral_module acc\<close> f_prof i_is_new_card non_electing_def non_electing_m seq_comp_defers_def_set)
+    hence new_card_still_big_enough: "x \<le> i"
+      using card_too_big by linarith
+
+    have "i \<le> card (defer acc A p)" (* This used to be a case distinction, but we didn't actually
+        need it, since it effectively was just doing proof by contradiction. *)
+      by (simp add: \<open>i = card (defer acc A p) - 1\<close>)
+    have "i = x \<or> i > x"
+      by (simp add: dual_order.strict_iff_order new_card_still_big_enough)
+
+    show ?thesis
+    proof (cases "i > x")
+      case True (* "new_card_greater_x"  *)
+      hence "1 < card (defer (acc \<triangleright> m) A p)"
+        using i_is_new_card x_greater_zero by linarith
+      moreover have "i < n"
+        using subset step_profile psubset_card_mono i_is_new_card less.prems(4)
+        by blast
+      moreover have "electoral_module (acc \<triangleright> m)"
+        using \<open>electoral_module acc\<close> eliminates_def seq_comp_sound single_elimination by blast
+      moreover have "non_electing (acc \<triangleright> m)"
+        using less.prems(3) non_electing_m
+        by simp
+      ultimately have "card (defer (loop_comp_helper (acc \<triangleright> m) m t) A p) = x"
+        using i_is_new_card new_card_still_big_enough less.hyps[where y=i and acc="acc \<triangleright> m"]
+        by blast
       thus ?thesis
-        using not_le card_too_small less.prems(1) less.prems(4) not_le
-        by (metis (no_types))
+        using rec_step by simp
     next
-      assume old_card_at_least_x: "\<not>(card (defer acc A p) < x)"
-      obtain i where i_is_new_card: "i = card (defer (acc \<triangleright> m) A p)"
-        by blast
-      with card_not_eq_x
-      have card_too_big:
-        "card (defer acc A p) > x"
-        using nat_neq_iff old_card_at_least_x
-        by blast
-      hence enough_leftover:
-        "card (defer acc A p) > 1"
-        using x_greater_zero
-        by auto
-      have "electoral_module acc \<longrightarrow> (defer acc A p) \<subseteq> A"
-        by (simp add: defer_in_alts f_prof)
-      hence step_profile:
-        "electoral_module acc \<longrightarrow>
-            finite_profile (defer acc A p)
-              (limit_profile (defer acc A p) p)"
-        using f_prof limit_profile_sound
-        by auto
-      hence
-        "electoral_module acc \<longrightarrow>
-            card (defer m (defer acc A p)
-              (limit_profile (defer acc A p) p)) =
-                card (defer acc A p) - 1"
-        using non_electing_m single_elimination
-              single_elim_decr_def_card2 enough_leftover
-        by blast
-      hence "electoral_module acc \<longrightarrow> i = card (defer acc A p) - 1"
-        using sequential_composition.simps snd_conv i_is_new_card
+      case False (* i \<le> x (but actually we can show i = x) *)
+      then show ?thesis
+        using dual_order.strict_iff_order i_is_new_card
+            loop_comp_helper.simps(1) new_card_still_big_enough rec_step terminate_if_n_left
         by metis
-      hence "electoral_module acc \<longrightarrow> i \<ge> x"
-        using card_too_big
-        by linarith
-      hence new_card_still_big_enough: "electoral_module acc \<longrightarrow> x \<le> i"
-        by blast
-      have
-        "electoral_module acc \<and> electoral_module m \<longrightarrow>
-            defer (acc \<triangleright> m) A p \<subseteq> defer acc A p"
-        using enough_leftover f_prof subset
-        by blast
-      hence
-        "electoral_module acc \<and> electoral_module m \<longrightarrow>
-            i \<le> card (defer acc A p)"
-        using card_mono i_is_new_card step_profile
-        by blast
-      hence i_geq_x:
-        "electoral_module acc \<and> electoral_module m \<longrightarrow> (i = x \<or> i > x)"
-        using nat_less_le new_card_still_big_enough
-        by blast
-      thus ?thesis
-      proof cases
-        assume new_card_greater_x: "electoral_module acc \<longrightarrow> i > x"
-        hence "electoral_module acc \<longrightarrow> 1 < card (defer (acc \<triangleright> m) A p)"
-          using x_greater_zero i_is_new_card
-          by linarith
-        moreover have new_card_still_big_enough2:
-          "electoral_module acc \<longrightarrow> x \<le> i" (* Needed for step *)
-          using i_is_new_card new_card_still_big_enough
-          by blast
-        moreover have
-          "n = card (defer acc A p) \<longrightarrow>
-              (electoral_module acc \<longrightarrow> i < n)" (* Needed for step *)
-          using subset step_profile enough_leftover f_prof psubset_card_mono
-                i_is_new_card
-          by blast
-        moreover have
-          "electoral_module acc \<longrightarrow>
-              electoral_module (acc \<triangleright> m)" (* Needed for step *)
-          using non_electing_def non_electing_m seq_comp_sound
-          by blast
-        moreover have non_electing_new:
-          "non_electing acc \<longrightarrow> non_electing (acc \<triangleright> m)"
-          by (simp add: non_electing_m)
-        ultimately have card_x:
-          "(n = card (defer acc A p) \<and> non_electing acc \<and>
-              electoral_module acc) \<longrightarrow>
-                  card (defer (loop_comp_helper (acc \<triangleright> m) m t) A p) = x"
-          using less.hyps i_is_new_card new_card_greater_x
-          by blast
-        have f1: "loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p"
-          using enough_leftover f_prof less.prems(3) rec_step
-          by blast
-        have "electoral_module acc"
-          using less.prems(3) non_electing_def
-          by blast
-        thus ?thesis
-          using f1 card_x less.prems(3) less.prems(4)
-          by presburger
-      next
-        assume i_not_gt_x: "\<not>(electoral_module acc \<longrightarrow> i > x)"
-        hence "electoral_module acc \<and> electoral_module m \<longrightarrow> i = x"
-          using i_geq_x
-          by blast
-        hence "electoral_module acc \<and> electoral_module m \<longrightarrow> t ((acc \<triangleright> m) A p)"
-          using i_is_new_card terminate_if_n_left
-          by blast
-        hence
-          "electoral_module acc \<and> electoral_module m \<longrightarrow>
-              card (defer_r (loop_comp_helper (acc \<triangleright> m) m t A p)) = x"
-          using loop_comp_helper.simps(1) terminate_if_n_left
-          by metis
-        thus ?thesis
-          using i_not_gt_x dual_order.strict_iff_order i_is_new_card
-                loop_comp_helper.simps(1) new_card_still_big_enough
-                f_prof rec_step terminate_if_n_left
-                enough_leftover less.prems(3)
-          by metis
-      qed
     qed
   qed
 qed
