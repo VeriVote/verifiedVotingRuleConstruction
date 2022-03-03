@@ -48,7 +48,7 @@ proof -
   have 11: "w \<in> A"
     by simp
   hence "card (A - {w}) = card A - 1"
-    using card_Diff_singleton condorcet_winner.simps winner
+    using card_Diff_singleton winner
     by metis
   hence amount1:
     "card {x \<in> A - {w} . wins w p x} = card (A) - 1"

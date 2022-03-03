@@ -739,26 +739,45 @@ definition lifted :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Profile \
 lemma lifted_imp_equiv_prof_except_a:
   assumes lifted: "lifted A p q a"
   shows "equiv_prof_except_a A p q a"
-proof -
-  have
-    "\<forall>i::nat. i < length p \<longrightarrow>
-      equiv_rel_except_a A (p!i) (q!i) a"
-  proof
-    fix i :: nat
-    show
-      "i < length p \<longrightarrow>
-        equiv_rel_except_a A (p!i) (q!i) a"
-    proof
-      assume i_ok: "i < length p"
-      show "equiv_rel_except_a A (p!i) (q!i) a"
-        using lifted_def i_ok lifted profile_def trivial_equiv_rel
-              lifted_imp_equiv_rel_except_a
-        by metis
-    qed
-  qed
-  thus ?thesis
-    using lifted_def lifted equiv_prof_except_a_def
+proof (unfold equiv_prof_except_a_def, safe)
+  show "finite A"
+    using lifted
+    unfolding lifted_def
     by metis
+next
+  show "profile A p"
+    using lifted
+    unfolding lifted_def
+    by metis
+next
+  show "finite A"
+    using lifted
+    unfolding lifted_def
+    by metis
+next
+  show "profile A q"
+    using lifted
+    unfolding lifted_def
+    by metis
+next
+  show "a \<in> A"
+    using lifted
+    unfolding lifted_def
+    by metis
+next
+  show "length p = length q"
+    using lifted
+    unfolding lifted_def
+    by metis
+next
+  fix
+    i :: nat
+  assume
+    "i < length p"
+  thus "equiv_rel_except_a A (p!i) (q!i) a"
+    using lifted lifted_imp_equiv_rel_except_a trivial_equiv_rel
+    unfolding lifted_def profile_def
+    by (metis (no_types))
 qed
 
 lemma negl_diff_imp_eq_limit_prof:
@@ -767,7 +786,7 @@ lemma negl_diff_imp_eq_limit_prof:
     subset: "A \<subseteq> S" and
     notInA: "a \<notin> A"
   shows "limit_profile A p = limit_profile A q"
-proof -
+proof (unfold limit_profile.simps)
   have
     "\<forall>i::nat. i < length p \<longrightarrow>
       equiv_rel_except_a S (p!i) (q!i) a"
@@ -776,12 +795,10 @@ proof -
   hence "\<forall>i::nat. i < length p \<longrightarrow> limit A (p!i) = limit A (q!i)"
     using notInA negl_diff_imp_eq_limit subset
     by metis
-  hence "map (limit A) p = map (limit A) q"
+  thus "map (limit A) p = map (limit A) q"
     using change equiv_prof_except_a_def
           length_map nth_equalityI nth_map
     by (metis (mono_tags, lifting))
-  thus ?thesis
-    by simp
 qed
 
 lemma limit_prof_eq_or_lifted:

@@ -308,8 +308,7 @@ theorem seq_comp_sound[simp]:
   assumes module_m: "electoral_module m" and
           module_n: "electoral_module n"
         shows "electoral_module (m \<triangleright> n)"
-  unfolding electoral_module_def
-proof (safe)
+proof (unfold electoral_module_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile"
@@ -498,27 +497,18 @@ lemma seq_comp_elim_one_red_def_set:
 
 lemma seq_comp_def_set_sound:
   assumes
-    "electoral_module m" and
-    "electoral_module n" and
-    "finite_profile A p"
+    e_mod_m: "electoral_module m" and
+    e_mod_n: "electoral_module n" and
+    fin_prof_p: "finite_profile A p"
   shows "defer (m \<triangleright> n) A p \<subseteq> defer m A p"
-proof -
-  have "\<forall>A p. finite_profile A p \<longrightarrow> well_formed A (n A p)"
-    using assms(2) electoral_module_def
-    by auto
-  hence
-    "finite_profile (defer m A p) (limit_profile (defer m A p) p) \<longrightarrow>
-        well_formed (defer m A p)
-          (n (defer m A p) (limit_profile (defer m A p) p))"
-    by simp
-  hence
-    "well_formed (defer m A p) (n (defer m A p)
-      (limit_profile (defer m A p) p))"
-    using assms(1) assms(3) def_presv_fin_prof
-    by metis
-  thus ?thesis
-    using assms seq_comp_def_set_bounded
-    by blast
+proof (safe)
+  fix
+    x :: "'a"
+  assume
+    "x \<in> defer (m \<triangleright> n) A p"
+  thus "x \<in> defer m A p"
+    using  e_mod_m e_mod_n fin_prof_p in_mono seq_comp_def_set_bounded
+    by (metis (no_types, lifting))
 qed
 
 lemma seq_comp_def_set_trans:
@@ -532,7 +522,7 @@ lemma seq_comp_def_set_trans:
       a \<in> defer m A p"
   using seq_comp_def_set_bounded assms(1) assms(2)
         assms(3) in_mono seq_comp_defers_def_set
-  by (metis (no_types, hide_lams))
+  by (metis (no_types, opaque_lifting))
 
 subsection \<open>Composition Rules\<close>
 
@@ -909,7 +899,7 @@ next
       defer n (defer m A p) (limit_profile (defer m A p) p)"
     using def_1_n defers_def fin_A non_blocking_def non_blocking_m
           prof_A seq_comp_defers_def_set
-    by (metis (no_types, hide_lams))
+    by (metis (no_types, opaque_lifting))
   have
     "\<forall>n f. defers n f =
       (electoral_module f \<and>
@@ -1045,8 +1035,7 @@ theorem seq_comp_mono[simp]:
     def_one_m: "defers 1 m" and
     electing_n: "electing n"
   shows "monotonicity (m \<triangleright> n)"
-  unfolding monotonicity_def
-proof (safe)
+proof (unfold monotonicity_def, safe)
   have electoral_mod_m: "electoral_module m"
     using non_ele_m
     by (simp add: non_electing_def)
@@ -1089,15 +1078,15 @@ theorem def_inv_mono_imp_def_lift_inv[simp]:
     defers_1: "defers 1 n" and
     defer_monotone_n: "defer_monotonicity n"
   shows "defer_lift_invariance (m \<triangleright> n)"
-  unfolding defer_lift_invariance_def
-proof (safe)
+proof (unfold defer_lift_invariance_def, safe)
   have electoral_mod_m: "electoral_module m"
-    using defer_invariant_monotonicity_def
-          strong_def_mon_m
-    by auto
+    using strong_def_mon_m
+    unfolding defer_invariant_monotonicity_def
+    by metis
   have electoral_mod_n: "electoral_module n"
-    using defers_1 defers_def
-    by auto
+    using defers_1
+    unfolding defers_def
+    by metis
   show "electoral_module (m \<triangleright> n)"
     using electoral_mod_m electoral_mod_n
     by simp
@@ -1112,19 +1101,24 @@ next
   lifted_a: "Profile.lifted A p q a"
   from strong_def_mon_m
   have non_electing_m: "non_electing m"
-    by (simp add: defer_invariant_monotonicity_def)
+    unfolding defer_invariant_monotonicity_def
+    by simp
   have electoral_mod_m: "electoral_module m"
-    using strong_def_mon_m defer_invariant_monotonicity_def
-    by auto
+    using strong_def_mon_m
+    unfolding defer_invariant_monotonicity_def
+    by metis
   have electoral_mod_n: "electoral_module n"
-    using defers_1 defers_def
-    by auto
+    using defers_1
+    unfolding defers_def
+    by metis
   have finite_profile_q: "finite_profile A q"
     using lifted_a
-    by (simp add: Profile.lifted_def)
+    unfolding Profile.lifted_def
+    by simp
   have finite_profile_p: "profile A p"
     using lifted_a
-    by (simp add: Profile.lifted_def)
+    unfolding Profile.lifted_def
+    by simp
   show "(m \<triangleright> n) A p = (m \<triangleright> n) A q"
   proof cases
     assume not_unchanged: "defer m A q \<noteq> defer m A p"
@@ -1139,7 +1133,7 @@ next
       "{a} = defer m A q \<longrightarrow> defer (m \<triangleright> n) A q \<subseteq> {a}"
       using finite_profile_q electoral_mod_m electoral_mod_n
             seq_comp_def_set_sound
-      by (metis (no_types, hide_lams))
+      by (metis (no_types, opaque_lifting))
     ultimately have
       "(a \<in> defer m A p) \<longrightarrow> defer (m \<triangleright> n) A q \<subseteq> {a}"
       by blast (* lifted defer-subset of a *)
@@ -1165,76 +1159,75 @@ next
     moreover have
       "defer (m \<triangleright> n) A p = {a}" (* regular defer set = a *)
     proof (safe)
-      fix x :: "'a"
+      fix
+        x :: "'a"
       assume
-      defer_x: "x \<in> defer (m \<triangleright> n) A p" and
-      x_exists: "x \<notin> {}"
-      show "x = a"
-      proof -
-        have fin_defer:
-          "\<forall>f (A::'a set) prof.
-            (electoral_module f \<and> finite A \<and> profile A prof) \<longrightarrow>
-              finite_profile (defer f A prof)
-                (limit_profile (defer f A prof) prof)"
-          using def_presv_fin_prof
-          by (metis (no_types))
-        have "finite_profile (defer m A p) (limit_profile (defer m A p) p)"
-          using electoral_mod_m finite_profile_p finite_profile_q fin_defer
-          by blast
-        hence "Suc (card (defer m A p - {a})) = card (defer m A p)"
-          using card_Suc_Diff1 defer_a_in_m_p
-          by metis
-        hence min_card:
-          "Suc 0 \<le> card (defer m A p)"
-          by linarith
-        have emod_n_then_mn:
-          "electoral_module n \<longrightarrow> electoral_module (m \<triangleright> n)"
-          using electoral_mod_m
-          by simp
-        have "defers (Suc 0) n"
-          using defers_1
-          by auto
-        hence defer_card_one:
-          "electoral_module n \<and>
-            (\<forall>A prof.
-              (Suc 0 \<le> card A \<and> finite A \<and> profile A prof) \<longrightarrow>
-                card (defer n A prof) = Suc 0)"
-          by (simp add: defers_def)
-        hence emod_mn: "electoral_module (m \<triangleright> n)"
-          using emod_n_then_mn
-          by blast
-        have nat_diff:
-          "\<forall> (i::nat) j. i \<le> j \<longrightarrow> i - j = 0"
-          by auto
-        have nat_comp:
-          "\<forall> (i::nat) j k.
-            i \<le> j \<and> j \<le> k \<or>
-              j \<le> i \<and> i \<le> k \<or>
-              i \<le> k \<and> k \<le> j \<or>
-              k \<le> j \<and> j \<le> i \<or>
-              j \<le> k \<and> k \<le> i \<or>
-              k \<le> i \<and> i \<le> j"
-          using le_cases3
-          by linarith
-        have fin_diff_card:
-          "\<forall>A a.
-            (finite A \<and> (a::'a) \<in> A) \<longrightarrow>
-              card (A - {a}) = card A - 1"
-          using card_Diff_singleton
-          by metis
-        with fin_defer defer_card_one min_card
-        have "card (defer (m \<triangleright> n) A p) = Suc 0"
-          using electoral_mod_m seq_comp_defers_def_set
-                finite_profile_p finite_profile_q
-          by metis
-        with fin_diff_card nat_comp nat_diff emod_mn fin_defer
-        have "{a} = {x}"
-          using One_nat_def card_1_singletonE singletonD
-                defer_a_p defer_x
-          by metis
-        thus ?thesis
-          by force
-      qed
+        defer_x: "x \<in> defer (m \<triangleright> n) A p" and
+        x_exists: "x \<notin> {}"
+      have fin_defer:
+        "\<forall>f (A::'a set) prof.
+          (electoral_module f \<and> finite A \<and> profile A prof) \<longrightarrow>
+            finite_profile (defer f A prof)
+              (limit_profile (defer f A prof) prof)"
+        using def_presv_fin_prof
+        by (metis (no_types))
+      have "finite_profile (defer m A p) (limit_profile (defer m A p) p)"
+        using electoral_mod_m finite_profile_p finite_profile_q fin_defer
+        by blast
+      hence "Suc (card (defer m A p - {a})) = card (defer m A p)"
+        using card_Suc_Diff1 defer_a_in_m_p
+        by metis
+      hence min_card:
+        "Suc 0 \<le> card (defer m A p)"
+        by linarith
+      have emod_n_then_mn:
+        "electoral_module n \<longrightarrow> electoral_module (m \<triangleright> n)"
+        using electoral_mod_m
+        by simp
+      have "defers (Suc 0) n"
+        using defers_1
+        by auto
+      hence defer_card_one:
+        "electoral_module n \<and>
+          (\<forall>A prof.
+            (Suc 0 \<le> card A \<and> finite A \<and> profile A prof) \<longrightarrow>
+              card (defer n A prof) = Suc 0)"
+        unfolding defers_def
+        by simp
+      hence emod_mn: "electoral_module (m \<triangleright> n)"
+        using emod_n_then_mn
+        by blast
+      have nat_diff:
+        "\<forall> (i::nat) j. i \<le> j \<longrightarrow> i - j = 0"
+        by auto
+      have nat_comp:
+        "\<forall> (i::nat) j k.
+          i \<le> j \<and> j \<le> k \<or>
+            j \<le> i \<and> i \<le> k \<or>
+            i \<le> k \<and> k \<le> j \<or>
+            k \<le> j \<and> j \<le> i \<or>
+            j \<le> k \<and> k \<le> i \<or>
+            k \<le> i \<and> i \<le> j"
+        using le_cases3
+        by linarith
+      have fin_diff_card:
+        "\<forall>A a.
+          (finite A \<and> (a::'a) \<in> A) \<longrightarrow>
+            card (A - {a}) = card A - 1"
+        using card_Diff_singleton
+        by metis
+      with fin_defer defer_card_one min_card
+      have "card (defer (m \<triangleright> n) A p) = Suc 0"
+        using electoral_mod_m seq_comp_defers_def_set
+          finite_profile_p finite_profile_q
+        by metis
+      with fin_diff_card nat_comp nat_diff emod_mn fin_defer
+      have "{a} = {x}"
+        using One_nat_def card_1_singletonE singletonD
+              defer_a_p defer_x
+        by metis
+      thus "x = a"
+        by force
     next
       show "a \<in> defer (m \<triangleright> n) A p"
         using defer_a_p

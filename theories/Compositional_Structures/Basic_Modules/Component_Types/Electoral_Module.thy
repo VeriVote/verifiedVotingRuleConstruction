@@ -1030,7 +1030,7 @@ proof (rule ccontr)
     by metis
   from ccomp have other_side: "w \<notin> reject m A p"
     using condorcet_compatibility_def c_win winner
-    by (metis (no_types, hide_lams))
+    by (metis (no_types, opaque_lifting))
   thus False
     by (simp add: one_side)
 qed

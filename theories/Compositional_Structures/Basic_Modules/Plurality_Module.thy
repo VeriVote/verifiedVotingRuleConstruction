@@ -337,26 +337,20 @@ qed
 
 (*The plurality rule is invariant monotone.*)
 theorem plurality_inv_mono[simp]: "invariant_monotonicity plurality"
-proof -
-  have
-    "electoral_module plurality \<and>
-      (\<forall>A p q a.
-        (a \<in> elect plurality A p \<and> lifted A p q a) \<longrightarrow>
-          (elect plurality A q = elect plurality A p \<or>
-            elect plurality A q = {a}))"
-  proof
-    show "electoral_module plurality"
-      by simp
-  next
-    show
-      "\<forall>A p q a. (a \<in> elect plurality A p \<and> lifted A p q a) \<longrightarrow>
-          (elect plurality A q = elect plurality A p \<or>
-            elect plurality A q = {a})"
-      using plurality_inv_mono2
+proof (unfold invariant_monotonicity_def, intro conjI impI allI)
+  show "electoral_module plurality"
+    by simp
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    q :: "'a Profile" and
+    a :: "'a"
+  assume
+    "a \<in> elect plurality A p \<and> Profile.lifted A p q a"
+  thus "elect plurality A q = elect plurality A p \<or> elect plurality A q = {a}"
+    using plurality_inv_mono2
       by metis
-  qed
-  thus ?thesis
-    by (simp add: invariant_monotonicity_def)
 qed
 
 end

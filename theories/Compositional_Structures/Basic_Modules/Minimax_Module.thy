@@ -69,7 +69,7 @@ qed
 subsection \<open>Property\<close>
 
 theorem minimax_score_cond_rating: "condorcet_rating minimax_score"
-proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe)
+proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe, rule ccontr)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
@@ -78,91 +78,77 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe)
   assume
     winner: "condorcet_winner A p w" and
     l_in_A: "l \<in> A" and
-    l_neq_w:"l \<noteq> w"
-  show
-    "Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r l))} |
+    l_neq_w:"l \<noteq> w" and
+    min_leq:
+      "\<not> Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r l))} |
         y. y \<in> A - {l}} <
       Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r w))} |
           y. y \<in> A - {w}}"
-  proof (rule ccontr)
-    assume
-      "\<not> Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r l))} |
-          y. y \<in> A - {l}} <
-        Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r w))} |
-            y. y \<in> A - {w}}"
-    hence
-      "Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r l))} |
-          y. y \<in> A - {l}} \<ge>
-        Min {card {i. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r w))} |
-            y. y \<in> A - {w}}"
-      by linarith
-    hence 000:
-      "Min {prefer_count p l y |y . y \<in> A-{l}} \<ge>
-        Min {prefer_count p w y |y . y \<in> A-{w}}"
-      by auto
-    have prof: "profile A p"
-      using condorcet_winner.simps winner
-      by metis
-    from prof winner l_in_A l_neq_w
-    have 100:
-      "prefer_count p l w  \<ge> Min {prefer_count p l y |y . y \<in> A-{l}}"
-      using non_cond_winner_minimax_score minimax_score.simps
-      by metis
-    from l_in_A
-    have l_in_A_without_w: "l \<in> A-{w}"
-      by (simp add: l_neq_w)
-    hence 2: "{prefer_count p w y |y . y \<in> A-{w}} \<noteq> {}"
-      by blast
-    have "finite (A-{w})"
-      using prof condorcet_winner.simps winner finite_Diff
-      by metis
-    hence 3: "finite {prefer_count p w y |y . y \<in> A-{w}}"
-      by simp
-    from 2 3
-    have 4:
-      "\<exists> n \<in> A-{w} . prefer_count p w n =
-        Min {prefer_count p w y |y . y \<in> A-{w}}"
-      using Min_in
-      by fastforce
-    then obtain n where 200:
-      "prefer_count p w n =
+  hence 000:
+    "Min {prefer_count p l y | y. y \<in> A-{l}} \<ge>
+        Min {prefer_count p w y | y. y \<in> A-{w}}"
+    by auto
+  have prof: "profile A p"
+    using condorcet_winner.simps winner
+    by metis
+  from prof winner l_in_A l_neq_w
+  have 100:
+    "prefer_count p l w  \<ge> Min {prefer_count p l y |y . y \<in> A-{l}}"
+    using non_cond_winner_minimax_score minimax_score.simps
+    by metis
+  from l_in_A
+  have l_in_A_without_w: "l \<in> A-{w}"
+    by (simp add: l_neq_w)
+  hence 2: "{prefer_count p w y |y . y \<in> A-{w}} \<noteq> {}"
+    by blast
+  have "finite (A-{w})"
+    using prof condorcet_winner.simps winner finite_Diff
+    by metis
+  hence 3: "finite {prefer_count p w y |y . y \<in> A-{w}}"
+    by simp
+  from 2 3
+  have 4:
+    "\<exists> n \<in> A-{w} . prefer_count p w n =
+      Min {prefer_count p w y |y . y \<in> A-{w}}"
+    using Min_in
+    by fastforce
+  then obtain n where 200:
+    "prefer_count p w n =
         Min {prefer_count p w y |y . y \<in> A-{w}}" and
-      6: "n \<in> A-{w}"
-      by metis
-    hence n_in_A: "n \<in> A"
-      using DiffE
-      by metis
-    from 6
-    have n_neq_w: "n \<noteq> w"
-      by auto
-    from winner
-    have w_in_A: "w \<in> A"
-      by simp
-    from 6 prof winner
-    have 300: "prefer_count p w n > prefer_count p n w"
-      by simp
-    from 100 000 200
-    have 400: "prefer_count p l w \<ge> prefer_count p w n"
-      by linarith
-    with prof n_in_A w_in_A l_in_A n_neq_w
-         l_neq_w pref_count_sym
-    have 700: "prefer_count p n w \<ge> prefer_count p w l"
-      by metis
-    have "prefer_count p l w > prefer_count p w l"
-      using "300" "400" "700"
-      by linarith
-    hence "wins l p w"
-      by simp
-    thus False
-      using condorcet_winner.simps l_in_A_without_w
-            wins_antisym winner
-      by metis
-  qed
+    6: "n \<in> A-{w}"
+    by metis
+  hence n_in_A: "n \<in> A"
+    using DiffE
+    by metis
+  from 6
+  have n_neq_w: "n \<noteq> w"
+    by auto
+  from winner
+  have w_in_A: "w \<in> A"
+    by simp
+  from 6 prof winner
+  have 300: "prefer_count p w n > prefer_count p n w"
+    by simp
+  from 100 000 200
+  have 400: "prefer_count p l w \<ge> prefer_count p w n"
+    by linarith
+  with prof n_in_A w_in_A l_in_A n_neq_w
+       l_neq_w pref_count_sym
+  have 700: "prefer_count p n w \<ge> prefer_count p w l"
+    by metis
+  have "prefer_count p l w > prefer_count p w l"
+    using "300" "400" "700"
+    by linarith
+  hence "wins l p w"
+    by simp
+  thus False
+    using condorcet_winner.simps l_in_A_without_w
+          wins_antisym winner
+    by metis
 qed
 
 theorem minimax_is_dcc: "defer_condorcet_consistency minimax"
-unfolding defer_condorcet_consistency_def electoral_module_def
-proof (safe)
+proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile"

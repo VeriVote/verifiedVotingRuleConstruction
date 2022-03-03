@@ -23,8 +23,7 @@ subsection \<open>Properties\<close>
 theorem drop_zero_mod_rej_zero[simp]:
   assumes order: "linear_order r"
   shows "rejects 0 (drop_module 0 r)"
-  unfolding rejects_def
-proof (safe)
+proof (unfold rejects_def, safe)
   show "electoral_module (drop_module 0 r)"
     using order
     by simp
@@ -82,55 +81,52 @@ proof -
   have rej_drop_eq_def_pass:
     "reject (drop_module 2 r) = defer (pass_module 2 r)"
     by simp
-  thus ?thesis
-  proof -
-    obtain
-      AA :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a set" and
-      rrs :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a Profile" where
+  obtain
+    AA :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a set" and
+    rrs :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a Profile" where
       "\<forall>x0 x1. (\<exists>v2 v3. (x1 \<le> card v2 \<and> finite_profile v2 v3) \<and>
-          card (reject x0 v2 v3) \<noteq> x1) =
-              ((x1 \<le> card (AA x0 x1) \<and>
-                finite_profile (AA x0 x1) (rrs x0 x1)) \<and>
-                card (reject x0 (AA x0 x1) (rrs x0 x1)) \<noteq> x1)"
-      by moura
-    hence
-      "\<forall>n f. (\<not> rejects n f \<or> electoral_module f \<and>
-          (\<forall>A rs. (\<not> n \<le> card A \<or> infinite A \<or> \<not> profile A rs) \<or>
-              card (reject f A rs) = n)) \<and>
-          (rejects n f \<or> \<not> electoral_module f \<or> (n \<le> card (AA f n) \<and>
-              finite_profile (AA f n) (rrs f n)) \<and>
-              card (reject f (AA f n) (rrs f n)) \<noteq> n)"
-      using rejects_def
-      by force
-    hence f1:
-      "\<forall>n f. (\<not> rejects n f \<or> electoral_module f \<and>
-        (\<forall>A rs. \<not> n \<le> card A \<or> infinite A \<or> \<not> profile A rs \<or>
-            card (reject f A rs) = n)) \<and>
-        (rejects n f \<or> \<not> electoral_module f \<or> n \<le> card (AA f n) \<and>
+        card (reject x0 v2 v3) \<noteq> x1) =
+          ((x1 \<le> card (AA x0 x1) \<and>
+            finite_profile (AA x0 x1) (rrs x0 x1)) \<and>
+            card (reject x0 (AA x0 x1) (rrs x0 x1)) \<noteq> x1)"
+    by moura
+  hence
+    "\<forall>n f. (\<not> rejects n f \<or> electoral_module f \<and>
+      (\<forall>A rs. (\<not> n \<le> card A \<or> infinite A \<or> \<not> profile A rs) \<or>
+          card (reject f A rs) = n)) \<and>
+        (rejects n f \<or> \<not> electoral_module f \<or> (n \<le> card (AA f n) \<and>
+          finite_profile (AA f n) (rrs f n)) \<and>
+            card (reject f (AA f n) (rrs f n)) \<noteq> n)"
+    unfolding rejects_def
+    by blast
+  hence f1:
+    "\<forall>n f. (\<not> rejects n f \<or> electoral_module f \<and>
+      (\<forall>A rs. \<not> n \<le> card A \<or> infinite A \<or> \<not> profile A rs \<or>
+        card (reject f A rs) = n)) \<and>
+          (rejects n f \<or> \<not> electoral_module f \<or> n \<le> card (AA f n) \<and>
             finite (AA f n) \<and> profile (AA f n) (rrs f n) \<and>
             card (reject f (AA f n) (rrs f n)) \<noteq> n)"
-      by presburger
-    have
-      "\<not> 2 \<le> card (AA (drop_module 2 r) 2) \<or>
-          infinite (AA (drop_module 2 r) 2) \<or>
-          \<not> profile (AA (drop_module 2 r) 2) (rrs (drop_module 2 r) 2) \<or>
-          card (reject (drop_module 2 r) (AA (drop_module 2 r) 2)
-              (rrs (drop_module 2 r) 2)) = 2"
-      using rej_drop_eq_def_pass defers_def order
-            pass_two_mod_def_two
-      by (metis (no_types))
-    thus ?thesis
-      using f1 drop_mod_sound order
-      by blast
-  qed
+    by presburger
+  have
+    "\<not> 2 \<le> card (AA (drop_module 2 r) 2) \<or>
+      infinite (AA (drop_module 2 r) 2) \<or>
+        \<not> profile (AA (drop_module 2 r) 2) (rrs (drop_module 2 r) 2) \<or>
+        card (reject (drop_module 2 r) (AA (drop_module 2 r) 2)
+        (rrs (drop_module 2 r) 2)) = 2"
+    using rej_drop_eq_def_pass order
+          pass_two_mod_def_two
+    unfolding defers_def
+    by (metis (no_types))
+  thus ?thesis
+    using f1 drop_mod_sound order
+    by blast
 qed
 
 (*The pass and drop module are (disjoint-)compatible.*)
 theorem drop_pass_disj_compat[simp]:
   assumes order: "linear_order r"
   shows "disjoint_compatibility (drop_module n r) (pass_module n r)"
-  unfolding disjoint_compatibility_def
-proof (safe)
+proof (unfold disjoint_compatibility_def, safe)
   show "electoral_module (drop_module n r)"
     using order
     by simp

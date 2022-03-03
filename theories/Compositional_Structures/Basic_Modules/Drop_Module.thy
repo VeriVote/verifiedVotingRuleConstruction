@@ -33,45 +33,38 @@ subsection \<open>Soundness\<close>
 theorem drop_mod_sound[simp]:
   assumes order: "linear_order r"
   shows "electoral_module (drop_module n r)"
-proof -
+proof (intro electoral_modI)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
   let ?mod = "drop_module n r"
   have
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        (\<forall>a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<or>
-            a \<in> {x \<in> A. card(above (limit A r) x) > n})"
+    "(\<forall>a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<or>
+        a \<in> {x \<in> A. card(above (limit A r) x) > n})"
     by auto
   hence
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        {a \<in> A. card(above (limit A r) a) \<le> n} \<union>
+    "{a \<in> A. card(above (limit A r) a) \<le> n} \<union>
         {a \<in> A. card(above (limit A r) a) > n} = A"
     by blast
   hence 0:
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        set_equals_partition A (drop_module n r A p)"
+    "set_equals_partition A (drop_module n r A p)"
     by simp
   have
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        (\<forall>a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<and>
-            a \<in> {x \<in> A. card(above (limit A r) x) > n}))"
+    "(\<forall>a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<and>
+        a \<in> {x \<in> A. card(above (limit A r) x) > n}))"
     by auto
   hence
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        {a \<in> A. card(above (limit A r) a) \<le> n} \<inter>
+    "{a \<in> A. card(above (limit A r) a) \<le> n} \<inter>
         {a \<in> A. card(above (limit A r) a) > n} = {}"
     by blast
-  hence 1: "\<forall>A p. finite_profile A p \<longrightarrow> disjoint3 (?mod A p)"
+  hence 1: "disjoint3 (?mod A p)"
     by simp
   from 0 1 have
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        well_formed A (?mod A p)"
+    "well_formed A (?mod A p)"
     by simp
-  hence
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        well_formed A (?mod A p)"
+  thus
+    "well_formed A (?mod A p)"
     by simp
-  thus ?thesis
-    using electoral_modI
-    by metis
 qed
 
 subsection \<open>Non-Electing\<close>

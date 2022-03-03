@@ -29,28 +29,30 @@ subsection \<open>Auxiliary Lemma\<close>
 lemma max_agg_rej_set: "(well_formed A (e1, r1, d1) \<and>
                           well_formed A (e2, r2, d2)) \<longrightarrow>
            reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) = r1 \<inter> r2"
-proof -
-  have "well_formed A (e1, r1, d1) \<longrightarrow>  A - (e1 \<union> d1) = r1"
+proof
+  assume
+    wf: "well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)"
+  have "A - (e1 \<union> d1) = r1"
+    using wf
     by (simp add: result_imp_rej)
   moreover have
-    "well_formed A (e2, r2, d2) \<longrightarrow>  A - (e2 \<union> d2) = r2"
+    "A - (e2 \<union> d2) = r2"
+    using wf
     by (simp add: result_imp_rej)
   ultimately have
-    "(well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
-        A - (e1 \<union> e2 \<union> d1 \<union> d2) = r1 \<inter> r2"
+    "A - (e1 \<union> e2 \<union> d1 \<union> d2) = r1 \<inter> r2"
     by blast
   moreover have
     "{l \<in> A. l \<notin> e1 \<union> e2 \<union> d1 \<union> d2} = A - (e1 \<union> e2 \<union> d1 \<union> d2)"
     by (simp add: set_diff_eq)
-  ultimately show ?thesis
+  ultimately show "reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) = r1 \<inter> r2"
     by simp
 qed
 
 subsection \<open>Soundness\<close>
 
 theorem max_agg_sound[simp]: "aggregator max_aggregator"
-  unfolding aggregator_def
-proof (simp, safe)
+proof (unfold aggregator_def, simp, safe)
   fix
     A :: "'a set" and
     e1 :: "'a set" and
@@ -92,49 +94,80 @@ subsection \<open>Properties\<close>
 
 (*The max-aggregator is conservative.*)
 theorem max_agg_consv[simp]: "agg_conservative max_aggregator"
-proof -
-  have
-    "\<forall>A e1 e2 d1 d2 r1 r2.
-          (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
-      reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) = r1 \<inter> r2"
-    using max_agg_rej_set
-    by blast
-  hence
-    "\<forall>A e1 e2 d1 d2 r1 r2.
-            (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
-        reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> r1 \<inter> r2"
-    by blast
-  moreover have
-    "\<forall>A e1 e2 d1 d2 r1 r2.
-        (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
-            elect_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (e1 \<union> e2)"
-    by (simp add: subset_eq)
-  ultimately have
-    "\<forall>A e1 e2 d1 d2 r1 r2.
-        (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
-            (elect_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (e1 \<union> e2) \<and>
-             reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (r1 \<union> r2))"
-    by blast
-  moreover have
-    "\<forall>A e1 e2 d1 d2 r1 r2.
-        (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
-            defer_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (d1 \<union> d2)"
-    by auto
-  ultimately have
-    "\<forall>A e1 e2 d1 d2 r1 r2.
-        (well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)) \<longrightarrow>
-            (elect_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (e1 \<union> e2) \<and>
-            reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (r1 \<union> r2) \<and>
-            defer_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (d1 \<union> d2))"
-    by blast
-  thus ?thesis
-    by (simp add: agg_conservative_def)
+proof (unfold agg_conservative_def, safe)
+  show "aggregator max_aggregator"
+    using max_agg_sound
+    by metis
+next
+  fix
+    A :: "'a set" and
+    e1 :: "'a set" and
+    e2 :: "'a set" and
+    d1 :: "'a set" and
+    d2 :: "'a set" and
+    r1 :: "'a set" and
+    r2 :: "'a set" and
+    x :: "'a"
+  assume
+    elect_x: "x \<in> elect_r (max_aggregator A (e1, r1, d1) (e2, r2, d2))" and
+    x_not_in_e2: "x \<notin> e2"
+  have "x \<in> e1 \<union> e2"
+    using elect_x
+    by simp
+  hence "x \<in> e1 \<union> e2"
+    by metis
+  thus "x \<in> e1"
+    using x_not_in_e2
+    by simp
+next
+  fix
+    A :: "'a set" and
+    e1 :: "'a set" and
+    e2 :: "'a set" and
+    d1 :: "'a set" and
+    d2 :: "'a set" and
+    r1 :: "'a set" and
+    r2 :: "'a set" and
+    x :: "'a"
+  assume
+    wf2: "well_formed A (e2, r2, d2)" and
+    reject_x: "x \<in> reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2))" and
+    x_not_in_r2: "x \<notin> r2"
+  have "x \<in> r1 \<union> r2"
+    using wf2 reject_x
+    by force
+  hence "x \<in> r1 \<union> r2"
+    by metis
+  thus "x \<in> r1"
+    using x_not_in_r2
+    by simp
+next
+  fix
+    A :: "'a set" and
+    e1 :: "'a set" and
+    e2 :: "'a set" and
+    d1 :: "'a set" and
+    d2 :: "'a set" and
+    r1 :: "'a set" and
+    r2 :: "'a set" and
+    x :: "'a"
+  assume
+    wf2: "well_formed A (e2, r2, d2)" and
+    defer_x: "x \<in> defer_r (max_aggregator A (e1, r1, d1) (e2, r2, d2))" and
+    x_not_in_d2: "x \<notin> d2"
+  have "x \<in> d1 \<union> d2"
+    using wf2 defer_x
+    by force
+  hence "x \<in> d1 \<union> d2"
+    by metis
+  thus "x \<in> d1"
+    using x_not_in_d2
+    by simp
 qed
 
 (*The max-aggregator is commutative.*)
 theorem max_agg_comm[simp]: "agg_commutative max_aggregator"
-  unfolding agg_commutative_def
-proof (safe)
+proof (unfold agg_commutative_def, safe)
   show "aggregator max_aggregator"
     by simp
 next
