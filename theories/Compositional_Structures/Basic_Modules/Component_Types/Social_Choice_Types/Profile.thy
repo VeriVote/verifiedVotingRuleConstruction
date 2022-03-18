@@ -10,6 +10,7 @@ section \<open>Preference Profile\<close>
 
 theory Profile
   imports Preference_Relation
+          "Tools/List_Permutation"
 begin
 
 text
@@ -23,7 +24,7 @@ received.\<close>
 
 subsection \<open>Definition\<close>
 
-(*A profile contains one ballot for each voter.*)
+(* A profile contains one ballot for each voter. *)
 type_synonym 'a Profile = "('a Preference_Relation) list"
 
 (*
@@ -31,10 +32,11 @@ type_synonym 'a Profile = "('a Preference_Relation) list"
    linear orders on A.
 *)
 definition profile :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> bool" where
-  "profile A p \<equiv> \<forall>i::nat. i < length p \<longrightarrow> linear_order_on A (p!i)"
+  "profile A p \<equiv> \<forall> i::nat. i < length p \<longrightarrow> linear_order_on A (p!i)"
 
-lemma profile_set : "profile A p \<equiv> (\<forall>b \<in> (set p). linear_order_on A b)"
-  by (simp add: all_set_conv_all_nth profile_def)
+lemma profile_set : "profile A p \<equiv> (\<forall> b \<in> (set p). linear_order_on A b)"
+  unfolding profile_def all_set_conv_all_nth
+  by simp
 
 abbreviation finite_profile :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> bool" where
   "finite_profile A p \<equiv> finite A \<and> profile A p"
@@ -66,7 +68,7 @@ proof (induction p rule: rev_induct, simp)
   have size_one: "length [a] = 1"
     by simp
   have p_pos_in_ps:
-    "\<forall>i<length p. p!i = (p@[a])!i"
+    "\<forall> i < length p. p!i = (p@[a])!i"
     by (simp add: nth_append)
   have
     "win_count [a] x =
@@ -271,7 +273,7 @@ proof (induction p rule: rev_induct, simp)
   have size_one: "length [a] = 1"
     by simp
   have p_pos_in_ps:
-    "\<forall>i<length p. p!i = (p@[a])!i"
+    "\<forall> i < length p. p!i = (p@[a])!i"
     by (simp add: nth_append)
   have
     "prefer_count [a] x y =
@@ -357,7 +359,7 @@ proof (induction p rule: rev_induct, simp)
         card {i. i < length p \<and> (y, x) \<in> p!i} +
           card {i. i = 0 \<and> (y, x) \<in> [a]!i}"
       using set_prof_eq shift_idx_a
-      by auto
+      by simp
   qed
   have pref_count_code_induct:
     "prefer_count_code (p@[a]) x y =
@@ -413,13 +415,15 @@ proof -
           {i::nat. i < length p \<and> \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x))}"
     by auto
   have 0: "\<forall> i::nat . i < length p \<longrightarrow> linear_order_on A (p!i)"
-    using prof profile_def
-    by metis
+    using prof
+    unfolding profile_def
+    by simp
   hence "\<forall> i::nat . i < length p \<longrightarrow> connex A (p!i)"
     by (simp add: lin_ord_imp_connex)
   hence 1: "\<forall> i::nat . i < length p \<longrightarrow>
               \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x)) \<longrightarrow> (let r = (p!i) in (x \<preceq>\<^sub>r y))"
-    using connex_def x_in_A y_in_A
+    using x_in_A y_in_A
+    unfolding connex_def
     by metis
   from 0 have
     "\<forall> i::nat . i < length p \<longrightarrow> antisym  (p!i)"
@@ -443,7 +447,7 @@ proof -
     "{i::nat. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
         {i::nat. i < length p} -
           {i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}"
-    using "10" "2"
+    using 10 2
     by simp
   have
     "{i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))} \<subseteq>
@@ -461,18 +465,18 @@ proof -
   also have
     "... = card({i::nat. i < length p} -
             {i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))})"
-    using "20"
+    using 20
     by simp
   also have
     "... = (card {i::nat. i < length p}) -
               card({i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))})"
-    using "30"
+    using 30
     by metis
   also have
     "... = length p - (prefer_count p y x)"
     by simp
   finally show ?thesis
-    by (simp add: "20" "30")
+    by (simp add: 20 30)
 qed
 
 lemma pref_count_sym:
@@ -582,10 +586,11 @@ proof (rule ccontr)
 qed
 
 lemma cond_winner_unique2:
-  assumes winner: "condorcet_winner A p w" and
-          not_w:  "x \<noteq> w" and
-          in_A:   "x \<in> A"
-        shows "\<not> condorcet_winner A p x"
+  assumes
+    winner: "condorcet_winner A p w" and
+    not_w:  "x \<noteq> w" and
+    in_A:   "x \<in> A"
+  shows "\<not> condorcet_winner A p x"
   using not_w cond_winner_unique winner
   by metis
 
@@ -600,17 +605,17 @@ proof (safe, simp_all, safe)
     prof_A: "profile A p" and
     x_in_A: "x \<in> A" and
     x_wins:
-      "\<forall>xa \<in> A - {x}.
+      "\<forall> xa \<in> A - {x}.
         card {i. i < length p \<and> (x, xa) \<in> p!i} <
           card {i. i < length p \<and> (xa, x) \<in> p!i}"
   from assms have assm:
     "finite_profile A p \<and>  w \<in> A \<and>
-      (\<forall>x \<in> A - {w}.
+      (\<forall> x \<in> A - {w}.
         card {i::nat. i < length p \<and> (w, x) \<in> p!i} <
           card {i::nat. i < length p \<and> (x, w) \<in> p!i})"
     by simp
   hence
-    "(\<forall>x \<in> A - {w}.
+    "(\<forall> x \<in> A - {w}.
       card {i::nat. i < length p \<and> (w, x) \<in> p!i} <
         card {i::nat. i < length p \<and> (x, w) \<in> p!i})"
     by simp
@@ -636,42 +641,34 @@ proof (safe, simp_all, safe)
     "x = w"
     by linarith
 next
-  fix
-    x :: "'a"
   from assms show "w \<in> A"
     by simp
 next
-  fix
-    x :: "'a"
   from assms show "finite A"
     by simp
 next
-  fix
-    x :: "'a"
   from assms show "profile A p"
     by simp
 next
-  fix
-    x :: "'a"
   from assms show "w \<in> A"
     by simp
 next
   fix
     x :: "'a" and
-    xa :: "'a"
+    x' :: "'a"
   assume
-    xa_in_A: "xa \<in> A" and
+    x_prime_in_A: "x' \<in> A" and
     w_wins:
-      "\<not> card {i. i < length p \<and> (w, xa) \<in> p!i} <
-        card {i. i < length p \<and> (xa, w) \<in> p!i}"
+      "\<not> card {i. i < length p \<and> (w, x') \<in> p!i} <
+        card {i. i < length p \<and> (x', w) \<in> p!i}"
   from assms have
     "finite_profile A p \<and>  w \<in> A \<and>
-      (\<forall>x \<in> A - {w} .
+      (\<forall> x \<in> A - {w} .
         card {i::nat. i < length p \<and> (w, x) \<in> p!i} <
           card {i::nat. i < length p \<and> (x, w) \<in> p!i})"
     by simp
-  thus "xa = w"
-    using xa_in_A w_wins insert_Diff insert_iff
+  thus "x' = w"
+    using x_prime_in_A w_wins insert_Diff insert_iff
     by (metis (no_types, lifting))
 qed
 
@@ -698,12 +695,40 @@ lemma limit_profile_sound:
     profile: "finite_profile S p" and
     subset: "A \<subseteq> S"
   shows "finite_profile A (limit_profile A p)"
-proof (simp)
-  from profile
-  show "finite_profile A (map (limit A) p)"
-    using length_map limit_presv_lin_ord nth_map
-          profile_def subset infinite_super
+proof (safe)
+  have "\<forall> A A'. finite (A::'a set) \<longrightarrow> A' \<subseteq> A \<longrightarrow> finite A'"
+    using rev_finite_subset
     by metis
+  with profile
+  show "finite A"
+    using subset
+    by metis
+next
+  have prof_is_lin_ord:
+    "\<forall> A r.
+      (profile (A::'a set) r \<longrightarrow> (\<forall> n < length r. linear_order_on A (r!n))) \<and>
+      ((\<forall> n < length r. linear_order_on A (r!n)) \<longrightarrow> profile A r)"
+    unfolding profile_def
+    by simp
+  have limit_prof_simp: "limit_profile A p = map (limit A) p"
+    by simp
+  obtain n' :: nat where
+    prof_limit_n: "(n' < length (limit_profile A p) \<longrightarrow>
+            linear_order_on A (limit_profile A p!n')) \<longrightarrow>
+          profile A (limit_profile A p)"
+    using prof_is_lin_ord
+    by metis
+  have prof_n_lin_ord: "\<forall> n < length p. linear_order_on S (p!n)"
+    using prof_is_lin_ord profile
+    by simp
+  have prof_length: "length p = length (map (limit A) p)"
+    by simp
+  have "n' < length p \<longrightarrow> linear_order_on S (p!n')"
+    using prof_n_lin_ord
+    by simp
+  thus "profile A (limit_profile A p)"
+    using prof_length prof_limit_n limit_prof_simp limit_presv_lin_ord nth_map subset
+    by (metis (no_types))
 qed
 
 lemma limit_prof_presv_size:
@@ -719,7 +744,7 @@ definition equiv_prof_except_a :: "'a set \<Rightarrow> 'a Profile \<Rightarrow>
   "equiv_prof_except_a A p q a \<equiv>
     finite_profile A p \<and> finite_profile A q \<and>
       a \<in> A \<and> length p = length q \<and>
-      (\<forall>i::nat.
+      (\<forall> i::nat.
         i < length p \<longrightarrow>
           equiv_rel_except_a A (p!i) (q!i) a)"
 
@@ -731,42 +756,42 @@ definition lifted :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Profile \
   "lifted A p q a \<equiv>
     finite_profile A p \<and> finite_profile A q \<and>
       a \<in> A \<and> length p = length q \<and>
-      (\<forall>i::nat.
+      (\<forall> i::nat.
         (i < length p \<and> \<not>Preference_Relation.lifted A (p!i) (q!i) a) \<longrightarrow>
           (p!i) = (q!i)) \<and>
-      (\<exists>i::nat. i < length p \<and> Preference_Relation.lifted A (p!i) (q!i) a)"
+      (\<exists> i::nat. i < length p \<and> Preference_Relation.lifted A (p!i) (q!i) a)"
 
 lemma lifted_imp_equiv_prof_except_a:
   assumes lifted: "lifted A p q a"
   shows "equiv_prof_except_a A p q a"
 proof (unfold equiv_prof_except_a_def, safe)
+  from lifted
   show "finite A"
-    using lifted
     unfolding lifted_def
     by metis
 next
+  from lifted
   show "profile A p"
-    using lifted
     unfolding lifted_def
     by metis
 next
+  from lifted
   show "finite A"
-    using lifted
     unfolding lifted_def
     by metis
 next
+  from lifted
   show "profile A q"
-    using lifted
     unfolding lifted_def
     by metis
 next
+  from lifted
   show "a \<in> A"
-    using lifted
     unfolding lifted_def
     by metis
 next
+  from lifted
   show "length p = length q"
-    using lifted
     unfolding lifted_def
     by metis
 next
@@ -774,8 +799,9 @@ next
     i :: nat
   assume
     "i < length p"
-  thus "equiv_rel_except_a A (p!i) (q!i) a"
-    using lifted lifted_imp_equiv_rel_except_a trivial_equiv_rel
+  with lifted
+  show "equiv_rel_except_a A (p!i) (q!i) a"
+    using lifted_imp_equiv_rel_except_a trivial_equiv_rel
     unfolding lifted_def profile_def
     by (metis (no_types))
 qed
@@ -786,13 +812,13 @@ lemma negl_diff_imp_eq_limit_prof:
     subset: "A \<subseteq> S" and
     notInA: "a \<notin> A"
   shows "limit_profile A p = limit_profile A q"
-proof (unfold limit_profile.simps)
+proof (simp)
   have
-    "\<forall>i::nat. i < length p \<longrightarrow>
+    "\<forall> i::nat. i < length p \<longrightarrow>
       equiv_rel_except_a S (p!i) (q!i) a"
     using change equiv_prof_except_a_def
     by metis
-  hence "\<forall>i::nat. i < length p \<longrightarrow> limit A (p!i) = limit A (q!i)"
+  hence "\<forall> i::nat. i < length p \<longrightarrow> limit A (p!i) = limit A (q!i)"
     using notInA negl_diff_imp_eq_limit subset
     by metis
   thus "map (limit A) p = map (limit A) q"
@@ -803,7 +829,7 @@ qed
 
 lemma limit_prof_eq_or_lifted:
   assumes
-    lifted: "lifted S p q a" and
+    lifted_a: "lifted S p q a" and
     subset: "A \<subseteq> S"
   shows
     "limit_profile A p = limit_profile A q \<or>
@@ -811,48 +837,53 @@ lemma limit_prof_eq_or_lifted:
 proof cases
   assume inA: "a \<in> A"
   have
-    "\<forall>i::nat. i < length p \<longrightarrow>
+    "\<forall> i::nat. i < length p \<longrightarrow>
         (Preference_Relation.lifted S (p!i) (q!i) a \<or> (p!i) = (q!i))"
-    using lifted_def lifted
+    using lifted_a
+    unfolding lifted_def
     by metis
   hence one:
-    "\<forall>i::nat. i < length p \<longrightarrow>
+    "\<forall> i::nat. i < length p \<longrightarrow>
          (Preference_Relation.lifted A (limit A (p!i)) (limit A (q!i)) a \<or>
            (limit A (p!i)) = (limit A (q!i)))"
     using limit_lifted_imp_eq_or_lifted subset
     by metis
   thus ?thesis
   proof cases
-    assume "\<forall>i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (q!i))"
+    assume "\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (q!i))"
     thus ?thesis
-      using lifted_def length_map lifted
-            limit_profile.simps nth_equalityI nth_map
+      using length_map lifted_a nth_equalityI nth_map
+            limit_profile.simps
+      unfolding lifted_def
       by (metis (mono_tags, lifting))
   next
     assume assm:
-      "\<not>(\<forall>i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (q!i)))"
+      "\<not>(\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (q!i)))"
     let ?p = "limit_profile A p"
     let ?q = "limit_profile A q"
     have "profile A ?p \<and> profile A ?q"
-      using lifted_def lifted limit_profile_sound subset
+      using lifted_a limit_profile_sound subset
+      unfolding lifted_def
       by metis
     moreover have "length ?p = length ?q"
-      using lifted_def lifted
+      using lifted_a
+      unfolding lifted_def
       by fastforce
     moreover have
-      "\<exists>i::nat. i < length ?p \<and> Preference_Relation.lifted A (?p!i) (?q!i) a"
-      using assm lifted_def length_map lifted
-            limit_profile.simps nth_map one
+      "\<exists> i::nat. i < length ?p \<and> Preference_Relation.lifted A (?p!i) (?q!i) a"
+      using assm length_map lifted_a limit_profile.simps nth_map one
+      unfolding lifted_def
       by (metis (no_types, lifting))
     moreover have
-      "\<forall>i::nat.
+      "\<forall> i::nat.
         (i < length ?p \<and> \<not>Preference_Relation.lifted A (?p!i) (?q!i) a) \<longrightarrow>
           (?p!i) = (?q!i)"
-      using lifted_def length_map lifted
-            limit_profile.simps nth_map one
+      using length_map lifted_a limit_profile.simps nth_map one
+      unfolding lifted_def
       by metis
     ultimately have "lifted A ?p ?q a"
-      using lifted_def inA lifted rev_finite_subset subset
+      using inA lifted_a rev_finite_subset subset
+      unfolding lifted_def
       by (metis (no_types, lifting))
     thus ?thesis
       by simp
@@ -860,7 +891,7 @@ proof cases
 next
   assume "a \<notin> A"
   thus ?thesis
-    using lifted negl_diff_imp_eq_limit_prof subset
+    using lifted_a negl_diff_imp_eq_limit_prof subset
           lifted_imp_equiv_prof_except_a
     by metis
 qed

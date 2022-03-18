@@ -67,8 +67,8 @@ proof (safe)
     x :: "'a"
   assume
     x_in_A: "x \<in> A" and
-    x_not_rej:   "x \<notin> r" and
-    x_not_def:   "x \<notin> d"
+    x_not_rej: "x \<notin> r" and
+    x_not_def: "x \<notin> d"
   from assms have
     "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
     (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
@@ -80,7 +80,7 @@ next
   fix
     x :: "'a"
   assume
-    x_rej:   "x \<in> r"
+    x_rej: "x \<in> r"
   from assms have
     "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
     (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
@@ -129,7 +129,7 @@ proof -
     "e \<union> r \<union> d = A"
     by simp
   show ?thesis
-    using assms disj set_partit Int_Un_distrib2 finite_Un
+    using assms(2) disj set_partit Int_Un_distrib2 finite_Un
           card_Un_disjoint sup_bot.right_neutral
     by metis
 qed
@@ -149,9 +149,9 @@ proof (safe)
     using assms
     by simp
   hence
-    "\<forall>p A. \<exists>Aa Ab Ac.
-      (\<not> set_equals_partition (A::'a set) p \<or> (Aa, Ab, Ac) = p) \<and>
-        (\<not> set_equals_partition A p \<or> Aa \<union> Ab \<union> Ac = A)"
+    "\<forall> p A. \<exists> A' B C.
+      (\<not> set_equals_partition (A::'a set) p \<or> (A', B, C) = p) \<and>
+        (\<not> set_equals_partition A p \<or> A' \<union> B \<union> C = A)"
     by auto
   thus "x \<in> A"
     using UnCI assm0 assm1 snd_conv
@@ -173,9 +173,9 @@ proof (safe)
     using assms
     by simp
   hence
-    "\<forall>p A. \<exists>Aa Ab Ac.
-      (\<not> set_equals_partition (A::'a set) p \<or> (Aa, Ab, Ac) = p) \<and>
-        (\<not> set_equals_partition A p \<or> Aa \<union> Ab \<union> Ac = A)"
+    "\<forall> p A. \<exists> A' B C.
+      (\<not> set_equals_partition (A::'a set) p \<or> (A', B, C) = p) \<and>
+        (\<not> set_equals_partition A p \<or> A' \<union> B \<union> C = A)"
     by auto
   thus "x \<in> A"
     using UnCI assm0 assm1 assms fst_conv
@@ -197,9 +197,9 @@ proof (safe)
     using assms
     by simp
   hence
-    "\<forall>p A. \<exists>Aa Ab Ac.
-      (\<not> set_equals_partition (A::'a set) p \<or> (Aa, Ab, Ac) = p) \<and>
-        (\<not> set_equals_partition A p \<or> Aa \<union> Ab \<union> Ac = A)"
+    "\<forall> p A. \<exists> A' B C.
+      (\<not> set_equals_partition (A::'a set) p \<or> (A', B, C) = p) \<and>
+        (\<not> set_equals_partition A p \<or> A' \<union> B \<union> C = A)"
     by auto
   thus "x \<in> A"
     using UnCI assms assm0 assm1 fst_conv snd_conv disjoint3.cases

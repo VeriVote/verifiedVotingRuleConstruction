@@ -39,7 +39,7 @@ proof (intro electoral_modI)
     p :: "'a Profile"
   let ?mod = "drop_module n r"
   have
-    "(\<forall>a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<or>
+    "(\<forall> a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<or>
         a \<in> {x \<in> A. card(above (limit A r) x) > n})"
     by auto
   hence
@@ -50,7 +50,7 @@ proof (intro electoral_modI)
     "set_equals_partition A (drop_module n r A p)"
     by simp
   have
-    "(\<forall>a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<and>
+    "(\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<and>
         a \<in> {x \<in> A. card(above (limit A r) x) > n}))"
     by auto
   hence
@@ -69,18 +69,22 @@ qed
 
 subsection \<open>Non-Electing\<close>
 
-(*The drop module is non-electing.*)
+(* The drop module is non-electing. *)
 theorem drop_mod_non_electing[simp]:
   assumes order: "linear_order r"
   shows "non_electing (drop_module n r)"
-  by (simp add: non_electing_def order)
+  unfolding non_electing_def
+  using order
+  by simp
 
 subsection \<open>Properties\<close>
 
-(*The drop module is strictly defer-monotone.*)
+(* The drop module is strictly defer-monotone. *)
 theorem drop_mod_def_lift_inv[simp]:
   assumes order: "linear_order r"
   shows "defer_lift_invariance (drop_module n r)"
-  by (simp add: order defer_lift_invariance_def)
+  unfolding defer_lift_invariance_def
+  using order
+  by simp
 
 end

@@ -29,15 +29,16 @@ subsection \<open>Auxiliary Lemma\<close>
 lemma max_agg_rej_set: "(well_formed A (e1, r1, d1) \<and>
                           well_formed A (e2, r2, d2)) \<longrightarrow>
            reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) = r1 \<inter> r2"
-proof
+proof (clarify)
   assume
-    wf: "well_formed A (e1, r1, d1) \<and> well_formed A (e2, r2, d2)"
+    wf1: "well_formed A (e1, r1, d1)" and
+    wf2: "well_formed A (e2, r2, d2)"
   have "A - (e1 \<union> d1) = r1"
-    using wf
+    using wf1
     by (simp add: result_imp_rej)
   moreover have
     "A - (e2 \<union> d2) = r2"
-    using wf
+    using wf2
     by (simp add: result_imp_rej)
   ultimately have
     "A - (e1 \<union> e2 \<union> d1 \<union> d2) = r1 \<inter> r2"
@@ -92,7 +93,7 @@ qed
 
 subsection \<open>Properties\<close>
 
-(*The max-aggregator is conservative.*)
+(* The max-aggregator is conservative. *)
 theorem max_agg_consv[simp]: "agg_conservative max_aggregator"
 proof (unfold agg_conservative_def, safe)
   show "aggregator max_aggregator"
@@ -165,12 +166,9 @@ next
     by simp
 qed
 
-(*The max-aggregator is commutative.*)
+(* The max-aggregator is commutative. *)
 theorem max_agg_comm[simp]: "agg_commutative max_aggregator"
-proof (unfold agg_commutative_def, safe)
-  show "aggregator max_aggregator"
-    by simp
-next
+proof (unfold agg_commutative_def, safe, simp)
   fix
     A :: "'a set" and
     e1 :: "'a set" and

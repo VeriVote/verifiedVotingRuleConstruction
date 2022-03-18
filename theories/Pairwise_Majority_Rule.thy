@@ -31,14 +31,10 @@ fun pairwise_majority_rule' :: "'a Electoral_Module" where
 subsection \<open>Condorcet Consistency Property\<close>
 
 theorem condorcet_condorcet: "condorcet_consistency pairwise_majority_rule"
-proof -
-  have
+proof (unfold pairwise_majority_rule.simps)
+  show
     "condorcet_consistency (elector condorcet)"
     using condorcet_is_dcc dcc_imp_cc_elector
-    by metis
-  thus ?thesis
-    using condorcet_consistency2 electoral_module_def
-          pairwise_majority_rule.simps
     by metis
 qed
 

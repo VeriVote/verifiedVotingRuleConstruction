@@ -38,8 +38,7 @@ subsection \<open>Soundness\<close>
 theorem smc_sound:
   assumes order: "linear_order x"
   shows "electoral_module (smc x)"
-  unfolding electoral_module_def
-proof (simp, safe, simp_all)
+proof (unfold electoral_module_def, simp, safe, simp_all)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
@@ -277,9 +276,9 @@ proof -
     by simp
 
   show ?thesis
-    using 2 3 smc_sound smc.simps electing_def
-          Defer_One_Loop_Composition.iter.simps
-          order seq_comp_electing
+    using 2 3 order seq_comp_electing smc_sound
+    unfolding Defer_One_Loop_Composition.iter.simps
+              smc.simps electing_def
     by metis
 qed
 
@@ -390,10 +389,10 @@ proof -
     by simp (*elect_mod_electing*)
 
   show ?thesis
-    using 0 1 2 3
-          Electoral_Module.monotonicity_def
-          Defer_One_Loop_Composition.iter.simps
-          smc_sound smc.simps order seq_comp_mono
+    using 0 1 2 3 order seq_comp_mono
+    unfolding Electoral_Module.monotonicity_def
+              Defer_One_Loop_Composition.iter.simps
+              smc_sound smc.simps
     by (metis (full_types))
 qed
 

@@ -50,8 +50,7 @@ proof (unfold condorcet_rating_def, safe)
 qed
 
 theorem condorcet_is_dcc: "defer_condorcet_consistency condorcet"
-unfolding defer_condorcet_consistency_def electoral_module_def
-proof (safe)
+proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile"
@@ -59,7 +58,8 @@ proof (safe)
     finA: "finite A" and
     profA: "profile A p"
   have "well_formed A (max_eliminator condorcet_score A p)"
-    using finA profA electoral_module_def max_elim_sound
+    using finA profA max_elim_sound
+    unfolding electoral_module_def
     by metis
   thus "well_formed A (condorcet A p)"
     by simp
@@ -75,13 +75,13 @@ next
     "defer_condorcet_consistency (max_eliminator condorcet_score)"
     using cr_eval_imp_dcc_max_elim
     by (simp add: condorcet_score_is_condorcet_rating)
-  from defer_condorcet_consistency_def
   have
     "max_eliminator condorcet_score A p =
   ({},
   A - defer (max_eliminator condorcet_score) A p,
   {a \<in> A. condorcet_winner A p a})"
     using cwin_w finA max_cscore_dcc
+    unfolding defer_condorcet_consistency_def
     by (metis (no_types))
   thus
     "condorcet A p =

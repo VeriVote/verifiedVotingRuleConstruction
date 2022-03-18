@@ -57,16 +57,18 @@ lemma max_agg_eq_result:
 proof cases
   assume a1: "x \<in> elect (m \<parallel>\<^sub>\<up> n) A p"
     have mod_contains_inst:
-      "\<forall>p_mod q_mod a_set prof a.
+      "\<forall> p_mod q_mod a_set prof a.
         mod_contains_result p_mod q_mod a_set prof (a::'a) =
           (electoral_module p_mod \<and> electoral_module q_mod \<and>
             finite a_set \<and> profile a_set prof \<and> a \<in> a_set \<and>
             (a \<notin> elect p_mod a_set prof \<or> a \<in> elect q_mod a_set prof) \<and>
             (a \<notin> reject p_mod a_set prof \<or> a \<in> reject q_mod a_set prof) \<and>
             (a \<notin> defer p_mod a_set prof \<or> a \<in> defer q_mod a_set prof))"
-      by (simp add: mod_contains_result_def)
-  have module_mn: "electoral_module (m \<parallel>\<^sub>\<up> n)"
-    by (simp add: module_m module_n)
+      unfolding mod_contains_result_def
+      by simp
+    have module_mn: "electoral_module (m \<parallel>\<^sub>\<up> n)"
+      using module_m module_n
+      by simp
   have not_defer_mn: "x \<notin> defer (m \<parallel>\<^sub>\<up> n) A p"
     using module_mn IntI a1 empty_iff f_prof result_disj
     by (metis (no_types))
@@ -95,7 +97,7 @@ next
       assume not_mod_cont_mn:
         "\<not> mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p x"
       have par_emod:
-        "\<forall>f g.
+        "\<forall> f g.
           (electoral_module (f::'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) \<and>
             electoral_module g) \<longrightarrow>
               electoral_module (f \<parallel>\<^sub>\<up> g)"
@@ -119,7 +121,8 @@ next
             (\<forall>A prof. (finite A \<and> profile A prof) \<longrightarrow> well_formed A (f A prof))) \<and>
           (electoral_module f \<or> finite (s_func f) \<and> profile (s_func f) (p_func f) \<and>
             \<not> well_formed (s_func f) (f (s_func f) (p_func f)))"
-        using electoral_module_def
+        unfolding electoral_module_def
+        by auto
         by moura
       hence wf_n: "well_formed A (n A p)"
         using f_prof module_n
@@ -202,7 +205,7 @@ next
         using f_prof module_n
         by metis
       have
-        "\<forall>f g A prof (a::'a).
+        "\<forall> f g A prof (a::'a).
           mod_contains_result f g A prof a =
             (electoral_module f \<and> electoral_module g \<and>
               finite A \<and> profile A prof \<and> a \<in> A \<and>
@@ -329,8 +332,7 @@ lemma max_agg_rej1:
     rejected: "x \<in> reject n A p"
   shows
     "mod_contains_result m (m \<parallel>\<^sub>\<up> n) A p x"
-  unfolding mod_contains_result_def
-proof (safe)
+proof (unfold mod_contains_result_def, safe)
   show "electoral_module m"
     using module_m
     by simp
@@ -382,7 +384,7 @@ next
 next
   assume x_in_defer: "x \<in> defer m A p"
   hence defer_a:
-    "\<exists>a. a \<in> defer m A p \<and> x = a"
+    "\<exists> a. a \<in> defer m A p \<and> x = a"
     by simp
   then obtain x_inst :: 'a where
     inst_x: "x = x_inst \<and> x_inst \<in> defer m A p"
@@ -392,7 +394,7 @@ next
     using disjoint_iff_not_equal f_prof inst_x module_m result_disj
     by (metis (no_types))
   have
-    "\<forall>f A prof.
+    "\<forall> f A prof.
       (electoral_module f \<and> finite (A::'a set) \<and> profile A prof) \<longrightarrow>
         elect f A prof \<union> reject f A prof \<union> defer f A prof = A"
     using result_presv_alts
@@ -431,8 +433,7 @@ lemma max_agg_rej3:
     rejected: "x \<in> reject m A p"
   shows
     "mod_contains_result n (m \<parallel>\<^sub>\<up> n) A p x"
-  unfolding mod_contains_result_def
-proof (safe)
+proof (unfold mod_contains_result_def, safe)
   show "electoral_module n"
     using module_n
     by simp
@@ -458,7 +459,7 @@ next
     using Un_iff combine_ele_rej_def fst_conv
           maximum_parallel_composition.simps
           max_aggregator.simps
-          parallel_composition.simps
+    unfolding parallel_composition.simps
     by (metis (mono_tags, lifting))
 next
   assume "x \<in> reject n A p"
@@ -502,7 +503,8 @@ proof -
   have
     "A = (elect m A p) \<union> (reject m A p) \<union> (defer m A p) \<and>
       A = (elect n A p) \<union> (reject n A p) \<union> (defer n A p)"
-    by (simp add: module_m module_n f_prof result_presv_alts)
+    using module_m module_n f_prof result_presv_alts
+    by metis
   hence
     "A - ((elect m A p) \<union> (defer m A p)) = (reject m A p) \<and>
       A - ((elect n A p) \<union> (defer n A p)) = (reject n A p)"
@@ -526,12 +528,12 @@ lemma dcompat_dec_by_one_mod:
     compatible: "disjoint_compatibility m n" and
     in_A: "x \<in> A"
   shows
-    "(\<forall>p. finite_profile A p \<longrightarrow>
+    "(\<forall> p. finite_profile A p \<longrightarrow>
           mod_contains_result m (m \<parallel>\<^sub>\<up> n) A p x) \<or>
-        (\<forall>p. finite_profile A p \<longrightarrow>
+        (\<forall> p. finite_profile A p \<longrightarrow>
           mod_contains_result n (m \<parallel>\<^sub>\<up> n) A p x)"
-  using DiffI compatible disjoint_compatibility_def
-        in_A max_agg_rej1 max_agg_rej3
+  using DiffI compatible in_A max_agg_rej1 max_agg_rej3
+  unfolding disjoint_compatibility_def
   by metis
 
 subsection \<open>Composition Rules\<close>
@@ -558,14 +560,15 @@ theorem par_comp_def_lift_inv[simp]:
     monotone_m: "defer_lift_invariance m" and
     monotone_n: "defer_lift_invariance n"
   shows "defer_lift_invariance (m \<parallel>\<^sub>\<up> n)"
-  unfolding defer_lift_invariance_def
-proof (safe)
+proof (unfold defer_lift_invariance_def, safe)
   have electoral_mod_m: "electoral_module m"
     using monotone_m
-    by (simp add: defer_lift_invariance_def)
+    unfolding defer_lift_invariance_def
+    by simp
   have electoral_mod_n: "electoral_module n"
     using monotone_n
-    by (simp add: defer_lift_invariance_def)
+    unfolding defer_lift_invariance_def
+    by simp
   show "electoral_module (m \<parallel>\<^sub>\<up> n)"
     using electoral_mod_m electoral_mod_n
     by simp
@@ -579,17 +582,19 @@ next
     defer_x: "x \<in> defer (m \<parallel>\<^sub>\<up> n) S p" and
     lifted_x: "Profile.lifted S p q x"
   hence f_profs: "finite_profile S p \<and> finite_profile S q"
-    by (simp add: lifted_def)
+    unfolding lifted_def
+    by simp
   from compatible
   obtain A::"'a set" where A:
-    "A \<subseteq> S \<and> (\<forall>x \<in> A. indep_of_alt m S x \<and>
-      (\<forall>p. finite_profile S p \<longrightarrow> x \<in> reject m S p)) \<and>
-        (\<forall>x \<in> S-A. indep_of_alt n S x \<and>
-      (\<forall>p. finite_profile S p \<longrightarrow> x \<in> reject n S p))"
-    using disjoint_compatibility_def f_profs
+    "A \<subseteq> S \<and> (\<forall> x \<in> A. indep_of_alt m S x \<and>
+      (\<forall> p. finite_profile S p \<longrightarrow> x \<in> reject m S p)) \<and>
+        (\<forall> x \<in> S-A. indep_of_alt n S x \<and>
+      (\<forall> p. finite_profile S p \<longrightarrow> x \<in> reject n S p))"
+    using f_profs
+    unfolding disjoint_compatibility_def
     by (metis (no_types, lifting))
   have
-    "\<forall>x \<in> S. prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
+    "\<forall> x \<in> S. prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
   proof cases
     assume a0: "x \<in> A"
     hence "x \<in> reject m S p"
@@ -597,17 +602,16 @@ next
       by blast
     with defer_x
     have defer_n: "x \<in> defer n S p"
-      using compatible disjoint_compatibility_def
-            mod_contains_result_def f_profs max_agg_rej4
+      using compatible f_profs max_agg_rej4
+      unfolding disjoint_compatibility_def mod_contains_result_def
       by metis
     have
-      "\<forall>x \<in> A. mod_contains_result (m \<parallel>\<^sub>\<up> n) n S p x"
-      using A compatible disjoint_compatibility_def
-            max_agg_rej4 f_profs
+      "\<forall> x \<in> A. mod_contains_result (m \<parallel>\<^sub>\<up> n) n S p x"
+      using A compatible max_agg_rej4 f_profs
+      unfolding disjoint_compatibility_def
       by metis
-    moreover have "\<forall>x \<in> S. prof_contains_result n S p q x"
-      unfolding prof_contains_result_def
-    proof (clarify)
+    moreover have "\<forall> x \<in> S. prof_contains_result n S p q x"
+    proof (unfold prof_contains_result_def, clarify)
       fix x :: "'a"
       assume
         x_in_S: "x \<in> S"
@@ -621,7 +625,8 @@ next
          (x \<in> defer n S p \<longrightarrow> x \<in> defer n S q)"
       proof (safe)
         show "electoral_module n"
-          using monotone_n defer_lift_invariance_def
+          using monotone_n
+          unfolding defer_lift_invariance_def
           by metis
       next
         show "finite S"
@@ -646,39 +651,39 @@ next
       next
         assume "x \<in> elect n S p"
         thus "x \<in> elect n S q"
-          using defer_n lifted_x monotone_n
-                f_profs defer_lift_invariance_def
+          using defer_n lifted_x monotone_n f_profs
+          unfolding defer_lift_invariance_def
           by metis
       next
         assume "x \<in> reject n S p"
         thus "x \<in> reject n S q"
-          using defer_n lifted_x monotone_n
-                f_profs defer_lift_invariance_def
+          using defer_n lifted_x monotone_n f_profs
+          unfolding defer_lift_invariance_def
           by metis
       next
         assume "x \<in> defer n S p"
         thus "x \<in> defer n S q"
-          using defer_n lifted_x monotone_n
-                f_profs defer_lift_invariance_def
+          using defer_n lifted_x monotone_n f_profs
+          unfolding defer_lift_invariance_def
           by metis
       qed
     qed
     moreover have
-      "\<forall>x \<in> A. mod_contains_result n (m \<parallel>\<^sub>\<up> n) S q x"
-      using A compatible disjoint_compatibility_def
-            max_agg_rej3 f_profs
+      "\<forall> x \<in> A. mod_contains_result n (m \<parallel>\<^sub>\<up> n) S q x"
+      using A compatible max_agg_rej3 f_profs
+      unfolding disjoint_compatibility_def
       by metis
     ultimately have 00:
-      "\<forall>x \<in> A. prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
-      by (simp add: mod_contains_result_def prof_contains_result_def)
+      "\<forall> x \<in> A. prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
+      unfolding mod_contains_result_def prof_contains_result_def
+      by simp
     have
-      "\<forall>x \<in> S-A. mod_contains_result (m \<parallel>\<^sub>\<up> n) m S p x"
+      "\<forall> x \<in> S - A. mod_contains_result (m \<parallel>\<^sub>\<up> n) m S p x"
       using A max_agg_rej2 monotone_m monotone_n f_profs
-            defer_lift_invariance_def
+      unfolding defer_lift_invariance_def
       by metis
-    moreover have "\<forall>x \<in> S. prof_contains_result m S p q x"
-      unfolding prof_contains_result_def
-    proof (clarify)
+    moreover have "\<forall> x \<in> S. prof_contains_result m S p q x"
+    proof (unfold prof_contains_result_def, clarify)
       fix x :: "'a"
       assume
         x_in_S: "x \<in> S"
@@ -692,7 +697,8 @@ next
          (x \<in> defer m S p \<longrightarrow> x \<in> defer m S q)"
       proof (safe)
         show "electoral_module m"
-          using monotone_m defer_lift_invariance_def
+          using monotone_m
+          unfolding defer_lift_invariance_def
           by metis
       next
         show "finite S"
@@ -717,59 +723,59 @@ next
       next
         assume "x \<in> elect m S p"
         thus "x \<in> elect m S q"
-          using A a0 indep_of_alt_def lifted_x
-                lifted_imp_equiv_prof_except_a
+          using A a0 lifted_x lifted_imp_equiv_prof_except_a
+          unfolding indep_of_alt_def
           by metis
       next
         assume "x \<in> reject m S p"
         thus "x \<in> reject m S q"
-          using A a0 indep_of_alt_def lifted_x
-                lifted_imp_equiv_prof_except_a
+          using A a0 lifted_x lifted_imp_equiv_prof_except_a
+          unfolding indep_of_alt_def
           by metis
       next
         assume "x \<in> defer m S p"
         thus "x \<in> defer m S q"
-          using A a0 indep_of_alt_def lifted_x
-                lifted_imp_equiv_prof_except_a
+          using A a0 lifted_x lifted_imp_equiv_prof_except_a
+          unfolding indep_of_alt_def
           by metis
       qed
     qed
     moreover have
-      "\<forall>x \<in> S-A. mod_contains_result m (m \<parallel>\<^sub>\<up> n) S q x"
+      "\<forall> x \<in> S - A. mod_contains_result m (m \<parallel>\<^sub>\<up> n) S q x"
       using A max_agg_rej1 monotone_m monotone_n f_profs
-            defer_lift_invariance_def
+      unfolding defer_lift_invariance_def
       by metis
     ultimately have 01:
-      "\<forall>x \<in> S-A. prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
-      by (simp add: mod_contains_result_def prof_contains_result_def)
+      "\<forall> x \<in> S - A. prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
+      unfolding mod_contains_result_def prof_contains_result_def
+      by simp
     from 00 01
     show ?thesis
       by blast
   next
     assume "x \<notin> A"
-    hence a1: "x \<in> S-A"
+    hence a1: "x \<in> S - A"
       using DiffI lifted_x compatible f_profs
-            Profile.lifted_def
+      unfolding Profile.lifted_def
       by (metis (no_types, lifting))
     hence "x \<in> reject n S p"
       using A f_profs
       by blast
     with defer_x
     have defer_m: "x \<in> defer m S p"
-      using DiffD1 DiffD2 compatible dcompat_dec_by_one_mod
-            defer_not_elec_or_rej disjoint_compatibility_def
-            not_rej_imp_elec_or_def mod_contains_result_def
-            max_agg_sound par_comp_sound f_profs
-            maximum_parallel_composition.simps
+      using DiffD1 DiffD2 compatible dcompat_dec_by_one_mod f_profs
+            defer_not_elec_or_rej max_agg_sound par_comp_sound
+            disjoint_compatibility_def not_rej_imp_elec_or_def
+            mod_contains_result_def
+      unfolding maximum_parallel_composition.simps
       by metis
     have
-      "\<forall>x \<in> A. mod_contains_result (m \<parallel>\<^sub>\<up> n) n S p x"
-      using A compatible disjoint_compatibility_def
-            max_agg_rej4 f_profs
+      "\<forall> x \<in> A. mod_contains_result (m \<parallel>\<^sub>\<up> n) n S p x"
+      using A compatible max_agg_rej4 f_profs
+      unfolding disjoint_compatibility_def
       by metis
-    moreover have "\<forall>x \<in> S. prof_contains_result n S p q x"
-      unfolding prof_contains_result_def
-    proof (clarify)
+    moreover have "\<forall> x \<in> S. prof_contains_result n S p q x"
+    proof (unfold prof_contains_result_def, clarify)
       fix x :: "'a"
         assume
           x_in_S: "x \<in> S"
@@ -783,7 +789,8 @@ next
            (x \<in> defer n S p \<longrightarrow> x \<in> defer n S q)"
         proof (safe)
           show "electoral_module n"
-            using monotone_n defer_lift_invariance_def
+            using monotone_n
+            unfolding defer_lift_invariance_def
             by metis
         next
           show "finite S"
@@ -808,39 +815,39 @@ next
         next
           assume "x \<in> elect n S p"
           thus "x \<in> elect n S q"
-            using A a1 indep_of_alt_def lifted_x
-                  lifted_imp_equiv_prof_except_a
+            using A a1 lifted_x lifted_imp_equiv_prof_except_a
+            unfolding indep_of_alt_def
             by metis
         next
           assume "x \<in> reject n S p"
           thus "x \<in> reject n S q"
-            using A a1 indep_of_alt_def lifted_x
-                  lifted_imp_equiv_prof_except_a
+            using A a1 lifted_x lifted_imp_equiv_prof_except_a
+            unfolding indep_of_alt_def
             by metis
         next
           assume "x \<in> defer n S p"
           thus "x \<in> defer n S q"
-            using A a1 indep_of_alt_def lifted_x
-                  lifted_imp_equiv_prof_except_a
+            using A a1 lifted_x lifted_imp_equiv_prof_except_a
+            unfolding indep_of_alt_def
             by metis
         qed
     qed
     moreover have
-      "\<forall>x \<in> A. mod_contains_result n (m \<parallel>\<^sub>\<up> n) S q x"
-      using A compatible disjoint_compatibility_def
-            max_agg_rej3 f_profs
+      "\<forall> x \<in> A. mod_contains_result n (m \<parallel>\<^sub>\<up> n) S q x"
+      using A compatible max_agg_rej3 f_profs
+      unfolding disjoint_compatibility_def
       by metis
     ultimately have 10:
-      "\<forall>x \<in> A. prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
-      by (simp add: mod_contains_result_def prof_contains_result_def)
+      "\<forall> x \<in> A. prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
+      unfolding mod_contains_result_def prof_contains_result_def
+      by simp
     have
-      "\<forall>x \<in> S-A. mod_contains_result (m \<parallel>\<^sub>\<up> n) m S p x"
-      using A max_agg_rej2 monotone_m monotone_n
-            f_profs defer_lift_invariance_def
+      "\<forall> x \<in> S - A. mod_contains_result (m \<parallel>\<^sub>\<up> n) m S p x"
+      using A max_agg_rej2 monotone_m monotone_n f_profs
+      unfolding defer_lift_invariance_def
       by metis
-    moreover have "\<forall>x \<in> S. prof_contains_result m S p q x"
-      unfolding prof_contains_result_def
-    proof (clarify)
+    moreover have "\<forall> x \<in> S. prof_contains_result m S p q x"
+    proof (unfold prof_contains_result_def, clarify)
       fix x :: "'a"
         assume
           x_in_S: "x \<in> S"
@@ -854,8 +861,9 @@ next
            (x \<in> defer m S p \<longrightarrow> x \<in> defer m S q)"
         proof (safe)
           show "electoral_module m"
-            using monotone_m defer_lift_invariance_def
-            by metis
+            using monotone_m
+            unfolding defer_lift_invariance_def
+            by simp
         next
           show "finite S"
             using f_profs
@@ -879,39 +887,41 @@ next
         next
           assume "x \<in> elect m S p"
           thus "x \<in> elect m S q"
-            using defer_lift_invariance_def defer_m
-                  lifted_x monotone_m
+            using defer_m lifted_x monotone_m
+            unfolding defer_lift_invariance_def
             by metis
         next
           assume "x \<in> reject m S p"
           thus "x \<in> reject m S q"
-            using defer_lift_invariance_def defer_m
-                  lifted_x monotone_m
+            using defer_m lifted_x monotone_m
+            unfolding defer_lift_invariance_def
             by metis
         next
           assume "x \<in> defer m S p"
           thus "x \<in> defer m S q"
-            using defer_lift_invariance_def defer_m
-                  lifted_x monotone_m
+            using defer_m lifted_x monotone_m
+            unfolding defer_lift_invariance_def
             by metis
         qed
     qed
     moreover have
-      "\<forall>x \<in> S-A. mod_contains_result m (m \<parallel>\<^sub>\<up> n) S q x"
-      using A max_agg_rej1 monotone_m monotone_n
-            f_profs defer_lift_invariance_def
+      "\<forall> x \<in> S - A. mod_contains_result m (m \<parallel>\<^sub>\<up> n) S q x"
+      using A max_agg_rej1 monotone_m monotone_n f_profs
+      unfolding defer_lift_invariance_def
       by metis
     ultimately have 11:
-      "\<forall>x \<in> S-A. prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
+      "\<forall> x \<in> S - A. prof_contains_result (m \<parallel>\<^sub>\<up> n) S p q x"
       using electoral_mod_defer_elem
-      by (simp add: mod_contains_result_def prof_contains_result_def)
+      unfolding mod_contains_result_def prof_contains_result_def
+      by simp
     from 10 11
     show ?thesis
       by blast
   qed
   thus "(m \<parallel>\<^sub>\<up> n) S p = (m \<parallel>\<^sub>\<up> n) S q"
-    using compatible disjoint_compatibility_def f_profs
-          eq_alts_in_profs_imp_eq_results max_par_comp_sound
+    using compatible f_profs eq_alts_in_profs_imp_eq_results
+          max_par_comp_sound
+    unfolding disjoint_compatibility_def
     by metis
 qed
 
@@ -924,25 +934,28 @@ lemma par_comp_rej_card:
 proof -
   from compatible obtain A where A:
     "A \<subseteq> S \<and>
-      (\<forall>a \<in> A. indep_of_alt x S a \<and>
-          (\<forall>p. finite_profile S p \<longrightarrow> a \<in> reject x S p)) \<and>
-      (\<forall>a \<in> S-A. indep_of_alt y S a \<and>
-          (\<forall>p. finite_profile S p \<longrightarrow> a \<in> reject y S p))"
-    using disjoint_compatibility_def f_prof
+      (\<forall> a \<in> A. indep_of_alt x S a \<and>
+          (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject x S p)) \<and>
+      (\<forall> a \<in> S - A. indep_of_alt y S a \<and>
+          (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject y S p))"
+    using f_prof
+    unfolding disjoint_compatibility_def
     by metis
   from f_prof compatible
   have reject_representation:
     "reject (x \<parallel>\<^sub>\<up> y) S p = (reject x S p) \<inter> (reject y S p)"
-    using max_agg_rej_intersect disjoint_compatibility_def
-    by blast
+    using max_agg_rej_intersect
+    unfolding disjoint_compatibility_def
+    by metis
   have "electoral_module x \<and> electoral_module y"
-    using compatible disjoint_compatibility_def
-    by auto
+    using compatible
+    unfolding disjoint_compatibility_def
+    by simp
   hence subsets: "(reject x S p) \<subseteq> S \<and> (reject y S p) \<subseteq> S"
     by (simp add: f_prof reject_in_alts)
   hence "finite (reject x S p) \<and> finite (reject y S p)"
-    using rev_finite_subset f_prof reject_in_alts
-    by auto
+    using rev_finite_subset f_prof
+    by metis
   hence 0:
     "card (reject (x \<parallel>\<^sub>\<up> y) S p) =
         card S + n -
@@ -950,7 +963,7 @@ proof -
     using card_Un_Int reject_representation reject_sum
     by fastforce
   have
-    "\<forall>a \<in> S. a \<in> (reject x S p) \<or> a \<in> (reject y S p)"
+    "\<forall> a \<in> S. a \<in> (reject x S p) \<or> a \<in> (reject y S p)"
     using A f_prof
     by blast
   hence "S = reject x S p \<union> reject y S p"
@@ -976,14 +989,15 @@ theorem par_comp_elim_one[simp]:
     rejec_n_2: "rejects 2 n" and
     disj_comp: "disjoint_compatibility m n"
   shows "eliminates 1 (m \<parallel>\<^sub>\<up> n)"
-  unfolding eliminates_def
-proof (safe)
+proof (unfold eliminates_def, safe)
   have electoral_mod_m: "electoral_module m"
     using non_elec_m
-    by (simp add: non_electing_def)
+    unfolding non_electing_def
+    by simp
   have electoral_mod_n: "electoral_module n"
     using rejec_n_2
-    by (simp add: rejects_def)
+    unfolding rejects_def
+    by simp
   show "electoral_module (m \<parallel>\<^sub>\<up> n)"
     using electoral_mod_m electoral_mod_n
     by simp
@@ -999,26 +1013,32 @@ next
     using min_2_card dual_order.strict_trans2 less_imp_le_nat
     by blast
   have module: "electoral_module m"
-    using non_elec_m non_electing_def
-    by auto
+    using non_elec_m
+    unfolding non_electing_def
+    by simp
   have elec_card_0: "card (elect m A p) = 0"
-    using fin_A prof_A non_elec_m card_eq_0_iff non_electing_def
-    by metis
+    using fin_A prof_A non_elec_m card_eq_0_iff
+    unfolding non_electing_def
+    by simp
   moreover
-  from card_geq_1 have def_card_1:
+  from card_geq_1
+  have def_card_1:
     "card (defer m A p) = 1"
     using defers_m_1 module fin_A prof_A
-    by (simp add: defers_def)
+    unfolding defers_def
+    by simp
   ultimately have card_reject_m:
     "card (reject m A p) = card A - 1"
   proof -
     have "finite A"
-      by (simp add: fin_A)
+      using fin_A
+      by simp
     moreover have
       "well_formed A
         (elect m A p, reject m A p, defer m A p)"
-      using fin_A prof_A electoral_module_def module
-      by auto
+      using fin_A prof_A module
+      unfolding electoral_module_def
+      by simp
     ultimately have
       "card A =
         card (elect m A p) + card (reject m A p) +
@@ -1031,10 +1051,12 @@ next
   qed
   have case1: "card A \<ge> 2"
     using min_2_card
-    by auto
-  from case1 have card_reject_n:
+    by simp
+  from case1
+  have card_reject_n:
     "card (reject n A p) = 2"
-    using fin_A prof_A rejec_n_2 rejects_def
+    using fin_A prof_A rejec_n_2
+    unfolding rejects_def
     by blast
   from card_reject_m card_reject_n
   have

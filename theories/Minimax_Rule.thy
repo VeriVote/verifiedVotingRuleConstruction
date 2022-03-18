@@ -23,14 +23,10 @@ fun minimax_rule :: "'a Electoral_Module" where
 subsection \<open>Condorcet Consistency Property\<close>
 
 theorem minimax_condorcet: "condorcet_consistency minimax_rule"
-proof -
-  have
+proof (unfold minimax_rule.simps)
+  show
     "condorcet_consistency (elector minimax)"
     using minimax_is_dcc dcc_imp_cc_elector
-    by metis
-  thus ?thesis
-    using condorcet_consistency2 electoral_module_def
-          minimax_rule.simps
     by metis
 qed
 

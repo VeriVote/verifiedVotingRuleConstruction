@@ -56,7 +56,7 @@ fun min_eliminator :: "'a Evaluation_Function \<Rightarrow> 'a Electoral_Module"
 
 fun average :: "'a Evaluation_Function \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow>
                     Threshold_Value" where
-  "average e A p = (\<Sum>x \<in> A. e x A p) div (card A)"
+  "average e A p = (\<Sum> x \<in> A. e x A p) div (card A)"
 
 fun less_average_eliminator :: "'a Evaluation_Function \<Rightarrow>
                                 'a Electoral_Module" where
@@ -80,8 +80,7 @@ proof (unfold electoral_module_def, safe)
 qed
 
 lemma less_elim_sound[simp]: "electoral_module (less_eliminator e t)"
-  unfolding electoral_module_def
-proof (safe, simp)
+proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
     p :: "'a Profile"
@@ -92,8 +91,7 @@ proof (safe, simp)
 qed
 
 lemma leq_elim_sound[simp]: "electoral_module (leq_eliminator e t)"
-  unfolding electoral_module_def
-proof (safe, simp)
+proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
     p :: "'a Profile"
@@ -104,8 +102,7 @@ proof (safe, simp)
 qed
 
 lemma max_elim_sound[simp]: "electoral_module (max_eliminator e)"
-  unfolding electoral_module_def
-proof (safe, simp)
+proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
     p :: "'a Profile"
@@ -116,8 +113,7 @@ proof (safe, simp)
 qed
 
 lemma min_elim_sound[simp]: "electoral_module (min_eliminator e)"
-  unfolding electoral_module_def
-proof (safe, simp)
+proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
     p :: "'a Profile"
@@ -128,8 +124,7 @@ proof (safe, simp)
 qed
 
 lemma less_avg_elim_sound[simp]: "electoral_module (less_average_eliminator e)"
-  unfolding electoral_module_def
-proof (safe, simp)
+proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
     p :: "'a Profile"
@@ -140,8 +135,7 @@ proof (safe, simp)
 qed
 
 lemma leq_avg_elim_sound[simp]: "electoral_module (leq_average_eliminator e)"
-  unfolding electoral_module_def
-proof (safe, simp)
+proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
     p :: "'a Profile"
@@ -156,43 +150,33 @@ subsection \<open>Non-Electing\<close>
 lemma elim_mod_non_electing:
   assumes profile: "finite_profile A p"
   shows "non_electing (elimination_module e t r )"
-  by (simp add: non_electing_def)
+  unfolding non_electing_def
+  by simp
 
 lemma less_elim_non_electing:
   assumes profile: "finite_profile A p"
   shows "non_electing (less_eliminator e t)"
   using elim_mod_non_electing profile less_elim_sound
-  by (simp add: non_electing_def)
+  unfolding non_electing_def
+  by simp
 
 lemma leq_elim_non_electing:
   assumes profile: "finite_profile A p"
   shows "non_electing (leq_eliminator e t)"
-proof -
-  have "non_electing (elimination_module e t (\<le>))"
-    by (simp add: non_electing_def)
-  thus ?thesis
-    by (simp add: non_electing_def)
-qed
+  unfolding non_electing_def
+  by simp
 
 lemma max_elim_non_electing:
   assumes profile: "finite_profile A p"
   shows "non_electing (max_eliminator e)"
-proof -
-  have "non_electing (elimination_module e t (<))"
-    by (simp add: non_electing_def)
-  thus ?thesis
-    by (simp add: non_electing_def)
-qed
+  unfolding non_electing_def
+  by simp
 
 lemma min_elim_non_electing:
   assumes profile: "finite_profile A p"
   shows "non_electing (min_eliminator e)"
-proof -
-  have "non_electing (elimination_module e t (<))"
-    by (simp add: non_electing_def)
-  thus ?thesis
-    by (simp add: non_electing_def)
-qed
+  unfolding non_electing_def
+  by simp
 
 lemma less_avg_elim_non_electing:
   assumes profile: "finite_profile A p"
@@ -360,7 +344,8 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
     have profile: "finite_profile A p"
       using winner
       by simp
-    with rating winner have 0:
+    with rating winner
+    have 0:
       "(elimination_set e ?trsh (<) A p) = A - {w}"
       using cr_eval_imp_dcc_max_elim_helper1
       by (metis (mono_tags, lifting))
@@ -379,7 +364,7 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
       by auto
     also have "... = ({},A - defer (max_eliminator e) A p, {w})"
       using calculation
-      by auto
+      by simp
     also have
       "... =
         ({},
