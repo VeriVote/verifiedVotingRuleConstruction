@@ -10,7 +10,6 @@ section \<open>Preference Profile\<close>
 
 theory Profile
   imports Preference_Relation
-          "Tools/List_Permutation"
 begin
 
 text

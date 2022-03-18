@@ -122,7 +122,6 @@ next
           (electoral_module f \<or> finite (s_func f) \<and> profile (s_func f) (p_func f) \<and>
             \<not> well_formed (s_func f) (f (s_func f) (p_func f)))"
         unfolding electoral_module_def
-        by auto
         by moura
       hence wf_n: "well_formed A (n A p)"
         using f_prof module_n
