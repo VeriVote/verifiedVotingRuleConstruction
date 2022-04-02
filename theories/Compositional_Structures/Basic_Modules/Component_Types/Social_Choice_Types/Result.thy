@@ -47,7 +47,7 @@ fun set_equals_partition :: "'a set \<Rightarrow>'a Result \<Rightarrow> bool" w
 fun well_formed :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
   "well_formed A result = (disjoint3 result \<and> set_equals_partition A result)"
 
-(*These three functions return the elect, reject, or defer set of a result.*)
+(* These three functions return the elect, reject, or defer set of a result. *)
 abbreviation elect_r :: "'a Result \<Rightarrow> 'a set" where
   "elect_r r \<equiv> fst r"
 

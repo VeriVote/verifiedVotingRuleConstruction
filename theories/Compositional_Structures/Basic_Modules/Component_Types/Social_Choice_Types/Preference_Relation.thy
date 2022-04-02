@@ -1056,7 +1056,7 @@ next
     assume asm2: "above s x \<noteq> {x}" (* \<and> asm1: x \<noteq> a *)
     have "\<forall> y \<in> A. y \<preceq>\<^sub>r x"
     proof -
-      fix aa :: 'a
+      fix aa :: "'a"
       have imp_a: "x \<preceq>\<^sub>r aa \<longrightarrow> aa \<notin> A \<or> aa \<preceq>\<^sub>r x"
         using singletonD pref_imp_in_above above_x
         by metis

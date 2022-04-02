@@ -292,7 +292,7 @@ theorem smc_monotone:
   assumes order: "linear_order x"
   shows "monotonicity (smc x)"
 proof -
-(*Some aliases for parts of the SMC module.*)
+(* Some aliases for parts of the SMC module. *)
   let ?pass2 = "pass_module 2 x"
   let ?tie_breaker = "(pass_module 1 x)"
   let ?plurality_defer = "(plurality\<down>) \<triangleright> ?tie_breaker"
@@ -303,90 +303,90 @@ proof -
     "let t = defer_equal_condition 1 in (?eliminator \<circlearrowleft>\<^sub>t)"
 
   have 00010: "defer_invariant_monotonicity (plurality\<down>)"
-    by simp (*rev_comp_def_inv_mono plurality_strict_strong_mono*)
+    by simp (* rev_comp_def_inv_mono plurality_strict_strong_mono *)
   have 00011: "non_electing (plurality\<down>)"
-    by simp (*rev_comp_non_electing plurality_sound*)
+    by simp (* rev_comp_non_electing plurality_sound *)
   have 00012: "non_electing ?tie_breaker"
     using order
-    by simp (*pass_mod_non_electing*)
+    by simp (* pass_mod_non_electing *)
   have 00013: "defers 1 ?tie_breaker"
     using order pass_one_mod_def_one
     by simp
   have 00014: "defer_monotonicity ?tie_breaker"
     using order
-    by simp (*dl_inv_imp_def_mono pass_mod_dl_inv*)
+    by simp (* dl_inv_imp_def_mono pass_mod_dl_inv *)
   have 20000: "non_blocking (plurality\<down>)"
-    by simp (*rev_comp_non_blocking plurality_electing*)
+    by simp (* rev_comp_non_blocking plurality_electing *)
 
   have 0000: "defer_lift_invariance ?pass2"
     using order
-    by simp (*pass_mod_dl_inv*)
+    by simp (* pass_mod_dl_inv *)
   have 0001: "defer_lift_invariance ?plurality_defer"
     using 00010 00011 00012 00013 00014
-    by simp (*def_inv_mono_imp_def_lift_inv*)
+    by simp (* def_inv_mono_imp_def_lift_inv *)
   have 0020: "disjoint_compatibility ?pass2 ?drop2"
     using order
-    by simp (*disj_compat_comm drop_pass_disj_compat*)
+    by simp (* disj_compat_comm drop_pass_disj_compat *)
   have 1000: "non_electing ?pass2"
     using order
-    by simp (*pass_mod_non_electing*)
+    by simp (* pass_mod_non_electing *)
   have 1001: "non_electing ?plurality_defer"
     using 00011 00012
-    by simp (*seq_comp_presv_non_electing*)
+    by simp (* seq_comp_presv_non_electing *)
   have 2000: "non_blocking ?pass2"
     using order
-    by simp (*pass_mod_non_blocking*)
+    by simp (* pass_mod_non_blocking *)
   have 2001: "defers 1 ?plurality_defer"
     using 20000 00011 00013 seq_comp_def_one
     by blast
 
   have 000: "defer_lift_invariance ?compare_two"
     using 0000 0001
-    by simp (*seq_comp_presv_def_lift_inv*)
+    by simp (* seq_comp_presv_def_lift_inv *)
   have 001: "defer_lift_invariance ?drop2"
     using order
     by simp (* drop_mod_def_lift_inv *)
   have 002: "disjoint_compatibility ?compare_two ?drop2"
     using order 0020
     by simp
-      (*disj_compat_seq seq_comp_sound rev_comp_sound
-        plurality_sound pass_mod_sound*)
+      (* disj_compat_seq seq_comp_sound rev_comp_sound
+         plurality_sound pass_mod_sound *)
   have 100: "non_electing ?compare_two"
     using 1000 1001
-    by simp (*seq_comp_presv_non_electing*)
+    by simp (* seq_comp_presv_non_electing *)
   have 101: "non_electing ?drop2"
     using order
-    by simp (*drop_mod_non_electing*)
+    by simp (* drop_mod_non_electing *)
   have 102: "agg_conservative max_aggregator"
-    by simp (*max_agg_conserv*)
+    by simp (* max_agg_conserv *)
   have 200: "defers 1 ?compare_two"
     using 2000 1000 2001 seq_comp_def_one
     by auto
   have 201: "rejects 2 ?drop2"
     using order
-    by simp (*drop_two_mod_rej_two*)
+    by simp (* drop_two_mod_rej_two *)
 
   have 00: "defer_lift_invariance ?eliminator"
     using 000 001 002 par_comp_def_lift_inv
-    by simp (*par_comp_def_lift_inv*)
+    by simp (* par_comp_def_lift_inv *)
   have 10: "non_electing ?eliminator"
     using 100 101 102
-    by simp (*conserv_agg_presv_non_electing*)
+    by simp (* conserv_agg_presv_non_electing *)
   have 20: "eliminates 1 ?eliminator"
     using 200 100 201 002 par_comp_elim_one
     by simp
 
   have 0: "defer_lift_invariance ?loop"
     using 00
-    by simp (*loop_comp_presv_def_lift_inv*)
+    by simp (* loop_comp_presv_def_lift_inv *)
   have 1: "non_electing ?loop"
     using 10
-    by simp (*loop_comp_presv_non_electing*)
+    by simp (* loop_comp_presv_non_electing *)
   have 2: "defers 1 ?loop"
     using 10 20
-    by simp (*iter_elim_def_n*)
+    by simp (* iter_elim_def_n *)
   have 3: "electing elect_module"
-    by simp (*elect_mod_electing*)
+    by simp (* elect_mod_electing *)
 
   show ?thesis
     using 0 1 2 3 order seq_comp_mono

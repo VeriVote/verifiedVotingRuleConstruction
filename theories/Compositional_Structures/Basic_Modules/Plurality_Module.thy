@@ -334,7 +334,7 @@ proof (intro allI impI)
   qed
 qed
 
-(*The plurality rule is invariant monotone.*)
+(* The plurality rule is invariant monotone. *)
 theorem plurality_inv_mono[simp]: "invariant_monotonicity plurality"
 proof (unfold invariant_monotonicity_def, intro conjI impI allI)
   show "electoral_module plurality"

@@ -67,7 +67,7 @@ qed
 
 subsection \<open>Non-Blocking\<close>
 
-(*The pass module is non-blocking.*)
+(* The pass module is non-blocking. *)
 theorem pass_mod_non_blocking[simp]:
   assumes order: "linear_order r" and
           g0_n:  "n > 0"
@@ -114,7 +114,7 @@ qed
 
 subsection \<open>Non-Electing\<close>
 
-(*The pass module is non-electing.*)
+(* The pass module is non-electing. *)
 theorem pass_mod_non_electing[simp]:
   assumes order: "linear_order r"
   shows "non_electing (pass_module n r)"
@@ -124,7 +124,7 @@ theorem pass_mod_non_electing[simp]:
 
 subsection \<open>Properties\<close>
 
-(*The pass module is strictly defer-monotone.*)
+(* The pass module is strictly defer-monotone. *)
 theorem pass_mod_dl_inv[simp]:
   assumes order: "linear_order r"
   shows "defer_lift_invariance (pass_module n r)"

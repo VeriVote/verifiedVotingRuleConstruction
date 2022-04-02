@@ -169,7 +169,7 @@ qed
 
 subsection \<open>Property\<close>
 
-(*The Copeland score is Condorcet rating*)
+(* The Copeland score is Condorcet rating *)
 theorem copeland_score_is_cr: "condorcet_rating copeland_score"
 proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
   fix

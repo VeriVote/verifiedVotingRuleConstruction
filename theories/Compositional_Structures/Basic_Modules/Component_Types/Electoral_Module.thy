@@ -11,8 +11,7 @@ chapter \<open>Component Types\<close>
 section \<open>Electoral Module\<close>
 
 theory Electoral_Module
-  imports "Social_Choice_Types/Preference_Relation"
-          "Social_Choice_Types/Profile"
+  imports "Social_Choice_Types/Profile"
           "Social_Choice_Types/Result"
 begin
 
@@ -1081,7 +1080,7 @@ next
         A - defer m A p,
         {d \<in> A. condorcet_winner A p d})"
   proof -
-    (*Elect*)
+    (* Elect *)
     from dd have 0:
       "elect m A p = {}"
       using winner
@@ -1295,10 +1294,10 @@ fun times :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a list" where
   "times n l = concat (replicate n l)"
 
 definition homogeneity :: "'a Electoral_Module \<Rightarrow> bool" where
-"homogeneity m \<equiv>
-  electoral_module m \<and>
-    (\<forall> A p n.
-      (finite_profile A p \<and> n > 0 \<longrightarrow>
+  "homogeneity m \<equiv>
+    electoral_module m \<and>
+      (\<forall> A p n.
+        (finite_profile A p \<and> n > 0 \<longrightarrow>
           (m A p = m A (times n p))))"
 
 end

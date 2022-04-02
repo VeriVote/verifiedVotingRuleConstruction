@@ -465,7 +465,7 @@ proof (induct n arbitrary: acc rule: less_induct)
           a :: "'a"
         assume
           a_in_def_impl_def_subset:
-          "\<forall>q a. a \<in> defer (acc \<triangleright> m) A p \<and> lifted A p q a \<longrightarrow>
+          "\<forall> q a. a \<in> defer (acc \<triangleright> m) A p \<and> lifted A p q a \<longrightarrow>
             defer (acc \<triangleright> m) A q \<subset> defer acc A q" and
           dli_acc: "defer_lift_invariance acc" and
           a_in_def_seq_acc_m: "a \<in> defer (acc \<triangleright> m) A p" and
@@ -719,7 +719,7 @@ proof (induct n arbitrary: acc rule: less_induct)
     have rec_step:
       "(card (defer acc A p) > 1 \<and> finite_profile A p \<and> non_electing acc) \<longrightarrow>
           loop_comp_helper acc m t A p =
-              loop_comp_helper (acc \<triangleright> m) m t A p" (*needed for step*)
+              loop_comp_helper (acc \<triangleright> m) m t A p" (* needed for step *)
       using def_presv_fin_prof loop_comp_helper.simps(2)
             step_reduces_defer_set term_not_satisfied
       unfolding non_electing_def
@@ -911,7 +911,7 @@ qed
 
 subsection \<open>Composition Rules\<close>
 
-(*The loop composition preserves defer-lift-invariance.*)
+(* The loop composition preserves defer-lift-invariance. *)
 theorem loop_comp_presv_def_lift_inv[simp]:
   assumes monotone_m: "defer_lift_invariance m"
   shows "defer_lift_invariance (m \<circlearrowleft>\<^sub>t)"
@@ -942,7 +942,7 @@ next
     by metis
 qed
 
-(*The loop composition preserves the property non-electing.*)
+(* The loop composition preserves the property non-electing. *)
 theorem loop_comp_presv_non_electing[simp]:
   assumes non_electing_m: "non_electing m"
   shows "non_electing (m \<circlearrowleft>\<^sub>t)"
