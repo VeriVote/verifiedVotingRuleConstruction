@@ -12,12 +12,13 @@ theory Elect_Composition
           Sequential_Composition
 begin
 
-text
-\<open>The elect composition sequences an electoral module and the elect
-module. It finalizes the module's decision as it simply elects all their
-non-rejected alternatives. Thereby, any such elect-composed module induces
-a proper voting rule in the social choice sense, as all alternatives are either
-rejected or elected.\<close>
+text \<open>
+  The elect composition sequences an electoral module and the elect
+  module. It finalizes the module's decision as it simply elects all their
+  non-rejected alternatives. Thereby, any such elect-composed module induces
+  a proper voting rule in the social choice sense, as all alternatives are
+  either rejected or elected.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -40,92 +41,63 @@ theorem elector_electing[simp]:
     non_block_m: "non_blocking m"
   shows "electing (elector m)"
 proof -
-  obtain
-    AA :: "'a Electoral_Module \<Rightarrow> 'a set" and
-    rrs :: "'a Electoral_Module \<Rightarrow> 'a Profile" where
-    f1:
-    "\<forall>f.
-      (electing f \<or>
-        {} = elect f (AA f) (rrs f) \<and> profile (AA f) (rrs f) \<and>
-            finite (AA f) \<and> {} \<noteq> AA f \<or>
-        \<not> electoral_module f) \<and>
-            ((\<forall> A rs. {} \<noteq> elect f A rs \<or> \<not> profile A rs \<or>
-                infinite A \<or> {} = A) \<and>
-            electoral_module f \<or>
-        \<not> electing f)"
-    using electing_def
-    by metis
   have non_block:
     "non_blocking
       (elect_module::'a set \<Rightarrow> _ Profile \<Rightarrow> _ Result)"
     by (simp add: electing_imp_non_blocking)
+  obtain
+    alts :: "'a Electoral_Module \<Rightarrow> 'a set" and
+    prof :: "'a Electoral_Module \<Rightarrow> 'a Profile" where
+    electing_func:
+    "\<forall> f.
+      (\<not> electing f \<and> electoral_module f \<longrightarrow>
+        profile (alts f) (prof f) \<and> finite (alts f) \<and>
+          {} = elect f (alts f) (prof f)  \<and> {} \<noteq> alts f) \<and>
+      (electing f \<and> electoral_module f \<longrightarrow>
+        (\<forall> A p. (A \<noteq> {} \<and> profile A p \<and> finite A) \<longrightarrow> elect f A p \<noteq> {}))"
+    using electing_def
+    by metis
+  obtain
+    ele :: "'a Result \<Rightarrow> 'a set" and
+    rej :: "'a Result \<Rightarrow> 'a set" and
+    def :: "'a Result \<Rightarrow> 'a set" where
+    result: "\<forall> r. (ele r, rej r, def r) = r"
+    using disjoint3.cases
+    by (metis (no_types))
+  hence r_func:
+    "\<forall> r. (elect_r r, rej r, def r) = r"
+    by simp
+  hence def_empty:
+    "profile (alts (elector m)) (prof (elector m)) \<and> finite (alts (elector m)) \<longrightarrow>
+      def (elector m (alts (elector m)) (prof (elector m))) = {}"
+    by simp
+  have elec_mod:
+    "electoral_module (elector m)"
+    using elector_sound module_m
+    by simp
+  have
+    "finite (alts (elector m)) \<and>
+      profile (alts (elector m)) (prof (elector m)) \<and>
+      elect (elector m) (alts (elector m)) (prof (elector m)) = {} \<and>
+      def (elector m (alts (elector m)) (prof (elector m))) = {} \<and>
+      reject (elector m) (alts (elector m)) (prof (elector m)) =
+        rej (elector m (alts (elector m)) (prof (elector m))) \<longrightarrow>
+            electing (elector m)"
+    using result electing_func Diff_empty elector.simps non_block_m snd_conv
+          non_blocking_def reject_not_elec_or_def non_block
+          seq_comp_presv_non_blocking
+    by metis
   thus ?thesis
-    (* using f1 Diff_empty elect_module.elims elector.simps non_block_m
-          non_blocking_def reject_not_elec_or_def seq_comp_defers_def_set
-          seq_comp_presv_non_blocking snd_conv elect_mod_sound fst_conv
-          elect_module.simps elector_sound module_m disjoint3.cases
-          empty_iff ex_in_conv seq_comp_def_set_trans *)
-  proof -
-    obtain
-      AAa :: "'a Electoral_Module \<Rightarrow> 'a set" and
-      rrsa :: "'a Electoral_Module \<Rightarrow> 'a Profile" where
-      f1:
-      "\<forall>f.
-        (electing f \<or>
-          {} = elect f (AAa f) (rrsa f) \<and> profile (AAa f) (rrsa f) \<and>
-              finite (AAa f) \<and> {} \<noteq> AAa f \<or>
-        \<not> electoral_module f) \<and> ((\<forall>A rs. {} \<noteq> elect f A rs \<or>
-        \<not> profile A rs \<or> infinite A \<or> {} = A) \<and> electoral_module f \<or>
-        \<not> electing f)"
-      using electing_def
-      by metis
-    obtain
-      AAb :: "'a Result \<Rightarrow> 'a set" and
-      AAc :: "'a Result \<Rightarrow> 'a set" and
-      AAd :: "'a Result \<Rightarrow> 'a set" where
-      f2:
-      "\<forall> p. (AAb p, AAc p, AAd p) = p"
-      using disjoint3.cases
-      by (metis (no_types))
-    have f3:
-      "electoral_module (elector m)"
-      using elector_sound module_m
-      by simp
-    have f4:
-      "\<forall> p. (elect_r p, AAc p, AAd p) = p"
-      using f2
-      by simp
-    have
-      "finite (AAa (elector m)) \<and>
-        profile (AAa (elector m)) (rrsa (elector m)) \<and>
-        {} = elect (elector m) (AAa (elector m)) (rrsa (elector m)) \<and>
-        {} = AAd (elector m (AAa (elector m)) (rrsa (elector m))) \<and>
-        reject (elector m) (AAa (elector m)) (rrsa (elector m)) =
-          AAc (elector m (AAa (elector m)) (rrsa (elector m))) \<longrightarrow>
-              electing (elector m)"
-      using f2 f1 Diff_empty elector.simps non_block_m snd_conv
-            non_blocking_def reject_not_elec_or_def non_block
-            seq_comp_presv_non_blocking
-      by metis
-    moreover
-    {
-      assume
-        "{} \<noteq> AAd (elector m (AAa (elector m)) (rrsa (elector m)))"
-      hence
-        "\<not> profile (AAa (elector m)) (rrsa (elector m)) \<or>
-          infinite (AAa (elector m))"
-        using f4
-        by simp
-    }
-    ultimately show ?thesis
-      using f4 f3 f1 fst_conv snd_conv
-      by metis
-  qed
+    using r_func def_empty elec_mod electing_func fst_conv snd_conv
+    by metis
 qed
 
 subsection \<open>Composition Rule\<close>
 
-(*If m is defer-Condorcet-consistent, then elector(m) is Condorcet consistent.*)
+text \<open>
+  If m is defer-Condorcet-consistent, then elector(m) is Condorcet consistent.
+\<close>
+
 lemma dcc_imp_cc_elector:
   assumes dcc: "defer_condorcet_consistency m"
   shows "condorcet_consistency (elector m)"

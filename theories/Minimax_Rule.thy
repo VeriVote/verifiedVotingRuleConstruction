@@ -11,9 +11,10 @@ theory Minimax_Rule
           "Compositional_Structures/Elect_Composition"
 begin
 
-text
-\<open>This is the Minimax voting rule. It elects the alternatives with the highest
-Minimax score.\<close>
+text \<open>
+  This is the Minimax voting rule. It elects the alternatives with the highest
+  Minimax score.
+\<close>
 
 subsection \<open>Definition\<close>
 

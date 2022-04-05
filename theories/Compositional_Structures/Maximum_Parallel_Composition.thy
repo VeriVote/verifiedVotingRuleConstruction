@@ -12,15 +12,16 @@ theory Maximum_Parallel_Composition
           Parallel_Composition
 begin
 
-text
-\<open>This is a family of parallel compositions. It composes a new electoral module
-from two electoral modules combined with the maximum aggregator. Therein, the
-two modules each make a decision and then a partition is returned where every
-alternative receives the maximum result of the two input partitions. This means
-that, if any alternative is elected by at least one of the modules, then it
-gets elected, if any non-elected alternative is deferred by at least one of the
-modules, then it gets deferred, only alternatives rejected by both modules get
-rejected.\<close>
+text \<open>
+  This is a family of parallel compositions. It composes a new electoral module
+  from two electoral modules combined with the maximum aggregator. Therein, the
+  two modules each make a decision and then a partition is returned where every
+  alternative receives the maximum result of the two input partitions. This
+  means that, if any alternative is elected by at least one of the modules,
+  then it gets elected, if any non-elected alternative is deferred by at least
+  one of the modules, then it gets deferred, only alternatives rejected by both
+  modules get rejected.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -537,10 +538,11 @@ lemma dcompat_dec_by_one_mod:
 
 subsection \<open>Composition Rules\<close>
 
-(*
-   Using a conservative aggregator, the parallel composition
-   preserves the property non-electing.
-*)
+text \<open>
+  Using a conservative aggregator, the parallel composition
+  preserves the property non-electing.
+\<close>
+
 theorem conserv_max_agg_presv_non_electing[simp]:
   assumes
     non_electing_m: "non_electing m" and
@@ -549,10 +551,11 @@ theorem conserv_max_agg_presv_non_electing[simp]:
   using non_electing_m non_electing_n
   by simp
 
-(*
-   Using the max aggregator, composing two compatible
-   electoral modules in parallel preserves defer-lift-invariance.
-*)
+text \<open>
+  Using the max aggregator, composing two compatible
+  electoral modules in parallel preserves defer-lift-invariance.
+\<close>
+
 theorem par_comp_def_lift_inv[simp]:
   assumes
     compatible: "disjoint_compatibility m n" and
@@ -975,12 +978,13 @@ proof -
     by simp
 qed
 
-(*
-   Using the max-aggregator for composing two compatible modules in parallel,
-   whereof the first one is non-electing and defers exactly one alternative,
-   and the second one rejects exactly two alternatives, the composition
-   results in an electoral module that eliminates exactly one alternative.
-*)
+text \<open>
+  Using the max-aggregator for composing two compatible modules in parallel,
+  whereof the first one is non-electing and defers exactly one alternative,
+  and the second one rejects exactly two alternatives, the composition
+  results in an electoral module that eliminates exactly one alternative.
+\<close>
+
 theorem par_comp_elim_one[simp]:
   assumes
     defers_m_1: "defers 1 m" and

@@ -12,24 +12,29 @@ theory Profile
   imports Preference_Relation
 begin
 
-text
-\<open>Preference profiles denote the decisions made by the individual voters on
-the eligible alternatives. They are represented in the form of one preference
-relation (e.g., selected on a ballot) per voter, collectively captured in a
-list of such preference relations.
-Unlike a the common preference profiles in the social-choice sense, the
-profiles described here considers only the (sub-)set of alternatives that are
-received.\<close>
+text \<open>
+  Preference profiles denote the decisions made by the individual voters on
+  the eligible alternatives. They are represented in the form of one preference
+  relation (e.g., selected on a ballot) per voter, collectively captured in a
+  list of such preference relations.
+  Unlike a the common preference profiles in the social-choice sense, the
+  profiles described here considers only the (sub-)set of alternatives that are
+  received.
+\<close>
 
 subsection \<open>Definition\<close>
 
-(* A profile contains one ballot for each voter. *)
+text \<open>
+  A profile contains one ballot for each voter.
+\<close>
+
 type_synonym 'a Profile = "('a Preference_Relation) list"
 
-(*
-   A profile on a finite set of alternatives A contains only ballots that are
-   linear orders on A.
-*)
+text \<open>
+  A profile on a finite set of alternatives A contains only ballots that are
+  linear orders on A.
+\<close>
+
 definition profile :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> bool" where
   "profile A p \<equiv> \<forall> i::nat. i < length p \<longrightarrow> linear_order_on A (p!i)"
 
@@ -42,10 +47,11 @@ abbreviation finite_profile :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> bo
 
 subsection \<open>Preference Counts and Comparisons\<close>
 
-(*
-   The win count for an alternative a in a profile p is
-   the amount of ballots in p that rank alternative a in first position.
-*)
+text \<open>
+  The win count for an alternative a in a profile p is
+  the amount of ballots in p that rank alternative a in first position.
+\<close>
+
 fun win_count :: "'a Profile \<Rightarrow> 'a \<Rightarrow> nat" where
   "win_count p a =
     card {i::nat. i < length p \<and> above (p!i) a = {a}}"
@@ -395,15 +401,16 @@ qed
 lemma set_compr: "{ f x | x . x \<in> S } = f ` S"
   by auto
 
-lemma pref_count_set_compr: "{prefer_count p x y | y . y \<in> A-{x}} =
-          (prefer_count p x) ` (A-{x})"
+lemma pref_count_set_compr: "{prefer_count p x y | y . y \<in> A - {x}} =
+          (prefer_count p x) ` (A - {x})"
   by auto
 
 lemma pref_count:
-  assumes prof: "profile A p"
-  assumes x_in_A: "x \<in> A"
-  assumes y_in_A: "y \<in> A"
-  assumes neq: "x \<noteq> y"
+  assumes
+    prof: "profile A p" and
+    x_in_A: "x \<in> A" and
+    y_in_A: "y \<in> A" and
+    neq: "x \<noteq> y"
   shows "prefer_count p x y = (length p) - (prefer_count p y x)"
 proof -
   have 00: "card {i::nat. i < length p} = length p"
@@ -479,13 +486,14 @@ proof -
 qed
 
 lemma pref_count_sym:
-    assumes p1: "prefer_count p a x \<ge> prefer_count p x b"
-    assumes prof: "profile A p"
-    assumes a_in_A: "a \<in> A"
-    assumes b_in_A: "b \<in> A"
-    assumes x_in_A: "x \<in> A"
-    assumes neq1: "a \<noteq> x"
-    assumes neq2: "x \<noteq> b"
+  assumes
+    p1: "prefer_count p a x \<ge> prefer_count p x b" and
+    prof: "profile A p" and
+    a_in_A: "a \<in> A" and
+    b_in_A: "b \<in> A" and
+    x_in_A: "x \<in> A" and
+    neq1: "a \<noteq> x" and
+    neq2: "x \<noteq> b"
     shows "prefer_count p b x \<ge> prefer_count p x a"
 proof -
   from prof a_in_A x_in_A neq1 have 0:
@@ -506,7 +514,7 @@ proof -
           pref_count prof x_in_A
     by (metis (no_types))
   hence "(prefer_count p x a) \<le> (prefer_count p b x)"
-    using "1" "3" calculation p1
+    using 1 3 calculation p1
     by linarith
   thus ?thesis
     by linarith
@@ -544,7 +552,10 @@ fun wins :: "'a \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" wh
   "wins x p y =
     (prefer_count p x y > prefer_count p y x)"
 
-(* Alternative a wins against b implies that b does not win against a. *)
+text \<open>
+  Alternative a wins against b implies that b does not win against a.
+\<close>
+
 lemma wins_antisym:
   assumes "wins a p b"
   shows "\<not> wins b p a"
@@ -559,7 +570,7 @@ subsection \<open>Condorcet Winner\<close>
 
 fun condorcet_winner :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "condorcet_winner A p w =
-      (finite_profile A p \<and>  w \<in> A \<and> (\<forall>x \<in> A - {w} . wins w p x))"
+      (finite_profile A p \<and>  w \<in> A \<and> (\<forall> x \<in> A - {w} . wins w p x))"
 
 lemma cond_winner_unique:
   assumes winner_c: "condorcet_winner A p c" and
@@ -673,19 +684,20 @@ qed
 
 subsection \<open>Limited Profile\<close>
 
-(*
-   This function restricts a profile p to a set A and
-   keeps all of A's preferences.
-*)
+text \<open>
+  This function restricts a profile p to a set A and
+  keeps all of A's preferences.
+\<close>
+
 fun limit_profile :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Profile" where
   "limit_profile A p = map (limit A) p"
 
 lemma limit_prof_trans:
   assumes
     "B \<subseteq> A" and
-    "C \<subseteq> B" and
+    "B' \<subseteq> B" and
     "finite_profile A p"
-  shows "limit_profile C p = limit_profile C (limit_profile B p)"
+  shows "limit_profile B' p = limit_profile B' (limit_profile B p)"
   using assms
   by auto
 
@@ -747,10 +759,11 @@ definition equiv_prof_except_a :: "'a set \<Rightarrow> 'a Profile \<Rightarrow>
         i < length p \<longrightarrow>
           equiv_rel_except_a A (p!i) (q!i) a)"
 
-(*
-   An alternative gets lifted from one profile to another iff
-   its ranking increases in at least one ballot, and nothing else changes.
-*)
+text \<open>
+  An alternative gets lifted from one profile to another iff
+  its ranking increases in at least one ballot, and nothing else changes.
+\<close>
+
 definition lifted :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "lifted A p q a \<equiv>
     finite_profile A p \<and> finite_profile A q \<and>
@@ -894,5 +907,6 @@ next
           lifted_imp_equiv_prof_except_a
     by metis
 qed
+
 
 end

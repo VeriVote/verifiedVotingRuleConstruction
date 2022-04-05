@@ -10,13 +10,14 @@ theory Copeland_Module
   imports "Component_Types/Elimination_Module"
 begin
 
-text
-\<open>This is the Copeland module used by the Copeland voting rule. The Copeland
-rule elects the alternatives with the highest difference between the amount
-of simple-majority wins and the amount of simple-majority losses. The module
-implemented herein only rejects the alternatives not elected by the voting
-rule, and defers the alternatives that would be elected by the full voting
-rule.\<close>
+text \<open>
+  This is the Copeland module used by the Copeland voting rule. The Copeland
+  rule elects the alternatives with the highest difference between the amount
+  of simple-majority wins and the amount of simple-majority losses. The module
+  implemented herein only rejects the alternatives not elected by the voting
+  rule, and defers the alternatives that would be elected by the full voting
+  rule.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -29,7 +30,10 @@ fun copeland :: "'a Electoral_Module" where
 
 subsection \<open>Lemmata\<close>
 
-(* For a Condorcet winner w, we have: card {y \<in> A . wins x p y} = |A| - 1 *)
+text \<open>
+  For a Condorcet winner w, we have: "card {y \<in> A . wins x p y} = |A| - 1"
+\<close>
+
 lemma cond_winner_imp_win_count:
   assumes winner: "condorcet_winner A p w"
   shows "card {y \<in> A . wins w p y} = card A - 1"
@@ -90,7 +94,10 @@ proof -
     by linarith
 qed
 
-(* For a Condorcet winner w, we have: card {y \<in> A . wins y p x} = 0 *)
+text \<open>
+  For a Condorcet winner w, we have: "card {y \<in> A . wins y p x} = 0"
+\<close>
+
 lemma cond_winner_imp_loss_count:
   assumes winner: "condorcet_winner A p w"
   shows "card {y \<in> A . wins y p w} = 0"
@@ -99,7 +106,10 @@ lemma cond_winner_imp_loss_count:
   unfolding condorcet_winner.simps
   by (metis (no_types, lifting))
 
-(* Copeland Score of a Condorcet Winner *)
+text \<open>
+  Copeland score of a Condorcet winner.
+\<close>
+
 lemma cond_winner_imp_copeland_score:
   assumes winner: "condorcet_winner A p w"
   shows "copeland_score w A p = card A - 1"
@@ -119,10 +129,11 @@ proof (unfold copeland_score.simps)
     by simp
 qed
 
-(*
-   For a non-Condorcet winner l, we have:
-   card {y \<in> A . wins x p y} <= |A| - 1 - 1
-*)
+text \<open>
+  For a non-Condorcet winner l, we have:
+  "card {y \<in> A . wins x p y} \<le> |A| - 1 - 1"
+\<close>
+
 lemma non_cond_winner_imp_win_count:
   assumes
     winner: "condorcet_winner A p w" and
@@ -169,7 +180,10 @@ qed
 
 subsection \<open>Property\<close>
 
-(* The Copeland score is Condorcet rating *)
+text \<open>
+  The Copeland score is Condorcet rating.
+\<close>
+
 theorem copeland_score_is_cr: "condorcet_rating copeland_score"
 proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
   fix

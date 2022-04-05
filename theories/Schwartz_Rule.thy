@@ -11,11 +11,12 @@ theory Schwartz_Rule
           "Compositional_Structures/Defer_One_Loop_Composition"
 begin
 
-text
-\<open>This is the Schwartz voting rule. Confusingly, it is sometimes also referred as
-Nanson's rule. The Schwartz rule proceeds as in the classic Nanson's rule, but
-excludes alternatives with a Borda score that is strictly less than the
-average Borda score.\<close>
+text \<open>
+  This is the Schwartz voting rule. Confusingly, it is sometimes also referred
+  as Nanson's rule. The Schwartz rule proceeds as in the classic Nanson's rule,
+  but excludes alternatives with a Borda score that is strictly less than the
+  average Borda score.
+\<close>
 
 subsection \<open>Definition\<close>
 

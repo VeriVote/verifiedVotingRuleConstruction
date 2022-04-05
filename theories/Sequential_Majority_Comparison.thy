@@ -15,11 +15,12 @@ theory Sequential_Majority_Comparison
           "Compositional_Structures/Defer_One_Loop_Composition"
 begin
 
-text
-\<open>Sequential majority comparison compares two alternatives by plurality voting.
-The loser gets rejected, and the winner is compared to the next alternative.
-This process is repeated until only a single alternative is left, which is
-then elected.\<close>
+text \<open>
+  Sequential majority comparison compares two alternatives by plurality voting.
+  The loser gets rejected, and the winner is compared to the next alternative.
+  This process is repeated until only a single alternative is left, which is
+  then elected.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -30,11 +31,12 @@ fun smc :: "'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-(*
-   As all base components are electoral modules (, aggregators, or termination
-   conditions), and all used compositional structures create electoral modules,
-   sequential majority comparison unsurprisingly is an electoral module.
-*)
+text \<open>
+  As all base components are electoral modules (, aggregators, or termination
+  conditions), and all used compositional structures create electoral modules,
+  sequential majority comparison unsurprisingly is an electoral module.
+\<close>
+
 theorem smc_sound:
   assumes order: "linear_order x"
   shows "electoral_module (smc x)"
@@ -198,12 +200,13 @@ qed
 
 subsection \<open>Electing\<close>
 
-(*
-   The sequential majority comparison electoral module is electing.
-   This property is needed to convert electoral modules to a social choice
-   function. Apart from the very last proof step, it is a part of the
-   monotonicity proof below.
-*)
+text \<open>
+  The sequential majority comparison electoral module is electing.
+  This property is needed to convert electoral modules to a social choice
+  function. Apart from the very last proof step, it is a part of the
+  monotonicity proof below.
+\<close>
+
 theorem smc_electing:
   assumes order: "linear_order x"
   shows "electing (smc x)"
@@ -230,7 +233,7 @@ proof -
 
   have 0020: "disjoint_compatibility ?pass2 ?drop2"
     using order
-    by simp (*disj_compat_comm*)
+    by simp (* disj_compat_comm *)
   have 1000: "non_electing ?pass2"
     using order
     by simp
@@ -284,15 +287,15 @@ qed
 
 subsection \<open>(Weak) Monotonicity Property\<close>
 
-(*
-   The following proof is a fully modular proof for weak monotonicity of
-   sequential majority comparison. It is composed of many small steps.
-*)
+text \<open>
+  The following proof is a fully modular proof for weak monotonicity of
+  sequential majority comparison. It is composed of many small steps.
+\<close>
+
 theorem smc_monotone:
   assumes order: "linear_order x"
   shows "monotonicity (smc x)"
 proof -
-(* Some aliases for parts of the SMC module. *)
   let ?pass2 = "pass_module 2 x"
   let ?tie_breaker = "(pass_module 1 x)"
   let ?plurality_defer = "(plurality\<down>) \<triangleright> ?tie_breaker"

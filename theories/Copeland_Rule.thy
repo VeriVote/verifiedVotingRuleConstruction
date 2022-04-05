@@ -11,10 +11,11 @@ theory Copeland_Rule
           "Compositional_Structures/Elect_Composition"
 begin
 
-text
-\<open>This is the Copeland voting rule. The idea is to elect the alternatives with
-the highest difference between the amount of simple-majority wins and the
-amount of simple-majority losses.\<close>
+text \<open>
+  This is the Copeland voting rule. The idea is to elect the alternatives with
+  the highest difference between the amount of simple-majority wins and the
+  amount of simple-majority losses.
+\<close>
 
 subsection \<open>Definition\<close>
 

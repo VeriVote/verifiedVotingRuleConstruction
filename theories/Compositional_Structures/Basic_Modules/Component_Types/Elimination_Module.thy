@@ -11,11 +11,12 @@ theory Elimination_Module
           Electoral_Module
 begin
 
-text
-\<open>This is the elimination module. It rejects a set of alternatives only if these
-are not all alternatives. The alternatives potentially to be rejected are put
-in a so-called elimination set. These are all alternatives that score below
-a preset threshold value that depends on the specific voting rule.\<close>
+text \<open>
+  This is the elimination module. It rejects a set of alternatives only if
+  these are not all alternatives. The alternatives potentially to be rejected
+  are put in a so-called elimination set. These are all alternatives that score
+  below a preset threshold value that depends on the specific voting rule.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -238,8 +239,11 @@ qed
 
 subsection \<open>Inference Rules\<close>
 
-(*** If the used evaluation function is Condorcet rating,
-     max-eliminator is Condorcet compatible. ***)
+text \<open>
+  If the used evaluation function is Condorcet rating,
+    max-eliminator is Condorcet compatible.
+\<close>
+
 theorem cr_eval_imp_ccomp_max_elim[simp]:
   assumes
     profile: "finite_profile A p" and
@@ -318,10 +322,11 @@ next
     by (metis (mono_tags, lifting))
 qed
 
-(*
+text \<open>
   If the used evaluation function is Condorcet rating, max-eliminator
   is defer-Condorcet-consistent.
-*)
+\<close>
+
 theorem cr_eval_imp_dcc_max_elim[simp]:
   assumes rating: "condorcet_rating e"
   shows "defer_condorcet_consistency (max_eliminator e)"
@@ -333,6 +338,8 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
   assume
     winner: "condorcet_winner A p w" and
     finite: "finite A"
+  hence profile: "finite_profile A p"
+    by simp
   let ?trsh = "(Max {e y A p | y. y \<in> A})"
   show
     "max_eliminator e A p =
@@ -341,10 +348,7 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
         {a \<in> A. condorcet_winner A p a})"
   proof (cases "elimination_set e (?trsh) (<) A p \<noteq> A")
     case True
-    have profile: "finite_profile A p"
-      using winner
-      by simp
-    with rating winner
+    from profile rating winner
     have 0:
       "(elimination_set e ?trsh (<) A p) = A - {w}"
       using cr_eval_imp_dcc_max_elim_helper1
@@ -356,11 +360,8 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
           A - (elimination_set e ?trsh (<) A p))"
       using True
       by simp
-    also have "... = ({}, A - {w}, A - (A - {w}))"
-      using "0"
-      by presburger
     also have "... = ({}, A - {w}, {w})"
-      using winner
+      using 0 winner
       by auto
     also have "... = ({},A - defer (max_eliminator e) A p, {w})"
       using calculation
@@ -377,18 +378,12 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
       by metis
   next
     case False
-    have f1:
-      "finite A \<and> profile A p \<and> w \<in> A \<and> (\<forall>a. a \<notin> A - {w} \<or> wins w p a)"
-      using winner
-      by auto
-    hence "?trsh = e w A p"
+    have "?trsh = e w A p"
       using rating winner
       by (simp add: cond_winner_imp_max_eval_val)
-    hence False
-      using f1 False
-      by auto
     thus ?thesis
-      by simp
+      using winner False
+      by auto
   qed
 qed
 

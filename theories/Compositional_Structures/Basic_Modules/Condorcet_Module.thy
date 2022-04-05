@@ -10,13 +10,14 @@ theory Condorcet_Module
   imports "Component_Types/Elimination_Module"
 begin
 
-text
-\<open>This is the Condorcet module used by the Condorcet (voting) rule. The Condorcet
-rule is a voting rule that implements the Condorcet criterion, i.e., it elects
-the Condorcet winner if it exists, otherwise a tie remains between all
-alternatives. The module implemented herein only rejects the alternatives not
-elected by the voting rule, and defers the alternatives that would be elected
-by the full voting rule.\<close>
+text \<open>
+  This is the Condorcet module used by the Condorcet (voting) rule. The
+  Condorcet rule is a voting rule that implements the Condorcet criterion,
+  i.e., it elects the Condorcet winner if it exists, otherwise a tie remains
+  between all alternatives. The module implemented herein only rejects the
+  alternatives not elected by the voting rule, and defers the alternatives that
+  would be elected by the full voting rule.
+\<close>
 
 subsection \<open>Definition\<close>
 

@@ -11,11 +11,12 @@ theory Sequential_Composition
   imports "Basic_Modules/Component_Types/Electoral_Module"
 begin
 
-text
-\<open>The sequential composition creates a new electoral module from
-two electoral modules. In a sequential composition, the second
-electoral module makes decisions over alternatives deferred by
-the first electoral module.\<close>
+text \<open>
+  The sequential composition creates a new electoral module from
+  two electoral modules. In a sequential composition, the second
+  electoral module makes decisions over alternatives deferred by
+  the first electoral module.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -184,9 +185,6 @@ proof -
   have
     "(reject m A p \<union> reject n ?new_A ?new_p) \<inter>
           (defer n ?new_A ?new_p) = {}"
-(*    using Int_Un_distrib2 defer_in_alts distrib_imp2
-          def_presv_fin_prof result_disj subset_Un_eq
-          sup_inf_distrib1 *)
   proof (safe)
     fix x :: "'a"
     assume
@@ -535,7 +533,10 @@ lemma seq_comp_def_set_trans:
 
 subsection \<open>Composition Rules\<close>
 
-(*The sequential composition preserves the non-blocking property.*)
+text \<open>
+  The sequential composition preserves the non-blocking property.
+\<close>
+
 theorem seq_comp_presv_non_blocking[simp]:
   assumes
     non_blocking_m: "non_blocking m" and
@@ -651,7 +652,10 @@ proof -
   qed
 qed
 
-(*Sequential composition preserves the non-electing property.*)
+text \<open>
+  Sequential composition preserves the non-electing property.
+\<close>
+
 theorem seq_comp_presv_non_electing[simp]:
   assumes
     m_elect: "non_electing m" and
@@ -681,14 +685,15 @@ next
     by metis
 qed
 
-(*
-   Composing an electoral module that defers exactly 1 alternative
-   in sequence after an electoral module that is electing
-   results (still) in an electing electoral module.
-*)
+text \<open>
+  Composing an electoral module that defers exactly 1 alternative
+  in sequence after an electoral module that is electing
+  results (still) in an electing electoral module.
+\<close>
+
 theorem seq_comp_electing[simp]:
   assumes def_one_m1:  "defers 1 m1" and
-          electing_m2: "electing m2"
+    electing_m2: "electing m2"
   shows "electing (m1 \<triangleright> m2)"
 proof -
   have
@@ -849,7 +854,10 @@ proof -
     by (metis (full_types))
 qed
 
-(*Sequential composition preserves the property defer-lift-invariance.*)
+text \<open>
+  Sequential composition preserves the property defer-lift-invariance.
+\<close>
+
 theorem seq_comp_presv_def_lift_inv[simp]:
   assumes
     monotone_m: "defer_lift_invariance m" and
@@ -859,12 +867,13 @@ theorem seq_comp_presv_def_lift_inv[simp]:
         seq_comp_sound defer_lift_invariance_def
   by (metis (full_types))
 
-(*
-   Composing a non-blocking, non-electing electoral module
-   in sequence with an electoral module that defers exactly
-   one alternative results in an electoral module that defers
-   exactly one alternative.
-*)
+text \<open>
+  Composing a non-blocking, non-electing electoral module
+  in sequence with an electoral module that defers exactly
+  one alternative results in an electoral module that defers
+  exactly one alternative.
+\<close>
+
 theorem seq_comp_def_one[simp]:
   assumes
     non_blocking_m: "non_blocking m" and
@@ -944,10 +953,13 @@ next
     by simp
 qed
 
-(*
-   Sequentially composing electoral modules after compatible
-   electoral modules does not break their compatibility.
-*)
+text \<open>
+  Composing a defer-lift invariant and a non-electing
+  electoral module that defers exactly one alternative
+  in sequence with an electing electoral module
+  results in a monotone electoral module.
+\<close>
+
 theorem disj_compat_seq[simp]:
   assumes
     compatible: "disjoint_compatibility m n" and
@@ -1050,12 +1062,13 @@ next
   qed
 qed
 
-(*
-   Composing a defer-lift invariant and a non-electing
-   electoral module that defers exactly one alternative
-   in sequence with an electing electoral module
-   results in a monotone electoral module.
-*)
+text \<open>
+  Composing a defer-lift invariant and a non-electing
+  electoral module that defers exactly one alternative
+  in sequence with an electing electoral module
+  results in a monotone electoral module.
+\<close>
+
 theorem seq_comp_mono[simp]:
   assumes
     def_monotone_m: "defer_lift_invariance m" and
@@ -1097,11 +1110,12 @@ next
     by metis
 qed
 
-(*
-   Composing a defer-invariant-monotone electoral module in sequence before
-   a non-electing, defer-monotone electoral module that defers exactly
-   1 alternative results in a defer-lift-invariant electoral module.
-*)
+text \<open>
+  Composing a defer-invariant-monotone electoral module in sequence before
+  a non-electing, defer-monotone electoral module that defers exactly
+  1 alternative results in a defer-lift-invariant electoral module.
+\<close>
+
 theorem def_inv_mono_imp_def_lift_inv[simp]:
   assumes
     strong_def_mon_m: "defer_invariant_monotonicity m" and
@@ -1167,7 +1181,7 @@ next
       by (metis (no_types, opaque_lifting))
     ultimately have
       "(a \<in> defer m A p) \<longrightarrow> defer (m \<triangleright> n) A q \<subseteq> {a}"
-      by simp (* lifted defer-subset of a *)
+      by simp
     moreover have def_card_one:
       "(a \<in> defer m A p) \<longrightarrow> card (defer (m \<triangleright> n) A q) = 1"
       using a_single_defer card_eq_0_iff card_insert_disjoint defers_1
@@ -1175,7 +1189,7 @@ next
             seq_comp_defers_def_set order_refl
             def_presv_fin_prof finite_profile_q
       unfolding One_nat_def defers_def
-      by metis (* lifted defer set size 1 *)
+      by metis
     moreover have defer_a_in_m_p:
       "a \<in> defer m A p"
       using electoral_mod_m electoral_mod_n defer_a_p
@@ -1183,15 +1197,14 @@ next
             finite_profile_q
       by blast
     ultimately have
-      "defer (m \<triangleright> n) A q = {a}" (* lifted defer set = a *)
+      "defer (m \<triangleright> n) A q = {a}"
       using Collect_mem_eq card_1_singletonE empty_Collect_eq
             insertCI subset_singletonD
       by metis
     moreover have
-      "defer (m \<triangleright> n) A p = {a}" (* regular defer set = a *)
+      "defer (m \<triangleright> n) A p = {a}"
     proof (safe)
-      fix
-        x :: "'a"
+      fix x :: "'a"
       assume
         defer_x: "x \<in> defer (m \<triangleright> n) A p" and
         x_exists: "x \<notin> {}"
@@ -1264,16 +1277,14 @@ next
         using defer_a_p
         by linarith
     qed
-    ultimately have (* defer sets equal *)
-      "defer (m \<triangleright> n) A p = defer (m \<triangleright> n) A q"
+    ultimately have "defer (m \<triangleright> n) A p = defer (m \<triangleright> n) A q"
       by blast
-    moreover have (* elect sets sets equal *)
-      "elect (m \<triangleright> n) A p = elect (m \<triangleright> n) A q"
+    moreover have "elect (m \<triangleright> n) A p = elect (m \<triangleright> n) A q"
       using finite_profile_p finite_profile_q
             non_electing_m non_electing_n
             seq_comp_presv_non_electing
             non_electing_def
-      by metis (* elect sets equal *)
+      by metis
     thus ?thesis
       using calculation eq_def_and_elect_imp_eq
             electoral_mod_m electoral_mod_n
@@ -1289,9 +1300,8 @@ next
     moreover have "elect m A q = {}"
       using non_electing_m finite_profile_q
       by (simp add: non_electing_def)
-    ultimately have elect_m_equal:
-      "elect m A p = elect m A q"
-      by simp (* m elects the same stuff *)
+    ultimately have elect_m_equal: "elect m A p = elect m A q"
+      by simp
     from not_different_alternatives
     have same_alternatives: "defer m A q = defer m A p"
       by simp

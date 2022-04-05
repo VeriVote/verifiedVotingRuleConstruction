@@ -15,51 +15,58 @@ theory Electoral_Module
           "Social_Choice_Types/Result"
 begin
 
-text
-\<open>Electoral modules are the principal component type of the composable modules
-voting framework, as they are a generalization of voting rules in the sense of
-social choice functions.
-These are only the types used for electoral modules. Further restrictions are
-encompassed by the electoral-module predicate.
+text \<open>
+  Electoral modules are the principal component type of the composable modules
+  voting framework, as they are a generalization of voting rules in the sense
+  of social choice functions.
+  These are only the types used for electoral modules. Further restrictions are
+  encompassed by the electoral-module predicate.
 
-An electoral module does not need to make final decisions for all alternatives,
-but can instead defer the decision for some or all of them to other modules.
-Hence, electoral modules partition the received (possibly empty) set of
-alternatives into elected, rejected and deferred alternatives. In particular,
-any of those sets, e.g., the set of winning (elected) alternatives, may also
-be left empty, as long as they collectively still hold all the received
-alternatives. Just like a voting rule, an electoral module also receives a
-profile which holds the voters’ preferences, which, unlike a voting rule,
-consider only the (sub-)set of alternatives that the module receives.\<close>
+  An electoral module does not need to make final decisions for all
+  alternatives, but can instead defer the decision for some or all of them to
+  other modules. Hence, electoral modules partition the received (possibly
+  empty) set of alternatives into elected, rejected and deferred alternatives.
+  In particular, any of those sets, e.g., the set of winning (elected)
+  alternatives, may also be left empty, as long as they collectively still hold
+  all the received alternatives. Just like a voting rule, an electoral module
+  also receives a profile which holds the voters’ preferences, which, unlike a
+  voting rule, consider only the (sub-)set of alternatives that the module
+  receives.
+\<close>
 
 subsection \<open>Definition\<close>
 
-(*An electoral module maps a set of alternatives and a profile to a result.*)
+text \<open>
+  An electoral module maps a set of alternatives and a profile to a result.
+\<close>
+
 type_synonym 'a Electoral_Module = "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result"
 
 subsection \<open>Auxiliary Definitions\<close>
 
-(*
-   Electoral modules partition a given set of alternatives A into a set of
-   elected alternatives e, a set of rejected alternatives r, and a set of
-   deferred alternatives d, using a profile.
-   e, r, and d partition A.
-   Electoral modules can be used as voting rules. They can also be composed
-   in multiple structures to create more complex electoral modules.
-*)
+text \<open>
+  Electoral modules partition a given set of alternatives A into a set of
+  elected alternatives e, a set of rejected alternatives r, and a set of
+  deferred alternatives d, using a profile.
+  e, r, and d partition A.
+  Electoral modules can be used as voting rules. They can also be composed
+  in multiple structures to create more complex electoral modules.
+\<close>
+
 definition electoral_module :: " 'a Electoral_Module \<Rightarrow> bool" where
-  "electoral_module m \<equiv> \<forall>A p. finite_profile A p \<longrightarrow> well_formed A (m A p)"
+  "electoral_module m \<equiv> \<forall> A p. finite_profile A p \<longrightarrow> well_formed A (m A p)"
 
 lemma electoral_modI:
-  "((\<And>A p. \<lbrakk> finite_profile A p \<rbrakk> \<Longrightarrow> well_formed A (m A p)) \<Longrightarrow>
+  "((\<And> A p. \<lbrakk> finite_profile A p \<rbrakk> \<Longrightarrow> well_formed A (m A p)) \<Longrightarrow>
        electoral_module m)"
   unfolding electoral_module_def
   by auto
 
-(*
-   The next three functions take an electoral module and turn it into a
-   function only outputting the elect, reject, or defer set respectively.
-*)
+text \<open>
+  The next three functions take an electoral module and turn it into a
+  function only outputting the elect, reject, or defer set respectively.
+\<close>
+
 abbreviation elect ::
   "'a Electoral_Module \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a set" where
   "elect m A p \<equiv> elect_r (m A p)"
@@ -72,69 +79,61 @@ abbreviation "defer" ::
   "'a Electoral_Module \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a set" where
   "defer m A p \<equiv> defer_r (m A p)"
 
-(*
-   "defers n" is true for all electoral modules that defer exactly
-   n alternatives, whenever there are n or more alternatives.
-*)
+text \<open>
+  "defers n" is true for all electoral modules that defer exactly
+  n alternatives, whenever there are n or more alternatives.
+\<close>
+
 definition defers :: "nat \<Rightarrow> 'a Electoral_Module \<Rightarrow> bool" where
   "defers n m \<equiv>
     electoral_module m \<and>
-      (\<forall>A p. (card A \<ge> n \<and> finite_profile A p) \<longrightarrow>
+      (\<forall> A p. (card A \<ge> n \<and> finite_profile A p) \<longrightarrow>
           card (defer m A p) = n)"
 
-(*
-   "rejects n" is true for all electoral modules that reject exactly
-   n alternatives, whenever there are n or more alternatives.
-*)
+text \<open>
+  "rejects n" is true for all electoral modules that reject exactly
+  n alternatives, whenever there are n or more alternatives.
+\<close>
+
 definition rejects :: "nat \<Rightarrow> 'a Electoral_Module \<Rightarrow> bool" where
   "rejects n m \<equiv>
     electoral_module m \<and>
-      (\<forall>A p. (card A \<ge> n \<and> finite_profile A p) \<longrightarrow> card (reject m A p) = n)"
+      (\<forall> A p. (card A \<ge> n \<and> finite_profile A p) \<longrightarrow> card (reject m A p) = n)"
 
-(*
-   As opposed to "rejects", "eliminates" allows to stop rejecting if no
-   alternatives were to remain.
-*)
+text \<open>
+  As opposed to "rejects", "eliminates" allows to stop rejecting if no
+  alternatives were to remain.
+\<close>
+
 definition eliminates :: "nat \<Rightarrow> 'a Electoral_Module \<Rightarrow> bool" where
   "eliminates n m \<equiv>
     electoral_module m \<and>
-      (\<forall>A p. (card A > n \<and> finite_profile A p) \<longrightarrow> card (reject m A p) = n)"
+      (\<forall> A p. (card A > n \<and> finite_profile A p) \<longrightarrow> card (reject m A p) = n)"
 
-(*
-   "elects n" is true for all electoral modules that
-   elect exactly n alternatives, whenever there are n or more alternatives.
-*)
+text \<open>
+  "elects n" is true for all electoral modules that
+  elect exactly n alternatives, whenever there are n or more alternatives.
+\<close>
+
 definition elects :: "nat \<Rightarrow> 'a Electoral_Module \<Rightarrow> bool" where
   "elects n m \<equiv>
     electoral_module m \<and>
-      (\<forall>A p. (card A \<ge> n \<and> finite_profile A p) \<longrightarrow> card (elect m A p) = n)"
+      (\<forall> A p. (card A \<ge> n \<and> finite_profile A p) \<longrightarrow> card (elect m A p) = n)"
 
-(*
-(*
-   An Electoral module m is rejecting iff at least one alternative gets
-   rejected when possible
-*)
-definition rejecting :: "'a Electoral_Module \<Rightarrow> bool" where
-  "
-  "rejecting m \<equiv> \<forall>A . card A > 1 \<longrightarrow> (\<exists>n . (n > 0 \<and> rejects n m))"
+text \<open>
+  An electoral module is independent of an alternative a iff
+  a's ranking does not influence the outcome.
+\<close>
 
-(*WRONG definition, choose `n > card A` and already it is always true.*)
-(*An electoral module m is eliminating iff the following holds*)
-(*
-   If there is at least one alternative that can be rejected,
-   at least one alternative gets rejected.
-*)
-definition eliminating :: "'a Electoral_Module \<Rightarrow> bool" where
-  "eliminating m \<equiv>  \<exists> n . (n > 0 \<and> eliminates n m)"
-*)
-
-(*
-   An electoral module is independent of an alternative a iff
-   a's ranking does not influence the outcome.
-*)
 definition indep_of_alt :: "'a Electoral_Module \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" where
   "indep_of_alt m A a \<equiv>
     electoral_module m \<and> (\<forall> p q. equiv_prof_except_a A p q a \<longrightarrow> m A p = m A q)"
+
+definition unique_winner_if_profile_non_empty :: "'a Electoral_Module \<Rightarrow> bool" where
+  "unique_winner_if_profile_non_empty m \<equiv>
+    electoral_module m \<and>
+    (\<forall> A p. (A \<noteq> {} \<and> p \<noteq> [] \<and> finite_profile A p) \<longrightarrow>
+              (\<exists> a \<in> A. m A p = ({a}, A - {a}, {})))"
 
 subsection \<open>Equivalence Definitions\<close>
 
@@ -205,8 +204,8 @@ proof (safe)
     by simp
   from e_mod f_prof have set_partit:
     "set_equals_partition A (m A p)"
-    using electoral_module_def
-    by auto
+    unfolding electoral_module_def
+    by simp
   thus "x \<in> A"
     using UnI1 asm fstI set_partit partit
     by (metis (no_types))
@@ -222,8 +221,8 @@ next
     by simp
   from e_mod f_prof have set_partit:
     "set_equals_partition A (m A p)"
-    using electoral_module_def
-    by auto
+    unfolding electoral_module_def
+    by simp
   thus "x \<in> A"
     using UnI1 asm fstI set_partit partit
           sndI subsetD sup_ge2
@@ -240,8 +239,8 @@ next
     by simp
   from e_mod f_prof have set_partit:
     "set_equals_partition A (m A p)"
-    using electoral_module_def
-    by auto
+    unfolding electoral_module_def
+    by simp
   thus "x \<in> A"
     using asm set_partit partit sndI subsetD sup_ge2
     by metis
@@ -259,8 +258,8 @@ next
     by simp
   from e_mod f_prof have set_partit:
     "set_equals_partition A (m A p)"
-    using electoral_module_def
-    by auto
+    unfolding electoral_module_def
+    by simp
   show "x \<in> elect m A p"
     using asm1 asm2 asm3 fst_conv partit
           set_partit snd_conv Un_iff
@@ -288,8 +287,8 @@ proof (safe, simp_all)
     by simp
   from module profile have set_partit:
     "set_equals_partition A (m A p)"
-    using electoral_module_def
-    by auto
+    unfolding electoral_module_def
+    by simp
   from profile have prof_p:
     "finite A \<and> profile A p"
     by simp
@@ -323,7 +322,7 @@ next
     by simp
   from module prof_p have wf_A_m:
     "well_formed A (m A p)"
-    using electoral_module_def
+    unfolding electoral_module_def
     by metis
   hence wf_A_m_0:
     "disjoint3 (m A p) \<and> set_equals_partition A (m A p)"
@@ -369,15 +368,15 @@ next
     by simp
   from module profile have set_partit:
     "set_equals_partition A (m A p)"
-    using electoral_module_def
-    by auto
+    unfolding electoral_module_def
+    by simp
   from profile have prof_p:
     "finite A \<and> profile A p"
     by simp
   from module prof_p have wf_A_m:
     "well_formed A (m A p)"
-    using electoral_module_def
-    by metis
+    unfolding electoral_module_def
+    by simp
   show "False"
     using prod.exhaust_sel DiffE UnCI asm1 asm2
           module profile result_imp_rej wf_A_m
@@ -419,10 +418,11 @@ lemma def_presv_fin_prof:
         limit_profile_sound module f_prof
   by metis
 
-(*
-   An electoral module can never reject, defer or elect more than
-   |A| alternatives.
-*)
+text \<open>
+  An electoral module can never reject, defer or elect more than
+  |A| alternatives.
+\<close>
+
 lemma upper_card_bounds_for_result:
   assumes
     e_mod: "electoral_module m" and
@@ -431,8 +431,8 @@ lemma upper_card_bounds_for_result:
     "card (elect m A p) \<le> card A \<and>
       card (reject m A p) \<le> card A \<and>
       card (defer m A p) \<le> card A "
-  by (simp add: card_mono defer_in_alts elect_in_alts
-                e_mod f_prof reject_in_alts)
+  using e_mod f_prof
+  by (simp add: card_mono defer_in_alts elect_in_alts reject_in_alts)
 
 lemma reject_not_elec_or_def:
   assumes
@@ -466,7 +466,8 @@ lemma elec_and_def_not_rej:
 proof -
   from e_mod f_prof
   have 0: "well_formed A (m A p)"
-    by (simp add: electoral_module_def)
+    unfolding electoral_module_def
+    by simp
   hence
     "disjoint3 (m A p) \<and> set_equals_partition A (m A p)"
     by simp
@@ -491,15 +492,16 @@ lemma defer_not_elec_or_rej:
 proof -
   from e_mod f_prof
   have 0: "well_formed A (m A p)"
-    by (simp add: electoral_module_def)
+    unfolding electoral_module_def
+    by simp
   hence "(elect m A p) \<union> (reject m A p) \<union> (defer m A p) = A"
     using e_mod f_prof result_presv_alts
-    by auto
+    by simp
   moreover from 0 have
     "(elect m A p) \<inter> (defer m A p) = {} \<and>
         (reject m A p) \<inter> (defer m A p) = {}"
-      using e_mod f_prof result_disj
-      by blast
+    using e_mod f_prof result_disj
+    by blast
   ultimately show ?thesis
     by blast
 qed
@@ -520,27 +522,31 @@ lemma electoral_mod_defer_elem:
 lemma mod_contains_result_comm:
   assumes "mod_contains_result m n A p a"
   shows "mod_contains_result n m A p a"
-  unfolding mod_contains_result_def
-proof (safe)
+proof (unfold mod_contains_result_def, safe)
+  from assms
   show "electoral_module n"
-    using assms mod_contains_result_def
-    by metis
+    unfolding mod_contains_result_def
+    by simp
 next
+  from assms
   show "electoral_module m"
-    using assms mod_contains_result_def
-    by metis
+    unfolding mod_contains_result_def
+    by simp
 next
+  from assms
   show "finite A"
-    using assms mod_contains_result_def
-    by metis
+    unfolding mod_contains_result_def
+    by simp
 next
+  from assms
   show "profile A p"
-    using assms mod_contains_result_def
-    by metis
+    unfolding mod_contains_result_def
+    by simp
 next
+  from assms
   show "a \<in> A"
-    using assms mod_contains_result_def
-    by metis
+    unfolding mod_contains_result_def
+    by simp
 next
   assume "a \<in> elect n A p"
   thus "a \<in> elect m A p"
@@ -585,95 +591,82 @@ lemma single_elim_imp_red_def_set:
 
 lemma eq_alts_in_profs_imp_eq_results:
   assumes
-    eq: "\<forall>a \<in> A. prof_contains_result m A p q a" and
-    (*for empty A*)
-    input: "electoral_module m \<and> finite_profile A p \<and> finite_profile A q"
-  shows "m A p = m A q"
+    eq: "\<forall> a \<in> A. prof_contains_result m A p p' a" and
+    input: "electoral_module m \<and> finite_profile A p \<and> finite_profile A p'"
+  shows "m A p = m A p'"
 proof -
-  have "\<forall> a \<in> elect m A p. a \<in> elect m A q"
+  have "\<forall> a \<in> elect m A p. a \<in> elect m A p'"
     using elect_in_alts eq prof_contains_result_def input in_mono
     by metis
-  moreover have "\<forall> a \<in> elect m A q. a \<in> elect m A p"
-    using contra_subsetD disjoint_iff_not_equal elect_in_alts
-          electoral_mod_defer_elem eq prof_contains_result_def input
-          result_disj
+  moreover have "\<forall> a \<in> elect m A p'. a \<in> elect m A p"
   proof -
-    fix aa :: 'a
+    fix a :: 'a
     have "\<forall> A A'. (A'::'a set) \<inter> A = {} \<or> A' \<noteq> {}"
       by blast
-    moreover have f1: "elect m A q - A = {}"
+    moreover have elect_diff: "elect m A p' - A = {}"
       using Diff_eq_empty_iff elect_in_alts input
       by metis
-    moreover have f2: "defer m A q \<inter> elect m A q = {}"
+    moreover have def_elec_disj: "defer m A p' \<inter> elect m A p' = {}"
       using disjoint_iff_not_equal input result_disj
       by (metis (no_types))
-    moreover have f3: "reject m A q \<inter> elect m A q = {}"
+    moreover have rej_elec_disj: "reject m A p' \<inter> elect m A p' = {}"
       using disjoint_iff_not_equal input result_disj
       by (metis (no_types))
-    ultimately have f4:
-      "(\<exists> Aa. Aa \<inter> elect m A q = {} \<and> aa \<in> Aa) \<or>
-          aa \<notin> elect m A q \<or> aa \<in> elect m A p"
+    ultimately have
+      "(\<exists> A'. A' \<inter> elect m A p' = {} \<and> a \<in> A') \<or>
+          a \<notin> elect m A p' \<or> a \<in> elect m A p"
       using DiffI electoral_mod_defer_elem eq
       unfolding prof_contains_result_def
       by (metis (no_types))
-    hence f5:
-      "aa \<notin> elect m A q \<or> aa \<in> elect m A p"
-      using disjoint_iff_not_equal
-      by metis
-    from f1 f2 f3
+    from elect_diff def_elec_disj rej_elec_disj
     show ?thesis
       using Diff_iff Int_iff empty_iff eq not_rej_imp_elec_or_def
       unfolding prof_contains_result_def
       by metis
   qed
   moreover have
-    "\<forall> a \<in> reject m A p. a \<in> reject m A q"
+    "\<forall> a \<in> reject m A p. a \<in> reject m A p'"
     using reject_in_alts eq prof_contains_result_def input in_mono
     by fastforce
   moreover have
-    "\<forall> a \<in> reject m A q. a \<in> reject m A p"
+    "\<forall> a \<in> reject m A p'. a \<in> reject m A p"
   proof -
     {
       fix a' :: 'a
-      have ff1:
-        "\<forall> f. reject f A q \<subseteq> A \<or> \<not> electoral_module f"
+      have rej_set:
+        "\<forall> f. electoral_module f \<longrightarrow> reject f A p' \<subseteq> A"
         using input reject_in_alts
         by metis
-      have ff2:
-        "\<forall> f. reject f A q \<inter> defer f A q = {} \<or> \<not> electoral_module f"
+      have rej_def_disj:
+        "\<forall> f. electoral_module f \<longrightarrow> reject f A p' \<inter> defer f A p' = {}"
         using input result_disj
         by metis
-      have "electoral_module m \<and> profile A p \<and> finite_profile A q"
+      have "electoral_module m \<and> profile A p \<and> finite_profile A p'"
         using input
         by blast
-      hence ff3:
-        "elect m A q \<inter> reject m A q = {} \<and> elect m A q \<inter> defer m A q = {} \<and>
-          reject m A q \<inter> defer m A q = {}"
+      hence
+        "elect m A p' \<inter> reject m A p' = {} \<and> elect m A p' \<inter> defer m A p' = {} \<and>
+          reject m A p' \<inter> defer m A p' = {}"
         by (simp add: result_disj)
       hence
-        "a' \<in> elect m A q \<longrightarrow> a' \<notin> reject m A q \<or> a' \<in> reject m A p"
-        using disjoint_iff_not_equal ff3
+        "a' \<in> elect m A p' \<longrightarrow> a' \<notin> reject m A p' \<or> a' \<in> reject m A p"
+        using disjoint_iff_not_equal
         by metis
-      hence "a' \<notin> reject m A q \<or> a' \<in> reject m A p"
-        using ff2 ff1 electoral_mod_defer_elem eq input
+      hence "a' \<notin> reject m A p' \<or> a' \<in> reject m A p"
+        using rej_def_disj rej_set electoral_mod_defer_elem eq input
         unfolding prof_contains_result_def
         by fastforce
     }
     thus ?thesis
       by metis
   qed
-  moreover have "\<forall> a \<in> defer m A p. a \<in> defer m A q"
+  moreover have "\<forall> a \<in> defer m A p. a \<in> defer m A p'"
     using defer_in_alts eq prof_contains_result_def input in_mono
     by fastforce
-  moreover have "\<forall> a \<in> defer m A q. a \<in> defer m A p"
-  proof (safe)
-    fix a :: "'a"
-    assume "a \<in> defer m A q"
-    thus "a \<in> defer m A p"
-      using calculation defer_not_elec_or_rej
-            input subsetI subset_antisym
-      by metis
-  qed
+  moreover have "\<forall> a \<in> defer m A p'. a \<in> defer m A p"
+    using calculation defer_not_elec_or_rej
+          input subsetI subset_antisym
+    by metis
   ultimately show ?thesis
     using prod.collapse subsetI subset_antisym
     by metis
@@ -681,27 +674,27 @@ qed
 
 lemma eq_def_and_elect_imp_eq:
   assumes
-    "electoral_module m" and
-    "electoral_module n" and
-    "finite_profile A p" and
-    "finite_profile A q" and
-    "elect m A p = elect n A q" and
-    "defer m A p = defer n A q"
+    mod_m: "electoral_module m" and
+    mod_n: "electoral_module n" and
+    fin_p: "finite_profile A p" and
+    fin_q: "finite_profile A q" and
+    elec_eq: "elect m A p = elect n A q" and
+    def_eq: "defer m A p = defer n A q"
   shows "m A p = n A q"
 proof -
   have disj_m:
     "disjoint3 (m A p)"
-    using assms(1) assms(3)
+    using mod_m fin_p
     unfolding electoral_module_def
     by auto
   have disj_n:
     "disjoint3 (n A q)"
-    using assms(2) assms(4)
+    using mod_n fin_q
     unfolding electoral_module_def
     by auto
   have set_partit_m:
     "set_equals_partition A ((elect m A p), (reject m A p), (defer m A p))"
-    using assms(1) assms(3)
+    using mod_m fin_p
     unfolding electoral_module_def
     by auto
   moreover have
@@ -710,7 +703,7 @@ proof -
     by metis
   have set_partit_n:
     "set_equals_partition A ((elect n A q), (reject n A q), (defer n A q))"
-    using assms(2) assms(4)
+    using mod_n fin_q
     unfolding electoral_module_def
     by auto
   moreover have
@@ -719,26 +712,27 @@ proof -
     by metis
   have reject_p:
     "reject m A p = A - ((elect m A p) \<union> (defer m A p))"
-    using assms(1) assms(3) combine_ele_rej_def result_imp_rej
+    using mod_m fin_p combine_ele_rej_def result_imp_rej
     unfolding electoral_module_def
     by metis
   have reject_q:
     "reject n A q = A - ((elect n A q) \<union> (defer n A q))"
-    using assms(2) assms(4) combine_ele_rej_def
-          result_imp_rej
+    using mod_n fin_q combine_ele_rej_def result_imp_rej
     unfolding electoral_module_def
     by metis
   from reject_p reject_q
   show ?thesis
-    by (simp add: assms(5) assms(6) prod_eqI)
+    using elec_eq def_eq prod_eqI
+    by metis
 qed
 
 subsection \<open>Non-Blocking\<close>
 
-(*
-   An electoral module is non-blocking iff
-   this module never rejects all alternatives.
-*)
+text \<open>
+  An electoral module is non-blocking iff
+  this module never rejects all alternatives.
+\<close>
+
 definition non_blocking :: "'a Electoral_Module \<Rightarrow> bool" where
   "non_blocking m \<equiv>
     electoral_module m \<and>
@@ -747,10 +741,11 @@ definition non_blocking :: "'a Electoral_Module \<Rightarrow> bool" where
 
 subsection \<open>Electing\<close>
 
-(*
-   An electoral module is electing iff
-   it always elects at least one alternative.
-*)
+text \<open>
+  An electoral module is electing iff
+  it always elects at least one alternative.
+\<close>
+
 definition electing :: "'a Electoral_Module \<Rightarrow> bool" where
   "electing m \<equiv>
     electoral_module m \<and>
@@ -825,10 +820,11 @@ qed
 
 subsection \<open>Properties\<close>
 
-(*
-   An electoral module is non-electing iff
-   it never elects an alternative.
-*)
+text \<open>
+  An electoral module is non-electing iff
+  it never elects an alternative.
+\<close>
+
 definition non_electing :: "'a Electoral_Module \<Rightarrow> bool" where
   "non_electing m \<equiv>
     electoral_module m \<and> (\<forall> A p. finite_profile A p \<longrightarrow> elect m A p = {})"
@@ -901,21 +897,23 @@ proof -
                   eliminates_def finite_subset)
 qed
 
-(*
-   An electoral module is defer-deciding iff
-   this module chooses exactly 1 alternative to defer and
-   rejects any other alternative.
-   Note that `rejects n-1 m` can be omitted due to the
-   well-formedness property.
-*)
+text \<open>
+  An electoral module is defer-deciding iff
+  this module chooses exactly 1 alternative to defer and
+  rejects any other alternative.
+  Note that `rejects n-1 m` can be omitted due to the
+  well-formedness property.
+\<close>
+
 definition defer_deciding :: "'a Electoral_Module \<Rightarrow> bool" where
   "defer_deciding m \<equiv>
     electoral_module m \<and> non_electing m \<and> defers 1 m"
 
-(*
-   An electoral module decrements iff
-   this module rejects at least one alternative whenever possible (|A|>1).
-*)
+text \<open>
+  An electoral module decrements iff
+  this module rejects at least one alternative whenever possible (|A| > 1).
+\<close>
+
 definition decrementing :: "'a Electoral_Module \<Rightarrow> bool" where
   "decrementing m \<equiv>
     electoral_module m \<and> (
@@ -940,31 +938,34 @@ definition condorcet_compatibility :: "'a Electoral_Module \<Rightarrow> bool" w
           (w \<in> elect m A p \<longrightarrow>
             (\<forall> l. \<not>condorcet_winner A p l \<longrightarrow> l \<in> reject m A p))))"
 
-(*
-   An electoral module is defer-monotone iff,
-   when a deferred alternative is lifted, this alternative remains deferred.
-*)
+text \<open>
+  An electoral module is defer-monotone iff,
+  when a deferred alternative is lifted, this alternative remains deferred.
+\<close>
+
 definition defer_monotonicity :: "'a Electoral_Module \<Rightarrow> bool" where
   "defer_monotonicity m \<equiv>
     electoral_module m \<and>
       (\<forall> A p q w.
           (finite A \<and> w \<in> defer m A p \<and> lifted A p q w) \<longrightarrow> w \<in> defer m A q)"
 
-(*
-   An electoral module is defer-lift-invariant iff
-   lifting a deferred alternative does not affect the outcome.
-*)
+text \<open>
+  An electoral module is defer-lift-invariant iff
+  lifting a deferred alternative does not affect the outcome.
+\<close>
+
 definition defer_lift_invariance :: "'a Electoral_Module \<Rightarrow> bool" where
   "defer_lift_invariance m \<equiv>
     electoral_module m \<and>
       (\<forall> A p q a.
           (a \<in> (defer m A p) \<and> lifted A p q a) \<longrightarrow> m A p = m A q)"
 
-(*
-   Two electoral modules are disjoint-compatible if they only make decisions
-   over disjoint sets of alternatives. Electoral modules reject alternatives
-   for which they make no decision.
-*)
+text \<open>
+  Two electoral modules are disjoint-compatible if they only make decisions
+  over disjoint sets of alternatives. Electoral modules reject alternatives
+  for which they make no decision.
+\<close>
+
 definition disjoint_compatibility :: "'a Electoral_Module \<Rightarrow>
                                          'a Electoral_Module \<Rightarrow> bool" where
   "disjoint_compatibility m n \<equiv>
@@ -976,22 +977,24 @@ definition disjoint_compatibility :: "'a Electoral_Module \<Rightarrow>
             (\<forall> a \<in> S - A. indep_of_alt n S a \<and>
               (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p))))"
 
-(*
-   Lifting an elected alternative a from an invariant-monotone
-   electoral module either does not change the elect set, or
-   makes a the only elected alternative.
-*)
+text \<open>
+  Lifting an elected alternative a from an invariant-monotone
+  electoral module either does not change the elect set, or
+  makes a the only elected alternative.
+\<close>
+
 definition invariant_monotonicity :: "'a Electoral_Module \<Rightarrow> bool" where
   "invariant_monotonicity m \<equiv>
     electoral_module m \<and>
         (\<forall> A p q a. (a \<in> elect m A p \<and> lifted A p q a) \<longrightarrow>
           (elect m A q = elect m A p \<or> elect m A q = {a}))"
 
-(*
-   Lifting a deferred alternative a from a defer-invariant-monotone
-   electoral module either does not change the defer set, or
-   makes a the only deferred alternative.
-*)
+text \<open>
+  Lifting a deferred alternative a from a defer-invariant-monotone
+  electoral module either does not change the defer set, or
+  makes a the only deferred alternative.
+\<close>
+
 definition defer_invariant_monotonicity :: "'a Electoral_Module \<Rightarrow> bool" where
   "defer_invariant_monotonicity m \<equiv>
     electoral_module m \<and> non_electing m \<and>
@@ -1051,12 +1054,13 @@ proof (rule ccontr)
 qed
 
 theorem ccomp_and_dd_imp_dcc[simp]:
-  assumes ccomp: "condorcet_compatibility m" and
-          dd: "defer_deciding m"
+  assumes
+    ccomp: "condorcet_compatibility m" and
+    dd: "defer_deciding m"
   shows "defer_condorcet_consistency m"
 proof (unfold defer_condorcet_consistency_def, auto)
+  from dd
   show "electoral_module m"
-    using dd
     unfolding defer_deciding_def
     by metis
 next
@@ -1080,26 +1084,18 @@ next
         A - defer m A p,
         {d \<in> A. condorcet_winner A p d})"
   proof -
-    (* Elect *)
-    from dd have 0:
-      "elect m A p = {}"
+    from dd have 0: "elect m A p = {}"
       using winner
       unfolding defer_deciding_def non_electing_def
       by simp
-    (* Defers *)
-    from dd ccomp
-    have 1: "defer m A p = {w}"
+    from dd ccomp have 1: "defer m A p = {w}"
       using ccomp_and_dd_imp_def_only_winner winner
       by simp
-    (* Reject *)
-    from 0 1
-    have 2:
-      "reject m A p = A - defer m A p"
+    from 0 1 have 2: "reject m A p = A - defer m A p"
       using Diff_empty dd reject_not_elec_or_def winner
       unfolding defer_deciding_def
       by fastforce
-    from 0 1 2
-    have 3: "m A p = ({}, A - defer m A p, {w})"
+    from 0 1 2 have 3: "m A p = ({}, A - defer m A p, {w})"
       using combine_ele_rej_def
       by metis
     have "{w} = {d \<in> A. condorcet_winner A p d}"
@@ -1141,7 +1137,10 @@ next
     by simp
 qed
 
-(* If m and n are disjoint compatible, so are n and m. *)
+text \<open>
+  If m and n are disjoint compatible, so are n and m.
+\<close>
+
 theorem disj_compat_comm[simp]:
   assumes compatible: "disjoint_compatibility m n"
   shows "disjoint_compatibility n m"
@@ -1202,10 +1201,11 @@ proof -
     by simp
 qed
 
-(*
-   Every electoral module which is defer-lift-invariant is
-   also defer-monotone.
-*)
+text \<open>
+  Every electoral module which is defer-lift-invariant is
+  also defer-monotone.
+\<close>
+
 theorem dl_inv_imp_def_mono[simp]:
   assumes "defer_lift_invariance m"
   shows "defer_monotonicity m"
@@ -1278,10 +1278,11 @@ qed
 
 subsubsection \<open>(Weak) Monotonicity\<close>
 
-(*
-   An electoral module is monotone iff
-   when an elected alternative is lifted, this alternative remains elected.
-*)
+text \<open>
+  An electoral module is monotone iff
+  when an elected alternative is lifted, this alternative remains elected.
+\<close>
+
 definition monotonicity :: "'a Electoral_Module \<Rightarrow> bool" where
   "monotonicity m \<equiv>
     electoral_module m \<and>

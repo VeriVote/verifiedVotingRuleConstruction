@@ -71,10 +71,11 @@ qed
 
 subsection \<open>Composition Rule\<close>
 
-(*
-   Using a conservative aggregator, the parallel composition
-   preserves the property non-electing.
-*)
+text \<open>
+  Using a conservative aggregator, the parallel composition
+  preserves the property non-electing.
+\<close>
+
 theorem conserv_agg_presv_non_electing[simp]:
   assumes
     non_electing_m: "non_electing m" and

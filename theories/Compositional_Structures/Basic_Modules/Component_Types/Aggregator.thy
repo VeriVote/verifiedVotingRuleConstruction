@@ -12,13 +12,15 @@ theory Aggregator
   imports "Social_Choice_Types/Result"
 begin
 
-text
-\<open>An aggregator gets two partitions (results of electoral modules) as input and
-output another partition. They are used to aggregate results of parallel
-composed electoral modules.
-They are commutative, i.e., the order of the aggregated modules does not affect
-the resulting aggregation. Moreover, they are conservative in the sense that
-the resulting decisions are subsets of the two given partitions' decisions.\<close>
+text \<open>
+  An aggregator gets two partitions (results of electoral modules) as input and
+  output another partition. They are used to aggregate results of parallel
+  composed electoral modules.
+  They are commutative, i.e., the order of the aggregated modules does not
+  affect the resulting aggregation. Moreover, they are conservative in the
+  sense that the resulting decisions are subsets of the two given partitions'
+  decisions.
+\<close>
 
 subsection \<open>Definition\<close>
 

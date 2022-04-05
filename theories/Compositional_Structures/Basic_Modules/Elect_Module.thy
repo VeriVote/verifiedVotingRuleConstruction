@@ -11,11 +11,12 @@ theory Elect_Module
   imports "Component_Types/Electoral_Module"
 begin
 
-text
-\<open>The elect module is not concerned about the voter's ballots, and
-just elects all alternatives. It is primarily used in sequence after
-an electoral module that only defers alternatives to finalize the decision,
-thereby inducing a proper voting rule in the social choice sense.\<close>
+text \<open>
+  The elect module is not concerned about the voter's ballots, and
+  just elects all alternatives. It is primarily used in sequence after
+  an electoral module that only defers alternatives to finalize the decision,
+  thereby inducing a proper voting rule in the social choice sense.
+\<close>
 
 subsection \<open>Definition\<close>
 

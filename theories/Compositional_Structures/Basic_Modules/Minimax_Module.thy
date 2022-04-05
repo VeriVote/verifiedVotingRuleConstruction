@@ -10,11 +10,12 @@ theory Minimax_Module
   imports "Component_Types/Elimination_Module"
 begin
 
-text
-\<open>This is the Minimax module used by the Minimax voting rule. The Minimax rule
-elects the alternatives with the highest Minimax score. The module implemented
-herein only rejects the alternatives not elected by the voting rule, and defers
-the alternatives that would be elected by the full voting rule.\<close>
+text \<open>
+  This is the Minimax module used by the Minimax voting rule. The Minimax rule
+  elects the alternatives with the highest Minimax score. The module implemented
+  herein only rejects the alternatives not elected by the voting rule, and defers
+  the alternatives that would be elected by the full voting rule.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -54,8 +55,6 @@ proof (simp)
     by force
   hence not_empty: "?set \<noteq> {}"
     by blast
-  (* from 0 not_empty, have 10 "prefer_count p l w \<in> ?set"
-     by blast *)
   have "?lscore = Min ?set"
     by simp
   hence 1: "?lscore \<in> ?set \<and> (\<forall> p \<in> ?set. ?lscore \<le> p)"

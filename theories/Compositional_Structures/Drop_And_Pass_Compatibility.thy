@@ -14,9 +14,10 @@ theory Drop_And_Pass_Compatibility
           "Basic_Modules/Pass_Module"
 begin
 
-text
-\<open>This is a collection of properties about the interplay and compatibility
-of both the drop module and the pass module.\<close>
+text \<open>
+  This is a collection of properties about the interplay and compatibility
+  of both the drop module and the pass module.
+\<close>
 
 subsection \<open>Properties\<close>
 
@@ -61,10 +62,11 @@ next
     by simp
 qed
 
-(*
+text \<open>
   The drop module rejects n alternatives (if there are n alternatives).
   NOTE: The induction proof is still missing. Following is the proof for n=2.
-*)
+\<close>
+
 theorem drop_two_mod_rej_two[simp]:
   assumes order: "linear_order r"
   shows "rejects 2 (drop_module 2 r)"
@@ -113,7 +115,10 @@ proof -
     by blast
 qed
 
-(* The pass and drop module are (disjoint-)compatible. *)
+text \<open>
+  The pass and drop module are (disjoint-)compatible.
+\<close>
+
 theorem drop_pass_disj_compat[simp]:
   assumes order: "linear_order r"
   shows "disjoint_compatibility (drop_module n r) (pass_module n r)"

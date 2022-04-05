@@ -11,10 +11,11 @@ theory Pairwise_Majority_Rule
           "Compositional_Structures/Defer_One_Loop_Composition"
 begin
 
-text
-\<open>This is the pairwise majority rule, a voting rule that implements the
-Condorcet criterion, i.e., it elects the Condorcet winner if it exists,
-otherwise a tie remains between all alternatives.\<close>
+text \<open>
+  This is the pairwise majority rule, a voting rule that implements the
+  Condorcet criterion, i.e., it elects the Condorcet winner if it exists,
+  otherwise a tie remains between all alternatives.
+\<close>
 
 subsection \<open>Definition\<close>
 

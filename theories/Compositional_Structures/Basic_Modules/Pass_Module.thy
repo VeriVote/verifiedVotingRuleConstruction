@@ -11,12 +11,13 @@ theory Pass_Module
   imports "Component_Types/Electoral_Module"
 begin
 
-text
-\<open>This is a family of electoral modules. For a natural number n and a
-lexicon (linear order) r of all alternatives, the according pass module
-defers the lexicographically first n alternatives (from A) and rejects
-the rest. It is primarily used as counterpart to the drop module in a
-parallel composition in order to segment the alternatives into two groups.\<close>
+text \<open>
+  This is a family of electoral modules. For a natural number n and a
+  lexicon (linear order) r of all alternatives, the according pass module
+  defers the lexicographically first n alternatives (from A) and rejects
+  the rest. It is primarily used as counterpart to the drop module in a
+  parallel composition in order to segment the alternatives into two groups.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -67,7 +68,10 @@ qed
 
 subsection \<open>Non-Blocking\<close>
 
-(* The pass module is non-blocking. *)
+text \<open>
+  The pass module is non-blocking.
+\<close>
+
 theorem pass_mod_non_blocking[simp]:
   assumes order: "linear_order r" and
           g0_n:  "n > 0"
@@ -114,7 +118,10 @@ qed
 
 subsection \<open>Non-Electing\<close>
 
-(* The pass module is non-electing. *)
+text \<open>
+  The pass module is non-electing.
+\<close>
+
 theorem pass_mod_non_electing[simp]:
   assumes order: "linear_order r"
   shows "non_electing (pass_module n r)"
@@ -124,7 +131,11 @@ theorem pass_mod_non_electing[simp]:
 
 subsection \<open>Properties\<close>
 
-(* The pass module is strictly defer-monotone. *)
+
+text \<open>
+  The pass module is strictly defer-monotone.
+\<close>
+
 theorem pass_mod_dl_inv[simp]:
   assumes order: "linear_order r"
   shows "defer_lift_invariance (pass_module n r)"
@@ -178,12 +189,13 @@ next
     by simp
 qed
 
-(*
-   For any natural number n and any linear order, the according pass module
-   defers n alternatives (if there are n alternatives).
-   NOTE: The induction proof is still missing. Following are the proofs for
-   n=1 and n=2.
-*)
+text \<open>
+  For any natural number n and any linear order, the according pass module
+  defers n alternatives (if there are n alternatives).
+  NOTE: The induction proof is still missing. The following are the proofs
+  for n=1 and n=2.
+\<close>
+
 theorem pass_one_mod_def_one[simp]:
   assumes order: "linear_order r"
   shows "defers 1 (pass_module 1 r)"
@@ -361,8 +373,8 @@ next
   hence b_best: "\<forall> c \<in> A - {a}. (c, b) \<in> limit A r"
     by auto
   hence c_not_above_b: "\<forall> c \<in> A - {a, b}. c \<notin> above (limit A r) b"
-    using b Diff_iff Diff_insert2 subset_UNIV above_presv_limit
-          insert_subset order limit_presv_above limit_presv_above2
+    using b Diff_iff Diff_insert2 above_presv_limit insert_subset
+          order limit_presv_above limit_presv_above2
     by metis
   moreover have above_subset: "above (limit A r) b \<subseteq> A"
     using above_presv_limit order

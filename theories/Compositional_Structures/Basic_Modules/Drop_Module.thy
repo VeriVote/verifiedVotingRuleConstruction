@@ -11,14 +11,15 @@ theory Drop_Module
   imports "Component_Types/Electoral_Module"
 begin
 
-text
-\<open>This is a family of electoral modules. For a natural number n and a
-lexicon (linear order) r of all alternatives, the according drop module
-rejects the lexicographically first n alternatives (from A) and
-defers the rest.
-It is primarily used as counterpart to the pass module in a
-parallel composition, in order to segment the alternatives into
-two groups.\<close>
+text \<open>
+  This is a family of electoral modules. For a natural number n and a
+  lexicon (linear order) r of all alternatives, the according drop module
+  rejects the lexicographically first n alternatives (from A) and
+  defers the rest.
+  It is primarily used as counterpart to the pass module in a
+  parallel composition, in order to segment the alternatives into
+  two groups.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -69,7 +70,10 @@ qed
 
 subsection \<open>Non-Electing\<close>
 
-(* The drop module is non-electing. *)
+text \<open>
+  The drop module is non-electing.
+\<close>
+
 theorem drop_mod_non_electing[simp]:
   assumes order: "linear_order r"
   shows "non_electing (drop_module n r)"
@@ -79,7 +83,10 @@ theorem drop_mod_non_electing[simp]:
 
 subsection \<open>Properties\<close>
 
-(* The drop module is strictly defer-monotone. *)
+text \<open>
+  The drop module is strictly defer-monotone.
+\<close>
+
 theorem drop_mod_def_lift_inv[simp]:
   assumes order: "linear_order r"
   shows "defer_lift_invariance (drop_module n r)"

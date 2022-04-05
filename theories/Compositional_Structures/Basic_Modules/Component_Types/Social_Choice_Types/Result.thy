@@ -11,30 +11,34 @@ theory Result
   imports Main
 begin
 
-text
-\<open>An electoral result is the principal result type of the composable modules
-voting framework, as it is a generalization of the set of winning alternatives
-from social choice functions. Electoral results are selections of the received
-(possibly empty) set of alternatives into the three disjoint groups of elected,
-rejected and deferred alternatives.
-Any of those sets, e.g., the set of winning (elected) alternatives, may also
-be left empty, as long as they collectively still hold all the received
-alternatives.\<close>
+text \<open>
+  An electoral result is the principal result type of the composable modules
+  voting framework, as it is a generalization of the set of winning
+  alternatives from social choice functions. Electoral results are selections
+  of the received (possibly empty) set of alternatives into the three disjoint
+  groups of elected, rejected and deferred alternatives.
+  Any of those sets, e.g., the set of winning (elected) alternatives, may also
+  be left empty, as long as they collectively still hold all the received
+  alternatives.
+\<close>
 
 subsection \<open>Definition\<close>
 
-(*
-   A result contains three sets of alternatives:
-   elected, rejected, and deferred alternatives.
-*)
+text \<open>
+  A result contains three sets of alternatives:
+  elected, rejected, and deferred alternatives.
+\<close>
+
 type_synonym 'a Result = "'a set * 'a set * 'a set"
 
 subsection \<open>Auxiliary Functions\<close>
 
-(*
-   A partition of a set A are pairwise disjoint sets that set_equals_partition A.
-   For this specific predicate, we have three disjoint sets in a three-tuple.
-*)
+text \<open>
+  A partition of a set A are pairwise disjoint sets that "set equals
+  partition" A. For this specific predicate, we have three disjoint sets
+  in a three-tuple.
+\<close>
+
 fun disjoint3 :: "'a Result \<Rightarrow> bool" where
   "disjoint3 (e, r, d) =
     ((e \<inter> r = {}) \<and>
@@ -47,7 +51,10 @@ fun set_equals_partition :: "'a set \<Rightarrow>'a Result \<Rightarrow> bool" w
 fun well_formed :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
   "well_formed A result = (disjoint3 result \<and> set_equals_partition A result)"
 
-(* These three functions return the elect, reject, or defer set of a result. *)
+text \<open>
+  These three functions return the elect, reject, or defer set of a result.
+\<close>
+
 abbreviation elect_r :: "'a Result \<Rightarrow> 'a set" where
   "elect_r r \<equiv> fst r"
 
@@ -63,8 +70,7 @@ lemma result_imp_rej:
   assumes "well_formed A (e, r, d)"
   shows "A - (e \<union> d) = r"
 proof (safe)
-  fix
-    x :: "'a"
+  fix x :: "'a"
   assume
     x_in_A: "x \<in> A" and
     x_not_rej: "x \<notin> r" and
@@ -77,10 +83,8 @@ proof (safe)
     using x_in_A x_not_rej x_not_def
     by auto
 next
-  fix
-    x :: "'a"
-  assume
-    x_rej: "x \<in> r"
+  fix x :: "'a"
+  assume x_rej: "x \<in> r"
   from assms have
     "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
     (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
@@ -89,8 +93,7 @@ next
     using x_rej
     by auto
 next
-  fix
-    x :: "'a"
+  fix x :: "'a"
   assume
     x_rej:  "x \<in> r" and
     x_elec: "x \<in> e"
@@ -98,12 +101,11 @@ next
     "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
     (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
     by simp
-  thus "False"
+  thus False
     using x_rej x_elec
     by auto
 next
-  fix
-    x :: "'a"
+  fix x :: "'a"
   assume
     x_rej: "x \<in> r" and
     x_def: "x \<in> d"
@@ -111,25 +113,25 @@ next
     "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
     (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
     by simp
-  thus "False"
+  thus False
     using x_rej x_def
     by auto
 qed
 
 lemma result_count:
   assumes
-    "well_formed A (e, r, d)" and
-    "finite A"
+    wf: "well_formed A (e, r, d)" and
+    fin_A: "finite A"
   shows "card A = card e + card r + card d"
 proof -
-  from assms(1) have disj:
+  from wf have disj:
     "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {})"
     by simp
-  from assms(1) have set_partit:
+  from wf have set_partit:
     "e \<union> r \<union> d = A"
     by simp
   show ?thesis
-    using assms(2) disj set_partit Int_Un_distrib2 finite_Un
+    using fin_A disj set_partit Int_Un_distrib2 finite_Un
           card_Un_disjoint sup_bot.right_neutral
     by metis
 qed
@@ -139,22 +141,20 @@ lemma defer_subset:
   shows "defer_r result \<subseteq> A"
 proof (safe)
   fix x :: "'a"
-  assume assm0: "x \<in> defer_r result"
+  assume def_x: "x \<in> defer_r result"
   obtain
-    AA :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
-    pp :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
-    assm1: "A = AA result A \<and> result = pp result A \<and>
-            disjoint3 (pp result A) \<and>
-            set_equals_partition (AA result A) (pp result A)"
+    alts :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
+    res :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
+    wf: "A = alts result A \<and> result = res result A \<and> disjoint3 (res result A) \<and>
+            set_equals_partition (alts result A) (res result A)"
     using assms
     by simp
   hence
-    "\<forall> p A. \<exists> A' B C.
-      (\<not> set_equals_partition (A::'a set) p \<or> (A', B, C) = p) \<and>
-        (\<not> set_equals_partition A p \<or> A' \<union> B \<union> C = A)"
-    by auto
+    "\<forall> p A. \<exists> elec rej def.
+      set_equals_partition (A::'a set) p \<longrightarrow> (elec, rej, def) = p \<and> elec \<union> rej \<union> def = A"
+    by simp
   thus "x \<in> A"
-    using UnCI assm0 assm1 snd_conv
+    using UnCI def_x wf snd_conv
     by metis
 qed
 
@@ -163,22 +163,20 @@ lemma elect_subset:
   shows "elect_r result \<subseteq> A"
 proof (safe)
   fix x :: "'a"
-  assume assm0: "x \<in> elect_r result"
+  assume elec_res: "x \<in> elect_r result"
   obtain
-    AA :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
-    pp :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
-    assm1: "A = AA result A \<and> result = pp result A \<and>
-            disjoint3 (pp result A) \<and>
-            set_equals_partition (AA result A) (pp result A)"
+    alts :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
+    res :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
+    wf: "A = alts result A \<and> result = res result A \<and> disjoint3 (res result A) \<and>
+            set_equals_partition (alts result A) (res result A)"
     using assms
     by simp
   hence
-    "\<forall> p A. \<exists> A' B C.
-      (\<not> set_equals_partition (A::'a set) p \<or> (A', B, C) = p) \<and>
-        (\<not> set_equals_partition A p \<or> A' \<union> B \<union> C = A)"
-    by auto
+    "\<forall> p A. \<exists> elec rej def.
+      set_equals_partition (A::'a set) p \<longrightarrow> (elec, rej, def) = p \<and> elec \<union> rej \<union> def = A"
+    by simp
   thus "x \<in> A"
-    using UnCI assm0 assm1 assms fst_conv
+    using UnCI elec_res wf assms fst_conv
     by metis
 qed
 
@@ -186,23 +184,21 @@ lemma reject_subset:
   assumes "well_formed A result"
   shows "reject_r result \<subseteq> A"
 proof (safe)
-  fix x :: "'a"
-  assume assm0: "x \<in> reject_r result"
+  fix a :: "'a"
+  assume rej_a: "a \<in> reject_r result"
   obtain
-    AA :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
-    pp :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
-    assm1: "A = AA result A \<and> result = pp result A \<and>
-            disjoint3 (pp result A) \<and>
-            set_equals_partition (AA result A) (pp result A)"
+    alts :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
+    res :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
+    wf: "A = alts result A \<and> result = res result A \<and> disjoint3 (res result A) \<and>
+            set_equals_partition (alts result A) (res result A)"
     using assms
     by simp
   hence
-    "\<forall> p A. \<exists> A' B C.
-      (\<not> set_equals_partition (A::'a set) p \<or> (A', B, C) = p) \<and>
-        (\<not> set_equals_partition A p \<or> A' \<union> B \<union> C = A)"
-    by auto
-  thus "x \<in> A"
-    using UnCI assms assm0 assm1 fst_conv snd_conv disjoint3.cases
+    "\<forall> p A. \<exists> elec rej def.
+      set_equals_partition (A::'a set) p \<longrightarrow> (elec, rej, def) = p \<and> elec \<union> rej \<union> def = A"
+    by simp
+  thus "a \<in> A"
+    using UnCI assms rej_a wf fst_conv snd_conv disjoint3.cases
     by metis
 qed
 

@@ -11,10 +11,11 @@ theory Revision_Composition
   imports "Basic_Modules/Component_Types/Electoral_Module"
 begin
 
-text
-\<open>A revised electoral module rejects all originally rejected or deferred
-alternatives, and defers the originally elected alternatives.
-It does not elect any alternatives.\<close>
+text \<open>
+  A revised electoral module rejects all originally rejected or deferred
+  alternatives, and defers the originally elected alternatives.
+  It does not elect any alternatives.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -53,7 +54,10 @@ qed
 
 subsection \<open>Composition Rules\<close>
 
-(* An electoral module received by revision is never electing. *)
+text \<open>
+  An electoral module received by revision is never electing.
+\<close>
+
 theorem rev_comp_non_electing[simp]:
   assumes "electoral_module m"
   shows "non_electing (m\<down>)"
@@ -61,10 +65,11 @@ theorem rev_comp_non_electing[simp]:
   unfolding non_electing_def
   by simp
 
-(*
-   Revising an electing electoral module results in a
-   non-blocking electoral module.
-*)
+text \<open>
+  Revising an electing electoral module results in a
+  non-blocking electoral module.
+\<close>
+
 theorem rev_comp_non_blocking[simp]:
   assumes "electing m"
   shows "non_blocking (m\<down>)"
@@ -95,10 +100,11 @@ next
     by (metis (no_types, lifting))
 qed
 
-(*
-   Revising an invariant monotone electoral module results in a
-   defer-invariant-monotone electoral module.
-*)
+text \<open>
+  Revising an invariant monotone electoral module results in a
+  defer-invariant-monotone electoral module.
+\<close>
+
 theorem rev_comp_def_inv_mono[simp]:
   assumes "invariant_monotonicity m"
   shows "defer_invariant_monotonicity (m\<down>)"

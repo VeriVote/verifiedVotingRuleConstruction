@@ -13,11 +13,12 @@ theory Loop_Composition
           Sequential_Composition
 begin
 
-text
-\<open>The loop composition uses the same module in sequence,
-combined with a termination condition, until either
+text \<open>
+  The loop composition uses the same module in sequence,
+  combined with a termination condition, until either
   (1) the termination condition is met or
-  (2) no new decisions are made (i.e., a fixed point is reached).\<close>
+  (2) no new decisions are made (i.e., a fixed point is reached).
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -32,10 +33,11 @@ lemma loop_termination_helper:
   using assms psubset_card_mono
   by simp
 
-(*
-   This function handles the accumulator for the following loop composition
-   function.
-*)
+text \<open>
+  This function handles the accumulator for the following loop composition
+  function.
+\<close>
+
 function loop_comp_helper ::
     "'a Electoral_Module \<Rightarrow> 'a Electoral_Module \<Rightarrow>
         'a Termination_Condition \<Rightarrow> 'a Electoral_Module" where
@@ -719,7 +721,7 @@ proof (induct n arbitrary: acc rule: less_induct)
     have rec_step:
       "(card (defer acc A p) > 1 \<and> finite_profile A p \<and> non_electing acc) \<longrightarrow>
           loop_comp_helper acc m t A p =
-              loop_comp_helper (acc \<triangleright> m) m t A p" (* needed for step *)
+              loop_comp_helper (acc \<triangleright> m) m t A p"
       using def_presv_fin_prof loop_comp_helper.simps(2)
             step_reduces_defer_set term_not_satisfied
       unfolding non_electing_def
@@ -789,19 +791,19 @@ proof (induct n arbitrary: acc rule: less_induct)
         hence "electoral_module acc \<longrightarrow> 1 < card (defer (acc \<triangleright> m) A p)"
           using x_greater_zero i_is_new_card
           by linarith
-        moreover have new_card_still_big_enough2:
-          "electoral_module acc \<longrightarrow> x \<le> i" (* Needed for step *)
+        moreover have new_card_still_big_enough2_step:
+          "electoral_module acc \<longrightarrow> x \<le> i"
           using i_is_new_card new_card_still_big_enough
           by metis
-        moreover have
+        moreover have n_card_then_i_lt_n_step:
           "n = card (defer acc A p) \<longrightarrow>
-              (electoral_module acc \<longrightarrow> i < n)" (* Needed for step *)
+              (electoral_module acc \<longrightarrow> i < n)"
           using subset step_profile enough_leftover f_prof psubset_card_mono
                 i_is_new_card
           by metis
-        moreover have
+        moreover have acc_mod_then_acc_seq_m_mod_step:
           "electoral_module acc \<longrightarrow>
-              electoral_module (acc \<triangleright> m)" (* Needed for step *)
+              electoral_module (acc \<triangleright> m)"
           using non_electing_m seq_comp_sound
           unfolding non_electing_def
           by simp
@@ -911,7 +913,10 @@ qed
 
 subsection \<open>Composition Rules\<close>
 
-(* The loop composition preserves defer-lift-invariance. *)
+text \<open>
+  The loop composition preserves defer-lift-invariance.
+\<close>
+
 theorem loop_comp_presv_def_lift_inv[simp]:
   assumes monotone_m: "defer_lift_invariance m"
   shows "defer_lift_invariance (m \<circlearrowleft>\<^sub>t)"
@@ -942,7 +947,10 @@ next
     by metis
 qed
 
-(* The loop composition preserves the property non-electing. *)
+text \<open>
+  The loop composition preserves the property non-electing.
+\<close>
+
 theorem loop_comp_presv_non_electing[simp]:
   assumes non_electing_m: "non_electing m"
   shows "non_electing (m \<circlearrowleft>\<^sub>t)"

@@ -11,12 +11,13 @@ theory Plurality_Module
   imports "Component_Types/Electoral_Module"
 begin
 
-text
-\<open>The plurality module implements the plurality voting rule.
-The plurality rule elects all modules with the maximum amount of top
-preferences among all alternatives, and rejects all the other alternatives.
-It is electing and induces the classical plurality (voting) rule
-from social-choice theory.\<close>
+text \<open>
+  The plurality module implements the plurality voting rule.
+  The plurality rule elects all modules with the maximum amount of top
+  preferences among all alternatives, and rejects all the other alternatives.
+  It is electing and induces the classical plurality (voting) rule
+  from social-choice theory.
+\<close>
 
 subsection \<open>Definition\<close>
 

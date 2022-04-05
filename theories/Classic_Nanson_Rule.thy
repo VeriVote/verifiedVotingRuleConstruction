@@ -11,12 +11,13 @@ theory Classic_Nanson_Rule
           "Compositional_Structures/Defer_One_Loop_Composition"
 begin
 
-text
-\<open>This is the classic Nanson's voting rule, i.e., the rule that was originally
-invented by Nanson, but not the Nanson-Baldwin rule. The idea is similar,
-however, as alternatives with a Borda score less or equal than the average
-Borda score are excluded. The Borda scores of the remaining alternatives
-are hence adjusted to the new set of (still) eligible alternatives.\<close>
+text \<open>
+  This is the classic Nanson's voting rule, i.e., the rule that was originally
+  invented by Nanson, but not the Nanson-Baldwin rule. The idea is similar,
+  however, as alternatives with a Borda score less or equal than the average
+  Borda score are excluded. The Borda scores of the remaining alternatives
+  are hence adjusted to the new set of (still) eligible alternatives.
+\<close>
 
 subsection \<open>Definition\<close>
 

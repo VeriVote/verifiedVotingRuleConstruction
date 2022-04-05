@@ -11,10 +11,11 @@ theory Maximum_Aggregator
   imports Aggregator
 begin
 
-text
-\<open>The max(imum) aggregator takes two partitions of an alternative set A as
-input. It returns a partition where every alternative receives the maximum
-result of the two input partitions.\<close>
+text \<open>
+  The max(imum) aggregator takes two partitions of an alternative set A as
+  input. It returns a partition where every alternative receives the maximum
+  result of the two input partitions.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -93,7 +94,10 @@ qed
 
 subsection \<open>Properties\<close>
 
-(* The max-aggregator is conservative. *)
+text \<open>
+  The max-aggregator is conservative.
+\<close>
+
 theorem max_agg_consv[simp]: "agg_conservative max_aggregator"
 proof (unfold agg_conservative_def, safe)
   show "aggregator max_aggregator"
@@ -166,7 +170,10 @@ next
     by simp
 qed
 
-(* The max-aggregator is commutative. *)
+text \<open>
+  The max-aggregator is commutative.
+\<close>
+
 theorem max_agg_comm[simp]: "agg_commutative max_aggregator"
 proof (unfold agg_commutative_def, safe, simp)
   fix
