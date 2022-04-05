@@ -26,8 +26,7 @@ subsection \<open>Condorcet Consistency Property\<close>
 
 theorem copeland_condorcet: "condorcet_consistency copeland_rule"
 proof (unfold copeland_rule.simps)
-  show
-    "condorcet_consistency (elector copeland)"
+  show "condorcet_consistency (elector copeland)"
     using copeland_is_dcc dcc_imp_cc_elector
     by metis
 qed

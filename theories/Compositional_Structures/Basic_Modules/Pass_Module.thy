@@ -30,7 +30,7 @@ fun pass_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a El
 subsection \<open>Soundness\<close>
 
 theorem pass_mod_sound[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "electoral_module (pass_module n r)"
 proof (intro electoral_modI)
   fix
@@ -46,8 +46,7 @@ proof (intro electoral_modI)
     "{a \<in> A. card(above (limit A r) a) > n} \<union>
       {a \<in> A. card(above (limit A r) a) \<le> n} = A"
     by blast
-  hence 0:
-    "set_equals_partition A (pass_module n r A p)"
+  hence 0: "set_equals_partition A (pass_module n r A p)"
     by simp
   have
     "(\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) > n} \<and>
@@ -57,12 +56,10 @@ proof (intro electoral_modI)
     "{a \<in> A. card(above (limit A r) a) > n} \<inter>
       {a \<in> A. card(above (limit A r) a) \<le> n} = {}"
     by blast
-  hence 1:
-    "disjoint3 (?mod A p)"
+  hence 1: "disjoint3 (?mod A p)"
     by simp
   from 0 1
-  show
-    "well_formed A (?mod A p)"
+  show "well_formed A (?mod A p)"
     by simp
 qed
 
@@ -73,9 +70,10 @@ text \<open>
 \<close>
 
 theorem pass_mod_non_blocking[simp]:
-  assumes order: "linear_order r" and
-          g0_n:  "n > 0"
-        shows "non_blocking (pass_module n r)"
+  assumes
+    order: "linear_order r" and
+    g0_n:  "n > 0"
+  shows "non_blocking (pass_module n r)"
 proof (unfold non_blocking_def, safe, simp_all)
   show "electoral_module (pass_module n r)"
     using pass_mod_sound order
@@ -111,7 +109,7 @@ next
     by (metis (no_types, lifting))
   hence "reject (pass_module n r) A p \<noteq> A"
     by simp
-  thus "False"
+  thus False
     using order card_A
     by simp
 qed
@@ -123,10 +121,10 @@ text \<open>
 \<close>
 
 theorem pass_mod_non_electing[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "non_electing (pass_module n r)"
   unfolding non_electing_def
-  using order
+  using assms
   by simp
 
 subsection \<open>Properties\<close>
@@ -137,18 +135,18 @@ text \<open>
 \<close>
 
 theorem pass_mod_dl_inv[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "defer_lift_invariance (pass_module n r)"
   unfolding defer_lift_invariance_def
-  using order
+  using assms
   by simp
 
 theorem pass_zero_mod_def_zero[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "defers 0 (pass_module 0 r)"
 proof (unfold defers_def, safe)
   show "electoral_module (pass_module 0 r)"
-    using pass_mod_sound order
+    using pass_mod_sound assms
     by simp
 next
   fix
@@ -160,15 +158,14 @@ next
     prof_A: "profile A p"
   have lin_ord_on_A:
     "linear_order_on A (limit A r)"
-    using order limit_presv_lin_ord
+    using assms limit_presv_lin_ord
     by blast
   have f1: "connex A (limit A r)"
     using lin_ord_imp_connex lin_ord_on_A
     by simp
-  obtain aa :: "('a \<Rightarrow> bool) \<Rightarrow> 'a" where
-    f2:
+  obtain select_alt :: "('a \<Rightarrow> bool) \<Rightarrow> 'a" where
     "\<forall> p. (Collect p = {} \<longrightarrow> (\<forall> a. \<not> p a)) \<and>
-        (Collect p \<noteq> {} \<longrightarrow> p (aa p))"
+        (Collect p \<noteq> {} \<longrightarrow> p (select_alt p))"
     by moura
   have "\<forall> n. \<not> (n::nat) \<le> 0 \<or> n = 0"
     by blast
@@ -176,7 +173,7 @@ next
     "\<forall> a A'. \<not> connex A' (limit A r) \<or> a \<notin> A' \<or> a \<notin> A \<or>
               \<not> card (above (limit A r) a) \<le> 0"
     using above_connex above_presv_limit card_eq_0_iff
-          equals0D finite_A order rev_finite_subset
+          equals0D finite_A assms rev_finite_subset
     by (metis (no_types))
   hence "{a \<in> A. card (above (limit A r) a) \<le> 0} = {}"
     using f1
@@ -184,8 +181,7 @@ next
   hence "card {a \<in> A. card (above (limit A r) a) \<le> 0} = 0"
     using card.empty
     by metis
-  thus
-    "card (defer (pass_module 0 r) A p) = 0"
+  thus "card (defer (pass_module 0 r) A p) = 0"
     by simp
 qed
 
@@ -197,11 +193,11 @@ text \<open>
 \<close>
 
 theorem pass_one_mod_def_one[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "defers 1 (pass_module 1 r)"
 proof (unfold defers_def, safe)
   show "electoral_module (pass_module 1 r)"
-    using pass_mod_sound order
+    using pass_mod_sound assms
     by simp
 next
   fix
@@ -211,15 +207,14 @@ next
     card_pos: "1 \<le> card A" and
     finite_A: "finite A" and
     prof_A: "profile A p"
-  show
-    "card (defer (pass_module 1 r) A p) = 1"
+  show "card (defer (pass_module 1 r) A p) = 1"
   proof -
     have "A \<noteq> {}"
       using card_pos
       by auto
     moreover have lin_ord_on_A:
       "linear_order_on A (limit A r)"
-      using order limit_presv_lin_ord
+      using assms limit_presv_lin_ord
       by blast
     ultimately have winner_exists:
       "\<exists> a \<in> A. above (limit A r) a = {a} \<and>
@@ -245,10 +240,8 @@ next
       moreover have
         "{a \<in> A. card(above (limit A r) a) \<le> 1} \<subseteq> {w}"
       proof
-        fix
-          x :: "'a"
-        assume x_in_winner_set:
-          "x \<in> {a \<in> A. card (above (limit A r) a) \<le> 1}"
+        fix x :: "'a"
+        assume x_in_winner_set: "x \<in> {a \<in> A. card (above (limit A r) a) \<le> 1}"
         hence x_in_A: "x \<in> A"
           by auto
         hence connex_limit:
@@ -265,7 +258,7 @@ next
           unfolding above_def
           by simp
         have "above (limit A r) x \<subseteq> A"
-          using above_presv_limit order
+          using above_presv_limit assms
           by fastforce
         hence above_finite: "finite (above (limit A r) x)"
           using finite_A finite_subset
@@ -304,11 +297,11 @@ next
 qed
 
 theorem pass_two_mod_def_two:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "defers 2 (pass_module 2 r)"
 proof (unfold defers_def, safe)
   show "electoral_module (pass_module 2 r)"
-    using order
+    using assms
     by simp
 next
   fix
@@ -323,7 +316,7 @@ next
     by auto
   moreover have limitA_order:
     "linear_order_on A (limit A r)"
-    using limit_presv_lin_ord order
+    using limit_presv_lin_ord assms
     by auto
   ultimately obtain a where
     a: "above (limit A r) a = {a}"
@@ -332,7 +325,7 @@ next
   hence "\<forall> b \<in> A. let q = limit A r in (b \<preceq>\<^sub>q a)"
     using limitA_order pref_imp_in_above empty_iff
           insert_iff insert_subset above_presv_limit
-          order connex_def lin_ord_imp_connex
+          assms connex_def lin_ord_imp_connex
     by metis
   hence a_best: "\<forall> b \<in> A. (b, a) \<in> limit A r"
     by simp
@@ -357,7 +350,7 @@ next
     by metis
   moreover have limitAa_order:
     "linear_order_on (A - {a}) (limit (A - {a}) r)"
-    using limit_presv_lin_ord order top_greatest
+    using limit_presv_lin_ord assms top_greatest
     by blast
   ultimately obtain b where
     b: "above (limit (A - {a}) r) b = {b}"
@@ -365,7 +358,7 @@ next
     by metis
   hence "\<forall> c \<in> A - {a}. let q = limit (A - {a}) r in (c \<preceq>\<^sub>q b)"
     using limitAa_order pref_imp_in_above empty_iff insert_iff
-          insert_subset above_presv_limit order connex_def
+          insert_subset above_presv_limit assms connex_def
           lin_ord_imp_connex
     by metis
   hence b_in_limit: "\<forall> c \<in> A - {a}. (c, b) \<in> limit (A - {a}) r"
@@ -374,13 +367,13 @@ next
     by auto
   hence c_not_above_b: "\<forall> c \<in> A - {a, b}. c \<notin> above (limit A r) b"
     using b Diff_iff Diff_insert2 above_presv_limit insert_subset
-          order limit_presv_above limit_presv_above2
+          assms limit_presv_above limit_presv_above2
     by metis
   moreover have above_subset: "above (limit A r) b \<subseteq> A"
-    using above_presv_limit order
+    using above_presv_limit assms
     by metis
   moreover have b_above_b: "b \<in> above (limit A r) b"
-    using b b_best above_presv_limit mem_Collect_eq order insert_subset
+    using b b_best above_presv_limit mem_Collect_eq assms insert_subset
     unfolding above_def
     by metis
   ultimately have above_b_eq_ab: "above (limit A r) b = {a, b}"
@@ -413,7 +406,7 @@ next
     by metis
   ultimately have
     "\<forall> c \<in> A - {a, b}. card (above (limit A r) c) \<ge> 3"
-    using card_mono finA finite_subset above_presv_limit order
+    using card_mono finA finite_subset above_presv_limit assms
     by metis
   hence "\<forall> c \<in> A - {a, b}. card (above (limit A r) c) > 2"
     using less_le_trans numeral_less_iff order_refl semiring_norm(79)

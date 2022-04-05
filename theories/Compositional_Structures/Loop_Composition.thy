@@ -124,7 +124,7 @@ next
 qed
 termination
 proof -
-  have f0:
+  have func_term:
     "\<exists> r. wf r \<and>
         (\<forall>p f (A::'a set) prof g.
           p (f A prof) \<or>
@@ -177,7 +177,7 @@ proof -
           \<not> defer (f \<triangleright> g) A prof \<subset> defer f A prof \<or>
           infinite (defer f A prof) \<or>
           ((f \<triangleright> g, g, p, A, prof), f, g, p, A, prof) \<in> p_rel)"
-    using f0
+    using func_term
     by presburger
   thus ?thesis
     using "termination"
@@ -200,7 +200,7 @@ function loop_composition ::
     loop_composition m t A p = (loop_comp_helper m m t) A p"
   by (fastforce, simp_all)
 termination
-  using  "termination" wf_empty
+  using "termination" wf_empty
   by blast
 
 abbreviation loop ::
@@ -251,10 +251,10 @@ qed
 subsection \<open>Soundness\<close>
 
 theorem loop_comp_sound:
-  assumes m_module: "electoral_module m"
+  assumes "electoral_module m"
   shows "electoral_module (m \<circlearrowleft>\<^sub>t)"
   using def_mod_sound loop_composition.simps(1) loop_composition.simps(2)
-        loop_comp_helper_imp_partit m_module
+        loop_comp_helper_imp_partit assms
   unfolding electoral_module_def
   by metis
 
@@ -573,8 +573,7 @@ lemma loop_comp_helper_def_lift_inv2:
     finite_A_p: "finite_profile A p" and
     lifted_A_pq: "lifted A p q a" and
     a_in_defer_acc: "a \<in> defer (loop_comp_helper acc m t) A p"
-  shows
-    "(loop_comp_helper acc m t) A p = (loop_comp_helper acc m t) A q"
+  shows "(loop_comp_helper acc m t) A p = (loop_comp_helper acc m t) A q"
   using finite_A_p lifted_A_pq a_in_defer_acc
         loop_comp_helper_def_lift_inv
         monotone_acc monotone_m
@@ -630,10 +629,8 @@ proof (induct n arbitrary: acc rule: less_induct)
       "(\<And> y acc'. y < card (defer acc A p) \<Longrightarrow>
         y = card (defer acc' A p) \<Longrightarrow> non_electing acc' \<Longrightarrow>
           elect (loop_comp_helper acc' m t) A p = {})" and
-      acc_non_elect:
-      "non_electing acc" and
-      x_in_acc_elect:
-      "x \<in> elect (loop_comp_helper acc m t) A p"
+      acc_non_elect: "non_electing acc" and
+      x_in_acc_elect: "x \<in> elect (loop_comp_helper acc m t) A p"
     have
       "\<forall> (f::'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) g.
         (non_electing f \<and> non_electing g) \<longrightarrow>
@@ -663,7 +660,7 @@ proof (induct n arbitrary: acc rule: less_induct)
           elect (loop_comp_helper f m t) A p = {}"
       using card_n_no_elect psubset_card_mono
       by metis
-    hence f0:
+    hence loop_helper_term:
       "(\<not> t (acc A p) \<and> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<and>
             finite (defer acc A p)) \<and>
           \<not> t (acc A p) \<longrightarrow>
@@ -675,7 +672,7 @@ proof (induct n arbitrary: acc rule: less_induct)
       using all_not_in_conv
       by (metis (no_types))
     thus "x \<in> {}"
-      using loop_comp_code_helper no_elect_acc x_in_acc_elect f0
+      using loop_comp_code_helper no_elect_acc x_in_acc_elect loop_helper_term
       by (metis (no_types))
   qed
 qed
@@ -918,10 +915,10 @@ text \<open>
 \<close>
 
 theorem loop_comp_presv_def_lift_inv[simp]:
-  assumes monotone_m: "defer_lift_invariance m"
+  assumes "defer_lift_invariance m"
   shows "defer_lift_invariance (m \<circlearrowleft>\<^sub>t)"
 proof (unfold defer_lift_invariance_def, safe)
-  from monotone_m
+  from assms
   have "electoral_module m"
     unfolding defer_lift_invariance_def
     by simp
@@ -939,7 +936,7 @@ next
   have defer_lift_loop:
     "\<forall> p q a. (a \<in> (defer (m \<circlearrowleft>\<^sub>t) A p) \<and> lifted A p q a) \<longrightarrow>
         (m \<circlearrowleft>\<^sub>t) A p = (m \<circlearrowleft>\<^sub>t) A q"
-    using monotone_m lifted_imp_fin_prof loop_comp_helper_def_lift_inv2
+    using assms lifted_imp_fin_prof loop_comp_helper_def_lift_inv2
           loop_composition.simps defer_module.simps
     by (metis (full_types))
   show "(m \<circlearrowleft>\<^sub>t) A p = (m \<circlearrowleft>\<^sub>t) A q"
@@ -968,7 +965,7 @@ next
     "finite A" and
     "profile A p" and
     "x \<in> elect (m \<circlearrowleft>\<^sub>t) A p"
-  thus "False"
+  thus False
     using def_mod_non_electing loop_comp_presv_non_electing_helper
           non_electing_m empty_iff loop_comp_code
     unfolding non_electing_def
@@ -995,8 +992,7 @@ next
     "n \<le> card A" and
     "finite A" and
     "profile A p"
-  thus
-    "card (defer (m \<circlearrowleft>\<^sub>t) A p) = n"
+  thus "card (defer (m \<circlearrowleft>\<^sub>t) A p) = n"
     using iter_elim_def_n_helper non_electing_m single_elimination
           terminate_if_n_left x_greater_zero
     by metis

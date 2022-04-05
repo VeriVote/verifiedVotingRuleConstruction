@@ -65,12 +65,11 @@ proof (unfold aggregator_def, simp, safe)
     r2 :: "'a set" and
     x :: "'a"
   assume
-    asm1: "e2 \<union> r2 \<union> d2 = e1 \<union> r1 \<union> d1" and
-    asm2: "x \<notin> d1" and
-    asm3: "x \<notin> r1" and
-    asm4: "x \<in> e2"
-  show "x \<in> e1"
-    using asm1 asm2 asm3 asm4
+    "e2 \<union> r2 \<union> d2 = e1 \<union> r1 \<union> d1" and
+    "x \<notin> d1" and
+    "x \<notin> r1" and
+    "x \<in> e2"
+  thus "x \<in> e1"
     by auto
 next
   fix
@@ -83,12 +82,11 @@ next
     r2 :: "'a set" and
     x :: "'a"
   assume
-    asm1: "e2 \<union> r2 \<union> d2 = e1 \<union> r1 \<union> d1" and
-    asm2: "x \<notin> d1" and
-    asm3: "x \<notin> r1" and
-    asm4: "x \<in> d2"
-  show "x \<in> e1"
-    using asm1 asm2 asm3 asm4
+    "e2 \<union> r2 \<union> d2 = e1 \<union> r1 \<union> d1" and
+    "x \<notin> d1" and
+    "x \<notin> r1" and
+    "x \<in> d2"
+  thus "x \<in> e1"
     by auto
 qed
 

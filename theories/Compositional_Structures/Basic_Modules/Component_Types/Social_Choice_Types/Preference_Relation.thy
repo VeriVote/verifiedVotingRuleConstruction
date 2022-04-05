@@ -144,7 +144,7 @@ next
     by simp
   with x_in_A y_in_A
   have "(x, y) \<in> r"
-    using  assms partial_order_onD(1) refl_onD
+    using assms partial_order_onD(1) refl_onD
     unfolding linear_order_on_def total_on_def
     by metis
   thus "x \<preceq>\<^sub>r y"
@@ -250,22 +250,11 @@ lemma limit_presv_antisym:
   by simp
 
 lemma limit_presv_trans:
-  assumes
-    transitive: "trans r" and
-    subset:     "A \<subseteq> S"
+  assumes "trans r"
   shows "trans (limit A r)"
-proof (unfold trans_def, simp, safe)
-  fix
-    x :: "'a" and
-    y :: "'a" and
-    z :: "'a"
-  assume
-    "(x, y) \<in> r" and
-    "(y, z) \<in> r"
-  thus "(x, z) \<in> r"
-    using transE transitive
-    by metis
-qed
+  unfolding trans_def
+  using transE assms
+  by auto
 
 lemma limit_presv_lin_ord:
   assumes
@@ -289,16 +278,13 @@ lemma limit_presv_prefs1:
   by simp
 
 lemma limit_presv_prefs2:
-  assumes x_less_y: "(x, y) \<in> limit A r"
+  assumes "(x, y) \<in> limit A r"
   shows "x \<preceq>\<^sub>r y"
-  using mem_Collect_eq x_less_y
+  using mem_Collect_eq assms
   by simp
 
 lemma limit_trans:
-  assumes
-    "B \<subseteq> A" and
-    "C \<subseteq> B" and
-    "linear_order_on A r"
+  assumes "C \<subseteq> B"
   shows "limit C r = limit C (limit B r)"
   using assms
   by auto
@@ -383,7 +369,7 @@ lemma limit_presv_above:
 lemma limit_presv_above2:
   assumes "b \<in> above (limit B r) a"
   shows "b \<in> above r a"
-  using assms(1) limit_presv_prefs2
+  using assms limit_presv_prefs2
         mem_Collect_eq pref_imp_in_above
   unfolding above_def
   by metis
@@ -641,7 +627,6 @@ proof -
 qed
 
 lemma above_presv_limit:
-  assumes "linear_order r"
   shows "above (limit A r) x \<subseteq> A"
   unfolding above_def
   by auto
@@ -703,7 +688,7 @@ proof (safe)
     unfolding lifted_def
     by metis
   from lift_ex obtain y :: 'a where
-    f1: "y \<in> A - {a} \<and> a \<preceq>\<^sub>r y \<and> y \<preceq>\<^sub>s a"
+    "y \<in> A - {a} \<and> a \<preceq>\<^sub>r y \<and> y \<preceq>\<^sub>s a"
     by metis
   hence y_eq_r_s_exc_a:
     "y \<in> A - {a} \<and> (a, y) \<in> r \<and> (y, a) \<in> s"
@@ -890,8 +875,7 @@ proof -
         unfolding lifted_def equiv_rel_except_a_def
         by simp
     next
-      assume
-        "\<not>(\<exists> x \<in> A - {a}. a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a)"
+      assume "\<not>(\<exists> x \<in> A - {a}. a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a)"
       hence strict_pref_to_a:
         "\<forall> x \<in> A - {a}. \<not>(a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a)"
         by simp
@@ -1080,7 +1064,7 @@ theorem lifted_above_winner3:
     x_not_a: "x \<noteq> a"
   shows "above r x = {x}"
 proof (rule ccontr)
-  assume asm: "above r x \<noteq> {x}"
+  assume not_above_x: "above r x \<noteq> {x}"
   then obtain y where y: "above r y = {y}"
     using lifted_a fin_A insert_Diff insert_not_empty above_one
     unfolding lifted_def equiv_rel_except_a_def
@@ -1096,7 +1080,7 @@ proof (rule ccontr)
     using x_not_a
     by presburger
   moreover have "y \<noteq> x"
-    using asm y
+    using not_above_x y
     by blast
   ultimately show False
     by simp

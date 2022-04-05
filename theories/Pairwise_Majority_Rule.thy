@@ -33,8 +33,7 @@ subsection \<open>Condorcet Consistency Property\<close>
 
 theorem condorcet_condorcet: "condorcet_consistency pairwise_majority_rule"
 proof (unfold pairwise_majority_rule.simps)
-  show
-    "condorcet_consistency (elector condorcet)"
+  show "condorcet_consistency (elector condorcet)"
     using condorcet_is_dcc dcc_imp_cc_elector
     by metis
 qed

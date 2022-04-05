@@ -22,11 +22,11 @@ text \<open>
 subsection \<open>Properties\<close>
 
 theorem drop_zero_mod_rej_zero[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "rejects 0 (drop_module 0 r)"
 proof (unfold rejects_def, safe)
   show "electoral_module (drop_module 0 r)"
-    using order
+    using assms
     by simp
 next
   fix
@@ -50,7 +50,7 @@ next
       \<not> connex A' (limit A r) \<or> a \<notin> A' \<or> a \<notin> A \<or>
         \<not> card (above (limit A r) a) \<le> 0"
     using above_connex above_presv_limit card_eq_0_iff
-          finite_A finite_subset le_0_eq order
+          finite_A finite_subset le_0_eq assms
     by (metis (no_types))
   hence "{a \<in> A. card (above (limit A r) a) \<le> 0} = {}"
     using connex
@@ -68,7 +68,7 @@ text \<open>
 \<close>
 
 theorem drop_two_mod_rej_two[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "rejects 2 (drop_module 2 r)"
 proof -
   have rej_drop_eq_def_pass:
@@ -106,12 +106,12 @@ proof -
         \<not> profile (m (drop_module 2 r) 2) (m' (drop_module 2 r) 2) \<or>
         card (reject (drop_module 2 r) (m (drop_module 2 r) 2)
         (m' (drop_module 2 r) 2)) = 2"
-    using rej_drop_eq_def_pass order
+    using rej_drop_eq_def_pass assms
           pass_two_mod_def_two
     unfolding defers_def
     by (metis (no_types))
   thus ?thesis
-    using f1 drop_mod_sound order
+    using f1 drop_mod_sound assms
     by blast
 qed
 
@@ -120,24 +120,21 @@ text \<open>
 \<close>
 
 theorem drop_pass_disj_compat[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "disjoint_compatibility (drop_module n r) (pass_module n r)"
 proof (unfold disjoint_compatibility_def, safe)
   show "electoral_module (drop_module n r)"
-    using order
+    using assms
     by simp
 next
   show "electoral_module (pass_module n r)"
-    using order
+    using assms
     by simp
 next
-  fix
-    S :: "'a set"
-  assume
-    fin: "finite S"
-  obtain
-    p :: "'a Profile"
-    where "finite_profile S p"
+  fix S :: "'a set"
+  assume fin: "finite S"
+  obtain p :: "'a Profile" where
+    "finite_profile S p"
     using empty_iff empty_set fin profile_set
     by metis
   show
@@ -159,7 +156,7 @@ next
       by auto
     moreover have
       "(\<forall> a \<in> ?A. indep_of_alt (drop_module n r) S a)"
-      using order
+      using assms
       unfolding indep_of_alt_def
       by simp
     moreover have
@@ -168,7 +165,7 @@ next
       by auto
     moreover have
       "(\<forall> a \<in> S - ?A. indep_of_alt (pass_module n r) S a)"
-      using order
+      using assms
       unfolding indep_of_alt_def
       by simp
     moreover have

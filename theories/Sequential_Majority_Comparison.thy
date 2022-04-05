@@ -54,11 +54,9 @@ proof (unfold electoral_module_def, simp, safe, simp_all)
   assume
     fin_A: "finite A" and
     prof_A: "profile A p" and
-    reject_xa:
-      "xa \<in> reject (?smc) A p" and
-    elect_xa:
-      "xa \<in> elect (?smc) A p"
-  show "False"
+    reject_xa: "xa \<in> reject (?smc) A p" and
+    elect_xa: "xa \<in> elect (?smc) A p"
+  show False
     using IntI drop_mod_sound elect_xa emptyE fin_A
           loop_comp_sound max_agg_sound order prof_A
           par_comp_sound pass_mod_sound reject_xa
@@ -79,11 +77,9 @@ next
   assume
     fin_A: "finite A" and
     prof_A: "profile A p" and
-    reject_xa:
-      "xa \<in> reject (?smc) A p" and
-    defer_xa:
-      "xa \<in> defer (?smc) A p"
-  show "False"
+    reject_xa: "xa \<in> reject (?smc) A p" and
+    defer_xa: "xa \<in> defer (?smc) A p"
+  show False
     using IntI drop_mod_sound defer_xa emptyE fin_A
           loop_comp_sound max_agg_sound order prof_A
           par_comp_sound pass_mod_sound reject_xa
@@ -126,8 +122,7 @@ next
   assume
     fin_A: "finite A" and
     prof_A: "profile A p" and
-    defer_xa:
-      "xa \<in> defer (?smc) A p"
+    defer_xa: "xa \<in> defer (?smc) A p"
   show "xa \<in> A"
     using drop_mod_sound defer_in_alts defer_xa fin_A
           in_mono loop_comp_sound max_agg_sound order
@@ -208,7 +203,7 @@ text \<open>
 \<close>
 
 theorem smc_electing:
-  assumes order: "linear_order x"
+  assumes "linear_order x"
   shows "electing (smc x)"
 proof -
   let ?pass2 = "pass_module 2 x"
@@ -223,38 +218,38 @@ proof -
   have 00011: "non_electing (plurality\<down>)"
     by simp
   have 00012: "non_electing ?tie_breaker"
-    using order
+    using assms
     by simp
   have 00013: "defers 1 ?tie_breaker"
-    using order pass_one_mod_def_one
+    using assms pass_one_mod_def_one
     by simp
   have 20000: "non_blocking (plurality\<down>)"
     by simp
 
   have 0020: "disjoint_compatibility ?pass2 ?drop2"
-    using order
+    using assms
     by simp (* disj_compat_comm *)
   have 1000: "non_electing ?pass2"
-    using order
+    using assms
     by simp
   have 1001: "non_electing ?plurality_defer"
     using 00011 00012
     by simp
   have 2000: "non_blocking ?pass2"
-    using order
+    using assms
     by simp
   have 2001: "defers 1 ?plurality_defer"
     using 20000 00011 00013 seq_comp_def_one
     by blast
 
   have 002: "disjoint_compatibility ?compare_two ?drop2"
-    using order 0020
+    using assms 0020
     by simp
   have 100: "non_electing ?compare_two"
     using 1000 1001
     by simp
   have 101: "non_electing ?drop2"
-    using order
+    using assms
     by simp
   have 102: "agg_conservative max_aggregator"
     by simp
@@ -262,7 +257,7 @@ proof -
     using 2000 1000 2001 seq_comp_def_one
     by auto
   have 201: "rejects 2 ?drop2"
-    using order
+    using assms
     by simp
 
   have 10: "non_electing ?eliminator"
@@ -279,7 +274,7 @@ proof -
     by simp
 
   show ?thesis
-    using 2 3 order seq_comp_electing smc_sound
+    using 2 3 assms seq_comp_electing smc_sound
     unfolding Defer_One_Loop_Composition.iter.simps
               smc.simps electing_def
     by metis
@@ -293,7 +288,7 @@ text \<open>
 \<close>
 
 theorem smc_monotone:
-  assumes order: "linear_order x"
+  assumes "linear_order x"
   shows "monotonicity (smc x)"
 proof -
   let ?pass2 = "pass_module 2 x"
@@ -310,34 +305,34 @@ proof -
   have 00011: "non_electing (plurality\<down>)"
     by simp (* rev_comp_non_electing plurality_sound *)
   have 00012: "non_electing ?tie_breaker"
-    using order
+    using assms
     by simp (* pass_mod_non_electing *)
   have 00013: "defers 1 ?tie_breaker"
-    using order pass_one_mod_def_one
+    using assms pass_one_mod_def_one
     by simp
   have 00014: "defer_monotonicity ?tie_breaker"
-    using order
+    using assms
     by simp (* dl_inv_imp_def_mono pass_mod_dl_inv *)
   have 20000: "non_blocking (plurality\<down>)"
     by simp (* rev_comp_non_blocking plurality_electing *)
 
   have 0000: "defer_lift_invariance ?pass2"
-    using order
+    using assms
     by simp (* pass_mod_dl_inv *)
   have 0001: "defer_lift_invariance ?plurality_defer"
     using 00010 00011 00012 00013 00014
     by simp (* def_inv_mono_imp_def_lift_inv *)
   have 0020: "disjoint_compatibility ?pass2 ?drop2"
-    using order
+    using assms
     by simp (* disj_compat_comm drop_pass_disj_compat *)
   have 1000: "non_electing ?pass2"
-    using order
+    using assms
     by simp (* pass_mod_non_electing *)
   have 1001: "non_electing ?plurality_defer"
     using 00011 00012
     by simp (* seq_comp_presv_non_electing *)
   have 2000: "non_blocking ?pass2"
-    using order
+    using assms
     by simp (* pass_mod_non_blocking *)
   have 2001: "defers 1 ?plurality_defer"
     using 20000 00011 00013 seq_comp_def_one
@@ -347,10 +342,10 @@ proof -
     using 0000 0001
     by simp (* seq_comp_presv_def_lift_inv *)
   have 001: "defer_lift_invariance ?drop2"
-    using order
+    using assms
     by simp (* drop_mod_def_lift_inv *)
   have 002: "disjoint_compatibility ?compare_two ?drop2"
-    using order 0020
+    using assms 0020
     by simp
       (* disj_compat_seq seq_comp_sound rev_comp_sound
          plurality_sound pass_mod_sound *)
@@ -358,7 +353,7 @@ proof -
     using 1000 1001
     by simp (* seq_comp_presv_non_electing *)
   have 101: "non_electing ?drop2"
-    using order
+    using assms
     by simp (* drop_mod_non_electing *)
   have 102: "agg_conservative max_aggregator"
     by simp (* max_agg_conserv *)
@@ -366,7 +361,7 @@ proof -
     using 2000 1000 2001 seq_comp_def_one
     by auto
   have 201: "rejects 2 ?drop2"
-    using order
+    using assms
     by simp (* drop_two_mod_rej_two *)
 
   have 00: "defer_lift_invariance ?eliminator"
@@ -392,7 +387,7 @@ proof -
     by simp (* elect_mod_electing *)
 
   show ?thesis
-    using 0 1 2 3 order seq_comp_mono
+    using 0 1 2 3 assms seq_comp_mono
     unfolding Electoral_Module.monotonicity_def
               Defer_One_Loop_Composition.iter.simps
               smc_sound smc.simps

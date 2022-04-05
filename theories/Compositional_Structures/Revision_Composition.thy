@@ -29,10 +29,10 @@ abbreviation rev ::
 subsection \<open>Soundness\<close>
 
 theorem rev_comp_sound[simp]:
-  assumes module: "electoral_module m"
+  assumes "electoral_module m"
   shows "electoral_module (revision_composition m)"
 proof -
-  from module
+  from assms
   have "\<forall> A p. finite_profile A p \<longrightarrow> elect m A p \<subseteq> A"
     using elect_in_alts
     by metis
@@ -94,7 +94,7 @@ next
           Diff_disjoint Int_absorb2 elect_in_alts
     unfolding electing_def
     by (metis (no_types, lifting))
-  show "False"
+  show False
     using non_elect assms empty_iff fin_A prof_A x_in_A
     unfolding electing_def non_electing_def
     by (metis (no_types, lifting))

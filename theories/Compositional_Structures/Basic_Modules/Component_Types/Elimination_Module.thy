@@ -248,8 +248,7 @@ theorem cr_eval_imp_ccomp_max_elim[simp]:
   assumes
     profile: "finite_profile A p" and
     rating: "condorcet_rating e"
-  shows
-    "condorcet_compatibility (max_eliminator e)"
+  shows "condorcet_compatibility (max_eliminator e)"
 proof (unfold condorcet_compatibility_def, safe)
   show "electoral_module (max_eliminator e)"
     by simp
@@ -274,11 +273,10 @@ next
     A :: "'b set" and
     p :: "'b Profile" and
     l :: "'b"
-  assume
-    elect_l: "l \<in> elect (max_eliminator e) A p"
+  assume elect_l: "l \<in> elect (max_eliminator e) A p"
   have "l \<notin> elect (max_eliminator e) A p"
     by simp
-  thus "False"
+  thus False
     using elect_l
     by linarith
 next
@@ -306,13 +304,12 @@ lemma cr_eval_imp_dcc_max_elim_helper1:
 proof (safe, simp_all, safe)
   assume
     "e w A p < Max {e x A p |x. x \<in> A}"
-  thus "False"
+  thus False
     using cond_winner_imp_max_eval_val
           rating winner f_prof
     by fastforce
 next
-  fix
-    x :: "'a"
+  fix x :: "'a"
   assume
     x_in_A: "x \<in> A" and
     not_max: "\<not> e x A p < Max {e y A p |y. y \<in> A}"
@@ -349,8 +346,7 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
   proof (cases "elimination_set e (?trsh) (<) A p \<noteq> A")
     case True
     from profile rating winner
-    have 0:
-      "(elimination_set e ?trsh (<) A p) = A - {w}"
+    have 0: "(elimination_set e ?trsh (<) A p) = A - {w}"
       using cr_eval_imp_dcc_max_elim_helper1
       by (metis (mono_tags, lifting))
     have

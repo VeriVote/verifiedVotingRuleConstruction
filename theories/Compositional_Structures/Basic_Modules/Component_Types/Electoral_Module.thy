@@ -193,75 +193,68 @@ lemma result_presv_alts:
     f_prof: "finite_profile A p"
   shows "(elect m A p) \<union> (reject m A p) \<union> (defer m A p) = A"
 proof (safe)
-  fix
-    x :: "'a"
-  assume
-    asm: "x \<in> elect m A p"
+  fix x :: "'a"
+  assume elec_x: "x \<in> elect m A p"
   have partit:
     "\<forall> A p.
       \<not> set_equals_partition (A::'a set) p \<or>
-        (\<exists> B C D E. A = B \<and> p = (C, D, E) \<and> C \<union> D \<union> E = B)"
+        (\<exists> A' elec rej def. A = A' \<and> p = (elec, rej, def) \<and> elec \<union> rej \<union> def = A')"
     by simp
   from e_mod f_prof have set_partit:
     "set_equals_partition A (m A p)"
     unfolding electoral_module_def
     by simp
   thus "x \<in> A"
-    using UnI1 asm fstI set_partit partit
+    using UnI1 elec_x fstI set_partit partit
     by (metis (no_types))
 next
-  fix
-    x :: "'a"
-  assume
-    asm: "x \<in> reject m A p"
+  fix x :: "'a"
+  assume rej_x: "x \<in> reject m A p"
   have partit:
     "\<forall> A p.
       \<not> set_equals_partition (A::'a set) p \<or>
-        (\<exists> B C D E. A = B \<and> p = (C, D, E) \<and> C \<union> D \<union> E = B)"
+        (\<exists> A' elec rej def. A = A' \<and> p = (elec, rej, def) \<and> elec \<union> rej \<union> def = A')"
     by simp
   from e_mod f_prof have set_partit:
     "set_equals_partition A (m A p)"
     unfolding electoral_module_def
     by simp
   thus "x \<in> A"
-    using UnI1 asm fstI set_partit partit
+    using UnI1 rej_x fstI set_partit partit
           sndI subsetD sup_ge2
     by metis
 next
-  fix
-    x :: "'a"
-  assume
-    asm: "x \<in> defer m A p"
+  fix x :: "'a"
+  assume def_x: "x \<in> defer m A p"
   have partit:
     "\<forall> A p.
       \<not> set_equals_partition (A::'a set) p \<or>
-        (\<exists> B C D E. A = B \<and> p = (C, D, E) \<and> C \<union> D \<union> E = B)"
+        (\<exists> A' elec rej def. A = A' \<and> p = (elec, rej, def) \<and> elec \<union> rej \<union> def = A')"
     by simp
   from e_mod f_prof have set_partit:
     "set_equals_partition A (m A p)"
     unfolding electoral_module_def
     by simp
   thus "x \<in> A"
-    using asm set_partit partit sndI subsetD sup_ge2
+    using def_x set_partit partit sndI subsetD sup_ge2
     by metis
 next
-  fix
-    x :: "'a"
+  fix x :: "'a"
   assume
-    asm1: "x \<in> A" and
-    asm2: "x \<notin> defer m A p" and
-    asm3: "x \<notin> reject m A p"
+    x_in_A: "x \<in> A" and
+    not_def_x: "x \<notin> defer m A p" and
+    not_rej_x: "x \<notin> reject m A p"
   have partit:
     "\<forall> A p.
       \<not> set_equals_partition (A::'a set) p \<or>
-        (\<exists> B C D E. A = B \<and> p = (C, D, E) \<and> C \<union> D \<union> E = B)"
+        (\<exists> A' elec rej def. A = A' \<and> p = (elec, rej, def) \<and> elec \<union> rej \<union> def = A')"
     by simp
   from e_mod f_prof have set_partit:
     "set_equals_partition A (m A p)"
     unfolding electoral_module_def
     by simp
   show "x \<in> elect m A p"
-    using asm1 asm2 asm3 fst_conv partit
+    using x_in_A not_def_x not_rej_x fst_conv partit
           set_partit snd_conv Un_iff
     by metis
 qed
@@ -275,11 +268,10 @@ lemma result_disj:
         (elect m A p) \<inter> (defer m A p) = {} \<and>
         (reject m A p) \<inter> (defer m A p) = {}"
 proof (safe, simp_all)
-  fix
-    x :: "'a"
+  fix x :: "'a"
   assume
-    asm1: "x \<in> elect m A p" and
-    asm2: "x \<in> reject m A p"
+    elect_x: "x \<in> elect m A p" and
+    reject_x: "x \<in> reject m A p"
   have partit:
     "\<forall> A p.
       \<not> set_equals_partition (A::'a set) p \<or>
@@ -296,17 +288,16 @@ proof (safe, simp_all)
     "well_formed A (m A p)"
     unfolding electoral_module_def
     by metis
-  show "False"
-    using prod.exhaust_sel DiffE UnCI asm1 asm2
+  show False
+    using prod.exhaust_sel DiffE UnCI elect_x reject_x
           module profile result_imp_rej wf_A_m
           prof_p set_partit partit
     by (metis (no_types))
 next
-  fix
-    x :: "'a"
+  fix x :: "'a"
   assume
-    asm1: "x \<in> elect m A p" and
-    asm2: "x \<in> defer m A p"
+    elect_x: "x \<in> elect m A p" and
+    defer_x: "x \<in> defer m A p"
   have partit:
     "\<forall> A p.
       \<not> set_equals_partition (A::'a set) p \<or>
@@ -335,32 +326,31 @@ next
     using wf_A_m_0
     by simp
   from disj3 obtain
-    AA :: "'a Result \<Rightarrow> 'a set" and
-    AAa :: "'a Result \<Rightarrow> 'a set" and
-    AAb :: "'a Result \<Rightarrow> 'a set"
+    elec :: "'a Result \<Rightarrow> 'a set" and
+    rej :: "'a Result \<Rightarrow> 'a set" and
+    def :: "'a Result \<Rightarrow> 'a set"
     where
     "m A p =
-      (AA (m A p), AAa (m A p), AAb (m A p)) \<and>
-        AA (m A p) \<inter> AAa (m A p) = {} \<and>
-        AA (m A p) \<inter> AAb (m A p) = {} \<and>
-        AAa (m A p) \<inter> AAb (m A p) = {}"
-    using asm1 asm2 disj
+      (elec (m A p), rej (m A p), def (m A p)) \<and>
+        elec (m A p) \<inter> rej (m A p) = {} \<and>
+        elec (m A p) \<inter> def (m A p) = {} \<and>
+        rej (m A p) \<inter> def (m A p) = {}"
+    using elect_x defer_x disj
     by metis
   hence "((elect m A p) \<inter> (reject m A p) = {}) \<and>
           ((elect m A p) \<inter> (defer m A p) = {}) \<and>
           ((reject m A p) \<inter> (defer m A p) = {})"
     using disj3 eq_snd_iff fstI
     by metis
-  thus "False"
-    using asm1 asm2 module profile wf_A_m prof_p
+  thus False
+    using elect_x defer_x module profile wf_A_m prof_p
           set_partit partit disjoint_iff_not_equal
     by (metis (no_types))
 next
-  fix
-    x :: "'a"
+  fix x :: "'a"
   assume
-    asm1: "x \<in> reject m A p" and
-    asm2: "x \<in> defer m A p"
+    reject_x: "x \<in> reject m A p" and
+    defer_x: "x \<in> defer m A p"
   have partit:
     "\<forall> A p.
       \<not> set_equals_partition (A::'a set) p \<or>
@@ -377,8 +367,8 @@ next
     "well_formed A (m A p)"
     unfolding electoral_module_def
     by simp
-  show "False"
-    using prod.exhaust_sel DiffE UnCI asm1 asm2
+  show False
+    using prod.exhaust_sel DiffE UnCI reject_x defer_x
           module profile result_imp_rej wf_A_m
           prof_p set_partit partit
     by (metis (no_types))
@@ -409,13 +399,11 @@ lemma defer_in_alts:
   by auto
 
 lemma def_presv_fin_prof:
-  assumes module:  "electoral_module m" and
-          f_prof: "finite_profile A p"
-  shows
-    "let new_A = defer m A p in
-        finite_profile new_A (limit_profile new_A p)"
-  using defer_in_alts infinite_super
-        limit_profile_sound module f_prof
+  assumes
+    module:  "electoral_module m" and
+    f_prof: "finite_profile A p"
+  shows "let new_A = defer m A p in finite_profile new_A (limit_profile new_A p)"
+  using defer_in_alts infinite_super limit_profile_sound module f_prof
   by metis
 
 text \<open>
@@ -759,8 +747,7 @@ lemma electing_for_only_alt:
   shows "elect m A p = A"
 proof (safe)
   fix x :: "'a"
-  assume
-    electX: "x \<in> elect m A p"
+  assume electX: "x \<in> elect m A p"
   have
     "\<not> electoral_module m \<or> elect m A p \<subseteq> A"
     using elect_in_alts f_prof
@@ -783,7 +770,7 @@ next
 qed
 
 theorem electing_imp_non_blocking:
-  assumes electing: "electing m"
+  assumes "electing m"
   shows "non_blocking m"
 proof (unfold non_blocking_def, safe)
   from assms
@@ -800,7 +787,7 @@ next
     profA: "profile A p" and
     rejA: "reject m A p = A" and
     xInA: "x \<in> A"
-  from electing have
+  from assms have
     "electoral_module m \<and>
       (\<forall> A rs. A = {} \<or> infinite A \<or>
         \<not> profile A rs \<or> elect m A rs \<noteq> {})"
@@ -1142,63 +1129,53 @@ text \<open>
 \<close>
 
 theorem disj_compat_comm[simp]:
-  assumes compatible: "disjoint_compatibility m n"
+  assumes "disjoint_compatibility m n"
   shows "disjoint_compatibility n m"
-proof -
-  have
-    "\<forall> S. finite S \<longrightarrow>
-        (\<exists> A \<subseteq> S.
-          (\<forall> a \<in> A. indep_of_alt n S a \<and>
-            (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p)) \<and>
-          (\<forall> a \<in> S - A. indep_of_alt m S a \<and>
-            (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)))"
-  proof
-    fix
-      S :: "'a set"
-    obtain A where
-      old_A:
-      "finite S \<longrightarrow>
-          (A \<subseteq> S \<and>
-            (\<forall> a \<in> A. indep_of_alt m S a \<and>
-              (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)) \<and>
-            (\<forall> a \<in> S - A. indep_of_alt n S a \<and>
-              (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p)))"
-      using compatible
-      unfolding disjoint_compatibility_def
-      by metis
-    hence
-      "finite S \<longrightarrow>
-          (\<exists> A \<subseteq> S.
-            (\<forall> a \<in> S - A. indep_of_alt n S a \<and>
-              (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p)) \<and>
-            (\<forall> a \<in> A. indep_of_alt m S a \<and>
-              (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)))"
-      by auto
-    hence
-      "finite S \<longrightarrow>
-          (\<exists> A \<subseteq> S.
-            (\<forall> a \<in> S - A. indep_of_alt n S a \<and>
-              (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p)) \<and>
-            (\<forall> a \<in> S - (S - A). indep_of_alt m S a \<and>
-              (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)))"
-      using double_diff order_refl
-      by metis
-    thus
-      "finite S \<longrightarrow>
-          (\<exists> A \<subseteq> S.
-            (\<forall> a \<in> A. indep_of_alt n S a \<and>
-              (\<forall>p. finite_profile S p \<longrightarrow> a \<in> reject n S p)) \<and>
-            (\<forall> a \<in> S - A. indep_of_alt m S a \<and>
-              (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)))"
-      by fastforce
-  qed
-  moreover have "electoral_module m \<and> electoral_module n"
-    using compatible
+proof (unfold disjoint_compatibility_def, safe)
+  show "electoral_module m"
+    using assms
     unfolding disjoint_compatibility_def
     by simp
-  ultimately show ?thesis
+next
+  show "electoral_module n"
+    using assms
     unfolding disjoint_compatibility_def
     by simp
+next
+  fix S :: "'a set"
+  assume fin_S: "finite S"
+  obtain A where
+    old_A:
+      "(A \<subseteq> S \<and>
+        (\<forall> a \<in> A. indep_of_alt m S a \<and>
+          (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)) \<and>
+        (\<forall> a \<in> S - A. indep_of_alt n S a \<and>
+          (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p)))"
+    using assms fin_S
+    unfolding disjoint_compatibility_def
+    by metis
+  hence
+    "(\<exists> A \<subseteq> S.
+      (\<forall> a \<in> S - A. indep_of_alt n S a \<and>
+        (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p)) \<and>
+      (\<forall> a \<in> A. indep_of_alt m S a \<and>
+        (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)))"
+    by auto
+  hence
+    "(\<exists> A \<subseteq> S.
+      (\<forall> a \<in> S - A. indep_of_alt n S a \<and>
+        (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p)) \<and>
+      (\<forall> a \<in> S - (S - A). indep_of_alt m S a \<and>
+        (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)))"
+    using double_diff order_refl
+    by metis
+  thus
+    "(\<exists> A \<subseteq> S.
+        (\<forall> a \<in> A. indep_of_alt n S a \<and>
+          (\<forall>p. finite_profile S p \<longrightarrow> a \<in> reject n S p)) \<and>
+        (\<forall> a \<in> S - A. indep_of_alt m S a \<and>
+          (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)))"
+    by fastforce
 qed
 
 text \<open>
@@ -1269,8 +1246,7 @@ next
         {a \<in> A. condorcet_winner A rs a} = {a}"
     using cond_winner_unique3
     by (metis (full_types))
-  ultimately show
-    "condorcet_consistency m"
+  ultimately show "condorcet_consistency m"
     unfolding condorcet_consistency_def
     using cond_winner_unique3 e_mod cwin
     by presburger

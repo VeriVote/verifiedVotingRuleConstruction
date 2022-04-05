@@ -12,11 +12,12 @@ theory Parallel_Composition
           "Basic_Modules/Component_Types/Electoral_Module"
 begin
 
-text
-\<open>The parallel composition composes a new electoral module from
-two electoral modules combined with an aggregator.
-Therein, the two modules each make a decision and the aggregator combines
-them to a single (aggregated) result.\<close>
+text \<open>
+  The parallel composition composes a new electoral module from
+  two electoral modules combined with an aggregator.
+  Therein, the two modules each make a decision and the aggregator combines
+  them to a single (aggregated) result.
+\<close>
 
 subsection \<open>Definition\<close>
 

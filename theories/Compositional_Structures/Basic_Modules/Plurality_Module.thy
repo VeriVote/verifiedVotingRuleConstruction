@@ -83,12 +83,15 @@ proof (clarify)
     by blast
   hence "a \<in> elect plurality A p"
     by simp
-  thus "False"
+  thus False
     using plurality_elect_none all_not_in_conv
     by metis
 qed
 
-(* The plurality module is electing. *)
+text \<open>
+  The plurality module is electing.
+\<close>
+
 theorem plurality_electing[simp]: "electing plurality"
 proof (unfold electing_def, safe)
   show "electoral_module plurality"
@@ -126,8 +129,7 @@ proof (intro allI impI)
     p :: "'a Profile" and
     q :: "'a Profile" and
     a :: "'a"
-  assume asm1:
-    "a \<in> elect plurality A p \<and> lifted A p q a"
+  assume elect_and_lift_a: "a \<in> elect plurality A p \<and> lifted A p q a"
   have ab1: "\<forall> a b. (a::'a) \<notin> {b} \<or> a = b"
     by force
   have lifted_winner:
@@ -135,36 +137,34 @@ proof (intro allI impI)
       \<forall> i::nat. i < length p \<longrightarrow>
         (above (p!i) x = {x} \<longrightarrow>
           (above (q!i) x = {x} \<or> above (q!i) a = {a}))"
-    using asm1 lifted_above_winner
+    using elect_and_lift_a lifted_above_winner
     unfolding Profile.lifted_def
     by (metis (no_types, lifting))
   hence
     "\<forall> i::nat. i < length p \<longrightarrow>
       (above (p!i) a = {a} \<longrightarrow> above (q!i) a = {a})"
-    using asm1
+    using elect_and_lift_a
     by auto
   hence a_win_subset:
     "{i::nat. i < length p \<and> above (p!i) a = {a}} \<subseteq>
       {i::nat. i < length p \<and> above (q!i) a = {a}}"
     by blast
-  moreover have sizes:
-    "length p = length q"
-    using asm1
+  moreover have sizes: "length p = length q"
+    using elect_and_lift_a
     unfolding Profile.lifted_def
     by metis
   ultimately have win_count_a:
     "win_count p a \<le> win_count q a"
     by (simp add: card_mono)
-  have fin_A:
-    "finite A"
-    using asm1
+  have fin_A: "finite A"
+    using elect_and_lift_a
     unfolding Profile.lifted_def
     by metis
   hence
     "\<forall> x \<in> A - {a}.
       \<forall> i::nat. i < length p \<longrightarrow>
         (above (q!i) a = {a} \<longrightarrow> above (q!i) x \<noteq> {x})"
-    using DiffE above_one2 asm1 insertCI insert_absorb insert_not_empty sizes
+    using DiffE above_one2 elect_and_lift_a insertCI insert_absorb insert_not_empty sizes
     unfolding Profile.lifted_def profile_def
     by metis
   with lifted_winner
@@ -172,7 +172,7 @@ proof (intro allI impI)
     "\<forall> x \<in> A - {a}.
       \<forall> i::nat. i < length p \<longrightarrow>
         (above (q!i) x = {x} \<longrightarrow> above (p!i) x = {x})"
-    using lifted_above_winner3 asm1
+    using lifted_above_winner3 elect_and_lift_a
     unfolding Profile.lifted_def
     by metis
   hence
@@ -229,13 +229,11 @@ proof (intro allI impI)
         i_in_range: "i < length p" and
         abv_x: "above (p!i) x = {x}" and
         abv_a: "above (p!i) a = {a}"
-      have not_empty:
-        "A \<noteq> {}"
+      have not_empty: "A \<noteq> {}"
         using x_in_A
         by auto
-      have
-        "linear_order_on A (p!i)"
-        using asm1 i_in_range
+      have "linear_order_on A (p!i)"
+        using elect_and_lift_a i_in_range
         unfolding Profile.lifted_def profile_def
         by simp
       thus "x = a"
@@ -252,10 +250,9 @@ proof (intro allI impI)
         card {i::nat. i < length p \<and> above (p!i) x = {x}} =
           card {i::nat. i < length q \<and> above (q!i) x = {x}}"
     proof (safe)
-      fix
-        x :: "'a"
+      fix x :: "'a"
       assume
-        "\<forall> y \<in> A - {a}. \<forall> i<length p.
+        "\<forall> y \<in> A - {a}. \<forall> i < length p.
           above (p!i) y = {y} \<longrightarrow> above (q!i) y = {y}" and
         x_in_A: "x \<in> A"
       show
@@ -280,7 +277,7 @@ proof (intro allI impI)
       by simp
     have a_in_win_p:
       "a \<in> {a \<in> A. \<forall> x \<in> A. win_count p x \<le> win_count p a}"
-      using asm1
+      using elect_and_lift_a
       by simp
     hence "\<forall> x \<in> A. win_count p x \<le> win_count p a"
       by simp
@@ -292,7 +289,7 @@ proof (intro allI impI)
       by metis
     hence
       "\<forall> x \<in> A - {a}. \<not>(\<forall>y \<in> A. win_count q y \<le> win_count q x)"
-      using asm1 not_le
+      using elect_and_lift_a not_le
       unfolding Profile.lifted_def
       by metis
     hence
@@ -335,7 +332,10 @@ proof (intro allI impI)
   qed
 qed
 
-(* The plurality rule is invariant monotone. *)
+text \<open>
+  The plurality rule is invariant-monotone.
+\<close>
+
 theorem plurality_inv_mono[simp]: "invariant_monotonicity plurality"
 proof (unfold invariant_monotonicity_def, intro conjI impI allI)
   show "electoral_module plurality"
@@ -346,8 +346,7 @@ next
     p :: "'a Profile" and
     q :: "'a Profile" and
     a :: "'a"
-  assume
-    "a \<in> elect plurality A p \<and> Profile.lifted A p q a"
+  assume "a \<in> elect plurality A p \<and> Profile.lifted A p q a"
   thus "elect plurality A q = elect plurality A p \<or> elect plurality A q = {a}"
     using plurality_inv_mono2
     by metis

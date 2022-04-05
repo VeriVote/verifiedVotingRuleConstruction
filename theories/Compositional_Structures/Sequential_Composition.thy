@@ -368,13 +368,10 @@ next
         reject f {} prof = {}"
     using bot.extremum_uniqueI infinite_imp_nonempty reject_in_alts
     by metis
-  have prof_no_alt:
-    "profile {} (limit_profile (defer m A p) p)"
+  have prof_no_alt: "profile {} (limit_profile (defer m A p) p)"
     using empty_defer f_prof module_m limit_profile_sound
     by auto
-  hence
-    "(reject m A p, defer n {} (limit_profile {} p)) =
-        snd (m A p)"
+  hence "(reject m A p, defer n {} (limit_profile {} p)) = snd (m A p)"
     using bot.extremum_uniqueI defer_in_alts empty_defer
           infinite_imp_nonempty module_n prod.collapse
     by (metis (no_types))
@@ -498,7 +495,7 @@ lemma seq_comp_elim_one_red_def_set:
     enough_leftover: "card (defer m A p) > 1"
   shows "defer (m \<triangleright> n) A p \<subset> defer m A p"
   using enough_leftover module_m module_n f_prof snd_conv
-         def_presv_fin_prof single_elim_imp_red_def_set
+        def_presv_fin_prof single_elim_imp_red_def_set
   unfolding sequential_composition.simps
   by metis
 
@@ -509,10 +506,8 @@ lemma seq_comp_def_set_sound:
     fin_prof_p: "finite_profile A p"
   shows "defer (m \<triangleright> n) A p \<subseteq> defer m A p"
 proof (safe)
-  fix
-    x :: "'a"
-  assume
-    "x \<in> defer (m \<triangleright> n) A p"
+  fix x :: "'a"
+  assume "x \<in> defer (m \<triangleright> n) A p"
   thus "x \<in> defer m A p"
     using e_mod_m e_mod_n fin_prof_p in_mono seq_comp_def_set_bounded
     by (metis (no_types, lifting))
@@ -523,10 +518,7 @@ lemma seq_comp_def_set_trans:
     "a \<in> (defer (m \<triangleright> n) A p)" and
     "electoral_module m \<and> electoral_module n" and
     "finite_profile A p"
-  shows
-    "a \<in> defer n (defer m A p)
-      (limit_profile (defer m A p) p) \<and>
-      a \<in> defer m A p"
+  shows "a \<in> defer n (defer m A p) (limit_profile (defer m A p) p) \<and> a \<in> defer m A p"
   using seq_comp_def_set_bounded assms
         in_mono seq_comp_defers_def_set
   by (metis (no_types, opaque_lifting))
@@ -692,7 +684,8 @@ text \<open>
 \<close>
 
 theorem seq_comp_electing[simp]:
-  assumes def_one_m1:  "defers 1 m1" and
+  assumes
+    def_one_m1:  "defers 1 m1" and
     electing_m2: "electing m2"
   shows "electing (m1 \<triangleright> m2)"
 proof -
@@ -831,7 +824,7 @@ proof -
     have
       "\<forall> i. (0 \<le> i \<and> i < length ?new_p) \<longrightarrow>
           (Preference_Relation.lifted A (p!i) (q!i) a \<or> (p!i) = (q!i))"
-      using defer_in_alts limit_prof_presv_size
+      using limit_prof_presv_size
       unfolding Profile.lifted_def
       by metis
     with def_and_lifted modules mono_m
@@ -976,10 +969,8 @@ next
     unfolding disjoint_compatibility_def
     by metis
 next
-  fix
-    S :: "'a set"
-  assume
-    fin_S: "finite S"
+  fix S :: "'a set"
+  assume fin_S: "finite S"
   have modules:
     "electoral_module (m \<triangleright> m2) \<and> electoral_module n"
     using compatible module_m2 seq_comp_sound
@@ -1098,8 +1089,7 @@ next
     fin_A: "finite A" and
     elect_w_in_p: "w \<in> elect (m \<triangleright> n) A p" and
     lifted_w: "Profile.lifted A p q w"
-  have
-    "finite_profile A p \<and> finite_profile A q"
+  have "finite_profile A p \<and> finite_profile A q"
     using lifted_w
     unfolding lifted_def
     by metis
@@ -1165,7 +1155,7 @@ next
     unfolding Profile.lifted_def
     by simp
   show "(m \<triangleright> n) A p = (m \<triangleright> n) A q"
-  proof cases
+  proof (cases)
     assume not_unchanged: "defer m A q \<noteq> defer m A p"
     from not_unchanged
     have a_single_defer: "{a} = defer m A q"

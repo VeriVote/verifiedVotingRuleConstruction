@@ -25,8 +25,7 @@ subsection \<open>Condorcet Consistency Property\<close>
 
 theorem minimax_condorcet: "condorcet_consistency minimax_rule"
 proof (unfold minimax_rule.simps)
-  show
-    "condorcet_consistency (elector minimax)"
+  show "condorcet_consistency (elector minimax)"
     using minimax_is_dcc dcc_imp_cc_elector
     by metis
 qed

@@ -62,7 +62,7 @@ proof (simp)
     by (metis (no_types, lifting))
   thus "Min {card {i. i < length p \<and> (y, l) \<in> p!i} | y. y \<in> A \<and> y \<noteq> l} \<le>
           card {i. i < length p \<and> (w, l) \<in> p!i}"
-    using "0"
+    using 0
     by auto
 qed
 

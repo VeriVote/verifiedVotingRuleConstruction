@@ -31,9 +31,7 @@ fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a El
 
 subsection \<open>Soundness\<close>
 
-theorem drop_mod_sound[simp]:
-  assumes order: "linear_order r"
-  shows "electoral_module (drop_module n r)"
+theorem drop_mod_sound[simp]: "electoral_module (drop_module n r)"
 proof (intro electoral_modI)
   fix
     A :: "'a set" and
@@ -47,8 +45,7 @@ proof (intro electoral_modI)
     "{a \<in> A. card(above (limit A r) a) \<le> n} \<union>
         {a \<in> A. card(above (limit A r) a) > n} = A"
     by blast
-  hence 0:
-    "set_equals_partition A (drop_module n r A p)"
+  hence 0: "set_equals_partition A (drop_module n r A p)"
     by simp
   have
     "(\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<and>
@@ -60,11 +57,7 @@ proof (intro electoral_modI)
     by blast
   hence 1: "disjoint3 (?mod A p)"
     by simp
-  from 0 1 have
-    "well_formed A (?mod A p)"
-    by simp
-  thus
-    "well_formed A (?mod A p)"
+  from 0 1 show "well_formed A (?mod A p)"
     by simp
 qed
 
@@ -75,10 +68,10 @@ text \<open>
 \<close>
 
 theorem drop_mod_non_electing[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "non_electing (drop_module n r)"
   unfolding non_electing_def
-  using order
+  using assms
   by simp
 
 subsection \<open>Properties\<close>
@@ -88,10 +81,10 @@ text \<open>
 \<close>
 
 theorem drop_mod_def_lift_inv[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "defer_lift_invariance (drop_module n r)"
   unfolding defer_lift_invariance_def
-  using order
+  using assms
   by simp
 
 end

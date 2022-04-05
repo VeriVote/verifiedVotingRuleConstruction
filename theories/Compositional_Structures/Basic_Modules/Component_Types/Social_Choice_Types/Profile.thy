@@ -67,9 +67,7 @@ proof (induction p rule: rev_induct, simp)
   fix
     a :: "'a Preference_Relation" and
     p :: "'a Profile"
-  assume
-    base_case:
-    "win_count p x = win_count_code p x"
+  assume base_case: "win_count p x = win_count_code p x"
   have size_one: "length [a] = 1"
     by simp
   have p_pos_in_ps:
@@ -114,8 +112,7 @@ proof (induction p rule: rev_induct, simp)
         using less_antisym p_pos_in_ps singletonD
         by metis
     next
-      fix
-        xa :: nat
+      fix xa :: nat
       assume
         "xa < Suc (length p)" and
         "above ((p@[a])!xa) x = {x}" and
@@ -165,8 +162,7 @@ proof (induction p rule: rev_induct, simp)
               nth_append_length singletonD
         by metis
     next
-      fix
-        xa :: nat
+      fix xa :: nat
       assume
         "xa < Suc (length p)" and
         "above ((p@[a])!xa) x = {x}" and
@@ -188,8 +184,7 @@ proof (induction p rule: rev_induct, simp)
               p_pos_in_ps singletonD
         by metis
     next
-      fix
-        xa :: nat
+      fix xa :: nat
       assume
         "xa < Suc (length p)" and
         "above ((p@[a])!xa) x = {x}" and
@@ -208,18 +203,17 @@ proof (induction p rule: rev_induct, simp)
       thus "xaa = x"
         by (simp add: nth_append)
     next
-      fix
-        xa :: nat
+      fix xa :: nat
       assume
         "xa < length p" and
         "above (p!xa) x = {x}"
       thus "x \<in> above ((p@[a])!xa) x"
         by (simp add: nth_append)
     qed
-    have f1:
+    have fin_len_p:
       "finite {n. n < length p \<and> (above (p!n) x = {x})}"
       by simp
-    have f2:
+    have fin_len_a_0:
       "finite {n. n = length p \<and> (above ([a]!0) x = {x})}"
       by simp
     have
@@ -227,7 +221,7 @@ proof (induction p rule: rev_induct, simp)
         {i. i = length p \<and> (above ([a]!0) x = {x})}) =
           card {i. i < length p \<and> (above (p!i) x = {x})} +
             card {i. i = length p \<and> (above ([a]!0) x = {x})}"
-      using f1 f2 card_Un_disjoint
+      using fin_len_p fin_len_a_0 card_Un_disjoint
       by blast
     thus
       "card {i. i < Suc (length p) \<and> (above ((p@[a])!i) x = {x})} =
@@ -236,9 +230,7 @@ proof (induction p rule: rev_induct, simp)
       using set_prof_eq shift_idx_a
       by auto
   qed
-  have pref_count_code_induct:
-    "win_count_code (p@[a]) x =
-      win_count_code p x + win_count_code [a] x"
+  have "win_count_code (p@[a]) x = win_count_code p x + win_count_code [a] x"
   proof (induction p, simp)
     fix
       aa :: "'a Preference_Relation" and
@@ -251,9 +243,8 @@ proof (induction p rule: rev_induct, simp)
         win_count_code (aa#p) x + win_count_code [a] x"
       by simp
   qed
-  show "win_count (p@[a]) x = win_count_code (p@[a]) x"
-    using pref_count_code_induct pref_count_induct
-          base_case one_ballot_equiv
+  thus "win_count (p@[a]) x = win_count_code (p@[a]) x"
+    using pref_count_induct base_case one_ballot_equiv
     by presburger
 qed
 
@@ -272,9 +263,7 @@ proof (induction p rule: rev_induct, simp)
   fix
     a :: "'a Preference_Relation" and
     p :: "'a Profile"
-  assume
-    base_case:
-    "prefer_count p x y = prefer_count_code p x y"
+  assume base_case: "prefer_count p x y = prefer_count_code p x y"
   have size_one: "length [a] = 1"
     by simp
   have p_pos_in_ps:
@@ -307,8 +296,7 @@ proof (induction p rule: rev_induct, simp)
         {i. i < length p \<and> (y, x) \<in> p!i} \<union>
           {i. i = length p \<and> (y, x) \<in> [a]!0}"
     proof (safe, simp_all)
-      fix
-        xa :: nat
+      fix xa :: nat
       assume
         "xa < Suc (length p)" and
         "(y, x) \<in> (p@[a])!xa" and
@@ -317,8 +305,7 @@ proof (induction p rule: rev_induct, simp)
         using less_antisym p_pos_in_ps
         by metis
     next
-      fix
-        xa :: nat
+      fix xa :: nat
       assume
         "xa < Suc (length p)" and
         "(y, x) \<in> (p@[a])!xa" and
@@ -327,8 +314,7 @@ proof (induction p rule: rev_induct, simp)
         using less_antisym nth_append_length
         by metis
     next
-      fix
-        xa :: nat
+      fix xa :: nat
       assume
         "xa < Suc (length p)" and
         "(y, x) \<in> (p@[a])!xa" and
@@ -337,8 +323,7 @@ proof (induction p rule: rev_induct, simp)
         using less_antisym nth_append_length p_pos_in_ps
         by metis
     next
-      fix
-        xa :: nat
+      fix xa :: nat
       assume
         "xa < length p" and
         "(y, x) \<in> p!xa"
@@ -346,18 +331,16 @@ proof (induction p rule: rev_induct, simp)
         using less_antisym p_pos_in_ps
         by metis
     qed
-    have f1:
-      "finite {n. n < length p \<and> (y, x) \<in> p!n}"
+    have fin_len_p: "finite {n. n < length p \<and> (y, x) \<in> p!n}"
       by simp
-    have f2:
-      "finite {n. n = length p \<and> (y, x) \<in> [a]!0}"
+    have fin_len_a_0: "finite {n. n = length p \<and> (y, x) \<in> [a]!0}"
       by simp
     have
       "card ({i. i < length p \<and> (y, x) \<in> p!i} \<union>
         {i. i = length p \<and> (y, x) \<in> [a]!0}) =
           card {i. i < length p \<and> (y, x) \<in> p!i} +
             card {i. i = length p \<and> (y, x) \<in> [a]!0}"
-      using f1 f2 card_Un_disjoint
+      using fin_len_p fin_len_a_0 card_Un_disjoint
       by blast
     thus
       "card {i. i < Suc (length p) \<and> (y, x) \<in> (p@[a])!i} =
@@ -370,25 +353,20 @@ proof (induction p rule: rev_induct, simp)
     "prefer_count_code (p@[a]) x y =
       prefer_count_code p x y + prefer_count_code [a] x y"
   proof (simp, safe)
-    assume
-      assm: "(y, x) \<in> a"
-    show
-      "prefer_count_code (p@[a]) x y = Suc (prefer_count_code p x y)"
+    assume y_pref_x: "(y, x) \<in> a"
+    show "prefer_count_code (p@[a]) x y = Suc (prefer_count_code p x y)"
     proof (induction p, simp_all)
       show "(y, x) \<in> a"
-        using assm
+        using y_pref_x
         by simp
     qed
   next
-    assume
-      assm: "(y, x) \<notin> a"
-    show
-      "prefer_count_code (p@[a]) x y = prefer_count_code p x y"
+    assume not_y_pref_x: "(y, x) \<notin> a"
+    show "prefer_count_code (p@[a]) x y = prefer_count_code p x y"
     proof (induction p, simp_all, safe)
-      assume
-        "(y, x) \<in> a"
-      thus "False"
-        using assm
+      assume "(y, x) \<in> a"
+      thus False
+        using not_y_pref_x
         by simp
     qed
   qed
@@ -494,7 +472,7 @@ lemma pref_count_sym:
     x_in_A: "x \<in> A" and
     neq1: "a \<noteq> x" and
     neq2: "x \<noteq> b"
-    shows "prefer_count p b x \<ge> prefer_count p x a"
+  shows "prefer_count p b x \<ge> prefer_count p x a"
 proof -
   from prof a_in_A x_in_A neq1 have 0:
     "prefer_count p a x = (length p) - (prefer_count p x a)"
@@ -573,22 +551,22 @@ fun condorcet_winner :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Righ
       (finite_profile A p \<and>  w \<in> A \<and> (\<forall> x \<in> A - {w} . wins w p x))"
 
 lemma cond_winner_unique:
-  assumes winner_c: "condorcet_winner A p c" and
-          winner_w: "condorcet_winner A p w"
+  assumes
+    winner_c: "condorcet_winner A p c" and
+    winner_w: "condorcet_winner A p w"
   shows "w = c"
 proof (rule ccontr)
-  assume
-    assumption: "w \<noteq> c"
+  assume w_neq_c: "w \<noteq> c"
   from winner_w
   have "wins w p c"
-    using assumption insert_Diff insert_iff winner_c
+    using w_neq_c insert_Diff insert_iff winner_c
     by simp
   hence "\<not> wins c p w"
     by (simp add: wins_antisym)
   moreover from winner_c
   have
     c_wins_against_w: "wins c p w"
-    using Diff_iff assumption
+    using Diff_iff w_neq_c
           singletonD winner_w
     by simp
   ultimately show False
@@ -598,8 +576,7 @@ qed
 lemma cond_winner_unique2:
   assumes
     winner: "condorcet_winner A p w" and
-    not_w:  "x \<noteq> w" and
-    in_A:   "x \<in> A"
+    not_w:  "x \<noteq> w"
   shows "\<not> condorcet_winner A p x"
   using not_w cond_winner_unique winner
   by metis
@@ -608,8 +585,7 @@ lemma cond_winner_unique3:
   assumes "condorcet_winner A p w"
   shows "{a \<in> A. condorcet_winner A p a} = {w}"
 proof (safe, simp_all, safe)
-  fix
-    x :: "'a"
+  fix x :: "'a"
   assume
     fin_A: "finite A" and
     prof_A: "profile A p" and
@@ -647,8 +623,7 @@ proof (safe, simp_all, safe)
         card {i. i < length p \<and> (w, x) \<in> p!i}"
     using x_wins
     by simp
-  from w_beats_x x_beats_w show
-    "x = w"
+  from w_beats_x x_beats_w show "x = w"
     by linarith
 next
   from assms show "w \<in> A"
@@ -742,10 +717,7 @@ next
     by (metis (no_types))
 qed
 
-lemma limit_prof_presv_size:
-  assumes f_prof: "finite_profile S p" and
-          subset:  "A \<subseteq> S"
-  shows "length p = length (limit_profile A p)"
+lemma limit_prof_presv_size: "length p = length (limit_profile A p)"
   by simp
 
 subsection \<open>Lifting Property\<close>
@@ -774,44 +746,42 @@ definition lifted :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Profile \
       (\<exists> i::nat. i < length p \<and> Preference_Relation.lifted A (p!i) (q!i) a)"
 
 lemma lifted_imp_equiv_prof_except_a:
-  assumes lifted: "lifted A p q a"
+  assumes "lifted A p q a"
   shows "equiv_prof_except_a A p q a"
 proof (unfold equiv_prof_except_a_def, safe)
-  from lifted
+  from assms
   show "finite A"
     unfolding lifted_def
     by metis
 next
-  from lifted
+  from assms
   show "profile A p"
     unfolding lifted_def
     by metis
 next
-  from lifted
+  from assms
   show "finite A"
     unfolding lifted_def
     by metis
 next
-  from lifted
+  from assms
   show "profile A q"
     unfolding lifted_def
     by metis
 next
-  from lifted
+  from assms
   show "a \<in> A"
     unfolding lifted_def
     by metis
 next
-  from lifted
+  from assms
   show "length p = length q"
     unfolding lifted_def
     by metis
 next
-  fix
-    i :: nat
-  assume
-    "i < length p"
-  with lifted
+  fix i :: nat
+  assume "i < length p"
+  with assms
   show "equiv_rel_except_a A (p!i) (q!i) a"
     using lifted_imp_equiv_rel_except_a trivial_equiv_rel
     unfolding lifted_def profile_def
@@ -846,7 +816,7 @@ lemma limit_prof_eq_or_lifted:
   shows
     "limit_profile A p = limit_profile A q \<or>
         lifted A (limit_profile A p) (limit_profile A q) a"
-proof cases
+proof (cases)
   assume inA: "a \<in> A"
   have
     "\<forall> i::nat. i < length p \<longrightarrow>
@@ -861,7 +831,7 @@ proof cases
     using limit_lifted_imp_eq_or_lifted subset
     by metis
   thus ?thesis
-  proof cases
+  proof (cases)
     assume "\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (q!i))"
     thus ?thesis
       using length_map lifted_a nth_equalityI nth_map
@@ -869,8 +839,7 @@ proof cases
       unfolding lifted_def
       by (metis (mono_tags, lifting))
   next
-    assume assm:
-      "\<not>(\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (q!i)))"
+    assume forall_limit_p_q: "\<not>(\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (q!i)))"
     let ?p = "limit_profile A p"
     let ?q = "limit_profile A q"
     have "profile A ?p \<and> profile A ?q"
@@ -883,7 +852,7 @@ proof cases
       by fastforce
     moreover have
       "\<exists> i::nat. i < length ?p \<and> Preference_Relation.lifted A (?p!i) (?q!i) a"
-      using assm length_map lifted_a limit_profile.simps nth_map one
+      using forall_limit_p_q length_map lifted_a limit_profile.simps nth_map one
       unfolding lifted_def
       by (metis (no_types, lifting))
     moreover have
@@ -907,6 +876,5 @@ next
           lifted_imp_equiv_prof_except_a
     by metis
 qed
-
 
 end

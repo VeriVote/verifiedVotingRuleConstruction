@@ -28,9 +28,9 @@ fun elector :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module" where
 subsection \<open>Soundness\<close>
 
 theorem elector_sound[simp]:
-  assumes module_m: "electoral_module m"
+  assumes "electoral_module m"
   shows "electoral_module (elector m)"
-  using module_m
+  using assms
   by simp
 
 subsection \<open>Electing\<close>
@@ -99,12 +99,12 @@ text \<open>
 \<close>
 
 lemma dcc_imp_cc_elector:
-  assumes dcc: "defer_condorcet_consistency m"
+  assumes "defer_condorcet_consistency m"
   shows "condorcet_consistency (elector m)"
 proof (unfold defer_condorcet_consistency_def
               condorcet_consistency_def, auto)
   show "electoral_module (m \<triangleright> elect_module)"
-    using dcc elect_mod_sound seq_comp_sound
+    using assms elect_mod_sound seq_comp_sound
     unfolding defer_condorcet_consistency_def
     by metis
 next
@@ -128,7 +128,7 @@ next
           card {i. i < length p \<and> (w, y) \<in> (p!i)} <
             card {i. i < length p \<and> (y, w) \<in> (p!i)} \<Longrightarrow>
              x \<in> elect m A p \<Longrightarrow> x \<in> A"
-      using dcc elect_in_alts subset_eq finite prof_A
+      using assms elect_in_alts subset_eq finite prof_A
       unfolding defer_condorcet_consistency_def
       by metis
   qed
@@ -151,7 +151,7 @@ next
     using finite prof_A w_in_A 2
     by simp
   thus "xa = x"
-    using condorcet_winner.simps dcc fst_conv insert_Diff 1 insert_not_empty
+    using condorcet_winner.simps assms fst_conv insert_Diff 1 insert_not_empty
     unfolding defer_condorcet_consistency_def
     by (metis (no_types, lifting))
 next
@@ -172,7 +172,7 @@ next
     using finite prof_A w_in_A 0
     by simp
   thus "x \<in> A"
-    using 0 1 condorcet_winner.simps dcc defer_in_alts
+    using 0 1 condorcet_winner.simps assms defer_in_alts
           order_trans subset_Compl_singleton
     unfolding defer_condorcet_consistency_def
     by (metis (no_types, lifting))
@@ -198,7 +198,7 @@ next
     using finite prof_A w_in_A "2"
     by simp
   thus "xa = x"
-    using 1 2 condorcet_winner.simps dcc empty_iff xa_in_A
+    using 1 2 condorcet_winner.simps assms empty_iff xa_in_A
           defer_condorcet_consistency_def 3 DiffI
           cond_winner_unique3 insert_iff prod.sel(2)
     by (metis (no_types, lifting))
@@ -227,7 +227,7 @@ next
     using finite prof_A x_in_A "3"
     by simp
   ultimately show "x \<in> elect m A p"
-    using 1 condorcet_winner.simps dcc
+    using 1 condorcet_winner.simps assms
           defer_condorcet_consistency_def
           cond_winner_unique3 insert_iff eq_snd_iff
     by (metis (no_types, lifting))
@@ -249,7 +249,7 @@ next
     using finite prof_A w_in_A "2"
     by simp
   thus "x \<in> A"
-    using 1 dcc finite prof_A reject_in_alts subsetD
+    using 1 assms finite prof_A reject_in_alts subsetD
     unfolding defer_condorcet_consistency_def
     by metis
 next
@@ -270,8 +270,8 @@ next
   have "condorcet_winner A p w"
     using finite prof_A w_in_A "2"
     by simp
-  thus "False"
-    using 0 1 dcc IntI empty_iff result_disj
+  thus False
+    using 0 1 assms IntI empty_iff result_disj
     unfolding condorcet_winner.simps defer_condorcet_consistency_def
     by (metis (no_types, opaque_lifting))
 next
@@ -292,8 +292,8 @@ next
   have "condorcet_winner A p w"
     using finite prof_A w_in_A "2"
     by simp
-  thus "False"
-    using 0 1 dcc IntI Diff_empty Diff_iff finite prof_A result_disj
+  thus False
+    using 0 1 assms IntI Diff_empty Diff_iff finite prof_A result_disj
     unfolding defer_condorcet_consistency_def
     by (metis (no_types, opaque_lifting))
 next
@@ -316,7 +316,7 @@ next
     using finite prof_A w_in_A 2
     by simp
   thus "x \<in> elect m A p"
-    using 0 1 dcc x_in_A electoral_mod_defer_elem
+    using 0 1 assms x_in_A electoral_mod_defer_elem
     unfolding condorcet_winner.simps defer_condorcet_consistency_def
     by (metis (no_types, lifting))
 qed

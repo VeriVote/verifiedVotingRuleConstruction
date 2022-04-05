@@ -35,10 +35,10 @@ text \<open>
 \<close>
 
 lemma cond_winner_imp_win_count:
-  assumes winner: "condorcet_winner A p w"
+  assumes "condorcet_winner A p w"
   shows "card {y \<in> A . wins w p y} = card A - 1"
 proof -
-  from winner
+  from assms
   have 0: "\<forall> x \<in> A - {w} . wins w p x"
     by simp
   have 1: "\<forall> M . {x \<in> M . True} = M"
@@ -48,11 +48,11 @@ proof -
     by blast
   hence 10: "card {x \<in> A - {w} . wins w p x} = card (A - {w})"
     by simp
-  from winner
+  from assms
   have 11: "w \<in> A"
     by simp
   hence "card (A - {w}) = card A - 1"
-    using card_Diff_singleton winner
+    using card_Diff_singleton assms
     by metis
   hence amount1:
     "card {x \<in> A - {w} . wins w p x} = card (A) - 1"
@@ -76,7 +76,7 @@ proof -
     using 2
     by blast
   have finiteness1: "finite {x \<in> A - {w} . wins w p x}"
-    using winner
+    using assms
     by simp
   have finiteness2: "finite {x \<in> {w} . wins w p x}"
     by simp
