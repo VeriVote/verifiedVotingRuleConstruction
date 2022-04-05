@@ -31,7 +31,7 @@ fun copeland :: "'a Electoral_Module" where
 subsection \<open>Lemmata\<close>
 
 text \<open>
-  For a Condorcet winner w, we have: "card {y \<in> A . wins x p y} = |A| - 1"
+  For a Condorcet winner w, we have: 'card {y \<in> A . wins x p y} = |A| - 1'.
 \<close>
 
 lemma cond_winner_imp_win_count:
@@ -95,7 +95,7 @@ proof -
 qed
 
 text \<open>
-  For a Condorcet winner w, we have: "card {y \<in> A . wins y p x} = 0"
+  For a Condorcet winner w, we have: 'card {y \<in> A . wins y p x} = 0'.
 \<close>
 
 lemma cond_winner_imp_loss_count:
@@ -131,7 +131,7 @@ qed
 
 text \<open>
   For a non-Condorcet winner l, we have:
-  "card {y \<in> A . wins x p y} \<le> |A| - 1 - 1"
+  'card {y \<in> A . wins x p y} \<le> |A| - 1 - 1'.
 \<close>
 
 lemma non_cond_winner_imp_win_count:
