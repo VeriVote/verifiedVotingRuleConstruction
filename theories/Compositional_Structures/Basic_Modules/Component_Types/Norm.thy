@@ -7,7 +7,7 @@ section \<open>Norm\<close>
 
 theory Norm
   imports "HOL-Library.Extended_Real"
-          "Social_Choice_Types/Profile"
+          "Social_Choice_Types/Tools/List_Permutation"
 begin
 
 text \<open>
@@ -28,7 +28,7 @@ definition norm :: "Norm \<Rightarrow> bool" where
 subsection \<open>TODO\<close>
 
 definition symmetry :: "Norm \<Rightarrow> bool" where
-  "symmetry n \<equiv> \<forall> pi p. (permutation pi \<longrightarrow> (n (pi p) = n p))"
+  "symmetry n \<equiv> \<forall> pi p. (is_perm pi \<longrightarrow> (n (build_perm pi p) = n p))"
 
 fun l_one :: "Norm" where
   "l_one xs = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
@@ -127,33 +127,26 @@ subsection \<open>Property\<close>
 lemma l_one_is_symm: "symmetry l_one"
 proof (unfold symmetry_def, safe)
   fix
-    pi :: "ereal list \<Rightarrow> ereal list" and
+    pi :: "nat \<Rightarrow> nat \<Rightarrow> nat" and
     xs :: "ereal list"
-  assume perm_pi: "permutation pi"
-  let ?b = "bij (length xs) pi"
-  let ?b_inv = "the_inv_into {..< length xs} ?b"
-  from perm_pi have bij_b: "bij_betw ?b {..< length xs} {..< length xs}"
-    using bij_of_perm_is_bij
-    unfolding permutation_def
-    by metis
+  assume perm_pi: "is_perm pi"
+  let ?b = "pi (length xs)"
   from perm_pi have
-    "(\<Sum> i < length xs. \<bar>pi xs!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!(?b i)\<bar>)"
-    using lessThan_iff sum.cong bij_of_perm_item_mapping[of "length xs" pi]
-    unfolding permutation_def
+    "(\<Sum> i < length xs. \<bar>build_perm pi xs!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!(?b i)\<bar>)"
+    by (metis (mono_tags, lifting) \<open>is_perm pi\<close> build_perm.simps is_perm_def lessThan_iff permute_list_nth sum.cong)
+  also from perm_pi have "\<dots> = (\<Sum> i < length xs. \<bar>xs!(?b (inv ?b i))\<bar>)"
+    using \<open>is_perm pi\<close> is_perm_def permutes_imp_bij sum_over_image_of_bijection[of ?b "{..<length xs}" "{..<length xs}" 
+            "\<lambda>i. \<bar>xs ! (?b i)\<bar>"]
+    by (smt (verit, ccfv_SIG) bijection.inv_left bijection_def f_the_inv_into_f_bij_betw permutes_bij sum.cong)
+  also from perm_pi have "\<dots> = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
+    using is_perm_def
+    by (metis permutes_inv_eq)
+  finally have "(\<Sum> i < length xs. \<bar>build_perm pi xs!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
     by simp
-  also from bij_b have "\<dots> = (\<Sum> i < length xs. \<bar>xs!(?b (?b_inv i))\<bar>)"
-    using sum_over_image_of_bijection[of ?b "{..< length xs}" "{..< length xs}"]
+  moreover from perm_pi have "length xs = length (build_perm pi xs)"
     by simp
-  also from bij_b have "\<dots> = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
-    using f_the_inv_into_f_bij_betw
-    by fastforce
-  finally have "(\<Sum> i < length xs. \<bar>pi xs!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
-    by simp
-  moreover from perm_pi have "length xs = length (pi xs)"
-    unfolding permutation_def n_permutation_def
-    by simp
-  ultimately show "l_one (pi xs) = l_one xs"
-    by simp
+  ultimately show "l_one (build_perm pi xs) = l_one xs"
+    by (metis l_one.elims)
 qed
 
 end

@@ -7,6 +7,7 @@ section \<open>Consensus Condition\<close>
 
 theory Consensus_Condition
   imports "Social_Choice_Types/Profile"
+          "Social_Choice_Types/Tools/List_Permutation"
 begin
 
 text \<open>
@@ -21,7 +22,7 @@ subsection \<open>TODO\<close>
 
 definition consensus_condition_anonymity :: "'a Consensus_Condition \<Rightarrow> bool" where
   "consensus_condition_anonymity CC \<equiv>
-    \<forall> pi A p. finite_profile A p \<longrightarrow> permutation pi \<longrightarrow> CC (A, p) \<longrightarrow> CC (A, pi p)"
+    \<forall> pi A p. finite_profile A p \<longrightarrow> is_perm pi \<longrightarrow> CC (A, p) \<longrightarrow> CC (A, build_perm pi p)"
 
 lemma cond_anon_if_ex_cond_anon:
   fixes
@@ -33,11 +34,11 @@ lemma cond_anon_if_ex_cond_anon:
   shows "consensus_condition_anonymity b"
 proof (unfold consensus_condition_anonymity_def, safe)
   fix
-    pi::"'a Profile \<Rightarrow> 'a Profile" and
+    pi::"nat \<Rightarrow> nat \<Rightarrow> nat" and
     A :: "'a set" and
     p :: "'a Profile"
   assume
-    perm_pi: "permutation pi" and
+    perm_pi: "is_perm pi" and
     cond_b: "b (A, p)" and
     fin_C: "finite A" and
     prof_p: "profile A p"
@@ -48,13 +49,13 @@ proof (unfold consensus_condition_anonymity_def, safe)
     "b' x (A, p)"
     by blast
   with all_cond_anon
-  have "b' x (A, pi p)"
+  have "b' x (A, build_perm pi p)"
     using perm_pi fin_C prof_p
     unfolding consensus_condition_anonymity_def
     by simp
-  hence "\<exists> x. b' x (A, pi p)"
+  hence "\<exists> x. b' x (A, build_perm pi p)"
     by auto
-  thus "b (A, pi p)"
+  thus "b (A, build_perm pi p)"
     using general_cond_b
     by simp
 qed
@@ -82,19 +83,18 @@ fun ne_profile_cond :: "'a Consensus_Condition" where
 lemma ne_profile_cond_anon: "consensus_condition_anonymity ne_profile_cond"
 proof (unfold consensus_condition_anonymity_def, clarify)
   fix
-    pi :: "'a Profile \<Rightarrow> 'a Profile" and
+    pi :: "nat \<Rightarrow> nat \<Rightarrow> nat" and
     A :: "'a set" and
     p :: "'a Profile"
   assume
-    perm_pi: "permutation pi" and
+    perm_pi: "is_perm pi" and
     not_empty_p: "ne_profile_cond (A, p)"
   from perm_pi
-  have "length (pi p) = length p"
-    unfolding permutation_def n_permutation_def
+  have "length (build_perm pi p) = length p"
     by simp
-  thus "ne_profile_cond (A, pi p)"
+  thus "ne_profile_cond (A, build_perm pi p)"
     using not_empty_p
-    by auto
+    by (metis length_0_conv ne_profile_cond.simps)
 qed
 
 text \<open>
@@ -112,38 +112,36 @@ proof (unfold consensus_condition_anonymity_def, clarify)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
-    pi :: "'a Profile \<Rightarrow> 'a Profile" and
+    pi :: "nat \<Rightarrow> nat \<Rightarrow> nat" and
     a :: "'a"
   assume
-    perm_pi: "permutation pi" and
+    perm_pi: "is_perm pi" and
     top_cons_a: "eq_top_cond' a (A, p)"
-  let ?b = "bij (length p) pi"
+  let ?b = "pi (length p)"
   from perm_pi
-  have l: "length p = length (pi p)"
-    unfolding permutation_def n_permutation_def
-    by simp
-  hence "\<forall> i < length (pi p). ?b i < length p"
-    using bij_of_perm_is_bij perm_pi
-          bij_betw_apply lessThan_iff
-    unfolding permutation_def
-    by metis
+  have l: "length p = length (build_perm pi p)"
+    by auto
+  hence "\<forall> i < length (build_perm pi p). ?b i < length p"
+    using perm_pi permutes_in_image
+    unfolding is_perm_def
+    by fastforce
   moreover from perm_pi
-  have "\<forall> i < length (pi p). (pi p)!i = p!(?b i)"
-    using bij_of_perm_item_mapping l
-    unfolding permutation_def
-    by metis
+  have "\<forall> i < length (build_perm pi p). (build_perm pi p)!i = p!(?b i)"
+    unfolding permute_list_def
+    using permute_list_nth
+    by (metis perm_pi build_perm.elims is_perm_def l)
   moreover from top_cons_a
   have winner: "\<forall> i < length p. above (p!i) a = {a}"
     by simp
-  ultimately have "\<forall> i < length p. above (pi p!i) a = {a}"
+  ultimately have "\<forall> i < length p. above (build_perm pi p!i) a = {a}"
     using l
     by metis
   moreover from top_cons_a
   have "a \<in> A"
     by simp
-  ultimately show "eq_top_cond' a (A, pi p)"
+  ultimately show "eq_top_cond' a (A, build_perm pi p)"
     using l
-    by simp
+    by (metis eq_top_cond'.simps)
 qed
 
 lemma eq_top_cond_anon: "consensus_condition_anonymity eq_top_cond"
@@ -165,35 +163,33 @@ proof (unfold consensus_condition_anonymity_def, clarify)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
-    pi :: "'a Profile \<Rightarrow> 'a Profile" and
+    pi :: "nat \<Rightarrow> nat \<Rightarrow> nat" and
     pref :: "'a Preference_Relation"
   assume
-    perm_pi: "permutation pi" and
+    perm_pi: "is_perm pi" and
     equal_votes_pref: "eq_vote_cond' pref (A, p)"
-  let ?b = "bij (length p) pi"
+  let ?b = "pi (length p)"
   from perm_pi
-  have l: "length p = length (pi p)"
-    unfolding permutation_def n_permutation_def
-    by simp
-  hence "\<forall> i < length (pi p). ?b i < length p"
-    using bij_of_perm_is_bij perm_pi
-          bij_betw_apply lessThan_iff
-    unfolding permutation_def
-    by metis
+  have l: "length p = length (build_perm pi p)"
+    by auto
+  hence "\<forall> i < length (build_perm pi p). ?b i < length p"
+    using perm_pi permutes_in_image
+    unfolding is_perm_def
+    by fastforce
   moreover from perm_pi
-  have "\<forall> i < length (pi p). (pi p)!i = p!(?b i)"
-    using bij_of_perm_item_mapping l
-    unfolding permutation_def
-    by metis
+  have "\<forall> i < length (build_perm pi p). (build_perm pi p)!i = p!(?b i)"
+    unfolding permute_list_def
+    using permute_list_nth
+    by (metis perm_pi build_perm.elims is_perm_def l)
   moreover from equal_votes_pref
   have winner: "\<forall> i < length p. (p!i) = pref"
     by simp
-  ultimately have "\<forall> i < length p. (pi p!i) = pref"
+  ultimately have "\<forall> i < length p. (build_perm pi p!i) = pref"
     using l
     by metis
-  thus "eq_vote_cond' pref (A, pi p)"
+  thus "eq_vote_cond' pref (A, build_perm pi p)"
     using l
-    by simp
+    by (metis eq_vote_cond'.simps)
 qed
 
 lemma eq_vote_cond_anon: "consensus_condition_anonymity eq_vote_cond"
