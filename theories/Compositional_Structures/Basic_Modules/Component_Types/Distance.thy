@@ -71,10 +71,14 @@ definition pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relatio
                                       ('a \<times> 'a) set" where
   "pairwise_disagreements A x y = {(u, v) \<in> A \<times> A. u \<noteq> v \<and> neq_ord x y u v}"
 
+definition pairwise_disagreements_2 :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
+                                      ('a \<times> 'a) set" where
+  "pairwise_disagreements_2 A x y = Set.filter (\<lambda> (u, v). u \<noteq> v \<and> neq_ord x y u v) (A \<times> A)"
+
 fun swap :: "'a Vote Distance" where
   "swap (A, x) (A', y) =
     (if A = A'
-    then card (pairwise_disagreements A x y)
+    then card (pairwise_disagreements_2 A x y)
     else \<infinity>)"
 
 lemma swap_case_inf: "(fst x) \<noteq> (fst y) \<longrightarrow> swap x y = \<infinity>"

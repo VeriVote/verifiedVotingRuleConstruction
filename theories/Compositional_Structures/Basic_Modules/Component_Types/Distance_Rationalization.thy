@@ -8,6 +8,7 @@ section \<open>Distance Rationalization\<close>
 theory Distance_Rationalization
   imports "Distance"
           "Consensus_Rule"
+          "HOL-Library.Multiset_Permutations"
 begin
 
 text \<open>
@@ -31,12 +32,39 @@ fun score :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow>
 fun arg_min_set :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
   "arg_min_set f A = Collect (is_arg_min f (\<lambda> a. a \<in> A))"
 
+fun arg_min_set_2 :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
+  "arg_min_set_2 f A = Set.filter (is_arg_min f (\<lambda> a. a \<in> A)) A"
+
 fun dr_winners :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a set \<Rightarrow>
                    'a Profile \<Rightarrow> 'a set" where
   "dr_winners d K A p = arg_min_set (score d K (A, p)) A"
 
 fun dr_rule :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Electoral_Module" where
   "dr_rule d K A p = (dr_winners d K A p, A - dr_winners d K A p, {})"
+
+subsection \<open>Code Equations\<close>
+
+fun list_to_rel :: "'a list \<Rightarrow> 'a rel" where
+  "list_to_rel [] = {}" |
+  "list_to_rel [x] = {(x,x)}" |
+  "list_to_rel xs = set (map (\<lambda> x. (x, hd xs)) xs) \<union> list_to_rel (tl xs)"
+
+fun all_profiles :: "nat \<Rightarrow> 'a set \<Rightarrow> ('a \<times> 'a) set list set" where
+  "all_profiles l A = listset (replicate l (list_to_rel ` permutations_of_set A))"
+
+fun favoring_consensus_elections_std :: "'a Consensus_Rule \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> nat \<Rightarrow> 'a Election set" where
+  "favoring_consensus_elections_std K a A l =
+    (\<lambda> p. (A, p)) ` (Set.filter (\<lambda> p. (fst K) (A, p) \<and> elect_r ((snd K) A p) = {a}) (all_profiles l A))"
+
+fun score_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Election \<Rightarrow> 'a \<Rightarrow> ereal" where
+  "score_std d K E a = Min (d E ` (favoring_consensus_elections_std K a (fst E) (length (snd E))))"
+
+fun dr_winners_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a set \<Rightarrow>
+                   'a Profile \<Rightarrow> 'a set" where
+  "dr_winners_std d K A p = arg_min_set_2 (score_std d K (A, p)) A"
+
+fun dr_rule_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Electoral_Module" where
+  "dr_rule_std d K A p = (dr_winners_std d K A p, A - dr_winners_std d K A p, {})"
 
 subsection \<open>Soundness\<close>
 
