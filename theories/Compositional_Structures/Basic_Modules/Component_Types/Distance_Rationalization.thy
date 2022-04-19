@@ -144,7 +144,7 @@ proof (unfold anonymity_def, clarify)
     A :: "'a set" and
     p :: "'a Profile"
   assume
-    perm: "permutation pi" and
+    perm: "newnameforpermut pi" and
     fin: "finite A" and
     profile: "profile A p"
   let ?m = "dr_rule d K"
@@ -154,7 +154,7 @@ proof (unfold anonymity_def, clarify)
     fix
       a :: "'a"
     have apply_perm:
-      "\<And> pi A' p'. permutation pi \<Longrightarrow>
+      "\<And> pi A' p'. newnameforpermut pi \<Longrightarrow>
         (A', p') \<in> {(A', p') | A' p'. ?P a A' p'} \<Longrightarrow>
         (A', pi p') \<in> {(A', p') | A' p'. ?P a A' p'}"
     proof (clarify)
@@ -163,14 +163,14 @@ proof (unfold anonymity_def, clarify)
         A' :: "'a set" and
         p' :: "'a Profile"
       assume
-        perm: "permutation pi"  and
+        perm: "newnameforpermut pi"  and
         favcons: "(A', p') \<in> favoring_consensus_elections K a"
       from favcons
       have finprof: "finite_profile A' p'"
         by simp
       with perm perm_preserves_finite_profile[of A' p' pi]
       have "finite_profile A' (pi p')"
-        unfolding permutation_def
+        unfolding newnameforpermut_def
         by simp
       moreover from favcons
       have "(fst K) (A', p') \<and> elect_r ((snd K) A' p') = {a}"
@@ -195,7 +195,7 @@ proof (unfold anonymity_def, clarify)
           ?A = "fst E" and
           ?p = "snd E"
         let ?pi_inv = "inverse_perm pi"
-        have "permutation ?pi_inv"
+        have "newnameforpermut ?pi_inv"
           using perm inverse_perm_preserves_perm
           by auto
         with assm apply_perm[of ?pi_inv]
@@ -244,7 +244,7 @@ proof (unfold anonymity_def, clarify)
   proof (clarify)
     fix a :: "'a"
     from d_anon
-    have "\<And> A' p'. permutation pi \<longrightarrow> d (A, p) (A', p') = d (A, pi p) (A', pi p')"
+    have "\<And> A' p'. newnameforpermut pi \<longrightarrow> d (A, p) (A', p') = d (A, pi p) (A', pi p')"
       unfolding el_distance_anonymity_def perm
       by blast
     thus "{d (A, p) (A', p') | A' p'. ?P a A' p'} =

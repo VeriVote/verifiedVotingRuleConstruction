@@ -1282,6 +1282,6 @@ subsubsection \<open>Anonymity\<close>
 
 definition anonymity :: "'a Electoral_Module \<Rightarrow> bool" where
   "anonymity m \<equiv>
-    (\<forall> pi A p. (permutation pi \<longrightarrow> finite_profile A p \<longrightarrow> m A p = m A (pi p)))"
+    (\<forall> pi A p. (newnameforpermut pi \<longrightarrow> finite_profile A p \<longrightarrow> m A p = m A (pi p)))"
 
 end

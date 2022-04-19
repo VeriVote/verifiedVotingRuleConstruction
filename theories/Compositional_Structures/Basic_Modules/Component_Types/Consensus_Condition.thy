@@ -21,7 +21,7 @@ subsection \<open>TODO\<close>
 
 definition consensus_condition_anonymity :: "'a Consensus_Condition \<Rightarrow> bool" where
   "consensus_condition_anonymity CC \<equiv>
-    \<forall> pi A p. finite_profile A p \<longrightarrow> permutation pi \<longrightarrow> CC (A, p) \<longrightarrow> CC (A, pi p)"
+    \<forall> pi A p. finite_profile A p \<longrightarrow> newnameforpermut pi \<longrightarrow> CC (A, p) \<longrightarrow> CC (A, pi p)"
 
 lemma cond_anon_if_ex_cond_anon:
   fixes
@@ -37,7 +37,7 @@ proof (unfold consensus_condition_anonymity_def, safe)
     A :: "'a set" and
     p :: "'a Profile"
   assume
-    perm_pi: "permutation pi" and
+    perm_pi: "newnameforpermut pi" and
     cond_b: "b (A, p)" and
     fin_C: "finite A" and
     prof_p: "profile A p"
@@ -86,11 +86,11 @@ proof (unfold consensus_condition_anonymity_def, clarify)
     A :: "'a set" and
     p :: "'a Profile"
   assume
-    perm_pi: "permutation pi" and
+    perm_pi: "newnameforpermut pi" and
     not_empty_p: "ne_profile_cond (A, p)"
   from perm_pi
   have "length (pi p) = length p"
-    unfolding permutation_def n_permutation_def
+    unfolding newnameforpermut_def n_permutation_def
     by simp
   thus "ne_profile_cond (A, pi p)"
     using not_empty_p
@@ -115,22 +115,22 @@ proof (unfold consensus_condition_anonymity_def, clarify)
     pi :: "'a Profile \<Rightarrow> 'a Profile" and
     a :: "'a"
   assume
-    perm_pi: "permutation pi" and
+    perm_pi: "newnameforpermut pi" and
     top_cons_a: "eq_top_cond' a (A, p)"
   let ?b = "bij (length p) pi"
   from perm_pi
   have l: "length p = length (pi p)"
-    unfolding permutation_def n_permutation_def
+    unfolding newnameforpermut_def n_permutation_def
     by simp
   hence "\<forall> i < length (pi p). ?b i < length p"
     using bij_of_perm_is_bij perm_pi
           bij_betw_apply lessThan_iff
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by metis
   moreover from perm_pi
   have "\<forall> i < length (pi p). (pi p)!i = p!(?b i)"
     using bij_of_perm_item_mapping l
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by metis
   moreover from top_cons_a
   have winner: "\<forall> i < length p. above (p!i) a = {a}"
@@ -168,22 +168,22 @@ proof (unfold consensus_condition_anonymity_def, clarify)
     pi :: "'a Profile \<Rightarrow> 'a Profile" and
     pref :: "'a Preference_Relation"
   assume
-    perm_pi: "permutation pi" and
+    perm_pi: "newnameforpermut pi" and
     equal_votes_pref: "eq_vote_cond' pref (A, p)"
   let ?b = "bij (length p) pi"
   from perm_pi
   have l: "length p = length (pi p)"
-    unfolding permutation_def n_permutation_def
+    unfolding newnameforpermut_def n_permutation_def
     by simp
   hence "\<forall> i < length (pi p). ?b i < length p"
     using bij_of_perm_is_bij perm_pi
           bij_betw_apply lessThan_iff
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by metis
   moreover from perm_pi
   have "\<forall> i < length (pi p). (pi p)!i = p!(?b i)"
     using bij_of_perm_item_mapping l
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by metis
   moreover from equal_votes_pref
   have winner: "\<forall> i < length p. (p!i) = pref"

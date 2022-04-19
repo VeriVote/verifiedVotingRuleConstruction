@@ -28,7 +28,7 @@ definition norm :: "Norm \<Rightarrow> bool" where
 subsection \<open>TODO\<close>
 
 definition symmetry :: "Norm \<Rightarrow> bool" where
-  "symmetry n \<equiv> \<forall> pi p. (permutation pi \<longrightarrow> (n (pi p) = n p))"
+  "symmetry n \<equiv> \<forall> pi p. (newnameforpermut pi \<longrightarrow> (n (pi p) = n p))"
 
 fun l_one :: "Norm" where
   "l_one xs = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
@@ -129,17 +129,17 @@ proof (unfold symmetry_def, safe)
   fix
     pi :: "ereal list \<Rightarrow> ereal list" and
     xs :: "ereal list"
-  assume perm_pi: "permutation pi"
+  assume perm_pi: "newnameforpermut pi"
   let ?b = "bij (length xs) pi"
   let ?b_inv = "the_inv_into {..< length xs} ?b"
   from perm_pi have bij_b: "bij_betw ?b {..< length xs} {..< length xs}"
     using bij_of_perm_is_bij
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by metis
   from perm_pi have
     "(\<Sum> i < length xs. \<bar>pi xs!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!(?b i)\<bar>)"
     using lessThan_iff sum.cong bij_of_perm_item_mapping[of "length xs" pi]
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by simp
   also from bij_b have "\<dots> = (\<Sum> i < length xs. \<bar>xs!(?b (?b_inv i))\<bar>)"
     using sum_over_image_of_bijection[of ?b "{..< length xs}" "{..< length xs}"]
@@ -150,7 +150,7 @@ proof (unfold symmetry_def, safe)
   finally have "(\<Sum> i < length xs. \<bar>pi xs!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
     by simp
   moreover from perm_pi have "length xs = length (pi xs)"
-    unfolding permutation_def n_permutation_def
+    unfolding newnameforpermut_def n_permutation_def
     by simp
   ultimately show "l_one (pi xs) = l_one xs"
     by simp

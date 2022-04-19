@@ -23,8 +23,8 @@ definition n_permutation :: "nat \<Rightarrow> ('a list \<Rightarrow> 'a list) \
     (\<exists> b. bij_betw b {..< n} {..< n} \<and>
           (\<forall> xs. length xs = n \<longrightarrow> (\<forall> i < length xs. (pi xs)!i = xs!(b i))))"
 
-definition permutation :: "('a list \<Rightarrow> 'a list) \<Rightarrow> bool" where
-  "permutation pi \<equiv> \<forall> n. n_permutation n pi"
+definition newnameforpermut :: "('a list \<Rightarrow> 'a list) \<Rightarrow> bool" where
+  "newnameforpermut pi \<equiv> \<forall> n. n_permutation n pi"
 
 subsection \<open>Auxiliary Functions\<close>
 
@@ -190,9 +190,9 @@ qed
 
 lemma inverse_perm_preserves_perm:
   fixes pi :: "'a list \<Rightarrow> 'a list"
-  assumes "permutation pi"
-  shows "permutation (inverse_perm pi)"
-proof (unfold permutation_def n_permutation_def, safe)
+  assumes "newnameforpermut pi"
+  shows "newnameforpermut (inverse_perm pi)"
+proof (unfold newnameforpermut_def n_permutation_def, safe)
   fix
     n :: nat and
     xs :: "'a list"
@@ -204,7 +204,7 @@ next
   let ?b_inv = "the_inv_into {..< n} (bij n pi)"
   have  "bij_betw ?b_inv {..< n} {..< n}"
     using bij_of_perm_is_bij bij_inv_bij assms
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by blast
   hence "bij_betw ?b_inv {..< n} {..< n} \<and>
              (\<forall> xs. length xs = n \<longrightarrow>
@@ -220,19 +220,19 @@ lemma pi_inverse_perm_pi_is_id:
   fixes
     pi::"'a list \<Rightarrow> 'a list" and
     xs::"'a list"
-  assumes "permutation pi"
+  assumes "newnameforpermut pi"
   shows "pi (inverse_perm pi xs) = xs"
 proof -
   let ?b = "bij (length xs) pi"
   have bij_b: "bij_betw ?b {..< length xs} {..< length xs}"
     using assms bij_of_perm_is_bij
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by blast
   have "pi (inverse_perm pi xs) = pi (perm (the_inv_into {..< length xs} ?b) xs)"
     by simp
   also have "\<dots> = perm ?b (perm (the_inv_into {..< length xs} ?b) xs)"
     using assms perm_bij_is_id[of "perm (the_inv_into {..< length xs} ?b) xs"]
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by simp
   also from bij_b have "\<dots> = xs"
     using perm_b_perm_inv_b_is_id
@@ -243,16 +243,16 @@ qed
 
 lemma generalize_perm_preserves_perm:
   fixes pi :: "'a list \<Rightarrow> 'a list"
-  assumes "permutation pi"
-  shows "permutation (generalize_perm pi)"
-proof (unfold permutation_def n_permutation_def, safe)
+  assumes "newnameforpermut pi"
+  shows "newnameforpermut (generalize_perm pi)"
+proof (unfold newnameforpermut_def n_permutation_def, safe)
   fix
     n :: nat and
     xs :: "'b list"
   have "n_permutation (length xs) (perm (bij (length xs) pi))"
     using assms bij_of_perm_is_bij[of "length xs" pi]
           perm_of_bij_is_perm[of "bij (length xs) pi" "length xs"]
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by simp
   thus "length (generalize_perm pi xs) = length xs"
     by simp
@@ -263,7 +263,7 @@ next
        (\<forall> xs. length xs = n \<longrightarrow>
         (\<forall> i < length xs. generalize_perm pi xs!i = xs!(bij n pi) i))"
     using assms bij_of_perm_is_bij
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by fastforce
   thus "\<exists> b. bij_betw b {..< n} {..< n} \<and>
              (\<forall> xs. length xs = n \<longrightarrow>

@@ -54,7 +54,7 @@ abbreviation election_distance_property :: "('a Election set
 
 definition el_distance_anonymity :: "'a Election Distance \<Rightarrow> bool" where
   "el_distance_anonymity d \<equiv>
-    (\<forall> A A' pi p p'. (permutation pi \<longrightarrow> d (A, p) (A', p') = d (A, pi p) (A', pi p')))"
+    (\<forall> A A' pi p p'. (newnameforpermut pi \<longrightarrow> d (A, p) (A', p') = d (A, pi p) (A', pi p')))"
 
 lemma sum_mon: "(\<forall> a \<in> A. (f a :: int) \<le> g a) \<longrightarrow> (\<Sum> a \<in> A. f a) \<le> (\<Sum> a \<in> A. g a)"
   by (induction A rule: infinite_finite_induct, auto)

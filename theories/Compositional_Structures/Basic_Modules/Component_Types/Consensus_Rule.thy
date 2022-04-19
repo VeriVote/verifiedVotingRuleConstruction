@@ -38,7 +38,7 @@ definition non_empty_set :: "'a Consensus_Rule \<Rightarrow> bool" where
 
 definition consensus_rule_anonymity :: "'a Consensus_Rule \<Rightarrow> bool" where
   "consensus_rule_anonymity K \<equiv>
-    (\<forall> pi A p. finite_profile A p \<longrightarrow> permutation pi \<longrightarrow> fst K (A, p) \<longrightarrow>
+    (\<forall> pi A p. finite_profile A p \<longrightarrow> newnameforpermut pi \<longrightarrow> fst K (A, p) \<longrightarrow>
       (fst K (A, pi p) \<and> (snd K A p = snd K A (pi p))))"
 
 fun em_with_condition :: "'a Consensus_Condition \<Rightarrow> 'a Electoral_Module \<Rightarrow>
@@ -72,7 +72,7 @@ proof(unfold consensus_rule_anonymity_def, safe)
   assume
     fin_A: "finite A" and
     prof_p: "profile A p" and
-    perm_pi: "permutation pi" and
+    perm_pi: "newnameforpermut pi" and
     em_cond: "fst (em_with_condition (\<lambda> E. \<alpha> E \<and> \<beta> E) m) (A, p)"
   hence "(\<lambda> E. \<alpha> E \<and> \<beta> E) (A, p)"
     by simp
@@ -108,7 +108,7 @@ proof(unfold consensus_rule_anonymity_def, safe)
   from fin_A prof_p perm_pi
   have "profile A (pi p)"
     using perm_preserves_finite_profile
-    unfolding permutation_def
+    unfolding newnameforpermut_def
     by auto
   with alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p
   have "m A p = m A (pi p)"

@@ -41,19 +41,19 @@ proof (unfold el_distance_anonymity_def, safe)
     pi :: "'a Profile \<Rightarrow> 'a Profile" and
     p  :: "'a Profile" and
     p' :: "'a Profile"
-  assume perm: "permutation pi"
+  assume perm: "newnameforpermut pi"
   show "votewise_distance d n (A, p) (A', p')
         = votewise_distance d n (A, pi p) (A', pi p')"
   proof (cases "length p = length p'")
     case False
     with perm
     show ?thesis
-      unfolding permutation_def n_permutation_def
+      unfolding newnameforpermut_def n_permutation_def
       by simp
   next
     case True
     from perm
-    have perm_gen_perm_pi: "permutation (generalize_perm pi)"
+    have perm_gen_perm_pi: "newnameforpermut (generalize_perm pi)"
       using generalize_perm_preserves_perm
       by metis
     with True
@@ -68,16 +68,16 @@ proof (unfold el_distance_anonymity_def, safe)
       "\<dots> = n (zip_with (\<lambda> x y. d (A, x) (A', y)) (generalize_perm pi p) (generalize_perm pi p'))"
       using perm bij_of_perm_is_bij[of "length p" pi]
             zipwith_perm_comm[of "bij (length p) pi" p p' "(\<lambda> x y. d (A, x) (A', y))"]
-      unfolding permutation_def
+      unfolding newnameforpermut_def
       by simp
     also have "\<dots> = n (zip_with (\<lambda> x y. d (A, x) (A', y)) (pi p) (pi p'))"
       using perm generalize_perm_preserves_mapping[of p]
             generalize_perm_preserves_mapping[of p']
-      unfolding permutation_def
+      unfolding newnameforpermut_def
       by simp
     also have "\<dots> = votewise_distance d n (A, pi p) (A', pi p')"
       using True perm
-      unfolding permutation_def n_permutation_def
+      unfolding newnameforpermut_def n_permutation_def
       by simp
     finally show ?thesis
       by simp
