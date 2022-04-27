@@ -9,6 +9,7 @@ theory Distance_Rationalization
   imports "Distance"
           "Consensus_Rule"
           "HOL-Library.Multiset_Permutations"
+          "Votewise_Distance"
 begin
 
 text \<open>
@@ -32,8 +33,8 @@ fun score :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow>
 fun arg_min_set :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
   "arg_min_set f A = Collect (is_arg_min f (\<lambda> a. a \<in> A))"
 
-fun arg_min_set_2 :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
-  "arg_min_set_2 f A = Set.filter (is_arg_min f (\<lambda> a. a \<in> A)) A"
+(*fun arg_min_set_2 :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
+  "arg_min_set_2 f A = Set.filter (is_arg_min f (\<lambda> a. a \<in> A)) A"*)
 
 fun dr_winners :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a set \<Rightarrow>
                    'a Profile \<Rightarrow> 'a set" where
@@ -52,6 +53,8 @@ fun list_to_rel :: "'a list \<Rightarrow> 'a rel" where
 fun all_profiles :: "nat \<Rightarrow> 'a set \<Rightarrow> ('a \<times> 'a) set list set" where
   "all_profiles l A = listset (replicate l (list_to_rel ` permutations_of_set A))"
 
+value "permutations_of_set {1,2,3::int}"
+
 fun favoring_consensus_elections_std :: "'a Consensus_Rule \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> nat \<Rightarrow> 'a Election set" where
   "favoring_consensus_elections_std K a A l =
     (\<lambda> p. (A, p)) ` (Set.filter (\<lambda> p. (fst K) (A, p) \<and> elect_r ((snd K) A p) = {a}) (all_profiles l A))"
@@ -61,10 +64,395 @@ fun score_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightar
 
 fun dr_winners_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a set \<Rightarrow>
                    'a Profile \<Rightarrow> 'a set" where
-  "dr_winners_std d K A p = arg_min_set_2 (score_std d K (A, p)) A"
+  "dr_winners_std d K A p = arg_min_set (score_std d K (A, p)) A"
 
 fun dr_rule_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Electoral_Module" where
   "dr_rule_std d K A p = (dr_winners_std d K A p, A - dr_winners_std d K A p, {})"
+
+lemma 1: "\<And> A B. finite A \<and> finite B \<longrightarrow> finite {a # b |a b. a \<in> A \<and> b \<in> B}"
+proof safe
+  fix A :: "'a set" and B :: "'a list set"
+  assume "finite A" and "finite B"
+  let ?P = "\<lambda> A. finite {a # b |a b. a \<in> A \<and> b \<in> B}"
+  have "\<And>a A'. finite A' \<Longrightarrow> a \<notin> A' \<Longrightarrow> ?P A' \<Longrightarrow> ?P (insert a A')"
+  proof-
+    fix a and A'
+    assume 
+      fin: "finite A'" and
+      notin: "a \<notin> A'" and
+      finset: "finite {a # b |a b. a \<in> A' \<and> b \<in> B}"
+    have "{aa # b |aa b. aa \<in> insert a A' \<and> b \<in> B} = {a # b |a b. a \<in> A' \<and> b \<in> B} \<union> {a # b |b. b \<in> B}"
+      by auto
+    moreover have "finite {a # b |b. b \<in> B}"
+      using \<open>finite B\<close>
+      by simp
+    ultimately have "finite {aa # b |aa b. aa \<in> insert a A' \<and> b \<in> B}"
+      using finset
+      by simp
+    then show "?P (insert a A')"
+      by simp
+  qed
+  moreover have "?P {}"
+    by simp
+  ultimately show "?P A"
+    using finite_induct[of A ?P] \<open>finite A\<close> 
+    by auto
+qed
+  
+lemma 2: "\<forall> xs. (\<forall> i < length xs. finite (xs ! i)) \<longrightarrow> finite (listset xs)"
+proof
+  fix xs :: "'b set list"
+  show "(\<forall>i<length xs. finite (xs ! i)) \<longrightarrow> finite (listset xs)"
+  proof (induct xs)
+    case Nil
+    then show ?case
+      by simp
+  next
+    case (Cons a xs)
+    fix a :: "'b set" and xs :: "'b set list"
+    assume assm1: "(\<forall>i<length xs. finite (xs ! i)) \<longrightarrow> finite (listset xs)"
+    (*have "listset (a # xs) = set_Cons a (listset xs)"
+      by simp
+    also have "\<dots> = {x # xs'|x xs'. x \<in> a \<and> xs' \<in> (listset xs)}"
+      unfolding set_Cons_def
+      by simp*)
+    show "(\<forall>i<length (a # xs). finite ((a # xs) ! i)) \<longrightarrow> finite (listset (a # xs))"
+    proof clarify
+      assume assm2: "\<forall>i<length (a # xs). finite ((a # xs) ! i)"
+      hence "finite a"
+        by auto
+      moreover from assm2 have "(\<forall> i < length xs. finite (xs ! i))"
+        by auto
+      with assm1 have "finite (listset xs)"
+        by simp
+      ultimately have "finite {x # xs'|x xs'. x \<in> a \<and> xs' \<in> (listset xs)}"
+        using 1
+        by auto
+      then show "finite (listset (a # xs))"
+        unfolding set_Cons_def
+        by (simp add: set_Cons_def)
+    qed
+  qed
+qed
+
+value "listset ([{},{}]::int set list)"
+
+lemma 3: "\<forall> xs. (\<forall> i < length xs. xs ! i = {}) \<longrightarrow> listset xs = {}"
+proof
+  fix xs :: "'b set list"
+  show "(\<forall> i < length xs. xs ! i = {}) \<longrightarrow> listset xs = {}"
+  proof (induct xs)
+    case Nil
+    then show ?case
+      try
+      by simp
+  next
+    case (Cons a xs)
+    fix a :: "'b set" and xs :: "'b set list"
+    assume assm1: "(\<forall>i<length xs. finite (xs ! i)) \<longrightarrow> finite (listset xs)"
+    (*have "listset (a # xs) = set_Cons a (listset xs)"
+      by simp
+    also have "\<dots> = {x # xs'|x xs'. x \<in> a \<and> xs' \<in> (listset xs)}"
+      unfolding set_Cons_def
+      by simp*)
+    show "(\<forall>i<length (a # xs). finite ((a # xs) ! i)) \<longrightarrow> finite (listset (a # xs))"
+    proof clarify
+      assume assm2: "\<forall>i<length (a # xs). finite ((a # xs) ! i)"
+      hence "finite a"
+        by auto
+      moreover from assm2 have "(\<forall> i < length xs. finite (xs ! i))"
+        by auto
+      with assm1 have "finite (listset xs)"
+        by simp
+      ultimately have "finite {x # xs'|x xs'. x \<in> a \<and> xs' \<in> (listset xs)}"
+        using 1
+        by auto
+      then show "finite (listset (a # xs))"
+        unfolding set_Cons_def
+        by (simp add: set_Cons_def)
+    qed
+  qed
+qed
+
+lemma 4:
+  fixes A and l
+  assumes infinite: "infinite A"
+  shows "all_profiles l A = {}"
+proof-
+  from infinite have "permutations_of_set A = {}"
+    using permutations_of_set_infinite
+    by simp
+  hence e: "list_to_rel ` permutations_of_set A = {}"
+    by simp
+  let ?xs = "replicate l (list_to_rel ` permutations_of_set A)"
+  from e have "\<forall>i < length ?xs. ?xs ! i = {}"
+    by simp
+  hence "listset (replicate l (list_to_rel ` permutations_of_set A)) = {}"
+    by (simp add: "2")
+  then show ?thesis
+    by simp
+
+lemma 5: "\<forall> ys \<in> listset xs. length ys = length xs"
+proof (induct xs)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons a xs)
+  then show ?case sorry
+qed
+
+lemma standard_implies_equal_score:
+  fixes d and K and A and p and a
+  assumes std: "standard d" and fin: "finite A"
+  shows "score d K (A,p) a = score_std d K (A,p) a"
+proof-
+  have "all_profiles (length p) A = {x. finite_profile A x \<and> length x = (length p)} "
+   proof (cases "(length p) > 0")
+     case True
+     show ?thesis
+     proof safe
+       fix x
+       assume xprof: "x \<in> all_profiles (length p) A"
+       from fin show "finite A"
+         by simp
+       from xprof show "profile A x"
+         unfolding profile_def
+         sorry
+       from xprof show "length x = length p"
+         using 5
+         by fastforce
+     next
+       fix x
+       assume "length x = length p" and "finite A" and "profile A x"
+       show "x \<in> all_profiles (length p) A"
+         sorry
+     qed
+   next
+     case False
+     have "finite_profile A []"
+       using fin
+       unfolding profile_def
+       by simp
+     moreover have "length [] = length p"
+       using False
+       by simp
+     moreover have "{x. finite_profile A x \<and> length x = length p} \<subseteq> {[]}"
+       using False
+       by auto
+     moreover have "all_profiles (length p) A = {[]}"
+       using False
+       by simp
+     ultimately show ?thesis
+       by auto
+   qed
+
+  hence "favoring_consensus_elections_std K a A (length p) = 
+         favoring_consensus_elections K a \<inter> (\<lambda> p. (A, p)) ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
+    sorry
+  moreover have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
+                 Inf (d (A,p) ` (favoring_consensus_elections K a \<inter> (\<lambda> p. (A, p)) ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
+    using \<open>standard d\<close>
+    sorry
+  ultimately have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
+                   Inf (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
+    by simp
+  also have "\<dots> = Min (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
+  proof (cases "favoring_consensus_elections_std K a A (length p) = {}")
+    case True
+    then show ?thesis sorry
+  next
+    case False
+    hence "d (A,p) ` (favoring_consensus_elections_std K a A (length p)) \<noteq> {}"
+      by simp
+    moreover have "finite (favoring_consensus_elections_std K a A (length p))"
+    proof-
+      have "\<forall> l A. finite A \<longrightarrow> finite (permutations_of_set A)"
+        by simp
+      hence "finite (list_to_rel ` permutations_of_set A)"
+        by simp
+      moreover have f: "\<forall> l A. finite A \<longrightarrow> finite (all_profiles l A)"
+        using 2
+        by force
+      hence "finite (all_profiles (length p) A)"
+      proof (cases "finite A")
+        case True
+        then show ?thesis using f by auto
+      next
+        case False
+        hence "permutations_of_set A = {}"
+          using permutations_of_set_infinite
+          by simp
+        hence e: "list_to_rel ` permutations_of_set A = {}"
+          by simp
+        let ?xs = "replicate (length p) (list_to_rel ` permutations_of_set A)"
+        from e have "\<forall>i < length ?xs. ?xs ! i = {}"
+          by simp
+        hence "finite (listset (replicate (length p) (list_to_rel ` permutations_of_set A)))"
+          by (simp add: "2")
+        then show ?thesis
+          by simp
+      qed
+      hence "finite (Set.filter (\<lambda> p. (fst K) (A, p) \<and> elect_r ((snd K) A p) = {a}) (all_profiles (length p) A))"
+        using finite_filter 
+        by blast
+      then show ?thesis
+        by simp
+    qed
+    hence "finite (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
+      by simp
+    ultimately show ?thesis
+      by (simp add: Lattices_Big.complete_linorder_class.Min_Inf)     
+  qed
+  finally show "score d K (A,p) a = score_std d K (A,p) a"
+    by simp
+qed
+  then show "score d = score_std d"
+    by fast
+qed
+
+(*lemma standard_implies_equal_score: "standard d \<longrightarrow> score d = score_std d"
+proof
+  fix d :: "'a Election Distance"
+  assume "standard d"
+  have "\<And> K A p a. score d K (A,p) a = score_std d K (A,p) a"
+  proof safe
+    fix 
+      K :: "'a Consensus_Rule" and
+      A :: "'a set" and
+      p :: "'a Profile" and
+      a :: "'a"
+    have "\<forall> l A. all_profiles l A = {p :: 'a Profile. finite_profile A p \<and> length p = l}"
+    proof clarify
+      fix l and A
+      show "all_profiles l A = {p. finite_profile A p \<and> length p = l} "
+   proof (cases "l > 0")
+     case True
+     show ?thesis
+     proof safe
+       fix x
+       assume "x \<in> all_profiles l A"
+       show "finite A"
+       proof (rule ccontr)
+         assume "\<not> finite A"
+         hence "all_profiles l A = {}"
+           using permutations_of_set_infinite True
+           sorry
+         then show "False"
+           sorry
+       qed
+       show "profile A x"
+         sorry
+       show "length x = l"
+         sorry
+       assume "l = length x" and "finite A" and "profile A x"
+     next
+       show "\<And>x. l = length x \<Longrightarrow> finite A \<Longrightarrow> profile A x \<Longrightarrow> x \<in> all_profiles (length x) A"
+         sorry
+     qed
+   next
+     case False
+     have "finite_profile A []"
+       try
+       sorry
+     moreover have "{p. finite_profile A p \<and> length p = l} \<subseteq> {[]}"
+       using False
+       by auto
+     moreover have "all_profiles l A = {[]}"
+       using False
+       by simp
+     then show ?thesis
+       sorry
+   qed
+
+  hence "favoring_consensus_elections_std K a A (length p) = 
+         favoring_consensus_elections K a \<inter> (\<lambda> p. (A, p)) ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
+    sorry
+  moreover have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
+                 Inf (d (A,p) ` (favoring_consensus_elections K a \<inter> (\<lambda> p. (A, p)) ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
+    using \<open>standard d\<close>
+    sorry
+  ultimately have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
+                   Inf (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
+    by simp
+  also have "\<dots> = Min (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
+  proof (cases "favoring_consensus_elections_std K a A (length p) = {}")
+    case True
+    then show ?thesis sorry
+  next
+    case False
+    hence "d (A,p) ` (favoring_consensus_elections_std K a A (length p)) \<noteq> {}"
+      by simp
+    moreover have "finite (favoring_consensus_elections_std K a A (length p))"
+    proof-
+      have "\<forall> l A. finite A \<longrightarrow> finite (permutations_of_set A)"
+        by simp
+      hence "finite (list_to_rel ` permutations_of_set A)"
+        by simp
+      moreover have f: "\<forall> l A. finite A \<longrightarrow> finite (all_profiles l A)"
+        using 2
+        by force
+      hence "finite (all_profiles (length p) A)"
+      proof (cases "finite A")
+        case True
+        then show ?thesis using f by auto
+      next
+        case False
+        hence "permutations_of_set A = {}"
+          using permutations_of_set_infinite
+          by simp
+        hence e: "list_to_rel ` permutations_of_set A = {}"
+          by simp
+        let ?xs = "replicate (length p) (list_to_rel ` permutations_of_set A)"
+        from e have "\<forall>i < length ?xs. ?xs ! i = {}"
+          by simp
+        hence "finite (listset (replicate (length p) (list_to_rel ` permutations_of_set A)))"
+          by (simp add: "2")
+        then show ?thesis
+          by simp
+      qed
+      hence "finite (Set.filter (\<lambda> p. (fst K) (A, p) \<and> elect_r ((snd K) A p) = {a}) (all_profiles (length p) A))"
+        using finite_filter 
+        by blast
+      then show ?thesis
+        by simp
+    qed
+    hence "finite (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
+      by simp
+    ultimately show ?thesis
+      by (simp add: Lattices_Big.complete_linorder_class.Min_Inf)     
+  qed
+  finally show "score d K (A,p) a = score_std d K (A,p) a"
+    by simp
+qed
+  then show "score d = score_std d"
+    by fast
+qed
+*)
+
+lemma swap_standard: "standard (votewise_distance swap l_one)"
+  unfolding standard_def
+  sorry (*conterexample found!*)
+
+lemma equal_score_swap: "score (votewise_distance swap l_one) = score_std (votewise_distance swap l_one)"
+  using standard_implies_equal_score swap_standard
+  by auto
+
+definition "drswap = dr_rule (votewise_distance swap l_one)"
+
+lemma [code]: "drswap = dr_rule_std (votewise_distance swap l_one)"
+proof-
+  from equal_score_swap have "\<forall> K E a. score (votewise_distance swap l_one) K E a = score_std (votewise_distance swap l_one) K E a"
+    by metis
+  hence "\<forall> K A p. dr_winners (votewise_distance swap l_one) K A p = dr_winners_std (votewise_distance swap l_one) K A p"
+    by (simp add: equal_score_swap)
+  hence "\<forall> K A p. dr_rule (votewise_distance swap l_one) K A p = dr_rule_std (votewise_distance swap l_one) K A p"
+    by fastforce
+  then show ?thesis
+    unfolding drswap_def
+    by blast
+qed
+
+  
 
 subsection \<open>Soundness\<close>
 
