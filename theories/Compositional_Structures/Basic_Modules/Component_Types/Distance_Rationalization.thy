@@ -57,12 +57,74 @@ fun pos_in_list_acc :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow>
 fun pos_in_list :: "'a list \<Rightarrow> 'a \<Rightarrow> nat" where
   "pos_in_list xs y = pos_in_list_acc 0 xs y"
 
+lemma a: "\<And>acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1"
+proof (induct xs)
+  case Nil
+  then show ?case by simp
+next
+  case (Cons b xs)
+  then show ?case
+  proof (cases "b = x")
+    case True
+    then show ?thesis by simp
+  next
+    case False
+    hence "pos_in_list_acc (acc + 1) (b # xs) x = pos_in_list_acc (acc + 2) xs x"
+      by simp
+    also with \<open>\<And>acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1\<close> 
+    have "\<dots> = pos_in_list_acc (acc + 1) xs x + 1"
+      by simp
+    also with False have "\<dots> = pos_in_list_acc acc (b # xs) x + 1"
+      by simp
+    finally show ?thesis by simp
+  qed
+qed
+
+lemma p: "i < length xs \<Longrightarrow> (\<forall>j<i. xs ! j \<noteq> x) \<Longrightarrow> xs ! i = x \<Longrightarrow> pos_in_list xs x = i"
+proof (induction xs arbitrary: i)
+case Nil
+  then show ?case by simp
+next
+  case (Cons a xs)
+  then show ?case
+  proof (cases i)
+    case 0
+    with Cons.prems(3) show ?thesis by simp
+  next
+    case (Suc nat)
+    with Cons.prems(2) have "a \<noteq> x" by auto
+    hence "pos_in_list (a # xs) x = pos_in_list_acc 1 xs x"
+      by simp
+    also have "\<dots> = pos_in_list_acc 0 xs x + 1"
+      using a
+      by fastforce
+    also have "\<dots> = pos_in_list xs x + 1"
+      by simp
+    also have "\<dots> = i"
+    proof-
+      from Cons.prems(1) have "nat < length xs"
+        using Suc by auto
+      moreover from Cons.prems(2) have "\<forall>j<nat. xs ! j \<noteq> x"
+        using Suc by auto
+      moreover from Cons.prems(3) have "xs ! nat = x"
+        using Suc by auto
+      ultimately have "pos_in_list xs x = nat" using Cons.IH
+        by simp
+      then show ?thesis
+        using Suc 
+        by fastforce
+    qed
+    finally show ?thesis
+      by simp
+  qed
+      qed
+
 value "pos_in_list [1] (1::int)"
 
 lemma pos_in_list_altdef:
   fixes xs :: "'a list" and x :: "'a"
-  shows "x \<in> set xs \<Longrightarrow> xs ! (pos_in_list xs x) = x" and 
-        "x \<in> set xs \<Longrightarrow> (\<And>i. i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x)"
+  shows "x \<in> set xs \<Longrightarrow> xs ! (pos_in_list xs x) = x" (*and 
+        "x \<in> set xs \<Longrightarrow> (\<And>i. i < length xs \<Longrightarrow> i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x)"*)
 proof-
   show "x \<in> set xs \<Longrightarrow> xs ! (pos_in_list xs x) = x"
   proof (induction xs)
@@ -121,9 +183,10 @@ proof-
         by simp
     qed
   qed
-  show "x \<in> set xs \<Longrightarrow> (\<And>i. i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x)"
+qed  
+(*show "x \<in> set xs \<Longrightarrow> (\<And>i. i < length xs \<Longrightarrow> i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x)"
   proof-
-    assume in_xs: "x \<in> set xs"
+    assume in_xs: "x \<in> set xs" and l: "i < length xs"
     have contrapos: "(\<exists>j\<le>i. xs ! j = x) \<longrightarrow> pos_in_list xs x \<le> i"
     proof (induct i)
       case 0
@@ -137,12 +200,26 @@ proof-
       qed
     next
       case (Suc i)
-      then show \<Or>case
       fix i
       assume IH: "(\<exists>j\<le>i. xs ! j = x) \<longrightarrow> pos_in_list xs x \<le> i"
-      have "(\<exists>j\<le>Suc i. xs ! j = x) \<Longrightarrow> pos_in_list xs x \<le> Suc i"
-        sorry
-      then show ?case try
+      show "(\<exists>j\<le>Suc i. xs ! j = x) \<longrightarrow> pos_in_list xs x \<le> Suc i"
+      proof (cases "\<exists>j\<le>i. xs ! j = x")
+        case True
+        then show ?thesis using IH by simp
+      next
+        case False
+        then show ?thesis
+        proof clarify
+          fix j
+          assume "j \<le> Suc i" and "x = xs ! j"
+          with False have ij: "j = Suc i"
+            by (metis le_SucE)
+          moreover from False have k: "\<forall>k\<le>i. x \<noteq> xs ! k"
+            using less_or_eq_imp_le by auto
+          ultimately have "pos_in_list xs (xs ! j) = j"
+            using l p
+            
+      qed
     qed
     (*hence "\<And>i. xs ! i = x \<longrightarrow> pos_in_list xs x \<le> i" 
       try*)
@@ -158,13 +235,14 @@ proof-
     case (Cons a xs)
     then show ?case sorry
   qed
-  proof (rule ccontr)
+proof (rule ccontr)
     fix i
     assume s: "x \<in> set xs" and less: "i < pos_in_list xs x" and x: "\<not> xs ! i \<noteq> x"
     show False
   proof (cases "\<forall>j<i. xs ! j \<noteq> x")
     
 qed
+*)
 
 lemma list_to_rel_altdef: "distinct xs \<longrightarrow> relation_of (\<lambda>y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs) = list_to_rel xs"
 proof safe
@@ -173,7 +251,7 @@ proof safe
   show "(a, b) \<in> relation_of (\<lambda>y z. pos_in_list xs z \<le> pos_in_list xs y) (set xs) \<Longrightarrow>
            (a, b) \<in> list_to_rel xs"
   proof (unfold relation_of_def, safe)
-    try
+    sorry
   show "(a, b) \<in> list_to_rel xs \<Longrightarrow>
            (a, b) \<in> relation_of (\<lambda>y z. pos_in_list xs z \<le> pos_in_list xs y) (set xs) "
     sorry
@@ -441,7 +519,8 @@ proof-
             \<Longrightarrow> ?P xs a b \<Longrightarrow> ?P xs b c \<Longrightarrow> ?P xs a c"
             by simp
           moreover have antisym: "\<And>xs a b. \<lbrakk> a \<in> (set xs); b \<in> (set xs) \<rbrakk> \<Longrightarrow> ?P xs a b \<Longrightarrow> ?P xs b a \<Longrightarrow> a = b"
-            sorry
+            using pos_in_list_altdef
+            by (metis le_antisym)
           ultimately have "\<And>xs. partial_order_on (set xs) (relation_of (?P xs) (set xs))"
             using partial_order_on_relation_ofI
             by (smt (verit, ccfv_SIG))
