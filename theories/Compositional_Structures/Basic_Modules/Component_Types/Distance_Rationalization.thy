@@ -57,8 +57,127 @@ fun pos_in_list_acc :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow>
 fun pos_in_list :: "'a list \<Rightarrow> 'a \<Rightarrow> nat" where
   "pos_in_list xs y = pos_in_list_acc 0 xs y"
 
+value "pos_in_list [1] (1::int)"
+
+lemma pos_in_list_altdef:
+  fixes xs :: "'a list" and x :: "'a"
+  shows "x \<in> set xs \<Longrightarrow> xs ! (pos_in_list xs x) = x" and 
+        "x \<in> set xs \<Longrightarrow> (\<And>i. i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x)"
+proof-
+  show "x \<in> set xs \<Longrightarrow> xs ! (pos_in_list xs x) = x"
+  proof (induction xs)
+    case Nil
+    then show ?case by simp
+  next
+    case (Cons a xs)
+    then show ?case
+    proof (cases "x = a")
+      case True
+      then show ?thesis by simp
+    next
+      case False
+      with \<open>x \<in> set (a # xs)\<close> have \<open>x \<in> set xs\<close> by simp
+      with \<open>x \<in> set xs \<Longrightarrow> xs ! pos_in_list xs x = x\<close> have "xs ! pos_in_list xs x = x" by simp
+      moreover have "pos_in_list (a # xs) x = pos_in_list xs x + 1"
+      proof-
+        have "pos_in_list (a # xs) x = pos_in_list_acc 0 (a # xs) x"
+          by simp
+        also have "\<dots> = (if a = x then 0 else pos_in_list_acc 1 xs x)"
+          by simp
+        also have "\<dots> = pos_in_list_acc 1 xs x"
+          using False
+          by simp
+        also have "\<dots> = pos_in_list_acc 0 xs x + 1"
+        proof-
+          have "\<And>acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1"
+          proof (induct xs)
+            case Nil
+            then show ?case by simp
+          next
+            case (Cons b xs)
+            then show ?case
+            proof (cases "b = x")
+              case True
+              then show ?thesis by simp
+            next
+              case False
+              hence "pos_in_list_acc (acc + 1) (b # xs) x = pos_in_list_acc (acc + 2) xs x"
+                by simp
+              also with \<open>\<And>acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1\<close> 
+              have "\<dots> = pos_in_list_acc (acc + 1) xs x + 1"
+                by simp
+              also with False have "\<dots> = pos_in_list_acc acc (b # xs) x + 1"
+                by simp
+              finally show ?thesis by simp
+            qed
+          qed
+          then show ?thesis by simp
+        qed
+        also have "\<dots> = pos_in_list xs x + 1"
+          by simp
+        finally show ?thesis by simp
+      qed
+      ultimately show "(a # xs) ! pos_in_list (a # xs) x = x"
+        by simp
+    qed
+  qed
+  show "x \<in> set xs \<Longrightarrow> (\<And>i. i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x)"
+  proof-
+    assume in_xs: "x \<in> set xs"
+    have contrapos: "(\<exists>j\<le>i. xs ! j = x) \<longrightarrow> pos_in_list xs x \<le> i"
+    proof (induct i)
+      case 0
+      then show ?case
+      proof (cases xs)
+        case Nil
+        then show ?thesis using in_xs by simp
+      next
+        case (Cons a list)
+        then show ?thesis by simp
+      qed
+    next
+      case (Suc i)
+      then show \<Or>case
+      fix i
+      assume IH: "(\<exists>j\<le>i. xs ! j = x) \<longrightarrow> pos_in_list xs x \<le> i"
+      have "(\<exists>j\<le>Suc i. xs ! j = x) \<Longrightarrow> pos_in_list xs x \<le> Suc i"
+        sorry
+      then show ?case try
+    qed
+    (*hence "\<And>i. xs ! i = x \<longrightarrow> pos_in_list xs x \<le> i" 
+      try*)
+    fix i
+    show "i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x"
+      using contrapos
+      sorry
+  qed
+  proof (induct xs)
+    case Nil
+    then show ?case by simp
+  next
+    case (Cons a xs)
+    then show ?case sorry
+  qed
+  proof (rule ccontr)
+    fix i
+    assume s: "x \<in> set xs" and less: "i < pos_in_list xs x" and x: "\<not> xs ! i \<noteq> x"
+    show False
+  proof (cases "\<forall>j<i. xs ! j \<noteq> x")
+    
+qed
+
 lemma list_to_rel_altdef: "distinct xs \<longrightarrow> relation_of (\<lambda>y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs) = list_to_rel xs"
-  sorry
+proof safe
+  fix xs :: "'a list"  and a :: "'a" and b :: "'a"
+  assume "distinct xs"
+  show "(a, b) \<in> relation_of (\<lambda>y z. pos_in_list xs z \<le> pos_in_list xs y) (set xs) \<Longrightarrow>
+           (a, b) \<in> list_to_rel xs"
+  proof (unfold relation_of_def, safe)
+    try
+  show "(a, b) \<in> list_to_rel xs \<Longrightarrow>
+           (a, b) \<in> relation_of (\<lambda>y z. pos_in_list xs z \<le> pos_in_list xs y) (set xs) "
+    sorry
+qed
 
 fun all_profiles :: "nat \<Rightarrow> 'a set \<Rightarrow> ('a \<times> 'a) set list set" where
   "all_profiles l A = (let s = list_to_rel ` permutations_of_set A in
@@ -312,15 +431,40 @@ proof-
             by (metis "6" \<open>i < length x\<close> all_profiles.elims)
           hence "x ! i \<in> list_to_rel ` permutations_of_set A"
             using \<open>i < length p\<close> by force
-          hence "x ! i \<in> {relation_of (\<lambda>y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs)| xs. xs \<in> permutations_of_set A}"
+          hence relation_of: "x ! i \<in> {relation_of (\<lambda>y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs)| xs. xs \<in> permutations_of_set A}"
             using list_to_rel_altdef permutations_of_setD
             by blast
-          then show "linear_order_on A (x ! i)"
-            (*using partial_order_on_relation_ofI*)
+          let ?P = "\<lambda>xs y z. pos_in_list xs y \<ge> pos_in_list xs z"
+          have refl: "\<And>xs a. a \<in> (set xs) \<Longrightarrow> ?P xs a a"
+            by simp
+          moreover have trans: "\<And>xs a b c. \<lbrakk> a \<in> (set xs); b \<in> (set xs); c \<in> (set xs) \<rbrakk> 
+            \<Longrightarrow> ?P xs a b \<Longrightarrow> ?P xs b c \<Longrightarrow> ?P xs a c"
+            by simp
+          moreover have antisym: "\<And>xs a b. \<lbrakk> a \<in> (set xs); b \<in> (set xs) \<rbrakk> \<Longrightarrow> ?P xs a b \<Longrightarrow> ?P xs b a \<Longrightarrow> a = b"
             sorry
+          ultimately have "\<And>xs. partial_order_on (set xs) (relation_of (?P xs) (set xs))"
+            using partial_order_on_relation_ofI
+            by (smt (verit, ccfv_SIG))
+          moreover have set: "\<And>xs. xs \<in> permutations_of_set A \<Longrightarrow> set xs = A"
+            by (simp add: permutations_of_setD)
+          ultimately have "partial_order_on A (x ! i)"
+            using relation_of
+            by fastforce
+          moreover have "\<And>xs. total_on (set xs) (relation_of (?P xs) (set xs))"
+            using relation_of
+            unfolding total_on_def relation_of_def
+            by auto
+          hence "total_on A (x ! i)"
+            using relation_of set
+            by fastforce
+          ultimately show "linear_order_on A (x ! i)"
+            unfolding linear_order_on_def
+            by simp
         qed
       next
-        show "\<And>x. length x = length p \<Longrightarrow> finite A \<Longrightarrow> profile A x \<Longrightarrow> x \<in> all_profiles (length p) A"
+        fix x::"'a Profile"
+        assume leneq: "length x = length p" and "finite A" and "profile A x"
+        show "x \<in> all_profiles (length p) A"
           sorry
       qed
     next
@@ -344,7 +488,8 @@ proof-
   qed
 
   hence "favoring_consensus_elections_std K a A (length p) = 
-         favoring_consensus_elections K a \<inter> Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
+         favoring_consensus_elections K a \<inter> 
+          Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
   proof (cases "finite A")
     case False
     then show ?thesis
@@ -355,7 +500,8 @@ proof-
   qed
 
   moreover have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
-                 Inf (d (A,p) ` (favoring_consensus_elections K a \<inter> Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
+                 Inf (d (A,p) ` (favoring_consensus_elections K a 
+            \<inter> Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
     using \<open>standard d\<close>
     sorry
 
@@ -535,7 +681,7 @@ qed
 
 lemma swap_standard: "standard (votewise_distance swap l_one)"
   unfolding standard_def
-  sorry (*conterexample found!*)
+  sorry (*counterexample found!*)
 
 lemma equal_score_swap: "score (votewise_distance swap l_one) = score_std (votewise_distance swap l_one)"
   using standard_implies_equal_score swap_standard
