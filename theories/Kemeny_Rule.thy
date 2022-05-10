@@ -23,9 +23,6 @@ subsection \<open>Definition\<close>
 fun kemeny_rule :: "'a Electoral_Module" where
   "kemeny_rule A p = (dr_rule (votewise_distance swap l_one) strong_unanimity) A p"
 
-fun kemeny_rule_std :: "'a Electoral_Module" where
-  "kemeny_rule_std A p = (dr_rule_std (votewise_distance swap l_one) strong_unanimity) A p"
-
 subsection \<open>Anonymity Property\<close>
 
 theorem kemeny_anonymous: "anonymity kemeny_rule"
@@ -57,37 +54,8 @@ qed (simp_all only: enum_alternative_def enum_all_alternative_def
 enum_ex_alternative_def UNIV_alternative, simp_all)
 end
 
-value "all_profiles 2 {a,b::alternative}"
-
-value "(Set.filter (\<lambda>x. True) (all_profiles 2 {a,b::alternative}))"
-
-definition "x = em_with_condition (\<lambda>x. True) elect_first_module"
-
-export_code x in Haskell
-
-value "all_profiles 2 {a,b,c::alternative}"
-
-value "elect_first_module {a,b::alternative} [{(a,b), (a,a), (b,b)}]"
-
-value "favoring_consensus_elections_std strong_unanimity a {a,b::alternative} 1"
-
-value "score_std (votewise_distance swap l_one) strong_unanimity ({a,b::alternative}, [{(a,b), (a,a), (b,b)}]) a"
-
-value "(votewise_distance swap l_one) ({a,b::alternative}, [{(a,b), (a,a), (b,b)}]) ({a,b::alternative}, [{(b,a), (a,a), (b,b)}])"
-
-value "pairwise_disagreements_2 {a,b::alternative} {(a,b), (a,a), (b,b)} {(b,a), (a,a), (b,b)}"
-
-definition "y = swap ({a,b::alternative}, {(a,b), (a,a), (b,b)}) ({a,b::alternative}, {(a,b), (a,a), (b,b)})"
-
-code_thms x
-
-value "dr_winners_std (votewise_distance swap l_one) strong_unanimity {a,b::alternative} [{(a,b), (a,a), (b,b)}]"
-
-value "dr_rule_std (votewise_distance swap l_one) strong_unanimity {a,b::alternative} [{(a,b), (a,a), (b,b)}]"
-
-
-value "kemeny_rule_std {a,b,c::alternative} [{(a, c), (b, c), (c, c), (a, b), (b, b), (a, a)},
-                                             {(c, b), (a, b), (b, b), (c, a), (a, a), (c, c)}]"
-
+value "drswap strong_unanimity {a,b,c::alternative} 
+         [{(a, c), (b, c), (c, c), (a, b), (b, b), (a, a)},
+          {(c, b), (a, b), (b, b), (c, a), (a, a), (c, c)}]"
 
 end
