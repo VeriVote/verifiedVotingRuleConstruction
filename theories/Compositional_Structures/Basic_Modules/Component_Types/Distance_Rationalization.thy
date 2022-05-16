@@ -54,6 +54,7 @@ fun pos_in_list_acc :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow>
   "pos_in_list_acc acc [] y = acc + 1" |
   "pos_in_list_acc acc (x#xs) y = (if x = y then acc else pos_in_list_acc (acc + 1) xs y)"
 
+(* Index of the first occurrence of y in xs *)
 fun pos_in_list :: "'a list \<Rightarrow> 'a \<Rightarrow> nat" where
   "pos_in_list xs y = pos_in_list_acc 0 xs y"
 
@@ -121,10 +122,11 @@ next
 
 value "pos_in_list [1] (1::int)"
 
+(* Possibly a useful addition: 
+x \<in> set xs \<Longrightarrow> (\<And>i. i < length xs \<Longrightarrow> i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x *)
 lemma pos_in_list_altdef:
   fixes xs :: "'a list" and x :: "'a"
-  shows "x \<in> set xs \<Longrightarrow> xs ! (pos_in_list xs x) = x" (*and 
-        "x \<in> set xs \<Longrightarrow> (\<And>i. i < length xs \<Longrightarrow> i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x)"*)
+  shows "x \<in> set xs \<Longrightarrow> xs ! (pos_in_list xs x) = x"
 proof-
   show "x \<in> set xs \<Longrightarrow> xs ! (pos_in_list xs x) = x"
   proof (induction xs)
@@ -183,88 +185,38 @@ proof-
         by simp
     qed
   qed
-qed  
-(*show "x \<in> set xs \<Longrightarrow> (\<And>i. i < length xs \<Longrightarrow> i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x)"
-  proof-
-    assume in_xs: "x \<in> set xs" and l: "i < length xs"
-    have contrapos: "(\<exists>j\<le>i. xs ! j = x) \<longrightarrow> pos_in_list xs x \<le> i"
-    proof (induct i)
-      case 0
-      then show ?case
-      proof (cases xs)
-        case Nil
-        then show ?thesis using in_xs by simp
-      next
-        case (Cons a list)
-        then show ?thesis by simp
-      qed
-    next
-      case (Suc i)
-      fix i
-      assume IH: "(\<exists>j\<le>i. xs ! j = x) \<longrightarrow> pos_in_list xs x \<le> i"
-      show "(\<exists>j\<le>Suc i. xs ! j = x) \<longrightarrow> pos_in_list xs x \<le> Suc i"
-      proof (cases "\<exists>j\<le>i. xs ! j = x")
-        case True
-        then show ?thesis using IH by simp
-      next
-        case False
-        then show ?thesis
-        proof clarify
-          fix j
-          assume "j \<le> Suc i" and "x = xs ! j"
-          with False have ij: "j = Suc i"
-            by (metis le_SucE)
-          moreover from False have k: "\<forall>k\<le>i. x \<noteq> xs ! k"
-            using less_or_eq_imp_le by auto
-          ultimately have "pos_in_list xs (xs ! j) = j"
-            using l p
-            
-      qed
-    qed
-    (*hence "\<And>i. xs ! i = x \<longrightarrow> pos_in_list xs x \<le> i" 
-      try*)
-    fix i
-    show "i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x"
-      using contrapos
-      sorry
-  qed
-  proof (induct xs)
-    case Nil
-    then show ?case by simp
-  next
-    case (Cons a xs)
-    then show ?case sorry
-  qed
-proof (rule ccontr)
-    fix i
-    assume s: "x \<in> set xs" and less: "i < pos_in_list xs x" and x: "\<not> xs ! i \<noteq> x"
-    show False
-  proof (cases "\<forall>j<i. xs ! j \<noteq> x")
-    
 qed
-*)
 
-lemma list_to_rel_altdef: "distinct xs \<longrightarrow> relation_of (\<lambda>y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs) = list_to_rel xs"
+(* Alternative expression of list_to_rel using relation_of. 
+This is used in the proof that list_to_rel produces linear orders. *)
+lemma list_to_rel_altdef: "distinct xs \<longrightarrow> 
+  relation_of (\<lambda>y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs) = list_to_rel xs"
 proof safe
   fix xs :: "'a list"  and a :: "'a" and b :: "'a"
   assume "distinct xs"
   show "(a, b) \<in> relation_of (\<lambda>y z. pos_in_list xs z \<le> pos_in_list xs y) (set xs) \<Longrightarrow>
            (a, b) \<in> list_to_rel xs"
   proof (unfold relation_of_def, safe)
-    sorry
+    assume "pos_in_list xs b \<le> pos_in_list xs a" and "a \<in> set xs" and "b \<in> set xs"
+    show "(a, b) \<in> list_to_rel xs"
+      sorry
+  qed
   show "(a, b) \<in> list_to_rel xs \<Longrightarrow>
            (a, b) \<in> relation_of (\<lambda>y z. pos_in_list xs z \<le> pos_in_list xs y) (set xs) "
     sorry
 qed
 
+
+(* 
+We want "all_profiles l A = {}" for infinite A.
+We have "permutations_of_set A = {} \<longleftrightarrow> \<not>finite A" (Multiset_Permutations.permutations_of_set_empty_iff).
+"listset (replicate 0 (list_to_rel ` {})" is "{[]}", not "{}". 
+This is why we make the case where "permutations_of_set A = {}" explicit.
+Open question: Would "finite A" instead of "permutations_of_set A = {}" also work for code generation?
+*)
 fun all_profiles :: "nat \<Rightarrow> 'a set \<Rightarrow> ('a \<times> 'a) set list set" where
-  "all_profiles l A = (let s = list_to_rel ` permutations_of_set A in
-                      (if s = {} then {} else 
-                      listset (replicate l (list_to_rel ` permutations_of_set A))))"
-
-value "listset ([]::int set list)"
-
-value "permutations_of_set {1,2,3::int}"
+  "all_profiles l A = (if permutations_of_set A = {} then {} 
+                       else listset (replicate l (list_to_rel ` permutations_of_set A)))"
 
 fun favoring_consensus_elections_std :: "'a Consensus_Rule \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> nat \<Rightarrow> 'a Election set" where
   "favoring_consensus_elections_std K a A l =
@@ -347,6 +299,8 @@ proof
 qed
 
 value "listset ([{},{}]::int set list)"
+
+value "listset ([]::int set list)"
 
 lemma 3: "\<forall> xs. length xs > 0 \<and> (\<forall> i < length xs. xs ! i = {}) \<longrightarrow> listset xs = {}"
 proof
@@ -460,16 +414,8 @@ proof-
   have "all_profiles (length p) A = {x. finite_profile A x \<and> length x = (length p)}"
   proof (cases "finite A")
     case f1: False
-    have "all_profiles (length p) A = {}"
-    proof-
-      have "permutations_of_set A = {}"
-        using permutations_of_set_infinite f1
-        by simp
-      hence "list_to_rel ` permutations_of_set A = {}"
-        by simp
-      then show ?thesis
-        by simp
-    qed
+    hence "all_profiles (length p) A = {}"
+      by simp
     moreover have "{x. finite_profile A x \<and> length x = (length p)} = {}"
       using f1
       by simp
@@ -506,7 +452,7 @@ proof-
             by simp
           hence "x ! i \<in> replicate (length p) (list_to_rel ` permutations_of_set A) ! i"
             using xprof ne
-            by (metis "6" \<open>i < length x\<close> all_profiles.elims)
+            by (metis "6" \<open>i < length x\<close> all_profiles.simps image_is_empty)
           hence "x ! i \<in> list_to_rel ` permutations_of_set A"
             using \<open>i < length p\<close> by force
           hence relation_of: "x ! i \<in> {relation_of (\<lambda>y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs)| xs. xs \<in> permutations_of_set A}"
@@ -639,128 +585,9 @@ proof-
     by simp
 qed
 
-(*lemma standard_implies_equal_score: "standard d \<longrightarrow> score d = score_std d"
-proof
-  fix d :: "'a Election Distance"
-  assume "standard d"
-  have "\<And> K A p a. score d K (A,p) a = score_std d K (A,p) a"
-  proof safe
-    fix 
-      K :: "'a Consensus_Rule" and
-      A :: "'a set" and
-      p :: "'a Profile" and
-      a :: "'a"
-    have "\<forall> l A. all_profiles l A = {p :: 'a Profile. finite_profile A p \<and> length p = l}"
-    proof clarify
-      fix l and A
-      show "all_profiles l A = {p. finite_profile A p \<and> length p = l} "
-   proof (cases "l > 0")
-     case True
-     show ?thesis
-     proof safe
-       fix x
-       assume "x \<in> all_profiles l A"
-       show "finite A"
-       proof (rule ccontr)
-         assume "\<not> finite A"
-         hence "all_profiles l A = {}"
-           using permutations_of_set_infinite True
-           sorry
-         then show "False"
-           sorry
-       qed
-       show "profile A x"
-         sorry
-       show "length x = l"
-         sorry
-       assume "l = length x" and "finite A" and "profile A x"
-     next
-       show "\<And>x. l = length x \<Longrightarrow> finite A \<Longrightarrow> profile A x \<Longrightarrow> x \<in> all_profiles (length x) A"
-         sorry
-     qed
-   next
-     case False
-     have "finite_profile A []"
-       try
-       sorry
-     moreover have "{p. finite_profile A p \<and> length p = l} \<subseteq> {[]}"
-       using False
-       by auto
-     moreover have "all_profiles l A = {[]}"
-       using False
-       by simp
-     then show ?thesis
-       sorry
-   qed
-
-  hence "favoring_consensus_elections_std K a A (length p) = 
-         favoring_consensus_elections K a \<inter> (\<lambda> p. (A, p)) ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
-    sorry
-  moreover have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
-                 Inf (d (A,p) ` (favoring_consensus_elections K a \<inter> (\<lambda> p. (A, p)) ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
-    using \<open>standard d\<close>
-    sorry
-  ultimately have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
-                   Inf (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
-    by simp
-  also have "\<dots> = Min (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
-  proof (cases "favoring_consensus_elections_std K a A (length p) = {}")
-    case True
-    then show ?thesis sorry
-  next
-    case False
-    hence "d (A,p) ` (favoring_consensus_elections_std K a A (length p)) \<noteq> {}"
-      by simp
-    moreover have "finite (favoring_consensus_elections_std K a A (length p))"
-    proof-
-      have "\<forall> l A. finite A \<longrightarrow> finite (permutations_of_set A)"
-        by simp
-      hence "finite (list_to_rel ` permutations_of_set A)"
-        by simp
-      moreover have f: "\<forall> l A. finite A \<longrightarrow> finite (all_profiles l A)"
-        using 2
-        by force
-      hence "finite (all_profiles (length p) A)"
-      proof (cases "finite A")
-        case True
-        then show ?thesis using f by auto
-      next
-        case False
-        hence "permutations_of_set A = {}"
-          using permutations_of_set_infinite
-          by simp
-        hence e: "list_to_rel ` permutations_of_set A = {}"
-          by simp
-        let ?xs = "replicate (length p) (list_to_rel ` permutations_of_set A)"
-        from e have "\<forall>i < length ?xs. ?xs ! i = {}"
-          by simp
-        hence "finite (listset (replicate (length p) (list_to_rel ` permutations_of_set A)))"
-          by (simp add: "2")
-        then show ?thesis
-          by simp
-      qed
-      hence "finite (Set.filter (\<lambda> p. (fst K) (A, p) \<and> elect_r ((snd K) A p) = {a}) (all_profiles (length p) A))"
-        using finite_filter 
-        by blast
-      then show ?thesis
-        by simp
-    qed
-    hence "finite (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
-      by simp
-    ultimately show ?thesis
-      by (simp add: Lattices_Big.complete_linorder_class.Min_Inf)     
-  qed
-  finally show "score d K (A,p) a = score_std d K (A,p) a"
-    by simp
-qed
-  then show "score d = score_std d"
-    by fast
-qed
-*)
-
 lemma swap_standard: "standard (votewise_distance swap l_one)"
   unfolding standard_def
-  sorry (*counterexample found!*)
+  sorry
 
 lemma equal_score_swap: "score (votewise_distance swap l_one) = score_std (votewise_distance swap l_one)"
   using standard_implies_equal_score swap_standard
