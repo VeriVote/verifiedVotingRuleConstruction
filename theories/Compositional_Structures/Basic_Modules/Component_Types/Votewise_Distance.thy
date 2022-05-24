@@ -44,12 +44,12 @@ proof (unfold el_distance_anonymity_def, safe)
   assume perm: "newnameforpermut pi"
   show "votewise_distance d n (A, p) (A', p')
         = votewise_distance d n (A, pi p) (A', pi p')"
-  proof (cases "length p = length p'")
+  proof (cases "length p = length p' \<and> (length p > 0 \<or> A = A')")
     case False
     with perm
     show ?thesis
       unfolding newnameforpermut_def n_permutation_def
-      by simp
+      by auto
   next
     case True
     from perm
@@ -59,7 +59,7 @@ proof (unfold el_distance_anonymity_def, safe)
     with True
     have "votewise_distance d n (A, p) (A', p')
            = n (zip_with (\<lambda> x y. d (A, x) (A', y)) p p')"
-      by simp
+      by auto
     also from assms perm_gen_perm_pi have
       "\<dots> = n (generalize_perm pi (zip_with (\<lambda> x y. d (A, x) (A', y)) p p'))"
       unfolding symmetry_def
@@ -78,7 +78,7 @@ proof (unfold el_distance_anonymity_def, safe)
     also have "\<dots> = votewise_distance d n (A, pi p) (A', pi p')"
       using True perm
       unfolding newnameforpermut_def n_permutation_def
-      by simp
+      by auto
     finally show ?thesis
       by simp
   qed
