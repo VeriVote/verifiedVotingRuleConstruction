@@ -8,7 +8,7 @@ section \<open>Distance Rationalization\<close>
 theory Distance_Rationalization
   imports "Distance"
           "Consensus_Rule"
-          "HOL-Library.Multiset_Permutations"
+          "HOL-Combinatorics.Multiset_Permutations"
           "Votewise_Distance"
 begin
 
@@ -215,7 +215,7 @@ This is why we make the case where "permutations_of_set A = {}" explicit.
 Open question: Would "finite A" instead of "permutations_of_set A = {}" also work for code generation?
 *)
 fun all_profiles :: "nat \<Rightarrow> 'a set \<Rightarrow> ('a \<times> 'a) set list set" where
-  "all_profiles l A = (if permutations_of_set A = {} then {} 
+  "all_profiles l A = (if permutations_of_set A = {} then {}
                        else listset (replicate l (list_to_rel ` permutations_of_set A)))"
 
 fun favoring_consensus_elections_std :: "'a Consensus_Rule \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> nat \<Rightarrow> 'a Election set" where
@@ -297,10 +297,6 @@ proof
     qed
   qed
 qed
-
-value "listset ([{},{}]::int set list)"
-
-value "listset ([]::int set list)"
 
 lemma 3: "\<forall> xs. length xs > 0 \<and> (\<forall> i < length xs. xs ! i = {}) \<longrightarrow> listset xs = {}"
 proof
