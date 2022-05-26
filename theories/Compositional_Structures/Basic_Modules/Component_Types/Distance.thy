@@ -57,6 +57,9 @@ definition el_distance_anonymity :: "'a Election Distance \<Rightarrow> bool" wh
   "el_distance_anonymity d \<equiv>
     (\<forall> C B pi p q. (\<forall>n::nat. is_perm pi \<longrightarrow> d (C,p) (B,q) = d (C,build_perm pi p) (B,build_perm pi q)))"
 
+definition standard :: "'a Election Distance \<Rightarrow> bool" where
+ "standard d \<equiv> (\<forall> C B p q. length p \<noteq> length q \<or> C \<noteq> B \<longrightarrow> d (C,p) (B,q) = \<infinity>)"
+
 lemma sum_mon: "(\<forall> a \<in> A. (f a :: int) \<le> g a) \<longrightarrow> (\<Sum> a \<in> A. f a) \<le> (\<Sum> a \<in> A. g a)"
   by (induction A rule: infinite_finite_induct, auto)
 
@@ -71,6 +74,17 @@ definition neq_ord :: "'a Preference_Relation \<Rightarrow> 'a Preference_Relati
 definition pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
                                       ('a \<times> 'a) set" where
   "pairwise_disagreements A x y = {(u, v) \<in> A \<times> A. u \<noteq> v \<and> neq_ord x y u v}"
+
+definition pairwise_disagreements_2 :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
+                                      ('a \<times> 'a) set" where
+  "pairwise_disagreements_2 A x y = Set.filter (\<lambda> (u, v). u \<noteq> v \<and> neq_ord x y u v) (A \<times> A)"
+
+lemma x: "{x \<in> X. P x} = Set.filter P X"
+  by auto
+
+lemma [code]: "pairwise_disagreements = pairwise_disagreements_2"
+  unfolding pairwise_disagreements_def pairwise_disagreements_2_def
+  by fastforce
 
 fun swap :: "'a Vote Distance" where
   "swap (A, x) (A', y) =

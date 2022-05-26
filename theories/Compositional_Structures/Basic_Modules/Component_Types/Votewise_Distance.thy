@@ -20,9 +20,9 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm \<Rightarrow> 'a Election Distance" where
+fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm \<Rightarrow> ('a set \<times> 'a Profile) Distance" where
   "votewise_distance d n (A, xs) (A', ys) =
-    (if length xs = length ys
+    (if length xs = length ys \<and> (length xs > 0 \<or> A = A')
     then n (zip_with (\<lambda> x y. d (A, x) (A', y)) xs ys)
     else \<infinity>)"
 
