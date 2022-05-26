@@ -9,7 +9,7 @@ section \<open>List Permutation\<close>
 
 theory List_Permutation
   imports Main
-          "HOL-Library.Permutations"
+          "HOL-Combinatorics.Permutations"
 begin
 
 text \<open>
