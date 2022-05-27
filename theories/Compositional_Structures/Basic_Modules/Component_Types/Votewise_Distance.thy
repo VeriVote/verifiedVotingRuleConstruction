@@ -6,8 +6,7 @@
 section \<open>Votewise Distance\<close>
 
 theory Votewise_Distance
-  imports "Social_Choice_Types/Tools/Zip_With"
-          "Distance"
+  imports "Distance"
           "Norm"
 begin
 
@@ -23,7 +22,7 @@ subsection \<open>Definition\<close>
 fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm \<Rightarrow> ('a set \<times> 'a Profile) Distance" where
   "votewise_distance d n (A, xs) (A', ys) =
     (if length xs = length ys \<and> (length xs > 0 \<or> A = A')
-    then n (zip_with (\<lambda> x y. d (A, x) (A', y)) xs ys)
+    then n (map2 (\<lambda> x y. d (A, x) (A', y)) xs ys)
     else \<infinity>)"
 
 subsection \<open>TODO\<close>
@@ -58,19 +57,18 @@ proof (unfold el_distance_anonymity_def, safe)
       by metis
     with True
     have "votewise_distance d n (A, p) (A', p')
-           = n (zip_with (\<lambda> x y. d (A, x) (A', y)) p p')"
+           = n (map2 (\<lambda> x y. d (A, x) (A', y)) p p')"
       by auto
     also from assms perm_gen_perm_pi have
-      "\<dots> = n (generalize_perm pi (zip_with (\<lambda> x y. d (A, x) (A', y)) p p'))"
+      "\<dots> = n (generalize_perm pi (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
       unfolding symmetry_def
       by (metis (no_types, lifting))
     also from True have
-      "\<dots> = n (zip_with (\<lambda> x y. d (A, x) (A', y)) (generalize_perm pi p) (generalize_perm pi p'))"
+      "\<dots> = n (map2 (\<lambda> x y. d (A, x) (A', y)) (generalize_perm pi p) (generalize_perm pi p'))"
       using perm bij_of_perm_is_bij[of "length p" pi]
-            zipwith_perm_comm[of "bij (length p) pi" p p' "(\<lambda> x y. d (A, x) (A', y))"]
       unfolding newnameforpermut_def
-      by simp
-    also have "\<dots> = n (zip_with (\<lambda> x y. d (A, x) (A', y)) (pi p) (pi p'))"
+      sorry
+    also have "\<dots> = n (map2 (\<lambda> x y. d (A, x) (A', y)) (pi p) (pi p'))"
       using perm generalize_perm_preserves_mapping[of p]
             generalize_perm_preserves_mapping[of p']
       unfolding newnameforpermut_def
