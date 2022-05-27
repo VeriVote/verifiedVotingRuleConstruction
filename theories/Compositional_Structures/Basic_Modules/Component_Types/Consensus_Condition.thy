@@ -7,7 +7,7 @@ section \<open>Consensus Condition\<close>
 
 theory Consensus_Condition
   imports "Social_Choice_Types/Profile"
-          "Social_Choice_Types/Tools/List_Permutation"
+          "Social_Choice_Types/Tools/List_Permutation_2"
 begin
 
 text \<open>

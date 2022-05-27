@@ -8,7 +8,7 @@ section \<open>Distance\<close>
 theory Distance
   imports "HOL-Library.Extended_Real"
           "Social_Choice_Types/Profile"
-          "Social_Choice_Types/Tools/List_Permutation"
+          "Social_Choice_Types/Tools/List_Permutation_2"
 begin
 
 text \<open>

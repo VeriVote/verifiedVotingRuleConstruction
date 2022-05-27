@@ -13,7 +13,7 @@ section \<open>Electoral Module\<close>
 theory Electoral_Module
   imports "Social_Choice_Types/Profile"
           "Social_Choice_Types/Result"
-          "Social_Choice_Types/Tools/List_Permutation"
+          "HOL-Combinatorics.List_Permutation"
 begin
 
 text \<open>
@@ -1281,7 +1281,6 @@ definition homogeneity :: "'a Electoral_Module \<Rightarrow> bool" where
 subsubsection \<open>Anonymity\<close>
 
 definition anonymity :: "'a Electoral_Module \<Rightarrow> bool" where
-  "anonymity m \<equiv>
-    (\<forall> pi A p. (is_perm pi \<longrightarrow> finite_profile A p \<longrightarrow> m A p = m A (build_perm pi p)))"
+  "anonymity m \<equiv> (\<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<longrightarrow> m A p = m A q)"
 
 end

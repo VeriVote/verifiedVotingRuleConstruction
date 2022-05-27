@@ -7,7 +7,7 @@ chapter \<open>Preliminaries\<close>
 
 section \<open>List Permutation\<close>
 
-theory List_Permutation
+theory List_Permutation_2
   imports Main
           "HOL-Combinatorics.Permutations"
 begin

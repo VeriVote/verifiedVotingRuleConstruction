@@ -6,7 +6,7 @@
 section \<open>Zip With\<close>
 
 theory Zip_With
-  imports List_Permutation
+  imports List_Permutation_2
 begin
 
 text \<open>
