@@ -44,16 +44,16 @@ proof (unfold el_distance_anonymity_def, safe)
   assume perm: "is_perm pi"
   show "votewise_distance d n (A, p) (A', p')
         = votewise_distance d n (A, build_perm pi p) (A', build_perm pi p')"
-  proof (cases "length p = length p'")
+  proof (cases "length p = length p' \<and> (length p > 0 \<or> A = A')")
     case False
     with perm
     show ?thesis
-      by simp
+      by auto
   next
     case True
     hence "votewise_distance d n (A, p) (A', p')
            = n (zip_with (\<lambda> x y. d (A, x) (A', y)) p p')"
-      by simp
+      by auto
     also from assms have
       "\<dots> = n (build_perm pi (zip_with (\<lambda> x y. d (A, x) (A', y)) p p'))"
       using perm
