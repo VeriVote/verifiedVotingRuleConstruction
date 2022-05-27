@@ -66,10 +66,7 @@ lemma sum_mon: "(\<forall> a \<in> A. (f a :: int) \<le> g a) \<longrightarrow> 
 subsection \<open>Swap Distance\<close>
 
 definition neq_ord :: "'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" where
-  "neq_ord x y u v \<equiv> ((is_less_preferred_than u x v
-                     \<and> is_less_preferred_than v y u)
-                    \<or> (is_less_preferred_than v x u
-                     \<and> is_less_preferred_than u y v))"
+  "neq_ord x y u v \<equiv> (is_less_preferred_than u x v \<and> is_less_preferred_than v y u)"
 
 definition pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
                                       ('a \<times> 'a) set" where
