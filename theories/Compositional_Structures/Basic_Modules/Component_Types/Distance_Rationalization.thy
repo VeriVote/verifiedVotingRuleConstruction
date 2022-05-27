@@ -721,13 +721,16 @@ proof (unfold anonymity_def, clarify)
       have "finite_profile A' (build_perm pi p')"
         unfolding profile_def
         by (metis perm finprof build_perm.elims is_perm_def length_permute_list nth_mem profile_set set_permute_list)
-      moreover from favcons
+      moreover from \<open>is_perm pi\<close> have "p' <~~> (build_perm pi p')"
+        unfolding is_perm_def
+        by simp
+      with favcons
       have "(fst K) (A', p') \<and> elect_r ((snd K) A' p') = {a}"
         by simp
-      with K_anon perm finprof
+      with K_anon \<open>p' <~~> (build_perm pi p')\<close> finprof \<open>finite_profile A' (build_perm pi p')\<close>
       have "(fst K) (A', (build_perm pi p')) \<and> elect_r ((snd K) A' (build_perm pi p')) = {a}"
         unfolding consensus_rule_anonymity_def anonymity_def
-        by auto
+        by (smt (verit, ccfv_SIG))
       ultimately have "(A', build_perm pi p') \<in> favoring_consensus_elections K a"
         by simp
       thus "\<exists> A'' p''. (A', build_perm pi p') = (A'', p'')

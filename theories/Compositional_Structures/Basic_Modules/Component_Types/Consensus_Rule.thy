@@ -38,8 +38,8 @@ definition non_empty_set :: "'a Consensus_Rule \<Rightarrow> bool" where
 
 definition consensus_rule_anonymity :: "'a Consensus_Rule \<Rightarrow> bool" where
   "consensus_rule_anonymity K \<equiv>
-    (\<forall> pi A p. finite_profile A p \<longrightarrow> is_perm pi \<longrightarrow> fst K (A, p) \<longrightarrow>
-      (fst K (A, build_perm pi p) \<and> (snd K A p = snd K A (build_perm pi p))))"
+    (\<forall> A p q. finite_profile A p \<longrightarrow> finite_profile A q \<longrightarrow> p <~~> q \<longrightarrow> fst K (A, p) \<longrightarrow>
+      (fst K (A, q) \<and> (snd K A p = snd K A q)))"
 
 fun em_with_condition :: "'a Consensus_Condition \<Rightarrow> 'a Electoral_Module \<Rightarrow>
                           'a Consensus_Rule" where
@@ -66,13 +66,14 @@ lemma cons_rule_anon:
   shows "consensus_rule_anonymity (em_with_condition (\<lambda> E. \<alpha> E \<and> \<beta> E) m)"
 proof(unfold consensus_rule_anonymity_def, safe)
   fix
-    pi :: "nat \<Rightarrow> nat \<Rightarrow> nat" and
     A :: "'a set" and
-    p :: "'a Profile"
+    p :: "'a Profile" and
+    q :: "'a Profile"
   assume
     fin_A: "finite A" and
     prof_p: "profile A p" and
-    perm_pi: "is_perm pi" and
+    prof_q: "profile A q" and
+    perm: "p <~~> q" and
     em_cond: "fst (em_with_condition (\<lambda> E. \<alpha> E \<and> \<beta> E) m) (A, p)"
   hence "(\<lambda> E. \<alpha> E \<and> \<beta> E) (A, p)"
     by simp
@@ -81,18 +82,18 @@ proof(unfold consensus_rule_anonymity_def, safe)
     beta_Ap: "\<beta> (A, p)"
     by simp_all
   from alpha_Ap anon_cons_cond
-  have alpha_A_perm_p: "\<alpha> (A, build_perm pi p)"
-    using perm_pi fin_A prof_p
+  have alpha_A_perm_p: "\<alpha> (A, q)"
+    using perm fin_A prof_p prof_q
     unfolding consensus_condition_anonymity_def
-    by simp
+    by blast
   moreover from beta_Ap beta_sat beta'_anon
-  have "\<beta> (A, build_perm pi p)"
-    using cond_anon_if_ex_cond_anon[of \<beta> \<beta>'] perm_pi
-          fin_A prof_p
+  have "\<beta> (A, q)"
+    using cond_anon_if_ex_cond_anon[of \<beta> \<beta>'] perm
+          fin_A prof_p prof_q
     unfolding consensus_condition_anonymity_def
-    by simp
+    by blast
   ultimately show em_cond_perm:
-    "fst (em_with_condition (\<lambda> E. \<alpha> E \<and> \<beta> E) m) (A, build_perm pi p)"
+    "fst (em_with_condition (\<lambda> E. \<alpha> E \<and> \<beta> E) m) (A, q)"
     by simp
   from beta_Ap beta_sat
   have "\<exists> x. \<beta>' x (A, p)"
@@ -101,21 +102,21 @@ proof(unfold consensus_rule_anonymity_def, safe)
     beta'_x_Ap: "\<beta>' x (A, p)"
     by blast
   with beta'_anon
-  have beta'_x_A_perm_p: "\<beta>' x (A, build_perm pi p)"
-    using perm_pi fin_A prof_p
+  have beta'_x_A_perm_p: "\<beta>' x (A, q)"
+    using perm fin_A prof_p prof_q
     unfolding consensus_condition_anonymity_def
-    by simp
-  from fin_A prof_p perm_pi
-  have "profile A (build_perm pi p)"
+    by blast
+  (*from fin_A prof_p prof_q perm
+  have "profile A q"
     unfolding profile_def is_perm_def
-    by (metis prof_p build_perm.elims length_permute_list nth_mem profile_set set_permute_list)
-  with alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p
-  have "m A p = m A (build_perm pi p)"
-    using conditions_univ fin_A prof_p
+    by (metis prof_p build_perm.elims length_permute_list nth_mem profile_set set_permute_list)*)
+  from alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p
+  have "m A p = m A q"
+    using conditions_univ fin_A prof_p prof_q
     unfolding determined_if_def
     by metis
   thus "snd (em_with_condition (\<lambda> E. \<alpha> E \<and> \<beta> E) m) A p =
-             snd (em_with_condition (\<lambda> E. \<alpha> E \<and> \<beta> E) m) A (build_perm pi p)"
+             snd (em_with_condition (\<lambda> E. \<alpha> E \<and> \<beta> E) m) A q"
     using em_cond em_cond_perm
     by auto
 qed
