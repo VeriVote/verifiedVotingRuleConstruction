@@ -679,7 +679,6 @@ lemma rule_anon_if_el_dist_and_cons_class_anon:
     K_anon: "consensus_rule_anonymity K"
   shows "anonymity (dr_rule d K)"
 proof (unfold anonymity_def, clarify) 
-(* Can probably be simplified because pi is now constructed from pii and id *)
   fix
     A :: "'a set" and
     p :: "'a Profile" and 
@@ -689,158 +688,162 @@ proof (unfold anonymity_def, clarify)
     profile_p: "profile A p" and
     profile_q: "profile A q" and
     p_q_perm: "p <~~> q"
-  from p_q_perm obtain pii where "pii permutes {..<length p}" "permute_list pii p = q"
+  from p_q_perm obtain pi where pi_perm: "pi permutes {..<length p}" and pq: "permute_list pi p = q"
     using mset_eq_permutation
     by metis
-  let ?pi = "\<lambda> n. (if n = length p then pii else id)"
-  have perm: "is_perm ?pi"
-    using \<open>pii permutes {..<length p}\<close> is_perm_def 
+  let ?listpi = "permute_list pi"
+  let ?pi' = "\<lambda> n. (if n = length p then pi else id)"
+  have perm: "\<forall>n. (?pi' n) permutes {..<n}"
+    using pi_perm is_perm_def 
     by auto
+  let ?listpi' = "\<lambda> xs. permute_list (?pi' (length xs)) xs"
   let ?m = "dr_rule d K"
   let ?P = "\<lambda> a A' p'. (A', p') \<in> favoring_consensus_elections K a"
-  have "\<forall> a \<in> A. {(A', p') | A' p'. ?P a A' p'} = {(A', build_perm ?pi p') | A' p'. ?P a A' p'}"
-  proof (clarify)
-    fix
+  have "\<forall> a. {(A', p') | A' p'. ?P a A' p'} = {(A', ?listpi' p') | A' p'. ?P a A' p'}"
+  proof clarify
+  fix
       a :: "'a"
     have apply_perm:
-      "\<And> pi A' p'. is_perm pi \<Longrightarrow>
-        (A', p') \<in> {(A', p') | A' p'. ?P a A' p'} \<Longrightarrow>
-        (A', build_perm pi p') \<in> {(A', p') | A' p'. ?P a A' p'}"
-    proof (clarify)
+      "\<And> S x y. x <~~> y \<Longrightarrow> ?P a S x \<Longrightarrow> ?P a S y"
+    proof-
       fix
-        pi :: "nat \<Rightarrow> nat \<Rightarrow> nat" and
-        A' :: "'a set" and
-        p' :: "'a Profile"
+        S :: "'a set" and
+        x :: "'a Profile" and
+        y :: "'a Profile"
       assume
-        perm: "is_perm pi"  and
-        favcons: "(A', p') \<in> favoring_consensus_elections K a"
+        perm: "x <~~> y"  and
+        favcons: "(S, x) \<in> favoring_consensus_elections K a"
       from favcons
-      have finprof: "finite_profile A' p'"
+      have "finite_profile S x"
         by simp
       with perm
-      have "finite_profile A' (build_perm pi p')"
+      have "finite_profile S y"
         unfolding profile_def
-        by (metis perm finprof build_perm.elims is_perm_def length_permute_list nth_mem profile_set set_permute_list)
-      moreover from \<open>is_perm pi\<close> have "p' <~~> (build_perm pi p')"
-        unfolding is_perm_def
+        by (metis \<open>finite_profile S x\<close> nth_mem perm_set_eq profile_set)
+      moreover from perm favcons
+      have "(fst K) (S, x) \<and> elect_r ((snd K) S x) = {a}"
         by simp
-      with favcons
-      have "(fst K) (A', p') \<and> elect_r ((snd K) A' p') = {a}"
-        by simp
-      with K_anon \<open>p' <~~> (build_perm pi p')\<close> finprof \<open>finite_profile A' (build_perm pi p')\<close>
-      have "(fst K) (A', (build_perm pi p')) \<and> elect_r ((snd K) A' (build_perm pi p')) = {a}"
+      with K_anon perm \<open>finite_profile S x\<close> \<open>finite_profile S y\<close>
+      have "(fst K) (S, y) \<and> elect_r ((snd K) S y) = {a}"
         unfolding consensus_rule_anonymity_def anonymity_def
         by (smt (verit, ccfv_SIG))
-      ultimately have "(A', build_perm pi p') \<in> favoring_consensus_elections K a"
-        by simp
-      thus "\<exists> A'' p''. (A', build_perm pi p') = (A'', p'')
-            \<and> (A'', p'') \<in> favoring_consensus_elections K a"
+      ultimately show "(S, y) \<in> favoring_consensus_elections K a"
         by simp
     qed
-    show "{(A', p') | A' p'. ?P a A' p'} = {(A', build_perm ?pi p') | A' p'. ?P a A' p'}" (is "?X = ?Y")
+    show "{(A', p') | A' p'. ?P a A' p'} = {(A', ?listpi' p') | A' p'. ?P a A' p'}" (is "?X = ?Y")
     proof
       show "?X \<subseteq> ?Y"
       proof
         fix E :: "'a Election"
-        assume assm: "E \<in> {(A', p') | A' p'. ?P a A' p'}"
         let
           ?A = "fst E" and
           ?p = "snd E"
-        have "is_perm (inv_perm ?pi)"
-          using perm permutes_inv
-          unfolding is_perm_def
-          by (metis (no_types, lifting) inv_perm.simps)
-        with assm apply_perm[of \<open>inv_perm ?pi\<close>]
-        have "(?A, build_perm (inv_perm ?pi) ?p) \<in> {(A', p') | A' p'. ?P a A' p'}"
-          by force
-        moreover have "?p = build_perm ?pi (build_perm (inv_perm ?pi) ?p)"
-        proof-
-          let ?n = "length ?p"
-          have "build_perm ?pi (build_perm (inv_perm ?pi) ?p) =
-                build_perm ?pi (permute_list (inv_perm ?pi ?n) ?p)"
-            by simp
-          also have "\<dots> = build_perm ?pi (permute_list (inv (?pi ?n)) ?p)"
-            by simp
-          also have "\<dots> = permute_list (?pi ?n) (permute_list (inv (?pi ?n)) ?p)"
-            by simp
-          also have "\<dots> = permute_list (?pi ?n \<circ> (inv (?pi ?n))) ?p"
+        assume assm: "E \<in> {(A', p') | A' p'. ?P a A' p'}"
+        hence 2: "?P a ?A ?p"
+          by auto
+        show "E \<in> {(A', ?listpi' p') | A' p'. ?P a A' p'}"
+        proof (cases "length ?p = length p")
+          case True
+          hence "permute_list (inv pi) ?p <~~> ?p"
+            using pi_perm
+            by (simp add: permutes_inv)
+          with apply_perm 2
+          have "?P a ?A (permute_list (inv pi) ?p)"
+            by presburger
+          moreover have "length (permute_list (inv pi) ?p) = length p"
+            using True 
+            by auto
+          ultimately have "(?A, ?listpi (permute_list (inv pi) ?p)) \<in> {(A', ?listpi p') | A' p'. length p' = length p \<and> ?P a A' p'}"
+            by auto
+          moreover have "?listpi (permute_list (inv pi) ?p) = permute_list (inv pi \<circ> pi) ?p"
             using permute_list_compose
-            by (metis (no_types, lifting) is_perm_def perm permutes_inv_o(1) permutes_inv_o(2))
-          also have "\<dots> = permute_list id ?p"
-          proof-
-            have "?pi ?n \<circ> (inv (?pi ?n)) = id"
-              using perm permutes_inv_o
-              unfolding is_perm_def
-              by blast
-            then show ?thesis
-              by simp
-          qed
-          finally show ?thesis
+            using True pi_perm
+            by metis
+          hence "?listpi (permute_list (inv pi) ?p) = ?p"
+            by (metis permute_list_id permutes_inv_o(2) pi_perm(1))
+          ultimately have "E \<in> {(A', ?listpi p') | A' p'. length p' = length p \<and> ?P a A' p'}"
             by simp
+          then show ?thesis
+            by auto
+        next
+          case False
+          with assm show ?thesis
+            by fastforce (* because ?listpi ?p = ?p *)
         qed
-        ultimately show "E \<in> {(A', build_perm ?pi p') | A' p'. ?P a A' p'}"
-          by (smt (verit, best) mem_Collect_eq prod.collapse)
       qed
     next
       show "?Y \<subseteq> ?X"
       proof
         fix E :: "'a Election"
-        let
+        let 
           ?A = "fst E" and
           ?r = "snd E"
-        assume assm: "E \<in> {(A', build_perm ?pi p') | A' p'. ?P a A' p'}"
-        hence "\<exists> p'. ?r = build_perm ?pi p' \<and> ?P a ?A p'"
+        assume assm: "E \<in> {(A', ?listpi' p') | A' p'. ?P a A' p'}"
+        hence "\<exists> p'. ?r = ?listpi' p' \<and> ?P a ?A p'"
           by auto
-        then obtain p' where
-          perm_p': "?r = build_perm ?pi p'" and
-          "?P a ?A p'"
+        then obtain p' where rp': "?r = ?listpi' p'" and 2: "?P a ?A p'"
           by blast
-        hence "(?A, p') \<in> {(A', p') | A' p'. ?P a A' p'}"
-          by simp
-        with perm apply_perm perm_p'
         show "E \<in> {(A', p') | A' p'. ?P a A' p'}"
-          by (metis (no_types, lifting) prod.collapse)
+        proof (cases "length p' = length p")
+          case True
+          have "?r <~~> p'"
+            using pi_perm rp'
+            by simp
+          with 2 apply_perm rp' have "?P a ?A ?r"
+            by presburger
+          moreover have "length ?r = length p"
+            using rp' True
+            by simp
+          ultimately show "E \<in> {(A', p') | A' p'. ?P a A' p'}"
+            by auto
+        next
+          case False
+          with assm show ?thesis
+            using rp' by fastforce (* because ?listpi ?p = ?p *)
+        qed
       qed
     qed
   qed
-  hence "\<forall> a \<in> A. d (A, build_perm ?pi p) ` {(A', p') | A' p'. ?P a A' p'}
-             = d (A, build_perm ?pi p) ` {(A', build_perm ?pi p') | A' p'. ?P a A' p'}"
+  hence "\<forall> a \<in> A. d (A, q) ` {(A', p') | A' p'. ?P a A' p'}
+             = d (A, q) ` {(A', ?listpi' p') | A' p'. ?P a A' p'}"
     by (metis (no_types, lifting))
-  hence "\<forall> a \<in> A. {d (A, build_perm ?pi p) (A', p') | A' p'. ?P a A' p'}
-             = {d (A, build_perm ?pi p) (A', build_perm ?pi p') | A' p'. ?P a A' p'}"
+  hence "\<forall> a \<in> A. {d (A, q) (A', p') | A' p'. ?P a A' p'}
+             = {d (A, q) (A', ?listpi' p') | A' p'. ?P a A' p'}"
     by blast
   moreover from d_anon
   have "\<forall> a \<in> A. {d (A, p) (A', p') | A' p'. ?P a A' p'} =
-          {d (A, build_perm ?pi p) (A', build_perm ?pi p') | A' p'. ?P a A' p'}"
+          {d (A, ?listpi' p) (A', ?listpi' p') | A' p'. ?P a A' p'}"    
   proof (clarify)
     fix a :: "'a"
+    have "?listpi' = (\<lambda>p. permute_list (?pi' (length p)) p)"
+      by simp
     from d_anon
-    have "\<And> A' p'. is_perm ?pi \<longrightarrow> d (A, p) (A', p') = d (A, build_perm ?pi p) (A', build_perm ?pi p')"
-      unfolding el_distance_anonymity_def perm
-      by blast
-    thus "{d (A, p) (A', p') | A' p'. ?P a A' p'} =
-            {d (A, build_perm ?pi p) (A', build_perm ?pi p') | A' p'. ?P a A' p'}"
-      using perm
+    have anon: "\<And> A' p' A p pi. (\<forall>n. (pi n) permutes {..<n})
+          \<longrightarrow> d (A, p) (A', p') = d (A, permute_list (pi (length p)) p) (A', permute_list (pi (length p')) p')"
+      unfolding el_distance_anonymity_def
+      by (smt (verit, ccfv_threshold))
+    show "{d (A, p) (A', p') | A' p'. ?P a A' p'} =
+            {d (A, ?listpi' p) (A', ?listpi' p') | A' p'. ?P a A' p'}"
+      using perm anon[of ?pi' A p]
       unfolding el_distance_anonymity_def
       by simp
   qed
+  hence "\<forall> a \<in> A. {d (A, p) (A', p') | A' p'. ?P a A' p'} =
+          {d (A, q) (A', ?listpi' p') | A' p'. ?P a A' p'}"
+    using pq
+    by simp
   ultimately
-  have "\<forall> a \<in> A. {d (A, build_perm ?pi p) (A', p') | A' p'. (A', p') \<in> favoring_consensus_elections K a}
+  have "\<forall> a \<in> A. {d (A, q) (A', p') | A' p'. (A', p') \<in> favoring_consensus_elections K a}
             = {d (A, p) (A', p') | A' p'. (A', p') \<in> favoring_consensus_elections K a}"
     by auto
-  hence "\<forall> a \<in> A. d (A, build_perm ?pi p) ` favoring_consensus_elections K a =
+  hence "\<forall> a \<in> A. d (A, q) ` favoring_consensus_elections K a =
                d (A, p) ` favoring_consensus_elections K a"
     by fast
-  hence "\<forall> a \<in> A. score d K (A, p) a = score d K (A, build_perm ?pi p) a"
+  hence "\<forall> a \<in> A. score d K (A, p) a = score d K (A, q) a"
     by simp
-  hence "dr_rule d K A p = dr_rule d K A (build_perm ?pi p)"
-    using is_arg_min_equal[of A "score d K (A, p)" "score d K (A, build_perm ?pi p)"]
+  then show "dr_rule d K A p = dr_rule d K A q"
+    using is_arg_min_equal[of A "score d K (A, p)" "score d K (A, q)"]
     by auto
-  moreover have "build_perm ?pi p = q"
-    using \<open>permute_list pii p = q\<close>
-    by simp
-  ultimately show "dr_rule d K A p = dr_rule d K A q"
-    by simp
 qed
 
 end

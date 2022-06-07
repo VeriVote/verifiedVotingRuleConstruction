@@ -55,7 +55,8 @@ abbreviation election_distance_property :: "('a Election set
 
 definition el_distance_anonymity :: "'a Election Distance \<Rightarrow> bool" where
   "el_distance_anonymity d \<equiv>
-    (\<forall> C B pi p q. (\<forall>n::nat. is_perm pi \<longrightarrow> d (C,p) (B,q) = d (C,build_perm pi p) (B,build_perm pi q)))"
+    (\<forall> C B pi p q. (\<forall>n. (pi n) permutes {..<n}) \<longrightarrow> 
+    d (C,p) (B,q) = d (C, permute_list (pi (length p)) p) (B, permute_list (pi (length q)) q))"
 
 definition standard :: "'a Election Distance \<Rightarrow> bool" where
  "standard d \<equiv> (\<forall> C B p q. length p \<noteq> length q \<or> C \<noteq> B \<longrightarrow> d (C,p) (B,q) = \<infinity>)"
