@@ -40,9 +40,12 @@ proof (unfold el_distance_anonymity_def, safe)
     pi :: "nat \<Rightarrow> nat \<Rightarrow> nat" and
     p  :: "'a Profile" and
     p' :: "'a Profile"
-  assume perm: "is_perm pi"
+  assume perm: "\<forall>n. pi n permutes {..<n}"
+  let ?listpi = "\<lambda> xs. permute_list (pi (length xs)) xs"
+  let ?q = "?listpi p" and
+      ?q' = "?listpi p'"
   show "votewise_distance d n (A, p) (A', p')
-        = votewise_distance d n (A, build_perm pi p) (A', build_perm pi p')"
+        = votewise_distance d n (A, ?q) (A', ?q')"
   proof (cases "length p = length p' \<and> (length p > 0 \<or> A = A')")
     case False
     with perm
@@ -53,20 +56,26 @@ proof (unfold el_distance_anonymity_def, safe)
     hence "votewise_distance d n (A, p) (A', p')
            = n (map2 (\<lambda> x y. d (A, x) (A', y)) p p')"
       by auto
-    also from assms have
-      "\<dots> = n (build_perm pi (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
-      using perm
-      unfolding symmetry_def
-      by (metis (mono_tags, lifting))
-    also have "\<dots> = n (map (case_prod (\<lambda>x y. d (A,x) (A',y))) (build_perm pi (zip p p')))"
+    also have
+      "\<dots> = n (?listpi (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
+    proof-
+      from perm have "\<forall> zs. pi (length zs) permutes {..<length zs}"
+        using is_perm_def by auto
+      hence "\<forall> zs. ?listpi zs <~~> zs"
+        using mset_permute_list by force
+      with assms show ?thesis
+        unfolding symmetry_def
+        by (metis (no_types, lifting))
+    qed
+    also have "\<dots> = n (map (case_prod (\<lambda>x y. d (A,x) (A',y))) (?listpi (zip p p')))"
       using permute_list_map[of \<open>pi (length p)\<close> \<open>zip p p'\<close> \<open>case_prod (\<lambda>x y. d (A,x) (A',y))\<close>] perm True 
       unfolding is_perm_def 
       by auto
-    also have "\<dots> = n (map2 (\<lambda>x y. d (A,x) (A',y)) (build_perm pi p) (build_perm pi p'))"
+    also have "\<dots> = n (map2 (\<lambda>x y. d (A,x) (A',y)) (?listpi p) (?listpi p'))"
       using permute_list_zip[of \<open>pi (length p)\<close> \<open>{..< length p}\<close> p p'] perm True 
       unfolding is_perm_def
       by simp
-    also have "\<dots> = votewise_distance d n (A, build_perm pi p) (A', build_perm pi p')"
+    also have "\<dots> = votewise_distance d n (A, ?listpi p) (A', ?listpi p')"
       using True
       by auto
     finally show ?thesis
