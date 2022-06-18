@@ -7,7 +7,6 @@ section \<open>Norm\<close>
 
 theory Norm
   imports "HOL-Library.Extended_Real"
-          "Social_Choice_Types/Tools/List_Permutation_2"
           "HOL-Combinatorics.List_Permutation"
 begin
 
