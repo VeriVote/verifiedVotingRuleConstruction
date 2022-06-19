@@ -120,8 +120,6 @@ next
   qed
       qed
 
-value "pos_in_list [1] (1::int)"
-
 (* Possibly a useful addition: 
 x \<in> set xs \<Longrightarrow> (\<And>i. i < length xs \<Longrightarrow> i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x *)
 lemma pos_in_list_altdef:
@@ -191,18 +189,23 @@ qed
 This is used in the proof that list_to_rel produces linear orders. *)
 lemma list_to_rel_altdef: "distinct xs \<longrightarrow> 
   relation_of (\<lambda>y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs) = list_to_rel xs"
-proof safe
+proof (unfold relation_of_def, safe)
   fix xs :: "'a list"  and a :: "'a" and b :: "'a"
-  assume "distinct xs"
-  show "(a, b) \<in> relation_of (\<lambda>y z. pos_in_list xs z \<le> pos_in_list xs y) (set xs) \<Longrightarrow>
-           (a, b) \<in> list_to_rel xs"
-  proof (unfold relation_of_def, safe)
-    assume "pos_in_list xs b \<le> pos_in_list xs a" and "a \<in> set xs" and "b \<in> set xs"
-    show "(a, b) \<in> list_to_rel xs"
-      sorry
-  qed
-  show "(a, b) \<in> list_to_rel xs \<Longrightarrow>
-           (a, b) \<in> relation_of (\<lambda>y z. pos_in_list xs z \<le> pos_in_list xs y) (set xs) "
+  assume "distinct xs" and "pos_in_list xs b \<le> pos_in_list xs a" and "a \<in> set xs" and "b \<in> set xs"
+  show "(a, b) \<in> list_to_rel xs"
+    (* During the execution of "list_to_rel xs", 
+    (a, b) is added by the recursive call of list_to_rel on a list where b is the head *)
+    sorry
+next
+  fix xs :: "'a list"  and a :: "'a" and b :: "'a"
+  assume "distinct xs" and "(a, b) \<in> list_to_rel xs"
+  (* For the proofs of the following statements, look at the two ways (a, b) can be added to 
+  "list_to_rel xs": by the second or third pattern matching case of the definition of list_to_rel. *)
+  show "a \<in> set xs"
+    sorry
+  show "b \<in> set xs"
+    sorry
+  show "pos_in_list xs b \<le> pos_in_list xs a "
     sorry
 qed
 
@@ -274,11 +277,6 @@ proof
     case (Cons a xs)
     fix a :: "'b set" and xs :: "'b set list"
     assume assm1: "(\<forall>i<length xs. finite (xs ! i)) \<longrightarrow> finite (listset xs)"
-    (*have "listset (a # xs) = set_Cons a (listset xs)"
-      by simp
-    also have "\<dots> = {x # xs'|x xs'. x \<in> a \<and> xs' \<in> (listset xs)}"
-      unfolding set_Cons_def
-      by simp*)
     show "(\<forall>i<length (a # xs). finite ((a # xs) ! i)) \<longrightarrow> finite (listset (a # xs))"
     proof clarify
       assume assm2: "\<forall>i<length (a # xs). finite ((a # xs) ! i)"
@@ -310,11 +308,6 @@ proof
     case (Cons a xs)
     fix a :: "'b set" and xs :: "'b set list"
     assume assm1: "0 < length xs \<and> (\<forall>i<length xs. xs ! i = {}) \<longrightarrow> listset xs = {}"
-    (*have "listset (a # xs) = set_Cons a (listset xs)"
-      by simp
-    also have "\<dots> = {x # xs'|x xs'. x \<in> a \<and> xs' \<in> (listset xs)}"
-      unfolding set_Cons_def
-      by simp*)
     show "0 < length (a # xs) \<and> (\<forall>i<length (a # xs). (a # xs) ! i = {}) \<longrightarrow> listset (a # xs) = {}"
     proof clarify
       assume assm2: "\<forall>i<length (a # xs). (a # xs) ! i = {}"
@@ -330,25 +323,6 @@ proof
     qed
   qed
 qed
-
-(*lemma 4:
-  fixes A and l
-  assumes infinite: "infinite A"
-  shows "all_profiles l A = {}"
-proof-
-  from infinite have "permutations_of_set A = {}"
-    using permutations_of_set_infinite
-    by simp
-  hence e: "list_to_rel ` permutations_of_set A = {}"
-    by simp
-  let ?xs = "replicate l (list_to_rel ` permutations_of_set A)"
-  from e have "\<forall>i < length ?xs. ?xs ! i = {}"
-    by simp
-  hence "listset (replicate l (list_to_rel ` permutations_of_set A)) = {}"
-    by (simp add: "2")
-  then show ?thesis
-    by simp
-*)
 
 lemma 5: "\<forall> ys \<in> listset xs. length ys = length xs"
 proof (induct xs)
@@ -404,10 +378,10 @@ qed
 
 lemma standard_implies_equal_score:
   fixes d::"'a Election Distance" and K::"'a Consensus_Rule" and A::"'a set" and p::"'a Profile" and a::"'a"
-  assumes std: "standard d" (*and fin: "finite A"*)
+  assumes std: "standard d"
   shows "score d K (A,p) a = score_std d K (A,p) a"
 proof-
-  have "all_profiles (length p) A = {x. finite_profile A x \<and> length x = (length p)}"
+  have all_profiles_set: "all_profiles (length p) A = {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
   proof (cases "finite A")
     case f1: False
     hence "all_profiles (length p) A = {}"
@@ -486,6 +460,10 @@ proof-
         fix x::"'a Profile"
         assume leneq: "length x = length p" and "finite A" and "profile A x"
         show "x \<in> all_profiles (length p) A"
+          (* Intermediate step: Show that all linear orders over A 
+          are in "list_to_rel ' (permutations_of_set A)".  
+          Then, use the argument that "listset (replicate l S))" for a set S is the set of lists 
+          of length l where each item is in S. *)
           sorry
       qed
     next
@@ -511,19 +489,13 @@ proof-
   hence "favoring_consensus_elections_std K a A (length p) = 
          favoring_consensus_elections K a \<inter> 
           Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
-  proof (cases "finite A")
-    case False
-    then show ?thesis
-      by auto
-  next
-    case True
-    then show ?thesis sorry
-  qed
+    by auto
 
   moreover have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
                  Inf (d (A,p) ` (favoring_consensus_elections K a 
             \<inter> Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
     using \<open>standard d\<close>
+    (* Since d in standard, d (A,p) (A,p') is \<infinity> for all p' not in the set. *)
     sorry
 
   ultimately have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
@@ -533,7 +505,15 @@ proof-
   also have "\<dots> = Min (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
   proof (cases "favoring_consensus_elections_std K a A (length p) = {}")
     case True
-    then show ?thesis sorry
+    then show ?thesis 
+    (* Find out what "Min {}" does. If it is not \<infinity>, redefine score_std:
+    "score_std d K E a = 
+      (if favoring_consensus_elections_std K a (fst E) (length (snd E)) = {}
+      then \<infinity>
+      else Min (d E ` (favoring_consensus_elections_std K a (fst E) (length (snd E)))))" 
+    This is consistent with the convention that the distance from empty consensus sets is \<infinity>
+    mentioned by Hadjibeyli and Wilson after remark 3.5 *)
+      sorry
   next
     case False
     hence "d (A,p) ` (favoring_consensus_elections_std K a A (length p)) \<noteq> {}"
@@ -582,12 +562,45 @@ proof-
 qed
 
 lemma swap_standard: "standard (votewise_distance swap l_one)"
-  unfolding standard_def
-  sorry
+proof (unfold standard_def, clarify)
+  fix C :: "'a set" and B :: "'a set" and p :: "'a Profile" and q :: "'a Profile"
+  assume assm: "length p \<noteq> length q \<or> C \<noteq> B"
+  then show "votewise_distance swap l_one (C, p) (B, q) = \<infinity>"
+  proof (cases "length p = length q")
+    case False
+    then show ?thesis by simp
+  next
+    case True
+    with assm have "C \<noteq> B"
+      by simp
+    then show ?thesis
+    proof (cases "length p > 0")
+      case False
+      with \<open>C \<noteq> B\<close> show ?thesis by simp
+    next
+      case True
+      with \<open>length p = length q\<close> 
+      have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q) ! 0 
+           = swap (C, (p ! 0)) (B, (q ! 0))"
+        by simp
+      also have "\<dots> = \<infinity>"
+        using \<open>C \<noteq> B\<close>
+        by simp
+      finally have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q) ! 0 = \<infinity>"
+        by simp
+      moreover from \<open>length p > 0\<close> \<open>length p = length q\<close> have "length (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) > 0"
+        by simp
+      ultimately have "l_one (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) = \<infinity>"
+        (* Should not be very hard *)
+        sorry
+      with \<open>length p > 0\<close> \<open>length p = length q\<close> show ?thesis by simp
+    qed
+  qed
+qed
 
 lemma equal_score_swap: "score (votewise_distance swap l_one) = score_std (votewise_distance swap l_one)"
   using standard_implies_equal_score swap_standard
-  by auto
+  by fast
 
 definition "drswap = dr_rule (votewise_distance swap l_one)"
 
@@ -694,7 +707,7 @@ proof (unfold anonymity_def, clarify)
   let ?listpi = "permute_list pi"
   let ?pi' = "\<lambda> n. (if n = length p then pi else id)"
   have perm: "\<forall>n. (?pi' n) permutes {..<n}"
-    using pi_perm is_perm_def 
+    using pi_perm
     by auto
   let ?listpi' = "\<lambda> xs. permute_list (?pi' (length xs)) xs"
   let ?m = "dr_rule d K"
