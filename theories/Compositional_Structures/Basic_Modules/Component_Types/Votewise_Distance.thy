@@ -60,7 +60,7 @@ proof (unfold el_distance_anonymity_def, safe)
       "\<dots> = n (?listpi (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
     proof-
       from perm have "\<forall> zs. pi (length zs) permutes {..<length zs}"
-        using is_perm_def by auto
+        by auto
       hence "\<forall> zs. ?listpi zs <~~> zs"
         using mset_permute_list by force
       with assms show ?thesis
@@ -69,11 +69,9 @@ proof (unfold el_distance_anonymity_def, safe)
     qed
     also have "\<dots> = n (map (case_prod (\<lambda>x y. d (A,x) (A',y))) (?listpi (zip p p')))"
       using permute_list_map[of \<open>pi (length p)\<close> \<open>zip p p'\<close> \<open>case_prod (\<lambda>x y. d (A,x) (A',y))\<close>] perm True 
-      unfolding is_perm_def 
       by auto
     also have "\<dots> = n (map2 (\<lambda>x y. d (A,x) (A',y)) (?listpi p) (?listpi p'))"
       using permute_list_zip[of \<open>pi (length p)\<close> \<open>{..< length p}\<close> p p'] perm True 
-      unfolding is_perm_def
       by simp
     also have "\<dots> = votewise_distance d n (A, ?listpi p) (A', ?listpi p')"
       using True
