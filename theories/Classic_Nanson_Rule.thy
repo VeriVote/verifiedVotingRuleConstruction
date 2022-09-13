@@ -25,4 +25,10 @@ fun classic_nanson_rule :: "'a Electoral_Module" where
   "classic_nanson_rule A p =
     ((leq_average_eliminator borda_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
 
+subsection \<open>Soundness\<close>
+
+theorem classic_nanson_rule_sound: "electoral_module classic_nanson_rule"
+  unfolding classic_nanson_rule.simps
+  by (simp add: loop_comp_sound)
+
 end

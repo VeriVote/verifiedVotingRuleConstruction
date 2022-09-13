@@ -26,6 +26,13 @@ fun minimax_score :: "'a Evaluation_Function" where
 fun minimax :: "'a Electoral_Module" where
   "minimax A p = max_eliminator minimax_score A p"
 
+subsection \<open>Soundness\<close>
+
+theorem minimax_sound: "electoral_module minimax"
+  unfolding minimax.simps
+  using max_elim_sound
+  by metis
+
 subsection \<open>Lemma\<close>
 
 lemma non_cond_winner_minimax_score:
