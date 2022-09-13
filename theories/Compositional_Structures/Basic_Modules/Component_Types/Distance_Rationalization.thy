@@ -13,9 +13,9 @@ theory Distance_Rationalization
 begin
 
 text \<open>
-  A distance rationalizing of a voting rule is its interpretation  as a
-  procedure that electa an uncontroversial winner if there is one, and
-  otherwise elect the alternatives that are as close to becoming an
+  A distance rationalizing of a voting rule is its interpretation as a
+  procedure that elects an uncontroversial winner if there is one, and
+  otherwise elects the alternatives that are as close to becoming an
   uncontroversial winner as possible. Within general distance rationalization,
   a voting rule is characterized by a distance on profiles and a consensus
   class.
@@ -33,8 +33,8 @@ fun score :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow>
 fun arg_min_set :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
   "arg_min_set f A = Collect (is_arg_min f (\<lambda> a. a \<in> A))"
 
-(*fun arg_min_set_2 :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
-  "arg_min_set_2 f A = Set.filter (is_arg_min f (\<lambda> a. a \<in> A)) A"*)
+(* fun arg_min_set_2 :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
+   "arg_min_set_2 f A = Set.filter (is_arg_min f (\<lambda> a. a \<in> A)) A" *)
 
 fun dr_winners :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a set \<Rightarrow>
                    'a Profile \<Rightarrow> 'a set" where
@@ -47,7 +47,7 @@ subsection \<open>Code Equations\<close>
 
 fun list_to_rel :: "'a list \<Rightarrow> 'a rel" where
   "list_to_rel [] = {}" |
-  "list_to_rel [x] = {(x,x)}" |
+  "list_to_rel [x] = {(x, x)}" |
   "list_to_rel xs = set (map (\<lambda> x. (x, hd xs)) xs) \<union> list_to_rel (tl xs)"
 
 fun pos_in_list_acc :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> nat" where
@@ -58,149 +58,204 @@ fun pos_in_list_acc :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow>
 fun pos_in_list :: "'a list \<Rightarrow> 'a \<Rightarrow> nat" where
   "pos_in_list xs y = pos_in_list_acc 0 xs y"
 
-lemma a: "\<And>acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1"
+lemma a:
+  fixes
+    xs :: "'a list" and
+    x :: "'a"
+  shows "\<And> acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1"
 proof (induct xs)
   case Nil
-  then show ?case by simp
+  thus ?case
+    by simp
 next
-  case (Cons b xs)
-  then show ?case
+  case (Cons b ys)
+  thus ?case
   proof (cases "b = x")
     case True
-    then show ?thesis by simp
+    thus ?thesis
+      by simp
   next
     case False
-    hence "pos_in_list_acc (acc + 1) (b # xs) x = pos_in_list_acc (acc + 2) xs x"
+    hence "pos_in_list_acc (acc + 1) (b#ys) x = pos_in_list_acc (acc + 2) ys x"
       by simp
-    also with \<open>\<And>acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1\<close> 
-    have "\<dots> = pos_in_list_acc (acc + 1) xs x + 1"
+    also from False
+    have "\<dots> = pos_in_list_acc (acc + 1) ys x + 1"
+      using Suc_eq_plus1 add_2_eq_Suc' Cons
+      by presburger
+    also from False
+    have "\<dots> = pos_in_list_acc acc (b#ys) x + 1"
       by simp
-    also with False have "\<dots> = pos_in_list_acc acc (b # xs) x + 1"
+    finally show ?thesis
       by simp
-    finally show ?thesis by simp
   qed
 qed
 
-lemma p: "i < length xs \<Longrightarrow> (\<forall>j<i. xs ! j \<noteq> x) \<Longrightarrow> xs ! i = x \<Longrightarrow> pos_in_list xs x = i"
+lemma p:
+  fixes
+    xs :: "'a list" and
+    x :: "'a" and
+    i :: "nat"
+  assumes
+    "i < length xs" and
+    "\<forall> j < i. xs!j \<noteq> x" and
+    "xs!i = x"
+  shows "pos_in_list xs x = i"
+  using assms
 proof (induction xs arbitrary: i)
 case Nil
-  then show ?case by simp
+  thus ?case
+    by simp
 next
   case (Cons a xs)
-  then show ?case
+  thus ?case
   proof (cases i)
     case 0
-    with Cons.prems(3) show ?thesis by simp
+    with Cons.prems(3)
+    show ?thesis
+      by simp
   next
     case (Suc nat)
-    with Cons.prems(2) have "a \<noteq> x" by auto
-    hence "pos_in_list (a # xs) x = pos_in_list_acc 1 xs x"
+    with Cons.prems(2)
+    have "a \<noteq> x"
+      by auto
+    hence "pos_in_list (a#xs) x = pos_in_list_acc 1 xs x"
       by simp
     also have "\<dots> = pos_in_list_acc 0 xs x + 1"
       using a
-      by fastforce
+      by simp
     also have "\<dots> = pos_in_list xs x + 1"
       by simp
     also have "\<dots> = i"
-    proof-
-      from Cons.prems(1) have "nat < length xs"
-        using Suc by auto
-      moreover from Cons.prems(2) have "\<forall>j<nat. xs ! j \<noteq> x"
-        using Suc by auto
-      moreover from Cons.prems(3) have "xs ! nat = x"
-        using Suc by auto
-      ultimately have "pos_in_list xs x = nat" using Cons.IH
+    proof -
+      from Cons.prems(1)
+      have "nat < length xs"
+        using Suc
         by simp
-      then show ?thesis
-        using Suc 
-        by fastforce
+      moreover from Cons.prems(2)
+      have "\<forall> j < nat. xs!j \<noteq> x"
+        using Suc
+        by auto
+      moreover from Cons.prems(3)
+      have "xs!nat = x"
+        using Suc
+        by simp
+      ultimately have "pos_in_list xs x = nat"
+        using Cons.IH
+        by simp
+      thus ?thesis
+        using Suc
+        by simp
     qed
     finally show ?thesis
       by simp
   qed
-      qed
+qed
 
 (* Possibly a useful addition: 
-x \<in> set xs \<Longrightarrow> (\<And>i. i < length xs \<Longrightarrow> i < (pos_in_list xs x) \<Longrightarrow> xs ! i \<noteq> x *)
+  x \<in> set xs \<Longrightarrow> (\<And> i. i < length xs \<Longrightarrow> i < (pos_in_list xs x) \<Longrightarrow> xs!i \<noteq> x *)
 lemma pos_in_list_altdef:
-  fixes xs :: "'a list" and x :: "'a"
-  shows "x \<in> set xs \<Longrightarrow> xs ! (pos_in_list xs x) = x"
-proof-
-  show "x \<in> set xs \<Longrightarrow> xs ! (pos_in_list xs x) = x"
-  proof (induction xs)
-    case Nil
-    then show ?case by simp
+  fixes
+    xs :: "'a list" and
+    x :: "'a"
+  assumes "x \<in> set xs"
+  shows "xs!(pos_in_list xs x) = x"
+  using assms
+proof (induction xs)
+  case Nil
+  thus ?case
+    by simp
+next
+  case (Cons a xs)
+  thus ?case
+  proof (cases "x = a")
+    case True
+    thus ?thesis
+      by simp
   next
-    case (Cons a xs)
-    then show ?case
-    proof (cases "x = a")
-      case True
-      then show ?thesis by simp
-    next
-      case False
-      with \<open>x \<in> set (a # xs)\<close> have \<open>x \<in> set xs\<close> by simp
-      with \<open>x \<in> set xs \<Longrightarrow> xs ! pos_in_list xs x = x\<close> have "xs ! pos_in_list xs x = x" by simp
-      moreover have "pos_in_list (a # xs) x = pos_in_list xs x + 1"
-      proof-
-        have "pos_in_list (a # xs) x = pos_in_list_acc 0 (a # xs) x"
+    case False
+    with Cons
+    have "x \<in> set xs"
+      by simp
+    with Cons
+    have "xs!(pos_in_list xs x) = x"
+      by simp
+    moreover have "pos_in_list (a#xs) x = pos_in_list xs x + 1"
+    proof -
+      have acc_pos_list: "\<And> acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1"
+      proof (induct xs)
+        case Nil
+        thus ?case
           by simp
-        also have "\<dots> = (if a = x then 0 else pos_in_list_acc 1 xs x)"
-          by simp
-        also have "\<dots> = pos_in_list_acc 1 xs x"
-          using False
-          by simp
-        also have "\<dots> = pos_in_list_acc 0 xs x + 1"
-        proof-
-          have "\<And>acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1"
-          proof (induct xs)
-            case Nil
-            then show ?case by simp
-          next
-            case (Cons b xs)
-            then show ?case
-            proof (cases "b = x")
-              case True
-              then show ?thesis by simp
-            next
-              case False
-              hence "pos_in_list_acc (acc + 1) (b # xs) x = pos_in_list_acc (acc + 2) xs x"
-                by simp
-              also with \<open>\<And>acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1\<close> 
-              have "\<dots> = pos_in_list_acc (acc + 1) xs x + 1"
-                by simp
-              also with False have "\<dots> = pos_in_list_acc acc (b # xs) x + 1"
-                by simp
-              finally show ?thesis by simp
-            qed
-          qed
-          then show ?thesis by simp
+      next
+        case (Cons b xs)
+        thus ?case
+        proof (cases "b = x")
+          case True
+          thus ?thesis
+            by simp
+        next
+          case False
+          hence "pos_in_list_acc (acc + 1) (b#xs) x = pos_in_list_acc (acc + 2) xs x"
+            by simp
+          also from Cons
+          have "\<dots> = pos_in_list_acc (acc + 1) xs x + 1"
+            by simp
+          also from False
+          have "\<dots> = pos_in_list_acc acc (b#xs) x + 1"
+            by simp
+          finally show ?thesis
+            by simp
         qed
-        also have "\<dots> = pos_in_list xs x + 1"
-          by simp
-        finally show ?thesis by simp
       qed
-      ultimately show "(a # xs) ! pos_in_list (a # xs) x = x"
+      have "pos_in_list (a#xs) x = pos_in_list_acc 0 (a#xs) x"
+        by simp
+      also have "\<dots> = (if a = x then 0 else pos_in_list_acc 1 xs x)"
+        by simp
+      also have "\<dots> = pos_in_list_acc 1 xs x"
+        using False
+        by simp
+      also have "\<dots> = pos_in_list_acc 0 xs x + 1"
+        using acc_pos_list
+        by simp
+      also have "\<dots> = pos_in_list xs x + 1"
+        by simp
+      finally show ?thesis
         by simp
     qed
+    ultimately show "(a#xs)!(pos_in_list (a#xs) x) = x"
+      by simp
   qed
 qed
 
 (* Alternative expression of list_to_rel using relation_of. 
-This is used in the proof that list_to_rel produces linear orders. *)
-lemma list_to_rel_altdef: "distinct xs \<longrightarrow> 
-  relation_of (\<lambda>y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs) = list_to_rel xs"
+  This is used in the proof that list_to_rel produces linear orders. *)
+lemma list_to_rel_altdef: "distinct xs \<longrightarrow>
+  relation_of (\<lambda> y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs) = list_to_rel xs"
 proof (unfold relation_of_def, safe)
-  fix xs :: "'a list"  and a :: "'a" and b :: "'a"
-  assume "distinct xs" and "pos_in_list xs b \<le> pos_in_list xs a" and "a \<in> set xs" and "b \<in> set xs"
+  fix
+    xs :: "'a list" and
+    a :: "'a" and
+    b :: "'a"
+  assume
+    "distinct xs" and
+    "pos_in_list xs b \<le> pos_in_list xs a" and
+    "a \<in> set xs" and
+    "b \<in> set xs"
   show "(a, b) \<in> list_to_rel xs"
-    (* During the execution of "list_to_rel xs", 
-    (a, b) is added by the recursive call of list_to_rel on a list where b is the head *)
+    (* During the execution of "list_to_rel xs",
+      (a, b) is added by the recursive call of list_to_rel on a list where b is the head *)
     sorry
 next
-  fix xs :: "'a list"  and a :: "'a" and b :: "'a"
-  assume "distinct xs" and "(a, b) \<in> list_to_rel xs"
+  fix
+    xs :: "'a list" and
+    a :: "'a" and
+    b :: "'a"
+  assume
+    "distinct xs" and
+    "(a, b) \<in> list_to_rel xs"
   (* For the proofs of the following statements, look at the two ways (a, b) can be added to 
-  "list_to_rel xs": by the second or third pattern matching case of the definition of list_to_rel. *)
+    "list_to_rel xs": by the second or third pattern matching case of the definition of list_to_rel.
+  *)
   show "a \<in> set xs"
     sorry
   show "b \<in> set xs"
@@ -210,115 +265,132 @@ next
 qed
 
 
-(* 
-We want "all_profiles l A = {}" for infinite A.
-We have "permutations_of_set A = {} \<longleftrightarrow> \<not>finite A" (Multiset_Permutations.permutations_of_set_empty_iff).
-"listset (replicate 0 (list_to_rel ` {})" is "{[]}", not "{}". 
-This is why we make the case where "permutations_of_set A = {}" explicit.
-Open question: Would "finite A" instead of "permutations_of_set A = {}" also work for code generation?
+(*
+  We want "all_profiles l A = {}" for infinite A.
+  We have "permutations_of_set A = {} \<longleftrightarrow> \<not>finite A"
+    (Multiset_Permutations.permutations_of_set_empty_iff).
+    "listset (replicate 0 (list_to_rel ` {})" is "{[]}", not "{}".
+  This is why we make the case where "permutations_of_set A = {}" explicit.
+  Open question: Would "finite A" instead of "permutations_of_set A = {}"
+                 also work for code generation?
 *)
 fun all_profiles :: "nat \<Rightarrow> 'a set \<Rightarrow> ('a \<times> 'a) set list set" where
   "all_profiles l A = (if permutations_of_set A = {} then {}
                        else listset (replicate l (list_to_rel ` permutations_of_set A)))"
 
-fun favoring_consensus_elections_std :: "'a Consensus_Rule \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> nat \<Rightarrow> 'a Election set" where
+fun favoring_consensus_elections_std :: "'a Consensus_Rule \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> nat
+                                          \<Rightarrow> 'a Election set" where
   "favoring_consensus_elections_std K a A l =
-    (\<lambda> p. (A, p)) ` (Set.filter (\<lambda> p. (fst K) (A, p) \<and> elect_r ((snd K) A p) = {a}) (all_profiles l A))"
-                            
+    (\<lambda> p. (A, p)) ` (Set.filter (\<lambda> p. (fst K) (A, p) \<and> elect_r ((snd K) A p) = {a})
+                                (all_profiles l A))"
+
 fun score_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Election \<Rightarrow> 'a \<Rightarrow> ereal" where
   "score_std d K E a = Min (d E ` (favoring_consensus_elections_std K a (fst E) (length (snd E))))"
 
-fun dr_winners_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a set \<Rightarrow>
-                   'a Profile \<Rightarrow> 'a set" where
+fun dr_winners_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a set
+                          \<Rightarrow> 'a Profile \<Rightarrow> 'a set" where
   "dr_winners_std d K A p = arg_min_set (score_std d K (A, p)) A"
 
 fun dr_rule_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Electoral_Module" where
   "dr_rule_std d K A p = (dr_winners_std d K A p, A - dr_winners_std d K A p, {})"
 
-lemma 1: "\<And> A B. finite A \<and> finite B \<longrightarrow> finite {a # b |a b. a \<in> A \<and> b \<in> B}"
-proof safe
-  fix A :: "'a set" and B :: "'a list set"
-  assume "finite A" and "finite B"
-  let ?P = "\<lambda> A. finite {a # b |a b. a \<in> A \<and> b \<in> B}"
-  have "\<And>a A'. finite A' \<Longrightarrow> a \<notin> A' \<Longrightarrow> ?P A' \<Longrightarrow> ?P (insert a A')"
-  proof-
-    fix a and A'
-    assume 
+lemma 1:
+  fixes
+    A :: "'a set" and
+    B :: "'a list set"
+  assumes
+    finA: "finite A" and
+    finB: "finite B"
+  shows "finite {a#b | a b. a \<in> A \<and> b \<in> B}"
+proof -
+  let ?P = "\<lambda> A. finite {a#b |a b. a \<in> A \<and> b \<in> B}"
+  have "\<And> a A'. finite A' \<Longrightarrow> a \<notin> A' \<Longrightarrow> ?P A' \<Longrightarrow> ?P (insert a A')"
+  proof -
+    fix
+      a :: "'a" and
+      A' :: "'a set"
+    assume
       fin: "finite A'" and
       notin: "a \<notin> A'" and
-      finset: "finite {a # b |a b. a \<in> A' \<and> b \<in> B}"
-    have "{aa # b |aa b. aa \<in> insert a A' \<and> b \<in> B} = {a # b |a b. a \<in> A' \<and> b \<in> B} \<union> {a # b |b. b \<in> B}"
+      finset: "finite {a#b | a b. a \<in> A' \<and> b \<in> B}"
+    have "{a'#b | a' b. a' \<in> insert a A' \<and> b \<in> B}
+            = {a#b | a b. a \<in> A' \<and> b \<in> B} \<union> {a#b | b. b \<in> B}"
       by auto
-    moreover have "finite {a # b |b. b \<in> B}"
-      using \<open>finite B\<close>
+    moreover have "finite {a#b | b. b \<in> B}"
+      using finB
       by simp
-    ultimately have "finite {aa # b |aa b. aa \<in> insert a A' \<and> b \<in> B}"
+    ultimately have "finite {a'#b | a' b. a' \<in> insert a A' \<and> b \<in> B}"
       using finset
       by simp
-    then show "?P (insert a A')"
+    thus "?P (insert a A')"
       by simp
   qed
   moreover have "?P {}"
     by simp
   ultimately show "?P A"
-    using finite_induct[of A ?P] \<open>finite A\<close> 
-    by auto
+    using finite_induct[of A ?P] finA
+    by simp
 qed
-  
-lemma 2: "\<forall> xs. (\<forall> i < length xs. finite (xs ! i)) \<longrightarrow> finite (listset xs)"
+
+lemma 2: "\<forall> xs. (\<forall> i < length xs. finite (xs!i)) \<longrightarrow> finite (listset xs)"
 proof
   fix xs :: "'b set list"
-  show "(\<forall>i<length xs. finite (xs ! i)) \<longrightarrow> finite (listset xs)"
+  show "(\<forall> i < length xs. finite (xs!i)) \<longrightarrow> finite (listset xs)"
   proof (induct xs)
     case Nil
-    then show ?case
+    thus ?case
       by simp
   next
-    case (Cons a xs)
-    fix a :: "'b set" and xs :: "'b set list"
-    assume assm1: "(\<forall>i<length xs. finite (xs ! i)) \<longrightarrow> finite (listset xs)"
-    show "(\<forall>i<length (a # xs). finite ((a # xs) ! i)) \<longrightarrow> finite (listset (a # xs))"
-    proof clarify
-      assume assm2: "\<forall>i<length (a # xs). finite ((a # xs) ! i)"
+    case (Cons a ys)
+    fix
+      a :: "'b set" and
+      ys :: "'b set list"
+    assume assm1: "(\<forall> i < length ys. finite (ys!i)) \<longrightarrow> finite (listset ys)"
+    show "(\<forall> i < length (a#ys). finite ((a#ys)!i)) \<longrightarrow> finite (listset (a#ys))"
+    proof (clarify)
+      assume assm2: "\<forall> i < length (a#ys). finite ((a#ys)!i)"
       hence "finite a"
         by auto
-      moreover from assm2 have "(\<forall> i < length xs. finite (xs ! i))"
+      moreover from assm2
+      have "\<forall> i < length ys. finite (ys!i)"
         by auto
-      with assm1 have "finite (listset xs)"
+      with assm1
+      have "finite (listset ys)"
         by simp
-      ultimately have "finite {x # xs'|x xs'. x \<in> a \<and> xs' \<in> (listset xs)}"
+      ultimately have "finite {x#xs' | x xs'. x \<in> a \<and> xs' \<in> (listset ys)}"
         using 1
         by auto
-      then show "finite (listset (a # xs))"
-        unfolding set_Cons_def
+      thus "finite (listset (a#ys))"
         by (simp add: set_Cons_def)
     qed
   qed
 qed
 
-lemma 3: "\<forall> xs. length xs > 0 \<and> (\<forall> i < length xs. xs ! i = {}) \<longrightarrow> listset xs = {}"
+lemma 3: "\<forall> xs. length xs > 0 \<and> (\<forall> i < length xs. xs!i = {}) \<longrightarrow> listset xs = {}"
 proof
   fix xs :: "'b set list"
-  show "length xs > 0 \<and> (\<forall> i < length xs. xs ! i = {}) \<longrightarrow> listset xs = {}"
+  show "length xs > 0 \<and> (\<forall> i < length xs. xs!i = {}) \<longrightarrow> listset xs = {}"
   proof (induct xs)
     case Nil
-    then show ?case
+    thus ?case
       by simp
   next
     case (Cons a xs)
-    fix a :: "'b set" and xs :: "'b set list"
-    assume assm1: "0 < length xs \<and> (\<forall>i<length xs. xs ! i = {}) \<longrightarrow> listset xs = {}"
-    show "0 < length (a # xs) \<and> (\<forall>i<length (a # xs). (a # xs) ! i = {}) \<longrightarrow> listset (a # xs) = {}"
-    proof clarify
-      assume assm2: "\<forall>i<length (a # xs). (a # xs) ! i = {}"
+      fix
+        a :: "'b set" and
+        xs :: "'b set list"
+    assume assm1: "0 < length xs \<and> (\<forall> i < length xs. xs!i = {}) \<longrightarrow> listset xs = {}"
+    show "0 < length (a#xs) \<and> (\<forall> i < length (a#xs). (a#xs)!i = {}) \<longrightarrow> listset (a#xs) = {}"
+    proof (clarify)
+      assume assm2: "\<forall> i < length (a#xs). (a#xs)!i = {}"
       hence "a = {}"
         by auto
-      moreover from assm2 have "(\<forall> i < length xs. xs ! i = {})"
+      moreover from assm2
+      have "\<forall> i < length xs. xs!i = {}"
         by auto
-      ultimately have "{x # xs'|x xs'. x \<in> a \<and> xs' \<in> (listset xs)} = {}"
-        by auto
-      then show "listset (a # xs) = {}"
-        unfolding set_Cons_def
+      ultimately have "{x#xs' | x xs'. x \<in> a \<and> xs' \<in> (listset xs)} = {}"
+        by simp
+      thus "listset (a#xs) = {}"
         by (simp add: set_Cons_def)
     qed
   qed
@@ -327,49 +399,57 @@ qed
 lemma 5: "\<forall> ys \<in> listset xs. length ys = length xs"
 proof (induct xs)
   case Nil
-  then show ?case by simp
+  thus ?case
+    by simp
 next
   case (Cons a xs)
-  assume IH: "\<forall>ys\<in>listset xs. length ys = length xs"
-  have "\<forall>ys\<in>{x # xs'|x xs'. x \<in> a \<and> xs' \<in> (listset xs)}. length ys = 1 + length xs"
+  assume IH: "\<forall> ys \<in> listset xs. length ys = length xs"
+  have "\<forall> ys \<in> {x#xs' | x xs'. x \<in> a \<and> xs' \<in> (listset xs)}. length ys = 1 + length xs"
     using IH
     by auto
-  hence "\<forall>ys\<in>{x # xs'|x xs'. x \<in> a \<and> xs' \<in> (listset xs)}. length ys = length (a#xs)"
+  hence "\<forall> ys \<in> {x#xs' | x xs'. x \<in> a \<and> xs' \<in> (listset xs)}. length ys = length (a#xs)"
     by simp
-  then show ?case
+  thus ?case
     by (simp add: set_Cons_def)
 qed
 
-lemma 6: "\<forall> ys \<in> listset xs. (\<forall> i < length ys. ys ! i \<in> xs ! i)"
+lemma 6: "\<forall> ys \<in> listset xs. (\<forall> i < length ys. ys!i \<in> xs!i)"
 proof (induct xs)
 case Nil
-  then show ?case by simp
+  thus ?case
+    by simp
 next
   case (Cons a xs)
-  assume IH: "\<forall>ys\<in>listset xs. \<forall>i<length ys. ys ! i \<in> xs ! i"
-  show "\<forall>ys\<in>listset (a # xs). \<forall>i<length ys. ys ! i \<in> (a # xs) ! i"
-  proof(safe)
-    fix ys and i
-    assume 1: "ys \<in> listset (a # xs)" and 2: "i < length ys"
+  assume IH: "\<forall> ys \<in> listset xs. \<forall> i < length ys. ys!i \<in> xs!i"
+  show "\<forall> ys \<in> listset (a#xs). \<forall> i < length ys. ys!i \<in> (a#xs)!i"
+  proof (safe)
+    fix
+      ys :: "'a list" and
+      i :: nat
+    assume
+      1: "ys \<in> listset (a#xs)" and
+      2: "i < length ys"
     have "ys \<in> set_Cons a (listset xs)"
-        using 1
-        by simp
-      hence "ys \<in> {ys. \<exists>b bs. ys = b # bs \<and> b \<in> a \<and> bs \<in> (listset xs)}"
-        unfolding set_Cons_def
-        by simp
-      hence ex: "\<exists> b bs. ys = b # bs \<and> b \<in> a \<and> bs \<in> (listset xs)"
-        by simp
-    show "ys ! i \<in> (a # xs) ! i"
+      using 1
+      by simp
+    hence "ys \<in> {ys. \<exists> b bs. ys = b#bs \<and> b \<in> a \<and> bs \<in> (listset xs)}"
+      unfolding set_Cons_def
+      by simp
+    hence ex: "\<exists> b bs. ys = b#bs \<and> b \<in> a \<and> bs \<in> (listset xs)"
+      by simp
+    show "ys!i \<in> (a#xs)!i"
     proof (cases "i > 0")
       case False
-      from ex have "ys ! 0 \<in> a"
+      from ex
+      have "ys!0 \<in> a"
         by auto
-      then show ?thesis 
+      thus ?thesis
         using False
         by simp
     next
       case True
-      with ex IH show ?thesis
+      with ex IH
+      show ?thesis
         using 2 nth_Cons_Suc 
         by fastforce
     qed
@@ -377,88 +457,106 @@ next
 qed
 
 lemma standard_implies_equal_score:
-  fixes d::"'a Election Distance" and K::"'a Consensus_Rule" and A::"'a set" and p::"'a Profile" and a::"'a"
+  fixes
+    d :: "'a Election Distance" and
+    K :: "'a Consensus_Rule" and
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a"
   assumes std: "standard d"
-  shows "score d K (A,p) a = score_std d K (A,p) a"
-proof-
-  have all_profiles_set: "all_profiles (length p) A = {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
+  shows "score d K (A, p) a = score_std d K (A, p) a"
+proof -
+  have all_profiles_set:
+    "all_profiles (length p) A = {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
   proof (cases "finite A")
-    case f1: False
+    case False
     hence "all_profiles (length p) A = {}"
       by simp
     moreover have "{x. finite_profile A x \<and> length x = (length p)} = {}"
-      using f1
+      using False
       by simp
     ultimately show ?thesis
       by simp
   next
     case t1: True
-    show ?thesis     
-    proof (cases "(length p) > 0")
+    show ?thesis
+    proof (cases "length p > 0")
       case t2: True
       show ?thesis
-      proof safe
-        fix x
+      proof (safe)
+        fix x :: "'a Profile"
         assume xprof: "x \<in> all_profiles (length p) A"
-        from t1 show "finite A"
+        from t1
+        show "finite A"
           by simp
-        from xprof have "all_profiles (length p) A \<noteq> {}"
-            by blast
+        from xprof
+        have "all_profiles (length p) A \<noteq> {}"
+          by blast
         hence ne: "list_to_rel ` permutations_of_set A \<noteq> {}"
           by auto
         have "length (replicate (length p) (list_to_rel ` permutations_of_set A)) = length p"
           by simp
-        hence "\<forall>xs \<in> listset (replicate (length p) (list_to_rel ` permutations_of_set A)). length xs = length p"
+        hence "\<forall> xs \<in> listset (replicate (length p) (list_to_rel ` permutations_of_set A)).
+                length xs = length p"
           using 5
           by metis
-        then show l: "length x = length p"
+        thus l: "length x = length p"
           using xprof ne
           by simp
         show "profile A x"
         proof (unfold profile_def, safe)
-          fix i
-          assume "i < length x"
-          with l have "i < length p"
+          fix i :: nat
+          assume lt_len_x: "i < length x"
+          with l
+          have "i < length p"
             by simp
-          hence "x ! i \<in> replicate (length p) (list_to_rel ` permutations_of_set A) ! i"
-            using xprof ne
-            by (metis "6" \<open>i < length x\<close> all_profiles.simps image_is_empty)
-          hence "x ! i \<in> list_to_rel ` permutations_of_set A"
-            using \<open>i < length p\<close> by force
-          hence relation_of: "x ! i \<in> {relation_of (\<lambda>y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs)| xs. xs \<in> permutations_of_set A}"
+          hence "x!i \<in> replicate (length p) (list_to_rel ` permutations_of_set A)!i"
+            using xprof ne 6 lt_len_x all_profiles.simps image_is_empty
+            by metis
+          hence "x!i \<in> list_to_rel ` permutations_of_set A"
+            using \<open>i < length p\<close>
+            by simp
+          hence relation_of:
+            "x!i \<in> {relation_of (\<lambda> y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs)
+                      | xs. xs \<in> permutations_of_set A}"
             using list_to_rel_altdef permutations_of_setD
             by blast
-          let ?P = "\<lambda>xs y z. pos_in_list xs y \<ge> pos_in_list xs z"
-          have refl: "\<And>xs a. a \<in> (set xs) \<Longrightarrow> ?P xs a a"
+          let ?P = "\<lambda> xs y z. pos_in_list xs y \<ge> pos_in_list xs z"
+          have refl: "\<And> xs a. a \<in> (set xs) \<Longrightarrow> ?P xs a a"
             by simp
-          moreover have trans: "\<And>xs a b c. \<lbrakk> a \<in> (set xs); b \<in> (set xs); c \<in> (set xs) \<rbrakk> 
-            \<Longrightarrow> ?P xs a b \<Longrightarrow> ?P xs b c \<Longrightarrow> ?P xs a c"
+          moreover have trans:
+            "\<And> xs a b c. \<lbrakk> a \<in> (set xs); b \<in> (set xs); c \<in> (set xs) \<rbrakk>
+              \<Longrightarrow> ?P xs a b \<Longrightarrow> ?P xs b c \<Longrightarrow> ?P xs a c"
             by simp
-          moreover have antisym: "\<And>xs a b. \<lbrakk> a \<in> (set xs); b \<in> (set xs) \<rbrakk> \<Longrightarrow> ?P xs a b \<Longrightarrow> ?P xs b a \<Longrightarrow> a = b"
-            using pos_in_list_altdef
-            by (metis le_antisym)
-          ultimately have "\<And>xs. partial_order_on (set xs) (relation_of (?P xs) (set xs))"
+          moreover have antisym:
+            "\<And> xs a b. \<lbrakk> a \<in> (set xs); b \<in> (set xs) \<rbrakk> \<Longrightarrow> ?P xs a b \<Longrightarrow> ?P xs b a \<Longrightarrow> a = b"
+            using pos_in_list_altdef le_antisym
+            by metis
+          ultimately have "\<And> xs. partial_order_on (set xs) (relation_of (?P xs) (set xs))"
             using partial_order_on_relation_ofI
             by (smt (verit, ccfv_SIG))
-          moreover have set: "\<And>xs. xs \<in> permutations_of_set A \<Longrightarrow> set xs = A"
+          moreover have set: "\<And> xs. xs \<in> permutations_of_set A \<Longrightarrow> set xs = A"
             by (simp add: permutations_of_setD)
-          ultimately have "partial_order_on A (x ! i)"
+          ultimately have "partial_order_on A (x!i)"
             using relation_of
             by fastforce
-          moreover have "\<And>xs. total_on (set xs) (relation_of (?P xs) (set xs))"
+          moreover have "\<And> xs. total_on (set xs) (relation_of (?P xs) (set xs))"
             using relation_of
             unfolding total_on_def relation_of_def
             by auto
-          hence "total_on A (x ! i)"
+          hence "total_on A (x!i)"
             using relation_of set
             by fastforce
-          ultimately show "linear_order_on A (x ! i)"
+          ultimately show "linear_order_on A (x!i)"
             unfolding linear_order_on_def
             by simp
         qed
       next
-        fix x::"'a Profile"
-        assume leneq: "length x = length p" and "finite A" and "profile A x"
+        fix x :: "'a Profile"
+        assume
+          leneq: "length x = length p" and
+          "finite A" and
+          "profile A x"
         show "x \<in> all_profiles (length p) A"
           (* Intermediate step: Show that all linear orders over A 
           are in "list_to_rel ' (permutations_of_set A)".  
@@ -485,27 +583,23 @@ proof-
         by auto
     qed
   qed
-
-  hence "favoring_consensus_elections_std K a A (length p) = 
-         favoring_consensus_elections K a \<inter> 
-          Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
+  hence "favoring_consensus_elections_std K a A (length p) =
+           favoring_consensus_elections K a
+            \<inter> Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
     by auto
-
   moreover have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
-                 Inf (d (A,p) ` (favoring_consensus_elections K a 
-            \<inter> Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
+                   Inf (d (A,p) ` (favoring_consensus_elections K a
+                    \<inter> Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
     using \<open>standard d\<close>
     (* Since d in standard, d (A,p) (A,p') is \<infinity> for all p' not in the set. *)
     sorry
-
   ultimately have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
-                   Inf (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
+                    Inf (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
     by simp
-
   also have "\<dots> = Min (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
   proof (cases "favoring_consensus_elections_std K a A (length p) = {}")
     case True
-    then show ?thesis 
+    thus ?thesis
     (* Find out what "Min {}" does. If it is not \<infinity>, redefine score_std:
     "score_std d K E a = 
       (if favoring_consensus_elections_std K a (fst E) (length (snd E)) = {}
@@ -519,7 +613,7 @@ proof-
     hence "d (A,p) ` (favoring_consensus_elections_std K a A (length p)) \<noteq> {}"
       by simp
     moreover have "finite (favoring_consensus_elections_std K a A (length p))"
-    proof-
+    proof -
       have "\<forall> l A. finite A \<longrightarrow> finite (permutations_of_set A)"
         by simp
       hence "finite (list_to_rel ` permutations_of_set A)"
@@ -530,7 +624,9 @@ proof-
       hence "finite (all_profiles (length p) A)"
       proof (cases "finite A")
         case True
-        then show ?thesis using f by blast
+        thus ?thesis
+          using f
+          by metis
       next
         case False
         hence "permutations_of_set A = {}"
@@ -539,23 +635,24 @@ proof-
         hence e: "list_to_rel ` permutations_of_set A = {}"
           by simp
         let ?xs = "replicate (length p) (list_to_rel ` permutations_of_set A)"
-        from e have "\<forall>i < length ?xs. ?xs ! i = {}"
+        from e have "\<forall>i < length ?xs. ?xs!i = {}"
           by simp
         hence "finite (listset (replicate (length p) (list_to_rel ` permutations_of_set A)))"
-          by (simp add: "2")
-        then show ?thesis
+          by (simp add: 2)
+        thus ?thesis
           by simp
       qed
-      hence "finite (Set.filter (\<lambda> p. (fst K) (A, p) \<and> elect_r ((snd K) A p) = {a}) (all_profiles (length p) A))"
-        using finite_filter 
+      hence "finite (Set.filter (\<lambda> p. (fst K) (A, p) \<and> elect_r ((snd K) A p)
+              = {a}) (all_profiles (length p) A))"
+        using finite_filter
         by blast
-      then show ?thesis
+      thus ?thesis
         by simp
     qed
     hence "finite (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
       by simp
     ultimately show ?thesis
-      by (simp add: Lattices_Big.complete_linorder_class.Min_Inf)     
+      by (simp add: Lattices_Big.complete_linorder_class.Min_Inf)
   qed
   finally show "score d K (A,p) a = score_std d K (A,p) a"
     by simp
@@ -563,61 +660,74 @@ qed
 
 lemma swap_standard: "standard (votewise_distance swap l_one)"
 proof (unfold standard_def, clarify)
-  fix C :: "'a set" and B :: "'a set" and p :: "'a Profile" and q :: "'a Profile"
+  fix
+    C :: "'a set" and
+    B :: "'a set" and
+    p :: "'a Profile" and
+    q :: "'a Profile"
   assume assm: "length p \<noteq> length q \<or> C \<noteq> B"
-  then show "votewise_distance swap l_one (C, p) (B, q) = \<infinity>"
+  thus "votewise_distance swap l_one (C, p) (B, q) = \<infinity>"
   proof (cases "length p = length q")
     case False
-    then show ?thesis by simp
-  next
-    case True
-    with assm have "C \<noteq> B"
+    thus ?thesis
       by simp
-    then show ?thesis
+  next
+    case len_p_eq_len_q: True
+    with assm
+    have C_Neq_B: "C \<noteq> B"
+      by simp
+    thus ?thesis
     proof (cases "length p > 0")
       case False
-      with \<open>C \<noteq> B\<close> show ?thesis by simp
+      with C_Neq_B
+      show ?thesis
+        by simp
     next
       case True
-      with \<open>length p = length q\<close> 
-      have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q) ! 0 
-           = swap (C, (p ! 0)) (B, (q ! 0))"
+      with len_p_eq_len_q
+      have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = swap (C, (p!0)) (B, (q!0))"
         by simp
       also have "\<dots> = \<infinity>"
-        using \<open>C \<noteq> B\<close>
+        using C_Neq_B
         by simp
-      finally have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q) ! 0 = \<infinity>"
+      finally have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = \<infinity>"
         by simp
-      moreover from \<open>length p > 0\<close> \<open>length p = length q\<close> have "length (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) > 0"
+      moreover from True len_p_eq_len_q
+      have "length (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) > 0"
         by simp
       ultimately have "l_one (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) = \<infinity>"
         (* Should not be very hard *)
         sorry
-      with \<open>length p > 0\<close> \<open>length p = length q\<close> show ?thesis by simp
+      with True len_p_eq_len_q
+      show ?thesis
+        by simp
     qed
   qed
 qed
 
-lemma equal_score_swap: "score (votewise_distance swap l_one) = score_std (votewise_distance swap l_one)"
+lemma equal_score_swap: "score (votewise_distance swap l_one)
+                          = score_std (votewise_distance swap l_one)"
   using standard_implies_equal_score swap_standard
   by fast
 
 definition "drswap = dr_rule (votewise_distance swap l_one)"
 
 lemma [code]: "drswap = dr_rule_std (votewise_distance swap l_one)"
-proof-
-  from equal_score_swap have "\<forall> K E a. score (votewise_distance swap l_one) K E a = score_std (votewise_distance swap l_one) K E a"
+proof -
+  from equal_score_swap
+  have "\<forall> K E a. score (votewise_distance swap l_one) K E a
+        = score_std (votewise_distance swap l_one) K E a"
     by metis
-  hence "\<forall> K A p. dr_winners (votewise_distance swap l_one) K A p = dr_winners_std (votewise_distance swap l_one) K A p"
+  hence "\<forall> K A p. dr_winners (votewise_distance swap l_one) K A p
+          = dr_winners_std (votewise_distance swap l_one) K A p"
     by (simp add: equal_score_swap)
-  hence "\<forall> K A p. dr_rule (votewise_distance swap l_one) K A p = dr_rule_std (votewise_distance swap l_one) K A p"
+  hence "\<forall> K A p. dr_rule (votewise_distance swap l_one) K A p
+          = dr_rule_std (votewise_distance swap l_one) K A p"
     by fastforce
-  then show ?thesis
+  thus ?thesis
     unfolding drswap_def
     by blast
 qed
-
-  
 
 subsection \<open>Soundness\<close>
 
@@ -648,14 +758,14 @@ lemma is_arg_min_equal:
   shows "is_arg_min f (\<lambda> s. s \<in> S) x = is_arg_min g (\<lambda> s. s \<in> S) x"
 proof (unfold is_arg_min_def, cases "x \<in> S")
   case False
-  thus "(x \<in> S \<and> (\<nexists>y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists>y. y \<in> S \<and> g y < g x))"
+  thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
     by simp
 next
   case x_in_S: True
-  thus "(x \<in> S \<and> (\<nexists>y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists>y. y \<in> S \<and> g y < g x))"
+  thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
   proof (cases "\<exists> y. (\<lambda> s. s \<in> S) y \<and> f y < f x")
     case y: True
-    then obtain y::'a where
+    then obtain y :: 'a where
       "(\<lambda> s. s \<in> S) y \<and> f y < f x"
       by metis
     hence "(\<lambda> s. s \<in> S) y \<and> g y < g x"
@@ -669,16 +779,18 @@ next
     have "\<not> (\<exists> y. (\<lambda> s. s \<in> S) y \<and> g y < g x)"
       proof (rule ccontr)
         assume "\<not> \<not> (\<exists> y. (\<lambda> s. s \<in> S) y \<and> g y < g x)"
-        then obtain y::'a where
+        then obtain y :: 'a where
           "(\<lambda> s. s \<in> S) y \<and> g y < g x"
           by metis
         hence "(\<lambda> s. s \<in> S) y \<and> f y < f x"
           using x_in_S assms
           by metis
-        with not_y show False
+        with not_y
+        show False
           by metis
       qed
-      with x_in_S not_y show ?thesis
+      with x_in_S not_y
+      show ?thesis
         by simp
   qed
 qed
@@ -691,34 +803,35 @@ lemma rule_anon_if_el_dist_and_cons_class_anon:
     d_anon: "el_distance_anonymity d" and
     K_anon: "consensus_rule_anonymity K"
   shows "anonymity (dr_rule d K)"
-proof (unfold anonymity_def, clarify) 
+proof (unfold anonymity_def, clarify)
   fix
     A :: "'a set" and
-    p :: "'a Profile" and 
+    p :: "'a Profile" and
     q :: "'a Profile"
   assume
     fin: "finite A" and
     profile_p: "profile A p" and
     profile_q: "profile A q" and
     p_q_perm: "p <~~> q"
-  from p_q_perm obtain pi where pi_perm: "pi permutes {..<length p}" and pq: "permute_list pi p = q"
+  from p_q_perm
+  obtain pi where
+    pi_perm: "pi permutes {..< length p}" and
+    pq: "permute_list pi p = q"
     using mset_eq_permutation
     by metis
   let ?listpi = "permute_list pi"
   let ?pi' = "\<lambda> n. (if n = length p then pi else id)"
-  have perm: "\<forall>n. (?pi' n) permutes {..<n}"
+  have perm: "\<forall> n. (?pi' n) permutes {..< n}"
     using pi_perm
-    by auto
+    by simp
   let ?listpi' = "\<lambda> xs. permute_list (?pi' (length xs)) xs"
   let ?m = "dr_rule d K"
   let ?P = "\<lambda> a A' p'. (A', p') \<in> favoring_consensus_elections K a"
   have "\<forall> a. {(A', p') | A' p'. ?P a A' p'} = {(A', ?listpi' p') | A' p'. ?P a A' p'}"
-  proof clarify
-  fix
-      a :: "'a"
-    have apply_perm:
-      "\<And> S x y. x <~~> y \<Longrightarrow> ?P a S x \<Longrightarrow> ?P a S y"
-    proof-
+  proof (clarify)
+    fix a :: "'a"
+    have apply_perm: "\<And> S x y. x <~~> y \<Longrightarrow> ?P a S x \<Longrightarrow> ?P a S y"
+    proof -
       fix
         S :: "'a set" and
         x :: "'a Profile" and
@@ -726,20 +839,21 @@ proof (unfold anonymity_def, clarify)
       assume
         perm: "x <~~> y"  and
         favcons: "(S, x) \<in> favoring_consensus_elections K a"
-      from favcons
-      have "finite_profile S x"
+      hence fin_S_x: "finite_profile S x"
         by simp
-      with perm
-      have "finite_profile S y"
+      from perm
+      have fin_S_y: "finite_profile S y"
         unfolding profile_def
-        by (metis \<open>finite_profile S x\<close> nth_mem perm_set_eq profile_set)
+        using fin_S_x nth_mem perm_set_eq profile_set
+        by metis
       moreover from perm favcons
-      have "(fst K) (S, x) \<and> elect_r ((snd K) S x) = {a}"
+      have fst_x_and_elect_snd_x_a: "(fst K) (S, x) \<and> elect_r ((snd K) S x) = {a}"
         by simp
-      with K_anon perm \<open>finite_profile S x\<close> \<open>finite_profile S y\<close>
+      with K_anon perm fin_S_x fin_S_y
       have "(fst K) (S, y) \<and> elect_r ((snd K) S y) = {a}"
         unfolding consensus_rule_anonymity_def anonymity_def
-        by (smt (verit, ccfv_SIG))
+        using fin_S_x fst_x_and_elect_snd_x_a calculation perm
+        by (metis (no_types))
       ultimately show "(S, y) \<in> favoring_consensus_elections K a"
         by simp
     qed
@@ -753,7 +867,7 @@ proof (unfold anonymity_def, clarify)
           ?p = "snd E"
         assume assm: "E \<in> {(A', p') | A' p'. ?P a A' p'}"
         hence 2: "?P a ?A ?p"
-          by auto
+          by simp
         show "E \<in> {(A', ?listpi' p') | A' p'. ?P a A' p'}"
         proof (cases "length ?p = length p")
           case True
@@ -764,23 +878,25 @@ proof (unfold anonymity_def, clarify)
           have "?P a ?A (permute_list (inv pi) ?p)"
             by presburger
           moreover have "length (permute_list (inv pi) ?p) = length p"
-            using True 
-            by auto
-          ultimately have "(?A, ?listpi (permute_list (inv pi) ?p)) \<in> {(A', ?listpi p') | A' p'. length p' = length p \<and> ?P a A' p'}"
+            using True
+            by simp
+          ultimately have "(?A, ?listpi (permute_list (inv pi) ?p)) \<in> {(A', ?listpi p')
+                            | A' p'. length p' = length p \<and> ?P a A' p'}"
             by auto
           moreover have "?listpi (permute_list (inv pi) ?p) = permute_list (inv pi \<circ> pi) ?p"
-            using permute_list_compose
-            using True pi_perm
+            using permute_list_compose True pi_perm
             by metis
           hence "?listpi (permute_list (inv pi) ?p) = ?p"
-            by (metis permute_list_id permutes_inv_o(2) pi_perm(1))
+            using permute_list_id permutes_inv_o(2) pi_perm(1)
+            by metis
           ultimately have "E \<in> {(A', ?listpi p') | A' p'. length p' = length p \<and> ?P a A' p'}"
             by simp
-          then show ?thesis
+          thus ?thesis
             by auto
         next
           case False
-          with assm show ?thesis
+          with assm
+          show ?thesis
             by fastforce (* because ?listpi ?p = ?p *)
         qed
       qed
@@ -788,31 +904,36 @@ proof (unfold anonymity_def, clarify)
       show "?Y \<subseteq> ?X"
       proof
         fix E :: "'a Election"
-        let 
+        let
           ?A = "fst E" and
           ?r = "snd E"
         assume assm: "E \<in> {(A', ?listpi' p') | A' p'. ?P a A' p'}"
         hence "\<exists> p'. ?r = ?listpi' p' \<and> ?P a ?A p'"
           by auto
-        then obtain p' where rp': "?r = ?listpi' p'" and 2: "?P a ?A p'"
-          by blast
+        then obtain p' where
+          rp': "?r = ?listpi' p'" and
+          2: "?P a ?A p'"
+          by metis
         show "E \<in> {(A', p') | A' p'. ?P a A' p'}"
         proof (cases "length p' = length p")
           case True
           have "?r <~~> p'"
             using pi_perm rp'
             by simp
-          with 2 apply_perm rp' have "?P a ?A ?r"
+          with 2 apply_perm rp'
+          have "?P a ?A ?r"
             by presburger
           moreover have "length ?r = length p"
             using rp' True
             by simp
           ultimately show "E \<in> {(A', p') | A' p'. ?P a A' p'}"
-            by auto
+            by simp
         next
           case False
-          with assm show ?thesis
-            using rp' by fastforce (* because ?listpi ?p = ?p *)
+          with assm
+          show ?thesis
+            using rp'
+            by fastforce (* because ?listpi ?p = ?p *)
         qed
       qed
     qed
@@ -825,16 +946,17 @@ proof (unfold anonymity_def, clarify)
     by blast
   moreover from d_anon
   have "\<forall> a \<in> A. {d (A, p) (A', p') | A' p'. ?P a A' p'} =
-          {d (A, ?listpi' p) (A', ?listpi' p') | A' p'. ?P a A' p'}"    
+          {d (A, ?listpi' p) (A', ?listpi' p') | A' p'. ?P a A' p'}"
   proof (clarify)
     fix a :: "'a"
-    have "?listpi' = (\<lambda>p. permute_list (?pi' (length p)) p)"
+    have "?listpi' = (\<lambda> p. permute_list (?pi' (length p)) p)"
       by simp
     from d_anon
-    have anon: "\<And> A' p' A p pi. (\<forall>n. (pi n) permutes {..<n})
-          \<longrightarrow> d (A, p) (A', p') = d (A, permute_list (pi (length p)) p) (A', permute_list (pi (length p')) p')"
+    have anon: "\<And> A' p' A p pi. (\<forall> n. (pi n) permutes {..< n})
+          \<longrightarrow> d (A, p) (A', p')
+                = d (A, permute_list (pi (length p)) p) (A', permute_list (pi (length p')) p')"
       unfolding el_distance_anonymity_def
-      by (smt (verit, ccfv_threshold))
+      by blast
     show "{d (A, p) (A', p') | A' p'. ?P a A' p'} =
             {d (A, ?listpi' p) (A', ?listpi' p') | A' p'. ?P a A' p'}"
       using perm anon[of ?pi' A p]
@@ -845,16 +967,16 @@ proof (unfold anonymity_def, clarify)
           {d (A, q) (A', ?listpi' p') | A' p'. ?P a A' p'}"
     using pq
     by simp
-  ultimately
-  have "\<forall> a \<in> A. {d (A, q) (A', p') | A' p'. (A', p') \<in> favoring_consensus_elections K a}
+  ultimately have
+    "\<forall> a \<in> A. {d (A, q) (A', p') | A' p'. (A', p') \<in> favoring_consensus_elections K a}
             = {d (A, p) (A', p') | A' p'. (A', p') \<in> favoring_consensus_elections K a}"
-    by auto
+    by simp
   hence "\<forall> a \<in> A. d (A, q) ` favoring_consensus_elections K a =
                d (A, p) ` favoring_consensus_elections K a"
     by fast
   hence "\<forall> a \<in> A. score d K (A, p) a = score d K (A, q) a"
     by simp
-  then show "dr_rule d K A p = dr_rule d K A q"
+  thus "dr_rule d K A p = dr_rule d K A q"
     using is_arg_min_equal[of A "score d K (A, p)" "score d K (A, q)"]
     by auto
 qed

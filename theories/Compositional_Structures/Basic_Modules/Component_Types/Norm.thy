@@ -38,7 +38,8 @@ lemma sum_over_image_of_bijection:
 proof (safe, induction "card A" arbitrary: A A')
   case 0
   assume "bij_betw f A A'"
-  with 0 have "card A' = 0"
+  with 0
+  have "card A' = 0"
     using bij_betw_same_card
     by metis
   hence "(\<Sum> a \<in> A. g a) = 0 \<and> (\<Sum> a' \<in> A'. g (the_inv_into A f a')) = 0"
@@ -56,7 +57,8 @@ next
             bij_betw f A A' \<Longrightarrow> sum g A = (\<Sum> a \<in> A'. g (the_inv_into A f a))" and
     suc: "Suc x = card A" and
     bij_A_A': "bij_betw f A A'"
-  from suc have "\<exists> a. a \<in> A"
+  from suc
+  have "\<exists> a. a \<in> A"
     using card_eq_SucD insertI1
     by metis
   then obtain a where
@@ -65,8 +67,8 @@ next
   have a_compl_A: "insert a (A - {a}) = A"
     using a_in_A
     by fastforce
-  from bij_A_A' have inj_on_A_A':
-    "inj_on f A \<and> A' = f ` A"
+  from bij_A_A'
+  have inj_on_A_A': "inj_on f A \<and> A' = f ` A"
     unfolding bij_betw_def
     by simp
   hence inj_on_A: "inj_on f A"
@@ -131,25 +133,32 @@ proof (unfold symmetry_def, safe)
     ys :: "ereal list"
   assume perm: "xs <~~> ys"
   from perm obtain pi 
-    where pi_perm: "pi permutes {..<length xs}" and pi_xs_ys: "permute_list pi xs = ys"
+    where
+      pi_perm: "pi permutes {..< length xs}" and
+      pi_xs_ys: "permute_list pi xs = ys"
     using mset_eq_permutation
     by metis
-  from pi_xs_ys pi_perm have
-    "(\<Sum> i < length xs. \<bar>ys!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!(pi i)\<bar>)"
+  from pi_xs_ys pi_perm
+  have "(\<Sum> i < length xs. \<bar>ys!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!(pi i)\<bar>)"
     using permute_list_nth 
     by fastforce
-  also from pi_perm have "\<dots> = (\<Sum> i < length xs. \<bar>xs!(pi (inv pi i))\<bar>)"
-    using permutes_imp_bij sum_over_image_of_bijection[of pi "{..<length xs}" "{..<length xs}" 
-            "\<lambda>i. \<bar>xs ! (pi i)\<bar>"]
-    by (smt (verit, ccfv_SIG) bijection.inv_left bijection_def f_the_inv_into_f_bij_betw permutes_bij sum.cong)
-  also from pi_perm have "\<dots> = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
-    by (metis permutes_inv_eq)
+  also from pi_perm
+  have "\<dots> = (\<Sum> i < length xs. \<bar>xs!(pi (inv pi i))\<bar>)"
+    using permutes_imp_bij sum_over_image_of_bijection[of pi "{..< length xs}" "{..< length xs}"]
+          bijection_def bijection.inv_left f_the_inv_into_f_bij_betw permutes_bij sum.cong
+    by (smt (verit, ccfv_SIG))
+  also from pi_perm
+  have "\<dots> = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
+    using permutes_inv_eq
+    by metis
   finally have "(\<Sum> i < length xs. \<bar>ys!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
     by simp
-  moreover from pi_perm pi_xs_ys have "length xs = length ys"
+  moreover from pi_perm pi_xs_ys
+  have "length xs = length ys"
     by auto
   ultimately show "l_one xs = l_one ys"
-    by (metis l_one.elims)
+    using l_one.elims
+    by metis
 qed
 
 end

@@ -45,8 +45,8 @@ proof (unfold consensus_condition_anonymity_def, safe)
     perm: "p <~~> q"
   from cond_b general_cond_b
   have "\<exists> x. b' x (A, p)"
-    by auto
-  then obtain x::'b where
+    by simp
+  then obtain x :: 'b where
     "b' x (A, p)"
     by blast
   with all_cond_anon
@@ -55,7 +55,7 @@ proof (unfold consensus_condition_anonymity_def, safe)
     unfolding consensus_condition_anonymity_def
     by blast
   hence "\<exists> x. b' x (A, q)"
-    by auto
+    by metis
   thus "b (A, q)"
     using general_cond_b
     by simp
@@ -92,10 +92,12 @@ proof (unfold consensus_condition_anonymity_def, clarify)
     not_empty_p: "ne_profile_cond (A, p)"
   from perm
   have "length q = length p"
-    using perm_length by force
+    using perm_length
+    by force
   thus "ne_profile_cond (A, q)"
-    using not_empty_p
-    by (metis length_0_conv ne_profile_cond.simps)
+    using not_empty_p length_0_conv
+    unfolding ne_profile_cond.simps
+    by metis
 qed
 
 text \<open>
@@ -118,14 +120,16 @@ proof (unfold consensus_condition_anonymity_def, clarify)
   assume
     perm: "p <~~> q" and
     top_cons_a: "eq_top_cond' a (A, p)"
-  from perm obtain pi where "pi permutes {..<length p}" "permute_list pi p = q"
+  from perm obtain pi where
+    "pi permutes {..< length p}" "permute_list pi p = q"
     using mset_eq_permutation
     by metis
   from perm
   have l: "length p = length q"
-    using perm_length by force
+    using perm_length
+    by force
   hence "\<forall> i < length q. pi i < length p"
-    using \<open>pi permutes {..<length p}\<close> permutes_in_image
+    using \<open>pi permutes {..< length p}\<close> permutes_in_image
     by fastforce
   moreover from \<open>permute_list pi p = q\<close>
   have "\<forall> i < length q. q!i = p!(pi i)"
@@ -142,7 +146,8 @@ proof (unfold consensus_condition_anonymity_def, clarify)
     by simp
   ultimately show "eq_top_cond' a (A, q)"
     using l
-    by (metis eq_top_cond'.simps)
+    unfolding eq_top_cond'.simps
+    by metis
 qed
 
 lemma eq_top_cond_anon: "consensus_condition_anonymity eq_top_cond"
@@ -169,14 +174,16 @@ proof (unfold consensus_condition_anonymity_def, clarify)
   assume
     perm: "p <~~> q" and
     equal_votes_pref: "eq_vote_cond' pref (A, p)" 
-  from perm obtain pi where "pi permutes {..<length p}" "permute_list pi p = q"
+  from perm obtain pi where
+    "pi permutes {..< length p}" "permute_list pi p = q"
     using mset_eq_permutation
     by metis
   from perm
   have l: "length p = length q"
-    using perm_length by force
+    using perm_length
+    by force
   hence "\<forall> i < length q. pi i < length p"
-    using \<open>pi permutes {..<length p}\<close> permutes_in_image
+    using \<open>pi permutes {..< length p}\<close> permutes_in_image
     by fastforce
   moreover from \<open>permute_list pi p = q\<close>
   have "\<forall> i < length q. q!i = p!(pi i)"
@@ -190,7 +197,8 @@ proof (unfold consensus_condition_anonymity_def, clarify)
     by metis
   thus "eq_vote_cond' pref (A, q)"
     using l
-    by (metis eq_vote_cond'.simps)
+    unfolding eq_vote_cond'.simps
+    by metis
 qed
 
 lemma eq_vote_cond_anon: "consensus_condition_anonymity eq_vote_cond"
