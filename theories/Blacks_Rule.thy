@@ -23,4 +23,11 @@ subsection \<open>Definition\<close>
 fun blacks_rule :: "'a Electoral_Module" where
   "blacks_rule A p = (pairwise_majority_rule \<triangleright> borda_rule) A p"
 
+subsection \<open>Soundness\<close>
+
+theorem blacks_rule_sound: "electoral_module blacks_rule"
+  unfolding blacks_rule.simps
+  using pairwise_majority_rule_sound borda_rule_sound seq_comp_sound
+  by metis
+
 end

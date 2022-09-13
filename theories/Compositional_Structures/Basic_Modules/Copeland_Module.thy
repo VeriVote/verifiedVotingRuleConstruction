@@ -28,6 +28,13 @@ fun copeland_score :: "'a Evaluation_Function" where
 fun copeland :: "'a Electoral_Module" where
   "copeland A p = max_eliminator copeland_score A p"
 
+subsection \<open>Soundness\<close>
+
+theorem copeland_sound: "electoral_module copeland"
+  unfolding copeland.simps
+  using max_elim_sound
+  by metis
+
 subsection \<open>Lemmata\<close>
 
 text \<open>

@@ -28,6 +28,13 @@ fun condorcet_score :: "'a Evaluation_Function" where
 fun condorcet :: "'a Electoral_Module" where
   "condorcet A p = (max_eliminator condorcet_score) A p"
 
+subsection \<open>Soundness\<close>
+
+theorem condorcet_sound: "electoral_module condorcet"
+  unfolding condorcet.simps
+  using max_elim_sound
+  by metis
+
 subsection \<open>Property\<close>
 
 (* Condorcet score is Condorcet rating. *)
