@@ -626,6 +626,33 @@ proof -
     by metis
 qed
 
+
+lemma rankone1: assumes "above r a = {a}"
+  shows "rank r a = 1"
+  unfolding rank.simps using assms by auto
+
+lemma rankone2: assumes
+ lo: "linear_order_on A r" and 
+ ro: "rank r a = 1"
+shows "above r a = {a}"
+proof -
+  from lo have refl: "refl_on A r"
+    using linear_order_on_def partial_order_onD(1) by blast 
+  from lo ro have "a \<in> A" unfolding rank.simps above_def linear_order_on_def 
+    partial_order_on_def preorder_on_def total_on_def
+    by (metis card_1_singletonE insertI1 mem_Collect_eq refl_onD1) 
+  from this refl have "a \<in> above r a"
+    using above_refl by fastforce
+  from this ro show "above r a = {a}"
+    by (metis card_1_singletonE rank.simps singletonD)
+qed
+
+theorem above_rank: assumes
+ lo: "linear_order_on A r"
+  shows "above r a = {a} \<longleftrightarrow> rank r a = 1"
+  by (metis lo rankone1 rankone2)
+  
+
 lemma above_presv_limit:
   shows "above (limit A r) x \<subseteq> A"
   unfolding above_def
