@@ -25,9 +25,6 @@ subsection \<open>Definition\<close>
 fun borda_rule :: "'a Electoral_Module" where
   "borda_rule A p = elector borda A p"
 
-fun borda_rule_dr :: "'a Electoral_Module" where
-  "borda_rule_dr A p = (dr_rule (votewise_distance swap l_one) unanimity) A p"
-
 subsection \<open>Soundness\<close>
 
 theorem borda_rule_sound: "electoral_module borda_rule"
