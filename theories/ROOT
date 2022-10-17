@@ -26,12 +26,8 @@ directories
   "Compositional_Structures/Basic_Modules"
   "Compositional_Structures/Basic_Modules/Component_Types"
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types"
-  "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Tools"
 
 theories
-(* "Tools" *)
-  "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Tools/List_Permutation"
-  "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Tools/Zip_With"
 (* "Social-Choice Types" *)
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Preference_Relation"
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Result"
