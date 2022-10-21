@@ -12,7 +12,6 @@ fun pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> 'a Profile" where
 lemma length_preserving:
   fixes pr:: "'a Profile_List"
   shows "length pl = length (pl_to_pr_\<alpha> pl)"
-  unfolding pl_to_pr_\<alpha>.simps
   by simp
 
 definition profile_l :: "'a set \<Rightarrow> 'a Profile_List \<Rightarrow> bool" where
@@ -21,6 +20,7 @@ definition profile_l :: "'a set \<Rightarrow> 'a Profile_List \<Rightarrow> bool
 lemma profile_prop_refine:
   (* Refinement Framework syntax*)
   (*assumes "(pl,pr)\<in>br pl_to_pr_\<alpha> (profile_l A)"*)
+  fixes A :: "'a set" and pl :: "'a Profile_List"
   assumes "profile_l A pl"
   shows "profile A (pl_to_pr_\<alpha> pl)"
   unfolding profile_def
