@@ -19,7 +19,7 @@ session Verified_Voting_Rule_Construction = HOL +
 options [browser_info, timeout = 300, document = pdf, document_output = "output"]
 
 sessions
-  "HOL-Library"
+  "HOL-Combinatorics"
 
 directories
   "Compositional_Structures"
