@@ -108,38 +108,35 @@ theorem aboveeq:
   fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
   assumes wf: "well_formed_pl l" and lo: "linear_order_on_l A l"
   shows "set (above_l l a) = Order_Relation.above (pl_\<alpha> l) a"
-proof
-  show "set (above_l l a) \<subseteq> above (pl_\<alpha> l) a"
-  proof clarify
-    fix x :: 'a
-    assume "x \<in> set (Preference_List.above_l l a)"
-    have "length (above_l l a) = rank_l l a" unfolding above_l_def
-      by (simp add: Suc_le_eq in_set_member)
-    from wf lo this have "index l x \<le> index l a" unfolding rank_l.simps
-      by (metis Preference_List.above_l_def Preference_List.rank_l.simps Suc_eq_plus1 Suc_le_eq \<open>x \<in> set (Preference_List.above_l l a)\<close> bot_nat_0.extremum_strict index_take linorder_not_less)
-    from this have "a \<lesssim>\<^sub>l x"
-      by (metis One_nat_def Preference_List.above_l_def Preference_List.is_less_preferred_than.elims(3) Preference_List.rank_l.simps Suc_le_mono \<open>x \<in> set (Preference_List.above_l l a)\<close> add.commute add_0 add_Suc empty_iff find_index_le_size in_set_member index_def le_antisym list.set(1) size_index_conv take_0)
-    from this have "Preference_Relation.is_less_preferred_than a (pl_\<alpha> l) x"
-      using less_preffered_l_rel_eq by (metis)
-    from this show "x \<in> Order_Relation.above (pl_\<alpha> l) a"
-      using pref_imp_in_above by (metis)
-  qed
+proof safe
+  fix x :: 'a
+  assume xmem: "x \<in> set (Preference_List.above_l l a)"
+  have "length (above_l l a) = rank_l l a" unfolding above_l_def
+    by (simp add: Suc_le_eq in_set_member)
+  from xmem wf lo this have "index l x \<le> index l a" unfolding rank_l.simps using above_l_def
+    by (metis  Preference_List.rank_l.simps Suc_eq_plus1 
+        Suc_le_eq bot_nat_0.extremum_strict index_take linorder_not_less)
+  from xmem this have "a \<lesssim>\<^sub>l x" using above_l_def is_less_preferred_than.elims(3) rank_l.simps
+    by (metis One_nat_def Suc_le_mono add.commute add_0 add_Suc empty_iff find_index_le_size 
+        in_set_member index_def le_antisym list.set(1) size_index_conv take_0)
+  from this have "Preference_Relation.is_less_preferred_than a (pl_\<alpha> l) x"
+    using less_preffered_l_rel_eq by (metis)
+  from this show "x \<in> Order_Relation.above (pl_\<alpha> l) a"
+    using pref_imp_in_above by (metis)
 next
-  show "above (pl_\<alpha> l) a \<subseteq> set (above_l l a)"
-  proof clarify
-    fix x :: 'a
-    assume "x \<in> Order_Relation.above (pl_\<alpha> l) a"
-    from this have "Preference_Relation.is_less_preferred_than a (pl_\<alpha> l) x"
-      using pref_imp_in_above by (metis)
-    from this have alpx: "a \<lesssim>\<^sub>l x"
-      using less_preffered_l_rel_eq by (metis)
-    from this have "rank_l l x \<le> rank_l l a"
-      by auto
-    from this alpx show "x \<in> set (Preference_List.above_l l a)"
-      using Preference_List.above_l_def Preference_List.is_less_preferred_than.simps Preference_List.rank_l.simps
-      by (metis Suc_eq_plus1 Suc_le_eq in_set_member index_less_size_conv set_take_if_index)
-  qed
+  fix x :: 'a
+  assume "x \<in> Order_Relation.above (pl_\<alpha> l) a"
+  from this have "Preference_Relation.is_less_preferred_than a (pl_\<alpha> l) x"
+    using pref_imp_in_above by (metis)
+  from this have alpx: "a \<lesssim>\<^sub>l x"
+    using less_preffered_l_rel_eq by (metis)
+  from this have "rank_l l x \<le> rank_l l a"
+    by auto
+  from this alpx show "x \<in> set (Preference_List.above_l l a)"
+    using Preference_List.above_l_def Preference_List.is_less_preferred_than.simps Preference_List.rank_l.simps
+    by (metis Suc_eq_plus1 Suc_le_eq in_set_member index_less_size_conv set_take_if_index)
 qed
+
 
 theorem rankeq: 
   fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
@@ -201,7 +198,7 @@ next
   qed
 next
   show "total_on A (pl_\<alpha> l)"
-    using connex_l_def lin_ord_imp_connex_l lo pl_\<alpha>_def total_on_def by fastforce
+    using lin_ord_imp_connex_l lo connex_l_def pl_\<alpha>_def total_on_def by fastforce
 qed
 
 lemma linorder_rel_imp_l: 
@@ -211,20 +208,20 @@ lemma linorder_rel_imp_l:
   unfolding linear_order_on_l_def preorder_on_l_def
 proof (clarsimp, safe)
   show "Preference_List.limited A l" unfolding pl_\<alpha>_def linear_order_on_def 
-    using assms linear_order_on_def less_preffered_l_rel_eq partial_order_onD(1) refl_on_def'
-    by (metis Preference_List.limitedI Preference_Relation.is_less_preferred_than.elims(2) case_prodD)
+    using assms limitedI linear_order_on_def less_preffered_l_rel_eq partial_order_onD(1) 
+    by (metis Preference_Relation.is_less_preferred_than.elims(2) refl_on_def' case_prodD)
 next
   show "refl_on_l A l" unfolding pl_\<alpha>_def 
     using assms refl_on_l_def Preference_Relation.lin_ord_imp_connex less_preffered_l_rel_eq
     by (metis Preference_Relation.connex_def)
 next
-  show "Preference_List.trans l" unfolding pl_\<alpha>_def
-    using Preference_List.trans_def by fastforce
+  show "Preference_List.trans l" 
+    unfolding pl_\<alpha>_def Preference_List.trans_def by fastforce
 next
   show "total_on_l A l" unfolding pl_\<alpha>_def 
-    using Preference_Relation.connex_def Preference_Relation.lin_ord_imp_connex assms 
-      total_on_l_def less_preffered_l_rel_eq
-    by (metis Preference_List.is_less_preferred_than.elims(2))   
+    using connex_def lin_ord_imp_connex assms total_on_l_def less_preffered_l_rel_eq 
+      is_less_preferred_than.elims(2)
+    by metis
 qed
 
 lemma rel_trans:
@@ -241,16 +238,9 @@ lemma connex_imp_refl:
 proof clarsimp
   fix x :: 'a
   assume "x \<in> A"
-  from this assms show "List.member pl x"
-    by (metis Preference_List.connex_l_def Preference_List.is_less_preferred_than.elims(1))
-qed  
-
-lemma aconnex:
-  fixes A :: "'a set" and pl :: "'a Preference_List"
-  assumes "well_formed_pl pl" and lo: "linear_order_on_l A pl"
-  shows "connex_l A pl"
-  using  Preference_List.connex_l_def Preference_List.is_less_preferred_than.simps 
-    linear_order_on_l_def preorder_on_l_def refl_on_l_def lo
-  by (metis nle_le)
+  from this show "List.member pl x" 
+    using assms connex_l_def is_less_preferred_than.elims(1)
+    by metis
+qed
 
 end

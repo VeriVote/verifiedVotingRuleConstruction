@@ -1,6 +1,7 @@
 theory Profile_List
   imports "../Profile" 
     Preference_List
+
 begin
 
 type_synonym 'a Profile_List = "('a Preference_List) list"
@@ -33,8 +34,7 @@ proof (-)
   from ir assms have "linear_order_on_l A (pl ! i)" unfolding profile_l_def
     by (simp) 
   from wf assms this show "linear_order_on A ((pl_to_pr_\<alpha> pl) ! i)"
-    using linorder_l_imp_rel
-    by (metis (mono_tags, lifting) ir length_map nth_map pl_to_pr_\<alpha>.simps)
+    by (metis linorder_l_imp_rel ir length_map nth_map pl_to_pr_\<alpha>.simps)
 qed
 
 
