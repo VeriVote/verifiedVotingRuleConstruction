@@ -20,11 +20,18 @@ fun rank_l :: "'a Preference_List \<Rightarrow> 'a \<Rightarrow> nat" where
   "rank_l cs x = (let i = (index cs x) in 
             if (i = length cs) then 0 else i + 1)"
 
+fun rank_alt :: "'a Preference_List \<Rightarrow> 'a \<Rightarrow> nat" where
+  "rank_alt cs x = (if List.member cs x then (index cs x + 1) else 0)"
+
+lemma rankdef[simp]: "rank_l = rank_alt"
+  by (simp add: ext index_size_conv member_def)
+ 
+
 lemma rank0_imp_notpresent:
   fixes ballot :: "'a Preference_List"
   shows "rank_l ballot x = 0 \<longrightarrow> \<not>List.member ballot x"
   by (simp add: in_set_member index_size_conv)
-  
+
 
 fun is_less_preferred_than ::
   "'a \<Rightarrow> 'a Preference_List \<Rightarrow> 'a \<Rightarrow> bool" ("_ \<lesssim>\<^sub>_ _" [50, 1000, 51] 50) where
@@ -115,37 +122,52 @@ proof safe
   assume xmem: "x \<in> set (Preference_List.above_l l a)"
   have leq: "length (above_l l a) = rank_l l a" unfolding above_l_def rank_l.simps
     by (simp add: Suc_leI index_size_conv)    
-  from aA lo have "List.member l a"
-    by (simp add: linear_order_on_l_def total_on_l_def) 
-  from xmem leq wf lo have "index l x \<le> index l a"
-   
-
-  from xmem this have "a \<lesssim>\<^sub>l x" using above_l_def is_less_preferred_than.elims(3) rank_l.simps
-    by (metis One_nat_def Suc_le_mono add.commute add_0 add_Suc empty_iff find_index_le_size 
-        in_set_member index_def le_antisym list.set(1) size_index_conv take_0)
+  from aA lo have la: "List.member l a"
+    by (simp add: linear_order_on_l_def total_on_l_def)
+  from la have ri: "rank_l l a = index l a + 1"
+    using member_def size_index_conv by fastforce
+  from xmem have xabovel: "List.member (take (rank_l l a) l) x"
+    by (simp add: above_l_def in_set_member)
+  from this have lx: "List.member l x"
+    by (metis in_set_member in_set_takeD)
+  from xmem lx xabovel have "index l x < rank_l l a"
+    by (metis index_take linorder_not_less member_def)
+  from this ri have "index l x + 1 \<le> index l a + 1"
+    by simp
+  from this la lx have "rank_l l x \<le> rank_l l a"
+    by (simp add: in_set_member index_size_conv)      
+  from la lx this have lpl: "a \<lesssim>\<^sub>l x" unfolding Preference_List.is_less_preferred_than.simps
+    by simp
   from this have "Preference_Relation.is_less_preferred_than a (pl_\<alpha> l) x"
     using less_preffered_l_rel_eq by (metis)
   from this show "x \<in> Order_Relation.above (pl_\<alpha> l) a"
     using pref_imp_in_above by (metis)
 next
   fix x :: 'a
-  assume "x \<in> Order_Relation.above (pl_\<alpha> l) a"
-  from this have "Preference_Relation.is_less_preferred_than a (pl_\<alpha> l) x"
+  assume xmema: "x \<in> Order_Relation.above (pl_\<alpha> l) a"
+  from aA lo have la: "List.member l a"
+    by (simp add: linear_order_on_l_def total_on_l_def) 
+  from xmema have lx: "List.member l x"
+    by (metis Preference_List.is_less_preferred_than.elims(2) less_preffered_l_rel_eq pref_imp_in_above)
+    
+  from xmema have "Preference_Relation.is_less_preferred_than a (pl_\<alpha> l) x"
     using pref_imp_in_above by (metis)
   from this have alpx: "a \<lesssim>\<^sub>l x"
     using less_preffered_l_rel_eq by (metis)
   from this have "rank_l l x \<le> rank_l l a"
-    by auto
-  from this alpx show "x \<in> set (Preference_List.above_l l a)"
-    using Preference_List.above_l_def Preference_List.is_less_preferred_than.simps Preference_List.rank_l.simps
-    by (metis Suc_eq_plus1 Suc_le_eq in_set_member index_less_size_conv set_take_if_index)
+    by (metis Preference_List.is_less_preferred_than.elims(2))
+  from lx this have "index l x < rank_l l a"
+    by (simp add: in_set_member index_size_conv)
+  from this have  "List.member (above_l l a) x" unfolding above_l_def
+    using lx member_def set_take_if_index by fastforce
+  from this show "x \<in> set (above_l l a)" unfolding List.member_def by simp
+
 qed
 
-
-theorem rankeq: 
+lemma rankeq_aux: 
   fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
-  assumes wf: "well_formed_pl l" and lo: "linear_order_on_l A l"
-  shows "rank_l l a = Preference_Relation.rank (pl_\<alpha> l) a"
+  assumes aA: "a \<in> A" and wf: "well_formed_pl l" and lo: "linear_order_on_l A l"
+  shows "rank_alt l a = Preference_Relation.rank (pl_\<alpha> l) a"
 proof (simp, safe)
   assume air: "List.member l a"
   from assms have abe: "Order_Relation.above (pl_\<alpha> l) a = set (above_l l a)" 
@@ -155,8 +177,9 @@ proof (simp, safe)
   from dl have ce: "card (set (above_l l a)) = length (above_l l a)" unfolding well_formed_pl_def
     using distinct_card
     by blast
-  have "length (above_l l a) = rank_l l a" unfolding above_l_def
-    by (simp add: Suc_le_eq in_set_member)
+  have "length (above_l l a) = rank_alt l a" unfolding above_l_def
+    by (metis Suc_eq_plus1 Suc_leI air in_set_member index_less_size_conv length_take min.absorb2 rank_alt.elims rankdef)
+    
   from air abe dl ce this show "Suc (index l a) = card (Order_Relation.above (pl_\<alpha> l) a)"
     by simp
 next
@@ -171,6 +194,11 @@ next
       using anr less_preffered_l_rel_eq by fastforce
   from this show "card (Order_Relation.above (pl_\<alpha> l) a) = 0" by fastforce
 qed
+
+theorem rankeq: fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
+  assumes aA: "a \<in> A" and wf: "well_formed_pl l" and lo: "linear_order_on_l A l"
+  shows "rank_l l a = Preference_Relation.rank (pl_\<alpha> l) a"
+  using rankeq_aux rankdef assms by metis
 
 theorem linorder_l_imp_rel:
   fixes l :: "'a Preference_List"
@@ -193,17 +221,21 @@ next
     by (unfold Preference_List.trans_def pl_\<alpha>_def Relation.trans_def, simp)
 next
   show "antisym (pl_\<alpha> l)"
-  proof (unfold antisym_def pl_\<alpha>_def is_less_preferred_than.simps, clarsimp)
+  proof (unfold antisym_def pl_\<alpha>_def is_less_preferred_than.simps, clarify)
     fix x :: 'a  and y :: 'a 
     assume xm: "List.member l x" and ym: "List.member l y"
-    assume si: "index l x = index l y"
-    from xm ym si show "x = y"
-      by (simp add: member_def)
+    assume rxy: "rank_l l x \<le> rank_l l y"
+    assume ryx: "rank_l l y \<le> rank_l l x"
+    from rxy ryx have "rank_l l x = rank_l l y"
+      by fastforce
+    from xm ym this show "x = y" using  rankdef rank_alt.elims
+      by (metis Suc_eq_plus1 diff_Suc_1 in_set_member nth_index)
   qed
 next
   show "total_on A (pl_\<alpha> l)"
     using lin_ord_imp_connex_l lo connex_l_def pl_\<alpha>_def total_on_def by fastforce
 qed
+
 
 lemma linorder_rel_imp_l: 
   fixes A :: "'a set" and l :: "'a Preference_List"
