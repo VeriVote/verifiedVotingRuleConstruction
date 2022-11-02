@@ -17,12 +17,14 @@ text \<open>
   rank 1 is top prefernce, rank 0 is not in list
 \<close>
 fun rank_l :: "'a Preference_List \<Rightarrow> 'a \<Rightarrow> nat" where
-  "rank_l cs x = (if (List.member cs x) then (index cs x) + 1 else 0)"
+  "rank_l cs x = (let i = (index cs x) in 
+            if (i = length cs) then 0 else i + 1)"
 
 lemma rank0_imp_notpresent:
   fixes ballot :: "'a Preference_List"
   shows "rank_l ballot x = 0 \<longrightarrow> \<not>List.member ballot x"
-  by simp
+  by (simp add: in_set_member index_size_conv)
+  
 
 fun is_less_preferred_than ::
   "'a \<Rightarrow> 'a Preference_List \<Rightarrow> 'a \<Rightarrow> bool" ("_ \<lesssim>\<^sub>_ _" [50, 1000, 51] 50) where
@@ -40,7 +42,7 @@ lemma rank_gt_zero:
     wf : "well_formed_pl l" and
     refl: "x \<lesssim>\<^sub>l x"
   shows "rank_l l x \<ge> 1"
-  using refl by simp
+  using refl rank0_imp_notpresent by force 
 
 definition total_on_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> bool" where
   "total_on_l A pl \<equiv> (\<forall> x \<in> A. (List.member pl x))"
@@ -106,16 +108,18 @@ lemma less_preffered_l_rel_eq:
 
 theorem aboveeq: 
   fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
-  assumes wf: "well_formed_pl l" and lo: "linear_order_on_l A l"
+  assumes aA: "a \<in> A" and wf: "well_formed_pl l" and lo: "linear_order_on_l A l"
   shows "set (above_l l a) = Order_Relation.above (pl_\<alpha> l) a"
 proof safe
   fix x :: 'a
   assume xmem: "x \<in> set (Preference_List.above_l l a)"
-  have "length (above_l l a) = rank_l l a" unfolding above_l_def
-    by (simp add: Suc_le_eq in_set_member)
-  from xmem wf lo this have "index l x \<le> index l a" unfolding rank_l.simps using above_l_def
-    by (metis  Preference_List.rank_l.simps Suc_eq_plus1 
-        Suc_le_eq bot_nat_0.extremum_strict index_take linorder_not_less)
+  have leq: "length (above_l l a) = rank_l l a" unfolding above_l_def rank_l.simps
+    by (simp add: Suc_leI index_size_conv)    
+  from aA lo have "List.member l a"
+    by (simp add: linear_order_on_l_def total_on_l_def) 
+  from xmem leq wf lo have "index l x \<le> index l a"
+   
+
   from xmem this have "a \<lesssim>\<^sub>l x" using above_l_def is_less_preferred_than.elims(3) rank_l.simps
     by (metis One_nat_def Suc_le_mono add.commute add_0 add_Suc empty_iff find_index_le_size 
         in_set_member index_def le_antisym list.set(1) size_index_conv take_0)
