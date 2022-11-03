@@ -7,12 +7,12 @@ begin
 type_synonym 'a Profile_List = "('a Preference_List) list"
 
 text \<open> Abstraction from Profile List to Profile \<close>
-fun pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> 'a Profile" where
+definition pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> 'a Profile" where
   "pl_to_pr_\<alpha> pl = map (Preference_List.pl_\<alpha>) pl"
 
 lemma length_preserving:
   fixes pr:: "'a Profile_List"
-  shows "length pl = length (pl_to_pr_\<alpha> pl)"
+  shows "length pl = length (pl_to_pr_\<alpha> pl)" unfolding pl_to_pr_\<alpha>_def
   by simp
 
 definition profile_l :: "'a set \<Rightarrow> 'a Profile_List \<Rightarrow> bool" where
@@ -29,12 +29,12 @@ lemma profile_prop_refine:
 proof (-)
   fix i
   assume ir: "i < length (pl_to_pr_\<alpha> pl)"
-  from ir assms have wf: "well_formed_pl (pl ! i)" unfolding profile_l_def
+  from ir assms have wf: "well_formed_pl (pl ! i)" unfolding profile_l_def  pl_to_pr_\<alpha>_def
     by (simp)
-  from ir assms have "linear_order_on_l A (pl ! i)" unfolding profile_l_def
+  from ir assms have "linear_order_on_l A (pl ! i)" unfolding profile_l_def pl_to_pr_\<alpha>_def
     by (simp) 
   from wf assms this show "linear_order_on A ((pl_to_pr_\<alpha> pl) ! i)"
-    by (metis linorder_l_imp_rel ir length_map nth_map pl_to_pr_\<alpha>.simps)
+    by (metis linorder_l_imp_rel ir length_map nth_map pl_to_pr_\<alpha>_def)
 qed
 
 
