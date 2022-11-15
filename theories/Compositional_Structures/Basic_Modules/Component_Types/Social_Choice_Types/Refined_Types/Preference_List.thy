@@ -123,7 +123,7 @@ proof safe
   have leq: "length (above_l l a) = rank_l l a" unfolding above_l_def rank_l.simps
     by (simp add: Suc_leI index_size_conv)    
   from xmem lo have la: "List.member l a"
-    by (metis above_l_def distinct.simps(2) distinct_singleton rank_alt.simps rankdef take0 )    
+    by (metis above_l_def distinct.simps(2) distinct_singleton rank_alt.simps rankdef take0)
   from la have ri: "rank_l l a = index l a + 1"
     using member_def size_index_conv by fastforce
   from xmem have xabovel: "List.member (take (rank_l l a) l) x"
@@ -145,7 +145,7 @@ proof safe
 next
   fix x :: 'a
   assume xmema: "x \<in> Order_Relation.above (pl_\<alpha> l) a"
-  from xmema lo have la: "List.member l a"
+  from xmema have la: "List.member l a"
     by (metis Preference_List.is_less_preferred_than.elims(2) less_preffered_l_rel_eq pref_imp_in_above)
   from xmema have lx: "List.member l x"
     by (metis Preference_List.is_less_preferred_than.elims(2) less_preffered_l_rel_eq pref_imp_in_above)
