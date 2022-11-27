@@ -280,4 +280,10 @@ proof clarsimp
     by metis
 qed
 
+quotient_type 'a preflist = "'a Preference_List" / "\<lambda> pl1 pl2. pl_\<alpha> pl1 = pl_\<alpha> pl2"
+  unfolding pl_\<alpha>_def  equivp_def
+  apply auto unfolding is_less_preferred_than_l.simps rank_l.simps
+ 
+  
+
 end
