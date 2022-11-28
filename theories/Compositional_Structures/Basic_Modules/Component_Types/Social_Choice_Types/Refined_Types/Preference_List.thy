@@ -117,15 +117,14 @@ lemma less_preffered_l_rel_eq:
 
 theorem aboveeq: 
   fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
-  assumes wf: "well_formed_pl l" and lo: "linear_order_on_l A l"
+  assumes wf: "well_formed_pl l"
   shows "set (above_l l a) = Order_Relation.above (pl_\<alpha> l) a"
-proof safe
+proof (safe, cases "List.member l a")
+  case la: True
   fix x :: 'a
   assume xmem: "x \<in> set (Preference_List.above_l l a)"
   have leq: "length (above_l l a) = rank_l l a" unfolding above_l_def rank_l.simps
     by (simp add: Suc_leI index_size_conv)    
-  from xmem lo have la: "List.member l a"
-    by (metis above_l_def distinct.simps(2) distinct_singleton rank_alt.simps rankdef take0)
   from la have ri: "rank_l l a = index l a + 1"
     using member_def size_index_conv by fastforce
   from xmem have xabovel: "List.member (take (rank_l l a) l) x"
@@ -144,6 +143,17 @@ proof safe
     using less_preffered_l_rel_eq by (metis)
   from this show "x \<in> Order_Relation.above (pl_\<alpha> l) a"
     using pref_imp_in_above by (metis)
+next
+  case lna: False
+  fix x:: 'a
+  assume xa: "x \<in> set (above_l l a)"
+  from lna have "index l a = length l"
+    by (simp add: in_set_member)
+  from this have "above_l l a = []" unfolding above_l_def rank_l.simps
+    by simp
+  from this xa have "False"
+    by simp
+  from this show " x \<in> above (pl_\<alpha> l) a" by simp   
 next
   fix x :: 'a
   assume xmema: "x \<in> Order_Relation.above (pl_\<alpha> l) a"
@@ -167,7 +177,7 @@ qed
 
 lemma rankeq_aux: 
   fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
-  assumes wf: "well_formed_pl l" and lo: "linear_order_on_l A l"
+  assumes wf: "well_formed_pl l"
   shows "rank_alt l a = Preference_Relation.rank (pl_\<alpha> l) a"
 proof (simp, safe)
   assume air: "List.member l a"
@@ -197,7 +207,7 @@ next
 qed
 
 theorem rankeq: fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
-  assumes wf: "well_formed_pl l" and lo: "linear_order_on_l A l"
+  assumes wf: "well_formed_pl l"
   shows "rank_l l a = Preference_Relation.rank (pl_\<alpha> l) a"
   using rankeq_aux rankdef assms by metis
 
@@ -283,7 +293,7 @@ qed
 quotient_type 'a preflist = "'a Preference_List" / "\<lambda> pl1 pl2. pl_\<alpha> pl1 = pl_\<alpha> pl2"
   unfolding pl_\<alpha>_def  equivp_def
   apply auto unfolding is_less_preferred_than_l.simps rank_l.simps
- 
+  oops
   
 
 end
