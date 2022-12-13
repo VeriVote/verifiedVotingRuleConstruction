@@ -80,6 +80,7 @@ theories
   "Classic_Nanson_Rule"
   "Schwartz_Rule"
   "Sequential_Majority_Comparison"
+  "Plurality_Rule"
 
 document_files
     "root.tex"
