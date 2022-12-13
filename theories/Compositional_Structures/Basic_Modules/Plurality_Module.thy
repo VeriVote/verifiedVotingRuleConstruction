@@ -9,6 +9,7 @@ section \<open>Plurality Module\<close>
 
 theory Plurality_Module
   imports "Component_Types/Elimination_Module"
+    "../Revision_Composition"
 begin
 
 text \<open>
@@ -32,6 +33,43 @@ fun plurality :: "'a Electoral_Module" where
 
 fun plurality_mod :: "'a Electoral_Module" where
   "plurality_mod A p = max_eliminator plur_score A p"
+
+lemma nbmax:
+  fixes f:: "'a Profile \<Rightarrow> 'a \<Rightarrow> nat"
+  fixes p:: "'a Profile"
+  fixes A :: "'a set"
+  fixes alt :: 'a
+  assumes aA: "alt \<in> A" and fina: "finite A"
+  shows "f p alt \<le> Max {f p x |x. x \<in> A}"
+proof -
+  from aA have "f p alt \<in> {f p x |x. x \<in> A}" by blast
+  from fina this show ?thesis using Max_ge by auto
+qed
+
+lemma nbexmax:
+  fixes f:: "'a Profile \<Rightarrow> 'a \<Rightarrow> nat"
+  fixes p:: "'a Profile"
+  fixes A :: "'a set"
+  fixes alt :: 'a
+  assumes aA: "A \<noteq> {}" and fina: "finite A"
+  shows "\<not> (\<forall> alt \<in> A. f p alt < Max {f p x |x. x \<in> A})"
+proof -
+  from aA have nemp: " {f p x |x. x \<in> A} \<noteq> {}" by simp
+  from fina have "finite {f p x |x. x \<in> A}" by simp
+  from nemp this Max_in show ?thesis
+    using infinite_growing by auto
+qed
+
+lemma plurality_elim_eq:
+  assumes "A \<noteq> {}" and "finite A"
+  shows "plurality_mod A p = (plurality\<down>) A p"
+  unfolding plurality_mod.simps  plurality.simps
+  apply (auto simp del: win_count.simps)
+  using assms(2) nbmax[where A= A and p = p and f=win_count]
+  apply fastforce+
+  using assms nbexmax[where A= A and p = p and f=win_count]
+  apply  blast+
+  done
 
 subsection \<open>Soundness\<close>
 
