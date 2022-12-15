@@ -18,25 +18,38 @@ subsection \<open>Definition\<close>
 fun plurality_rule :: "'a Electoral_Module" where
   "plurality_rule A p = elector plurality_mod A p"
 
-fun plurality_with_losers :: "'a Electoral_Module" where
-  "plurality_with_losers A p = (let plur = plurality_mod A p in
-      (defer_r plur, reject_r plur, elect_r plur))"
-
 lemma plureq: 
   assumes "A \<noteq> {}" and "finite A"
-  shows "plurality_with_losers A p = plurality A p"
-  apply (auto  simp del: win_count.simps)
-  using assms(2) nbmax[where A= A and p = p and f=win_count]
-  subgoal by fastforce
-  using assms(2) nbmax[where A= A and p = p and f=win_count] order_neq_le_trans
-  subgoal by fastforce
-  using assms(2) nbmax[where A= A and p = p and f=win_count]
-  subgoal by fastforce
-  using assms nbexmax[where A= A and p = p and f=win_count]
-  apply  blast+
-  done
-  
-
+  shows "plurality_rule A p = plurality A p"
+proof (standard)
+  note maxge = nbmax[where A= A and p = p and f=win_count]
+  note maxex = nbexmax[where A= A and p = p and f=win_count]
+  have "elect plurality A p = {a \<in> A. \<forall>x \<in> A. win_count p x \<le> win_count p a}" by simp
+  from assms(2) maxge maxex have elecem: "elect plurality_rule A p = 
+    {a \<in> A. win_count p a = Max {win_count p a | a. a\<in> A}}"
+    by force
+  from assms maxge maxex have "{a \<in> A. win_count p a = Max {win_count p a | a. a\<in> A}} = elect plurality A p "
+    apply (simp del: win_count.simps)
+    by (metis (mono_tags, lifting)  order_antisym_conv order_le_neq_trans)
+  from elecem this show "elect plurality_rule A p = elect plurality A p"
+    by fastforce
+next
+  show "snd (plurality_rule A p) = snd (plurality A p)"
+  proof standard
+    note maxex = nbexmax[where A= A and p = p and f=win_count]
+    from this assms(2) have recem: "reject plurality_rule A p = 
+      {a \<in> A. win_count p a < (Max {win_count p alt | alt. alt \<in> A})}"
+      by (simp, blast)
+    note maxge = nbmax[where A= A and p = p and f=win_count]
+    from assms maxex this have "{a \<in> A. win_count p a < (Max {win_count p alt | alt. alt \<in> A})}
+    = reject plurality A p"
+      by (simp, metis (no_types, lifting) leD order_le_imp_less_or_eq)
+    from this recem show "reject plurality_rule A p = reject plurality A p" by simp
+  next
+   show "defer plurality_rule A p = defer plurality A p" by simp
+  qed
+qed
+   
 subsection \<open>Soundness\<close>
 
 theorem plurality_rule_sound: "electoral_module plurality_rule"
