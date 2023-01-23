@@ -8,7 +8,8 @@
 section \<open>Plurality Module\<close>
 
 theory Plurality_Module
-  imports "Component_Types/Electoral_Module"
+  imports "Component_Types/Elimination_Module"
+    "../Revision_Composition"
 begin
 
 text \<open>
@@ -21,13 +22,37 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
+fun plur_score :: "'a Evaluation_Function" where
+  "plur_score x A p = (win_count p x)"
+
 fun plurality :: "'a Electoral_Module" where
   "plurality A p =
     ({a \<in> A. \<forall>x \<in> A. win_count p x \<le> win_count p a},
      {a \<in> A. \<exists>x \<in> A. win_count p x > win_count p a},
      {})"
 
+fun plurality_mod :: "'a Electoral_Module" where
+  "plurality_mod A p = max_eliminator plur_score A p"
+
+
+
+lemma plurality_elim_eq:
+  assumes "A \<noteq> {}" and "finite A"
+  shows "plurality_mod A p = (plurality\<down>) A p"
+  unfolding plurality_mod.simps  plurality.simps
+  apply (auto simp del: win_count.simps)
+  using assms(2) score_bounded[where A= A and f = "(\<lambda> x. win_count p x)"]
+  apply fastforce+
+  using assms nless_le max_score_in[where A= A and f = "(\<lambda> x. win_count p x)"]
+    apply auto
+  done
+
 subsection \<open>Soundness\<close>
+
+lemma plurmod_sound: "electoral_module plurality_mod"
+  unfolding plurality_mod.simps
+  using max_elim_sound
+  by metis
 
 theorem plurality_sound[simp]: "electoral_module plurality"
 proof (unfold electoral_module_def, safe)

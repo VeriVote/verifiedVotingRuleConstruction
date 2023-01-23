@@ -383,4 +383,32 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
   qed
 qed
 
+section \<open>Aux lemmas for constructing establisched voting rules as max eliminator\<close>
+
+lemma score_bounded:
+  fixes f:: "'a \<Rightarrow> nat"
+  fixes A :: "'a set"
+  fixes alt :: 'a
+  assumes aA: "alt \<in> A" and fina: "finite A"
+  shows "f alt \<le> Max {f x |x. x \<in> A}"
+proof -
+  from aA have "f alt \<in> {f x |x. x \<in> A}" by blast
+  from fina this show ?thesis using Max_ge by auto
+qed
+
+lemma max_score_in:
+  fixes f:: "'a \<Rightarrow> nat"
+  fixes alt :: 'a
+  fixes A :: "'a set"
+  assumes aA: "A \<noteq> {}" and fina: "finite A"
+  shows "(\<exists> alt \<in> A. f alt = Max {f x |x. x \<in> A})"
+proof -
+  from aA have nemp: " {f x |x. x \<in> A} \<noteq> {}" by simp
+  from fina have "finite {f x |x. x \<in> A}" by simp
+  from nemp this Max_in[where A = "{f x |x. x \<in> A}"]  have "Max {f x |x. x \<in> A} \<in> {f x |x. x \<in> A}"
+    by blast
+  from this show ?thesis by auto
+qed
+
+
 end

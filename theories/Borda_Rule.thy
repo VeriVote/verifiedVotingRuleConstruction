@@ -11,6 +11,7 @@ section \<open>Borda Rule\<close>
 theory Borda_Rule
   imports "Compositional_Structures/Basic_Modules/Borda_Module"
           "Compositional_Structures/Elect_Composition"
+          "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance"
 begin
 
 text \<open>
@@ -25,11 +26,17 @@ subsection \<open>Definition\<close>
 fun borda_rule :: "'a Electoral_Module" where
   "borda_rule A p = elector borda A p"
 
+
+
 subsection \<open>Soundness\<close>
 
 theorem borda_rule_sound: "electoral_module borda_rule"
   unfolding borda_rule.simps
   using elector_sound borda_sound
   by metis
+
+subsection \<open>Anonymity Property\<close>
+
+
 
 end
