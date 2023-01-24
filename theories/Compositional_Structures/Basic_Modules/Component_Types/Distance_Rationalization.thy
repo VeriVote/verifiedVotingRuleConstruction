@@ -30,7 +30,7 @@ fun favoring_consensus_elections :: "'a Consensus_Rule \<Rightarrow> 'a  \<Right
 fun score :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Election \<Rightarrow> 'a \<Rightarrow> ereal" where
   "score d K E a = Inf (d E ` (favoring_consensus_elections K a))"
 
-fun arg_min_set :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
+fun arg_min_set :: "('b \<Rightarrow> 'a :: ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
   "arg_min_set f A = Collect (is_arg_min f (\<lambda> a. a \<in> A))"
 
 (* fun arg_min_set_2 :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
@@ -229,18 +229,21 @@ qed
 
 (* Alternative expression of list_to_rel using relation_of. 
   This is used in the proof that list_to_rel produces linear orders. *)
-lemma list_to_rel_altdef: "distinct xs \<longrightarrow>
-  relation_of (\<lambda> y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs) = list_to_rel xs"
+lemma list_to_rel_altdef:
+  fixes xs
+  assumes "distinct xs"
+  shows "relation_of (\<lambda> y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs) = list_to_rel xs"
+  using assms
 proof (unfold relation_of_def, safe)
   fix
     xs :: "'a list" and
     a :: "'a" and
     b :: "'a"
   assume
-    "distinct xs" and
-    "pos_in_list xs b \<le> pos_in_list xs a" and
-    "a \<in> set xs" and
-    "b \<in> set xs"
+    dist_xs: "distinct xs" and
+    b_above_a: "pos_in_list xs b \<le> pos_in_list xs a" and
+    a_in_xs: "a \<in> set xs" and
+    b_in_xs: "b \<in> set xs"
   show "(a, b) \<in> list_to_rel xs"
     (* During the execution of "list_to_rel xs",
       (a, b) is added by the recursive call of list_to_rel on a list where b is the head *)
@@ -251,8 +254,8 @@ next
     a :: "'a" and
     b :: "'a"
   assume
-    "distinct xs" and
-    "(a, b) \<in> list_to_rel xs"
+    dist_xs: "distinct xs" and
+    ab_in_xs: "(a, b) \<in> list_to_rel xs"
   (* For the proofs of the following statements, look at the two ways (a, b) can be added to 
     "list_to_rel xs": by the second or third pattern matching case of the definition of list_to_rel.
   *)
@@ -260,7 +263,7 @@ next
     sorry
   show "b \<in> set xs"
     sorry
-  show "pos_in_list xs b \<le> pos_in_list xs a "
+  show "pos_in_list xs b \<le> pos_in_list xs a"
     sorry
 qed
 
@@ -274,7 +277,7 @@ qed
   Open question: Would "finite A" instead of "permutations_of_set A = {}"
                  also work for code generation?
 *)
-fun all_profiles :: "nat \<Rightarrow> 'a set \<Rightarrow> ('a \<times> 'a) set list set" where
+fun all_profiles :: "nat \<Rightarrow> 'a set \<Rightarrow> ('a Profile) set" where
   "all_profiles l A = (if permutations_of_set A = {} then {}
                        else listset (replicate l (list_to_rel ` permutations_of_set A)))"
 
@@ -555,8 +558,8 @@ proof -
         fix x :: "'a Profile"
         assume
           leneq: "length x = length p" and
-          "finite A" and
-          "profile A x"
+          fin_A: "finite A" and
+          prof_A_x: "profile A x"
         show "x \<in> all_profiles (length p) A"
           (* Intermediate step: Show that all linear orders over A 
           are in "list_to_rel ' (permutations_of_set A)".  
@@ -580,7 +583,7 @@ proof -
         using t1 f2
         by simp
       ultimately show ?thesis
-        by auto
+        by (simp add: subset_antisym)
     qed
   qed
   hence "favoring_consensus_elections_std K a A (length p) =
@@ -618,24 +621,25 @@ proof -
         by simp
       hence "finite (list_to_rel ` permutations_of_set A)"
         by simp
-      moreover have f: "\<forall> l A. finite A \<longrightarrow> finite (all_profiles l A)"
+      moreover have fin_A_imp_fin_all: "\<forall> l A. finite A \<longrightarrow> finite (all_profiles l A)"
         using 2
         by force
       hence "finite (all_profiles (length p) A)"
       proof (cases "finite A")
         case True
         thus ?thesis
-          using f
+          using fin_A_imp_fin_all
           by metis
       next
         case False
         hence "permutations_of_set A = {}"
           using permutations_of_set_infinite
           by simp
-        hence e: "list_to_rel ` permutations_of_set A = {}"
+        hence list_perm_A_empty: "list_to_rel ` permutations_of_set A = {}"
           by simp
         let ?xs = "replicate (length p) (list_to_rel ` permutations_of_set A)"
-        from e have "\<forall>i < length ?xs. ?xs!i = {}"
+        from list_perm_A_empty
+        have "\<forall> i < length ?xs. ?xs!i = {}"
           by simp
         hence "finite (listset (replicate (length p) (list_to_rel ` permutations_of_set A)))"
           by (simp add: 2)
@@ -685,17 +689,17 @@ proof (unfold standard_def, clarify)
     next
       case True
       with len_p_eq_len_q
-      have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = swap (C, (p!0)) (B, (q!0))"
+      have map_fst_eq_swap: "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = swap (C, (p!0)) (B, (q!0))"
         by simp
-      also have "\<dots> = \<infinity>"
+      also have map_fst_is_infty: "\<dots> = \<infinity>"
         using C_Neq_B
         by simp
-      finally have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = \<infinity>"
+      finally have first_el_is_infty: "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = \<infinity>"
         by simp
       moreover from True len_p_eq_len_q
-      have "length (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) > 0"
+      have len_gt_zero: "length (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) > 0"
         by simp
-      ultimately have "l_one (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) = \<infinity>"
+      ultimately have l_one_is_infty: "l_one (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) = \<infinity>"
         (* Should not be very hard *)
         sorry
       with True len_p_eq_len_q
