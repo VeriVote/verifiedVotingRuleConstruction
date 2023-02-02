@@ -40,9 +40,7 @@ fun is_less_preferred_than_l ::
 definition limited :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> bool" where
   "limited A r \<equiv> (\<forall> x. (List.member r x) \<longrightarrow>  x \<in> A)"
 
-fun limit_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> 'a Preference_List" where
-  "limit_l A pl =  List.filter (\<lambda> a. a \<in> A) pl"
-  
+
 lemma rank_gt_zero:
   fixes l :: "'a Preference_List" and x :: 'a
   assumes
@@ -89,7 +87,11 @@ lemma limited_dest:
   fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
   shows "(\<And> x y. \<lbrakk> is_less_preferred_than_l x l y; limited A l \<rbrakk> \<Longrightarrow>  x \<in> A \<and> y \<in> A)"
   unfolding limited_def by (simp)  
-  
+
+fun limit_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> 'a Preference_List" where
+  "limit_l A pl =  List.filter (\<lambda> a. a \<in> A) pl"
+
+
 definition above_l :: "'a Preference_List \<Rightarrow> 'a \<Rightarrow> 'a Preference_List" where
   "above_l r c \<equiv> take (rank_l r c) r"
 
@@ -112,6 +114,7 @@ lemma less_preffered_l_rel_eq:
   fixes l :: "'a Preference_List" and a :: 'a and b :: 'a
   shows "a \<lesssim>\<^sub>l b \<longleftrightarrow>  Preference_Relation.is_less_preferred_than a (pl_\<alpha> l) b"
   by (simp add: pl_\<alpha>_def)
+
 
 
 
@@ -290,10 +293,31 @@ proof clarsimp
     by metis
 qed
 
-quotient_type 'a preflist = "'a Preference_List" / "\<lambda> pl1 pl2. pl_\<alpha> pl1 = pl_\<alpha> pl2"
-  unfolding pl_\<alpha>_def  equivp_def
-  apply auto unfolding is_less_preferred_than_l.simps rank_l.simps
-  oops
-  
+(* lemma Cons_append:
+  fixes x :: 'a
+  and xs :: "'a list"
+  shows "(x # xs) = [x] @ xs"
+    by (simp)*) 
+
+find_theorems filter
+
+lemma limit_l_eq:
+  assumes "ballot_on A bl"
+  shows "pl_\<alpha> (limit_l A bl) = (limit A (pl_\<alpha> bl))"
+  unfolding pl_\<alpha>_def unfolding limit.simps
+proof (unfold limit_l.simps)
+    have "{(a, y). a \<lesssim>\<^sub>(filter (\<lambda>a. a \<in> A) bl) y} = 
+        {(a, y). a\<preceq>\<^sub>(pl_\<alpha> ((filter (\<lambda>a. a \<in> A) bl))) y}"
+      by (metis less_preffered_l_rel_eq)
+    from this have "{(a, y). a \<lesssim>\<^sub>(filter (\<lambda>a. a \<in> A) bl) y} =
+    {(a, y). (a, y) \<in> {(a, y). a \<lesssim>\<^sub>(filter (\<lambda>a. a \<in> A) bl) y}}"
+      unfolding pl_\<alpha>_def by auto
+    have "{(a, y). a \<lesssim>\<^sub>(filter (\<lambda>a. a \<in> A) bl) y} =
+      {(a, y). a \<lesssim>\<^sub>bl y \<and> a \<in> A \<and> y \<in> A}" using filter_id_conv
+      by (metis (no_types, lifting)  Preference_List.limited_def 
+          Preference_List.limited_dest assms in_set_member linear_order_on_l_def preorder_on_l_def)      
+    thus  "{(a, y). a \<lesssim>\<^sub>(filter (\<lambda>a. a \<in> A) bl) y} = {(a, b). (a, b) \<in> {(a, y). a \<lesssim>\<^sub>bl y} \<and> a \<in> A \<and> b \<in> A}"
+      by (metis (mono_tags, lifting) case_prod_conv mem_Collect_eq)
+  qed      
 
 end
