@@ -38,7 +38,7 @@ fun is_less_preferred_than_l ::
     "x \<lesssim>\<^sub>l y = ((x \<in> set l) \<and> (y \<in> set l) \<and> (index l x \<ge> index l y))"
 
 definition limited :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> bool" where
-  "limited A r \<equiv> (\<forall> x. (x \<in> set r) \<longrightarrow>  x \<in> A)"
+  "limited A r \<equiv> (\<forall> x. (x \<in> set r) \<longrightarrow> x \<in> A)"
 
 
 lemma rank_gt_zero:
@@ -86,9 +86,9 @@ lemma limited_dest:
   shows "(\<And> x y. \<lbrakk> is_less_preferred_than_l x l y; limited A l \<rbrakk> \<Longrightarrow>  x \<in> A \<and> y \<in> A)"
   unfolding limited_def by (simp)  
 
-fun limit_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> 'a Preference_List" where
-  "limit_l A pl =  List.filter (\<lambda> a. a \<in> A) pl"
 
+fun limit_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> 'a Preference_List" where
+  "limit_l A pl = List.filter (\<lambda> x. x \<in> A) pl"
 
 definition above_l :: "'a Preference_List \<Rightarrow> 'a \<Rightarrow> 'a Preference_List" where
   "above_l r c \<equiv> take (rank_l r c) r"
@@ -128,6 +128,26 @@ proof (-)
   Preference_List.limited_def is_less_preferred_than_l.simps
   by (auto simp add: dis index_size_conv)
 qed
+
+find_theorems find_index
+
+lemma limit_eq:
+  assumes wf: "well_formed_pl bal"
+  shows "pl_\<alpha> (limit_l A bal) = limit A (pl_\<alpha> bal)"
+using assms proof (induction bal)
+  case Nil
+  then show ?case unfolding pl_\<alpha>_def  by auto
+next
+  case (Cons a bal)
+  then show ?case unfolding well_formed_pl_def limit_l.simps filter.simps(2) 
+    apply auto
+    unfolding pl_\<alpha>_def index_def apply auto
+    unfolding index_def
+    apply (smt (verit, del_insts) case_prod_conv index_def is_less_preferred_than_l.simps mem_Collect_eq)
+    by presburger
+qed
+  
+
 
 theorem aboveeq: 
   fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
