@@ -11,11 +11,12 @@ theory Blacks_Rule
           Borda_Rule
 begin
 
-text
-\<open>This is Black's voting rule. It is composed of a function that determines
-the Condorcet winner, i.e., the Pairwise Majority rule, and the Borda rule.
-Whenever there exists no Condorcet winner, it elects the choice made by the
-Borda rule, otherwise the Condorcet winner is elected.\<close>
+text \<open>
+  This is Black's voting rule. It is composed of a function that determines
+  the Condorcet winner, i.e., the Pairwise Majority rule, and the Borda rule.
+  Whenever there exists no Condorcet winner, it elects the choice made by the
+  Borda rule, otherwise the Condorcet winner is elected.
+\<close>
 
 subsection \<open>Definition\<close>
 

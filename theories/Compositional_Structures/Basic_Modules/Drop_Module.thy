@@ -11,14 +11,15 @@ theory Drop_Module
   imports "Component_Types/Electoral_Module"
 begin
 
-text
-\<open>This is a family of electoral modules. For a natural number n and a
-lexicon (linear order) r of all alternatives, the according drop module
-rejects the lexicographically first n alternatives (from A) and
-defers the rest.
-It is primarily used as counterpart to the pass module in a
-parallel composition, in order to segment the alternatives into
-two groups.\<close>
+text \<open>
+  This is a family of electoral modules. For a natural number n and a
+  lexicon (linear order) r of all alternatives, the according drop module
+  rejects the lexicographically first n alternatives (from A) and
+  defers the rest.
+  It is primarily used as counterpart to the pass module in a
+  parallel composition, in order to segment the alternatives into
+  two groups.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -30,64 +31,60 @@ fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a El
 
 subsection \<open>Soundness\<close>
 
-theorem drop_mod_sound[simp]:
-  assumes order: "linear_order r"
-  shows "electoral_module (drop_module n r)"
-proof -
+theorem drop_mod_sound[simp]: "electoral_module (drop_module n r)"
+proof (intro electoral_modI)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile"
   let ?mod = "drop_module n r"
   have
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        (\<forall>a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<or>
-            a \<in> {x \<in> A. card(above (limit A r) x) > n})"
+    "(\<forall> a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<or>
+        a \<in> {x \<in> A. card(above (limit A r) x) > n})"
     by auto
   hence
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        {a \<in> A. card(above (limit A r) a) \<le> n} \<union>
+    "{a \<in> A. card(above (limit A r) a) \<le> n} \<union>
         {a \<in> A. card(above (limit A r) a) > n} = A"
     by blast
-  hence 0:
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        set_equals_partition A (drop_module n r A p)"
+  hence 0: "set_equals_partition A (drop_module n r A p)"
     by simp
   have
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        (\<forall>a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<and>
-            a \<in> {x \<in> A. card(above (limit A r) x) > n}))"
+    "(\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<and>
+        a \<in> {x \<in> A. card(above (limit A r) x) > n}))"
     by auto
   hence
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        {a \<in> A. card(above (limit A r) a) \<le> n} \<inter>
+    "{a \<in> A. card(above (limit A r) a) \<le> n} \<inter>
         {a \<in> A. card(above (limit A r) a) > n} = {}"
     by blast
-  hence 1: "\<forall>A p. finite_profile A p \<longrightarrow> disjoint3 (?mod A p)"
+  hence 1: "disjoint3 (?mod A p)"
     by simp
-  from 0 1 have
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        well_formed A (?mod A p)"
+  from 0 1 show "well_formed A (?mod A p)"
     by simp
-  hence
-    "\<forall>A p. finite_profile A p \<longrightarrow>
-        well_formed A (?mod A p)"
-    by simp
-  thus ?thesis
-    using electoral_modI
-    by metis
 qed
 
 subsection \<open>Non-Electing\<close>
 
-(*The drop module is non-electing.*)
+text \<open>
+  The drop module is non-electing.
+\<close>
+
 theorem drop_mod_non_electing[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "non_electing (drop_module n r)"
-  by (simp add: non_electing_def order)
+  unfolding non_electing_def
+  using assms
+  by simp
 
 subsection \<open>Properties\<close>
 
-(*The drop module is strictly defer-monotone.*)
+text \<open>
+  The drop module is strictly defer-monotone.
+\<close>
+
 theorem drop_mod_def_lift_inv[simp]:
-  assumes order: "linear_order r"
+  assumes "linear_order r"
   shows "defer_lift_invariance (drop_module n r)"
-  by (simp add: order defer_lift_invariance_def)
+  unfolding defer_lift_invariance_def
+  using assms
+  by simp
 
 end

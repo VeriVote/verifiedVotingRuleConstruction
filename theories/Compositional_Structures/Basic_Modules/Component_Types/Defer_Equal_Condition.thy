@@ -11,10 +11,11 @@ theory Defer_Equal_Condition
   imports Termination_Condition
 begin
 
-text
-\<open>This is a family of termination conditions. For a natural number n,
-the according defer-equal condition is true if and only if the given
-result's defer-set contains exactly n elements.\<close>
+text \<open>
+  This is a family of termination conditions. For a natural number n,
+  the according defer-equal condition is true if and only if the given
+  result's defer-set contains exactly n elements.
+\<close>
 
 subsection \<open>Definition\<close>
 

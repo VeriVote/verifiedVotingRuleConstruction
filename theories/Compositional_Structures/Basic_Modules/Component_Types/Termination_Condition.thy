@@ -11,10 +11,11 @@ theory Termination_Condition
   imports "Social_Choice_Types/Result"
 begin
 
-text
-\<open>The termination condition is used in loops. It decides whether or not to
-terminate the loop after each iteration, depending on the current state
-of the loop.\<close>
+text \<open>
+  The termination condition is used in loops. It decides whether or not to
+  terminate the loop after each iteration, depending on the current state
+  of the loop.
+\<close>
 
 subsection \<open>Definition\<close>
 

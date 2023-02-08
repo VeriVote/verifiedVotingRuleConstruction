@@ -11,10 +11,11 @@ theory Copeland_Rule
           "Compositional_Structures/Elect_Composition"
 begin
 
-text
-\<open>This is the Copeland voting rule. The idea is to elect the alternatives with
-the highest difference between the amount of simple-majority wins and the
-amount of simple-majority losses.\<close>
+text \<open>
+  This is the Copeland voting rule. The idea is to elect the alternatives with
+  the highest difference between the amount of simple-majority wins and the
+  amount of simple-majority losses.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -24,14 +25,9 @@ fun copeland_rule :: "'a Electoral_Module" where
 subsection \<open>Condorcet Consistency Property\<close>
 
 theorem copeland_condorcet: "condorcet_consistency copeland_rule"
-proof -
-  have
-    "condorcet_consistency (elector copeland)"
+proof (unfold copeland_rule.simps)
+  show "condorcet_consistency (elector copeland)"
     using copeland_is_dcc dcc_imp_cc_elector
-    by metis
-  thus ?thesis
-    using condorcet_consistency2 electoral_module_def
-          copeland_rule.simps
     by metis
 qed
 

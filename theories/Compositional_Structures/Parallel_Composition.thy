@@ -12,11 +12,12 @@ theory Parallel_Composition
           "Basic_Modules/Component_Types/Electoral_Module"
 begin
 
-text
-\<open>The parallel composition composes a new electoral module from
-two electoral modules combined with an aggregator.
-Therein, the two modules each make a decision and the aggregator combines
-them to a single (aggregated) result.\<close>
+text \<open>
+  The parallel composition composes a new electoral module from
+  two electoral modules combined with an aggregator.
+  Therein, the two modules each make a decision and the aggregator combines
+  them to a single (aggregated) result.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -37,8 +38,7 @@ theorem par_comp_sound[simp]:
     mod_n: "electoral_module n" and
     agg_a: "aggregator a"
   shows "electoral_module (m \<parallel>\<^sub>a n)"
-  unfolding electoral_module_def
-proof (safe)
+proof (unfold electoral_module_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile"
@@ -46,19 +46,19 @@ proof (safe)
     fin_A: "finite A" and
     prof_A: "profile A p"
   have wf_quant:
-    "\<forall>f. aggregator f =
-      (\<forall>a_set elec1 rej1 def1 elec2 rej2 def2.
-        (\<not> well_formed (a_set::'a set) (elec1, rej2, def1) \<or>
-          \<not> well_formed a_set (rej1, def2, elec2)) \<or>
-        well_formed a_set
-          (f a_set (elec1, rej2, def1) (rej1, def2, elec2)))"
+    "\<forall> a. aggregator a =
+      (\<forall> A' e r d e' r' d'.
+        (\<not> well_formed (A'::'a set) (e, r', d) \<or>
+          \<not> well_formed A' (r, d', e')) \<or>
+        well_formed A'
+          (a A' (e, r', d) (r, d', e')))"
     unfolding aggregator_def
     by blast
   have wf_imp:
-    "\<forall>e_mod a_set prof.
-      (electoral_module e_mod \<and> finite (a_set::'a set) \<and>
-        profile a_set prof) \<longrightarrow>
-        well_formed a_set (e_mod a_set prof)"
+    "\<forall> m' A' p'.
+      (electoral_module m' \<and> finite (A'::'a set) \<and>
+        profile A' p') \<longrightarrow>
+        well_formed A' (m' A' p')"
     using par_comp_result_sound
     by (metis (no_types))
   from mod_m mod_n fin_A prof_A agg_a
@@ -72,27 +72,30 @@ qed
 
 subsection \<open>Composition Rule\<close>
 
-(*
-   Using a conservative aggregator, the parallel composition
-   preserves the property non-electing.
-*)
+text \<open>
+  Using a conservative aggregator, the parallel composition
+  preserves the property non-electing.
+\<close>
+
 theorem conserv_agg_presv_non_electing[simp]:
   assumes
     non_electing_m: "non_electing m" and
     non_electing_n: "non_electing n" and
     conservative: "agg_conservative a"
   shows "non_electing (m \<parallel>\<^sub>a n)"
-  unfolding non_electing_def
-proof (safe)
+proof (unfold non_electing_def, safe)
   have emod_m: "electoral_module m"
     using non_electing_m
-    by (simp add: non_electing_def)
+    unfolding non_electing_def
+    by simp
   have emod_n: "electoral_module n"
     using non_electing_n
-    by (simp add: non_electing_def)
+    unfolding non_electing_def
+    by simp
   have agg_a: "aggregator a"
     using conservative
-    by (simp add: agg_conservative_def)
+    unfolding agg_conservative_def
+    by simp
   thus "electoral_module (m \<parallel>\<^sub>a n)"
     using emod_m emod_n agg_a par_comp_sound
     by simp
@@ -107,37 +110,40 @@ next
     x_wins: "x \<in> elect (m \<parallel>\<^sub>a n) A p"
   have emod_m: "electoral_module m"
     using non_electing_m
-    by (simp add: non_electing_def)
+    unfolding non_electing_def
+    by simp
   have emod_n: "electoral_module n"
     using non_electing_n
-    by (simp add: non_electing_def)
+    unfolding non_electing_def
+    by simp
   have
-    "\<forall>x0 x1 x2 x3 x4 x5 x6 x7.
-      (well_formed (x6::'a set) (x5, x1, x3) \<and> well_formed x6 (x4, x0, x2) \<longrightarrow>
-        elect_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x5 \<union> x4 \<and>
-          reject_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x1 \<union> x0 \<and>
-          defer_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x3 \<union> x2) =
-            ((\<not> well_formed x6 (x5, x1, x3) \<or> \<not> well_formed x6 (x4, x0, x2)) \<or>
-              elect_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x5 \<union> x4 \<and>
-                reject_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x1 \<union> x0 \<and>
-                defer_r (x7 x6 (x5, x1, x3) (x4, x0, x2)) \<subseteq> x3 \<union> x2)"
+    "\<forall> r r' d d' e e' A' f.
+      (well_formed (A'::'a set) (e', r', d') \<and> well_formed A' (e, r, d) \<longrightarrow>
+        elect_r (f A' (e', r', d') (e, r, d)) \<subseteq> e' \<union> e \<and>
+          reject_r (f A' (e', r', d') (e, r, d)) \<subseteq> r' \<union> r \<and>
+          defer_r (f A' (e', r', d') (e, r, d)) \<subseteq> d' \<union> d) =
+            ((\<not> well_formed A' (e', r', d') \<or> \<not> well_formed A' (e, r, d)) \<or>
+              elect_r (f A' (e', r', d') (e, r, d)) \<subseteq> e' \<union> e \<and>
+                reject_r (f A' (e', r', d') (e, r, d)) \<subseteq> r' \<union> r \<and>
+                defer_r (f A' (e', r', d') (e, r, d)) \<subseteq> d' \<union> d)"
     by linarith
   hence
-    "\<forall>f. agg_conservative f =
-      (aggregator f \<and>
-        (\<forall>A Aa Ab Ac Ad Ae Af. (\<not> well_formed (A::'a set) (Aa, Ae, Ac) \<or>
-            \<not> well_formed A (Ab, Af, Ad)) \<or>
-          elect_r (f A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Aa \<union> Ab \<and>
-            reject_r (f A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Ae \<union> Af \<and>
-            defer_r (f A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Ac \<union> Ad))"
-    by (simp add: agg_conservative_def)
+    "\<forall> a. agg_conservative a =
+      (aggregator a \<and>
+        (\<forall> A' e e' d d' r r'. (\<not> well_formed (A'::'a set) (e, r, d) \<or>
+            \<not> well_formed A' (e', r', d')) \<or>
+          elect_r (a A' (e, r, d) (e', r', d')) \<subseteq> e \<union> e' \<and>
+            reject_r (a A' (e, r, d) (e', r', d')) \<subseteq> r \<union> r' \<and>
+            defer_r (a A' (e, r, d) (e', r', d')) \<subseteq> d \<union> d'))"
+    unfolding agg_conservative_def
+    by simp
   hence
     "aggregator a \<and>
-      (\<forall>A Aa Ab Ac Ad Ae Af. \<not> well_formed A (Aa, Ae, Ac) \<or>
-          \<not> well_formed A (Ab, Af, Ad) \<or>
-          elect_r (a A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Aa \<union> Ab \<and>
-            reject_r (a A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Ae \<union> Af \<and>
-            defer_r (a A (Aa, Ae, Ac) (Ab, Af, Ad)) \<subseteq> Ac \<union> Ad)"
+      (\<forall> A' e e' d d' r r'. \<not> well_formed A' (e, r, d) \<or>
+          \<not> well_formed A' (e', r', d') \<or>
+          elect_r (a A' (e, r, d) (e', r', d')) \<subseteq> e \<union> e' \<and>
+            reject_r (a A' (e, r, d) (e', r', d')) \<subseteq> r \<union> r' \<and>
+            defer_r (a A' (e, r, d) (e', r', d')) \<subseteq> d \<union> d')"
     using conservative
     by presburger
   hence
@@ -150,8 +156,9 @@ next
     using x_wins
     by auto
   thus "x \<in> {}"
-    using sup_bot_right non_electing_def fin_A
-          non_electing_m non_electing_n prof_A
+    using sup_bot_right fin_A prof_A
+          non_electing_m non_electing_n
+    unfolding non_electing_def
     by (metis (no_types, lifting))
 qed
 

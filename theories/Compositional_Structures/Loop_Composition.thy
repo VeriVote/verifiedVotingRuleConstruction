@@ -706,11 +706,6 @@ proof (induct n arbitrary: acc rule: less_induct)
   hence step_reduces_defer_set:
     "defer (acc \<triangleright> m) A p \<subset> defer acc A p"
     by metis
-  hence step_reduces_defer_set:
-    "(card (defer acc A p) > 1 \<and> finite_profile A p \<and> non_electing acc) \<longrightarrow>
-        defer (acc \<triangleright> m) A p \<subset> defer acc A p"
-    unfolding non_electing_def
-    by metis
   thus ?case
   proof (cases "t (acc A p)")
     case True (* Terminate now *)

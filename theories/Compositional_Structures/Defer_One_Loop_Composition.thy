@@ -13,11 +13,12 @@ theory Defer_One_Loop_Composition
           Elect_Composition
 begin
 
-text
-\<open>This is a family of loop compositions. It uses the same module in sequence
-until either no new decisions are made or only one alternative is remaining
-in the defer-set. The second family herein uses the above family and
-subsequently elects the remaining alternative.\<close>
+text \<open>
+  This is a family of loop compositions. It uses the same module in sequence
+  until either no new decisions are made or only one alternative is remaining
+  in the defer-set. The second family herein uses the above family and
+  subsequently elects the remaining alternative.
+\<close>
 
 subsection \<open>Definition\<close>
 

@@ -11,9 +11,10 @@ theory Minimax_Rule
           "Compositional_Structures/Elect_Composition"
 begin
 
-text
-\<open>This is the Minimax voting rule. It elects the alternatives with the highest
-Minimax score.\<close>
+text \<open>
+  This is the Minimax voting rule. It elects the alternatives with the highest
+  Minimax score.
+\<close>
 
 subsection \<open>Definition\<close>
 
@@ -23,14 +24,9 @@ fun minimax_rule :: "'a Electoral_Module" where
 subsection \<open>Condorcet Consistency Property\<close>
 
 theorem minimax_condorcet: "condorcet_consistency minimax_rule"
-proof -
-  have
-    "condorcet_consistency (elector minimax)"
+proof (unfold minimax_rule.simps)
+  show "condorcet_consistency (elector minimax)"
     using minimax_is_dcc dcc_imp_cc_elector
-    by metis
-  thus ?thesis
-    using condorcet_consistency2 electoral_module_def
-          minimax_rule.simps
     by metis
 qed
 

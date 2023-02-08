@@ -13,10 +13,11 @@ theory Defer_Module
   imports "Component_Types/Electoral_Module"
 begin
 
-text
-\<open>The defer module is not concerned about the voter's ballots, and
-simply defers all alternatives.
-It is primarily used for defining an empty loop.\<close>
+text \<open>
+  The defer module is not concerned about the voter's ballots, and
+  simply defers all alternatives.
+  It is primarily used for defining an empty loop.
+\<close>
 
 subsection \<open>Definition\<close>
 

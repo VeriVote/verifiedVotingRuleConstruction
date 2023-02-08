@@ -11,10 +11,11 @@ theory Nanson_Baldwin_Rule
           "Compositional_Structures/Defer_One_Loop_Composition"
 begin
 
-text
-\<open>This is the Nanson-Baldwin voting rule. It excludes alternatives with the
-lowest Borda score from the set of possible winners and then adjusts the
-Borda score to the new (remaining) set of still eligible alternatives.\<close>
+text \<open>
+  This is the Nanson-Baldwin voting rule. It excludes alternatives with the
+  lowest Borda score from the set of possible winners and then adjusts the
+  Borda score to the new (remaining) set of still eligible alternatives.
+\<close>
 
 subsection \<open>Definition\<close>
 

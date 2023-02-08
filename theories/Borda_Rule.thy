@@ -13,15 +13,17 @@ theory Borda_Rule
           "Compositional_Structures/Elect_Composition"
 begin
 
-text
-\<open>This is the Borda rule. On each ballot, each alternative is assigned a score
-that depends on how many alternatives are ranked below. The sum of all such
-scores for an alternative is hence called their Borda score. The alternative
-with the highest Borda score is elected.\<close>
+text \<open>
+  This is the Borda rule. On each ballot, each alternative is assigned a score
+  that depends on how many alternatives are ranked below. The sum of all such
+  scores for an alternative is hence called their Borda score. The alternative
+  with the highest Borda score is elected.
+\<close>
 
 subsection \<open>Definition\<close>
 
 fun borda_rule :: "'a Electoral_Module" where
   "borda_rule A p = elector borda A p"
+
 
 end
