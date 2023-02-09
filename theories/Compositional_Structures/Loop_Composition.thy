@@ -699,12 +699,10 @@ proof (induct n arbitrary: acc rule: less_induct)
   have mod_acc: "electoral_module acc"
     using less.prems(3) non_electing_def
     by metis
-  hence subset: "defer (acc \<triangleright> m) A p \<subset> defer acc A p"
-    using seq_comp_elim_one_red_def_set single_elimination
-          f_prof less.prems(2)
-    by metis
   hence step_reduces_defer_set:
     "defer (acc \<triangleright> m) A p \<subset> defer acc A p"
+    using seq_comp_elim_one_red_def_set single_elimination
+          f_prof less.prems(2)
     by metis
   thus ?case
   proof (cases "t (acc A p)")
@@ -724,7 +722,7 @@ proof (induct n arbitrary: acc rule: less_induct)
       by (metis (full_types))
     hence rec_step:
       "loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p"
-      using False loop_comp_helper.simps(2) subset
+      using False loop_comp_helper.simps(2) step_reduces_defer_set
       by metis
     have card_too_big: "card (defer acc A p) > x"
       using card_not_eq_x dual_order.order_iff_strict less.prems(1, 4)
@@ -762,7 +760,7 @@ proof (induct n arbitrary: acc rule: less_induct)
         using new_card_k x_greater_zero
         by linarith
       moreover have "k < n"
-        using subset step_profile psubset_card_mono
+        using step_reduces_defer_set step_profile psubset_card_mono
               new_card_k less.prems(4)
         by blast
       moreover have "electoral_module (acc \<triangleright> m)"
