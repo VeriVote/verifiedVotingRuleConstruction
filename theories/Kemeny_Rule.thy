@@ -38,4 +38,27 @@ proof (unfold kemeny_rule.simps)
     by metis
 qed
 
+datatype alternative = a | b | c | d
+
+lemma UNIV_alternative [code_unfold]: "UNIV = {a, b, c, d}" (is "_ = ?A")
+proof (rule UNIV_eq_I)
+  fix x :: "alternative"
+  show "x \<in> ?A"
+    by (cases x) simp_all
+qed
+
+instantiation alternative :: enum
+begin
+  definition "Enum.enum = [a, b, c, d]"
+  definition "Enum.enum_all P \<longleftrightarrow> P a \<and> P b \<and> P c \<and> P d"
+  definition "Enum.enum_ex P \<longleftrightarrow> P a \<or> P b \<or> P c \<or> P d"
+instance proof
+  qed (simp_all only: enum_alternative_def enum_all_alternative_def
+      enum_ex_alternative_def UNIV_alternative, simp_all)
+end
+
+value "drswap strong_unanimity {a, b, c :: alternative}
+         [{(a, c), (b, c), (c, c), (a, b), (b, b), (a, a)},
+          {(c, b), (a, b), (b, b), (c, a), (a, a), (c, c)}]"
+
 end

@@ -7,6 +7,7 @@ section \<open>Consensus Condition\<close>
 
 theory Consensus_Condition
   imports "Social_Choice_Types/Profile"
+          "HOL-Combinatorics.List_Permutation"
 begin
 
 text \<open>
@@ -21,7 +22,7 @@ subsection \<open>TODO\<close>
 
 definition consensus_condition_anonymity :: "'a Consensus_Condition \<Rightarrow> bool" where
   "consensus_condition_anonymity CC \<equiv>
-    \<forall> pi A p. finite_profile A p \<longrightarrow> permutation pi \<longrightarrow> CC (A, p) \<longrightarrow> CC (A, pi p)"
+    \<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<longrightarrow> CC (A, p) \<longrightarrow> CC (A, q)"
 
 lemma cond_anon_if_ex_cond_anon:
   fixes
@@ -33,28 +34,29 @@ lemma cond_anon_if_ex_cond_anon:
   shows "consensus_condition_anonymity b"
 proof (unfold consensus_condition_anonymity_def, safe)
   fix
-    pi::"'a Profile \<Rightarrow> 'a Profile" and
     A :: "'a set" and
-    p :: "'a Profile"
+    p :: "'a Profile" and
+    q :: "'a Profile"
   assume
-    perm_pi: "permutation pi" and
     cond_b: "b (A, p)" and
     fin_C: "finite A" and
-    prof_p: "profile A p"
+    prof_p: "profile A p" and
+    prof_q: "profile A q" and
+    perm: "p <~~> q"
   from cond_b general_cond_b
   have "\<exists> x. b' x (A, p)"
-    by auto
-  then obtain x::'b where
+    by simp
+  then obtain x :: 'b where
     "b' x (A, p)"
     by blast
   with all_cond_anon
-  have "b' x (A, pi p)"
-    using perm_pi fin_C prof_p
+  have "b' x (A, q)"
+    using perm fin_C prof_p prof_q
     unfolding consensus_condition_anonymity_def
-    by simp
-  hence "\<exists> x. b' x (A, pi p)"
-    by auto
-  thus "b (A, pi p)"
+    by blast
+  hence "\<exists> x. b' x (A, q)"
+    by metis
+  thus "b (A, q)"
     using general_cond_b
     by simp
 qed
@@ -82,19 +84,20 @@ fun ne_profile_cond :: "'a Consensus_Condition" where
 lemma ne_profile_cond_anon: "consensus_condition_anonymity ne_profile_cond"
 proof (unfold consensus_condition_anonymity_def, clarify)
   fix
-    pi :: "'a Profile \<Rightarrow> 'a Profile" and
     A :: "'a set" and
-    p :: "'a Profile"
+    p :: "'a Profile" and
+    q :: "'a Profile"
   assume
-    perm_pi: "permutation pi" and
+    perm: "p <~~> q" and
     not_empty_p: "ne_profile_cond (A, p)"
-  from perm_pi
-  have "length (pi p) = length p"
-    unfolding permutation_def n_permutation_def
-    by simp
-  thus "ne_profile_cond (A, pi p)"
-    using not_empty_p
-    by auto
+  from perm
+  have "length q = length p"
+    using perm_length
+    by force
+  thus "ne_profile_cond (A, q)"
+    using not_empty_p length_0_conv
+    unfolding ne_profile_cond.simps
+    by metis
 qed
 
 text \<open>
@@ -112,38 +115,39 @@ proof (unfold consensus_condition_anonymity_def, clarify)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
-    pi :: "'a Profile \<Rightarrow> 'a Profile" and
+    q :: "'a Profile" and
     a :: "'a"
   assume
-    perm_pi: "permutation pi" and
+    perm: "p <~~> q" and
     top_cons_a: "eq_top_cond' a (A, p)"
-  let ?b = "bij (length p) pi"
-  from perm_pi
-  have l: "length p = length (pi p)"
-    unfolding permutation_def n_permutation_def
-    by simp
-  hence "\<forall> i < length (pi p). ?b i < length p"
-    using bij_of_perm_is_bij perm_pi
-          bij_betw_apply lessThan_iff
-    unfolding permutation_def
+  from perm obtain pi where
+    "pi permutes {..< length p}" "permute_list pi p = q"
+    using mset_eq_permutation
     by metis
-  moreover from perm_pi
-  have "\<forall> i < length (pi p). (pi p)!i = p!(?b i)"
-    using bij_of_perm_item_mapping l
-    unfolding permutation_def
-    by metis
+  from perm
+  have l: "length p = length q"
+    using perm_length
+    by force
+  hence "\<forall> i < length q. pi i < length p"
+    using \<open>pi permutes {..< length p}\<close> permutes_in_image
+    by fastforce
+  moreover from \<open>permute_list pi p = q\<close>
+  have "\<forall> i < length q. q!i = p!(pi i)"
+    unfolding permute_list_def
+    by auto
   moreover from top_cons_a
   have winner: "\<forall> i < length p. above (p!i) a = {a}"
     by simp
-  ultimately have "\<forall> i < length p. above (pi p!i) a = {a}"
+  ultimately have "\<forall> i < length p. above (q!i) a = {a}"
     using l
     by metis
   moreover from top_cons_a
   have "a \<in> A"
     by simp
-  ultimately show "eq_top_cond' a (A, pi p)"
+  ultimately show "eq_top_cond' a (A, q)"
     using l
-    by simp
+    unfolding eq_top_cond'.simps
+    by metis
 qed
 
 lemma eq_top_cond_anon: "consensus_condition_anonymity eq_top_cond"
@@ -165,35 +169,36 @@ proof (unfold consensus_condition_anonymity_def, clarify)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
-    pi :: "'a Profile \<Rightarrow> 'a Profile" and
+    q :: "'a Profile" and
     pref :: "'a Preference_Relation"
   assume
-    perm_pi: "permutation pi" and
-    equal_votes_pref: "eq_vote_cond' pref (A, p)"
-  let ?b = "bij (length p) pi"
-  from perm_pi
-  have l: "length p = length (pi p)"
-    unfolding permutation_def n_permutation_def
-    by simp
-  hence "\<forall> i < length (pi p). ?b i < length p"
-    using bij_of_perm_is_bij perm_pi
-          bij_betw_apply lessThan_iff
-    unfolding permutation_def
+    perm: "p <~~> q" and
+    equal_votes_pref: "eq_vote_cond' pref (A, p)" 
+  from perm obtain pi where
+    "pi permutes {..< length p}" "permute_list pi p = q"
+    using mset_eq_permutation
     by metis
-  moreover from perm_pi
-  have "\<forall> i < length (pi p). (pi p)!i = p!(?b i)"
-    using bij_of_perm_item_mapping l
-    unfolding permutation_def
-    by metis
+  from perm
+  have l: "length p = length q"
+    using perm_length
+    by force
+  hence "\<forall> i < length q. pi i < length p"
+    using \<open>pi permutes {..< length p}\<close> permutes_in_image
+    by fastforce
+  moreover from \<open>permute_list pi p = q\<close>
+  have "\<forall> i < length q. q!i = p!(pi i)"
+    unfolding permute_list_def
+    by auto
   moreover from equal_votes_pref
-  have winner: "\<forall> i < length p. (p!i) = pref"
+  have winner: "\<forall> i < length p. p!i = pref"
     by simp
-  ultimately have "\<forall> i < length p. (pi p!i) = pref"
+  ultimately have "\<forall> i < length p. q!i = pref"
     using l
     by metis
-  thus "eq_vote_cond' pref (A, pi p)"
+  thus "eq_vote_cond' pref (A, q)"
     using l
-    by simp
+    unfolding eq_vote_cond'.simps
+    by metis
 qed
 
 lemma eq_vote_cond_anon: "consensus_condition_anonymity eq_vote_cond"

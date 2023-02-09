@@ -10,7 +10,6 @@ section \<open>Preference Profile\<close>
 
 theory Profile
   imports Preference_Relation
-          "Tools/List_Permutation"
 begin
 
 text \<open>
@@ -879,20 +878,5 @@ next
           lifted_imp_equiv_prof_except_a
     by metis
 qed
-
-subsection \<open>Permutation\<close>
-
-lemma perm_preserves_finite_profile:
-  fixes
-    A :: "'a set" and
-    p :: "'a Profile" and
-    pi :: "'a Profile \<Rightarrow> 'a Profile"
-  assumes
-    fp: "finite_profile A p" and
-    perm: "n_permutation (length p) pi"
-  shows "finite_profile A (pi p)"
-  using fp perm bij_betwE lessThan_iff
-  unfolding profile_def n_permutation_def
-  by metis
 
 end

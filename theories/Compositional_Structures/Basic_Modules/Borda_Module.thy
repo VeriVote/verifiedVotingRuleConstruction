@@ -28,4 +28,11 @@ fun borda_score :: "'a Evaluation_Function" where
 fun borda :: "'a Electoral_Module" where
   "borda A p = max_eliminator borda_score A p"
 
+subsection \<open>Soundness\<close>
+
+theorem borda_sound: "electoral_module borda"
+  unfolding borda.simps
+  using max_elim_sound
+  by metis
+
 end

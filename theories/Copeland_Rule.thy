@@ -22,6 +22,13 @@ subsection \<open>Definition\<close>
 fun copeland_rule :: "'a Electoral_Module" where
   "copeland_rule A p = elector copeland A p"
 
+subsection \<open>Soundness\<close>
+
+theorem copeland_rule_sound: "electoral_module copeland_rule"
+  unfolding copeland_rule.simps
+  using elector_sound copeland_sound
+  by metis
+
 subsection \<open>Condorcet Consistency Property\<close>
 
 theorem copeland_condorcet: "condorcet_consistency copeland_rule"

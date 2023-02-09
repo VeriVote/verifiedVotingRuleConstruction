@@ -8,6 +8,7 @@ section \<open>Distance\<close>
 theory Distance
   imports "HOL-Library.Extended_Real"
           "Social_Choice_Types/Profile"
+          "HOL-Combinatorics.List_Permutation"
 begin
 
 text \<open>
@@ -54,7 +55,11 @@ abbreviation election_distance_property :: "('a Election set
 
 definition el_distance_anonymity :: "'a Election Distance \<Rightarrow> bool" where
   "el_distance_anonymity d \<equiv>
-    (\<forall> A A' pi p p'. (permutation pi \<longrightarrow> d (A, p) (A', p') = d (A, pi p) (A', pi p')))"
+    (\<forall> C B pi p q. (\<forall>n. (pi n) permutes {..<n}) \<longrightarrow> 
+    d (C,p) (B,q) = d (C, permute_list (pi (length p)) p) (B, permute_list (pi (length q)) q))"
+
+definition standard :: "'a Election Distance \<Rightarrow> bool" where
+ "standard d \<equiv> (\<forall> C B p q. length p \<noteq> length q \<or> C \<noteq> B \<longrightarrow> d (C,p) (B,q) = \<infinity>)"
 
 lemma sum_mon: "(\<forall> a \<in> A. (f a :: int) \<le> g a) \<longrightarrow> (\<Sum> a \<in> A. f a) \<le> (\<Sum> a \<in> A. g a)"
   by (induction A rule: infinite_finite_induct, auto)
@@ -62,14 +67,22 @@ lemma sum_mon: "(\<forall> a \<in> A. (f a :: int) \<le> g a) \<longrightarrow> 
 subsection \<open>Swap Distance\<close>
 
 definition neq_ord :: "'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" where
-  "neq_ord x y u v \<equiv> ((is_less_preferred_than u x v
-                     \<and> is_less_preferred_than v y u)
-                    \<or> (is_less_preferred_than v x u
-                     \<and> is_less_preferred_than u y v))"
+  "neq_ord x y u v \<equiv> (is_less_preferred_than u x v \<and> is_less_preferred_than v y u)"
 
 definition pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
                                       ('a \<times> 'a) set" where
   "pairwise_disagreements A x y = {(u, v) \<in> A \<times> A. u \<noteq> v \<and> neq_ord x y u v}"
+
+definition pairwise_disagreements_2 :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
+                                      ('a \<times> 'a) set" where
+  "pairwise_disagreements_2 A x y = Set.filter (\<lambda> (u, v). u \<noteq> v \<and> neq_ord x y u v) (A \<times> A)"
+
+lemma x: "{x \<in> X. P x} = Set.filter P X"
+  by auto
+
+lemma [code]: "pairwise_disagreements = pairwise_disagreements_2"
+  unfolding pairwise_disagreements_def pairwise_disagreements_2_def
+  by fastforce
 
 fun swap :: "'a Vote Distance" where
   "swap (A, x) (A', y) =
