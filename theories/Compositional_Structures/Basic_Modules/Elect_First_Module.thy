@@ -41,7 +41,7 @@ proof (intro electoral_modI)
   hence "disjoint3 (elect_first_module A p)"
     by simp
   ultimately show "well_formed A (elect_first_module A p)"
-    by auto
+    by simp
 qed
 
 end

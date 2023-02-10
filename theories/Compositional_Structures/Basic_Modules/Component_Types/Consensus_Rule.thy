@@ -84,7 +84,7 @@ proof(unfold consensus_rule_anonymity_def, safe)
   have alpha_A_perm_p: "\<alpha> (A, q)"
     using perm fin_A prof_p prof_q
     unfolding consensus_condition_anonymity_def
-    by blast
+    by metis
   moreover from beta_Ap beta_sat beta'_anon
   have "\<beta> (A, q)"
     using cond_anon_if_ex_cond_anon perm fin_A prof_p prof_q
@@ -97,17 +97,12 @@ proof(unfold consensus_rule_anonymity_def, safe)
     by simp
   then obtain x where
     beta'_x_Ap: "\<beta>' x (A, p)"
-    by blast
+    by metis
   with beta'_anon
   have beta'_x_A_perm_p: "\<beta>' x (A, q)"
     using perm fin_A prof_p prof_q
     unfolding consensus_condition_anonymity_def
-    by blast
-  (* from fin_A prof_p prof_q perm
-  have "profile A q"
-    unfolding profile_def is_perm_def
-    using prof_p build_perm.elims length_permute_list nth_mem profile_set set_permute_list
-    by metis *)
+    by metis
   from alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p
   have "m A p = m A q"
     using conditions_univ fin_A prof_p prof_q
@@ -128,7 +123,7 @@ text \<open>
 definition unanimity :: "'a Consensus_Rule" where
   "unanimity = em_with_condition unanimity_condition elect_first_module"
 
-lemma elct_fst_mod_determined_if_unanimity_cond:
+lemma elect_fst_mod_determined_if_unanimity_cond:
   "\<forall> a. determined_if (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_top_cond' a E)
                      elect_first_module"
 proof (unfold determined_if_def, safe)
@@ -171,9 +166,9 @@ proof (unfold determined_if_def, safe)
         using not_empty_A not_empty_A' prof_p prof_p'
         unfolding profile_def
         by simp
-      hence "(above (p!0) a = {a} \<and> above (p ! 0) a' = {a'} \<longrightarrow> a = a') \<and>
-             (above (p'!0) a = {a} \<and> above (p' ! 0) a' = {a'} \<longrightarrow> a = a')"
-        using a'_neq_a fin_A above_one2[of A]
+      hence "(above (p!0) a = {a} \<and> above (p!0) a' = {a'} \<longrightarrow> a = a') \<and>
+             (above (p'!0) a = {a} \<and> above (p'!0) a' = {a'} \<longrightarrow> a = a')"
+        using a'_neq_a fin_A above_one2
         by metis
       thus ?thesis
         using a'_neq_a eq_top_p' eq_top_p lens_p_and_p'_ok
@@ -198,7 +193,7 @@ proof (unfold unanimity_def)
                         elect_first_module)"
     using cons_rule_anon[of eq_top_cond eq_top_cond' ?ne_cond]
           ne_set_cond_anon ne_profile_cond_anon eq_top_cond'_anon
-          elct_fst_mod_determined_if_unanimity_cond
+          elect_fst_mod_determined_if_unanimity_cond
     by simp
   moreover have "unanimity_condition = (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_top_cond E)"
     by force
@@ -218,7 +213,7 @@ text \<open>
 definition strong_unanimity :: "'a Consensus_Rule" where
   "strong_unanimity = em_with_condition strong_unanimity_condition elect_first_module"
 
-lemma elct_fst_mod_determined_if_strong_unanimity_cond:
+lemma elect_fst_mod_determined_if_strong_unanimity_cond:
   "\<forall> v. determined_if (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_vote_cond' v E)
                      elect_first_module"
 proof (unfold determined_if_def, safe)
@@ -239,7 +234,7 @@ proof (unfold determined_if_def, safe)
   have "p!0 = p'!0"
     by simp
   thus "elect_first_module A p = elect_first_module A p'"
-    by auto
+    by simp
 qed
 
 lemma strong_unanimity_is_anon: "consensus_rule_anonymity strong_unanimity"
@@ -257,7 +252,7 @@ proof (unfold strong_unanimity_def)
         elect_first_module)"
     using cons_rule_anon[of eq_vote_cond eq_vote_cond' "\<lambda> E. ne_set_cond E \<and> ne_profile_cond E"]
           ne_set_cond_anon ne_profile_cond_anon eq_vote_cond'_anon
-          elct_fst_mod_determined_if_strong_unanimity_cond
+          elect_fst_mod_determined_if_strong_unanimity_cond
     by simp
   moreover have
     "strong_unanimity_condition = (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_vote_cond E)"

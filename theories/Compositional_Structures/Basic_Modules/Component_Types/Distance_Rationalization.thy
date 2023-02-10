@@ -115,7 +115,22 @@ next
       by simp
   next
     case (Suc nat)
-    with Cons.prems(2)
+    from Cons.prems(1)
+    have "nat < length xs"
+      using Suc
+      by simp
+    moreover from Cons.prems(2)
+    have "\<forall> j < nat. xs!j \<noteq> x"
+      using Suc
+      by auto
+    moreover from Cons.prems(3)
+    have "xs!nat = x"
+      using Suc
+      by simp
+    ultimately have x_pos: "pos_in_list xs x = nat"
+      using Cons.IH
+      by simp
+    from Cons.prems(2) Suc
     have "a \<noteq> x"
       by auto
     hence "pos_in_list (a#xs) x = pos_in_list_acc 1 xs x"
@@ -126,26 +141,8 @@ next
     also have "\<dots> = pos_in_list xs x + 1"
       by simp
     also have "\<dots> = i"
-    proof -
-      from Cons.prems(1)
-      have "nat < length xs"
-        using Suc
-        by simp
-      moreover from Cons.prems(2)
-      have "\<forall> j < nat. xs!j \<noteq> x"
-        using Suc
-        by auto
-      moreover from Cons.prems(3)
-      have "xs!nat = x"
-        using Suc
-        by simp
-      ultimately have "pos_in_list xs x = nat"
-        using Cons.IH
-        by simp
-      thus ?thesis
-        using Suc
-        by simp
-    qed
+      using Suc x_pos
+      by simp
     finally show ?thesis
       by simp
   qed
@@ -232,7 +229,7 @@ qed
 lemma list_to_rel_altdef:
   fixes xs
   assumes "distinct xs"
-  shows "relation_of (\<lambda> y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs) = list_to_rel xs"
+  shows "relation_of (\<lambda> y z. pos_in_list xs z \<le> pos_in_list xs y) (set xs) = list_to_rel xs"
   using assms
 proof (unfold relation_of_def, safe)
   fix
@@ -314,8 +311,8 @@ proof -
       A' :: "'a set"
     assume
       fin: "finite A'" and
-      notin: "a \<notin> A'" and
-      finset: "finite {a#b | a b. a \<in> A' \<and> b \<in> B}"
+      not_in: "a \<notin> A'" and
+      fin_set: "finite {a#b | a b. a \<in> A' \<and> b \<in> B}"
     have "{a'#b | a' b. a' \<in> insert a A' \<and> b \<in> B}
             = {a#b | a b. a \<in> A' \<and> b \<in> B} \<union> {a#b | b. b \<in> B}"
       by auto
@@ -323,7 +320,7 @@ proof -
       using finB
       by simp
     ultimately have "finite {a'#b | a' b. a' \<in> insert a A' \<and> b \<in> B}"
-      using finset
+      using fin_set
       by simp
     thus "?P (insert a A')"
       by simp
@@ -369,10 +366,10 @@ proof
   qed
 qed
 
-lemma 3: "\<forall> xs. length xs > 0 \<and> (\<forall> i < length xs. xs!i = {}) \<longrightarrow> listset xs = {}"
+lemma 3: "\<forall> xs. 0 < length xs \<and> (\<forall> i < length xs. xs!i = {}) \<longrightarrow> listset xs = {}"
 proof
   fix xs :: "'b set list"
-  show "length xs > 0 \<and> (\<forall> i < length xs. xs!i = {}) \<longrightarrow> listset xs = {}"
+  show "0 < length xs \<and> (\<forall> i < length xs. xs!i = {}) \<longrightarrow> listset xs = {}"
   proof (induct xs)
     case Nil
     thus ?case
@@ -438,24 +435,12 @@ next
     hence "ys \<in> {ys. \<exists> b bs. ys = b#bs \<and> b \<in> a \<and> bs \<in> (listset xs)}"
       unfolding set_Cons_def
       by simp
-    hence ex: "\<exists> b bs. ys = b#bs \<and> b \<in> a \<and> bs \<in> (listset xs)"
+    hence "\<exists> b bs. ys = b#bs \<and> b \<in> a \<and> bs \<in> (listset xs)"
       by simp
-    show "ys!i \<in> (a#xs)!i"
-    proof (cases "i > 0")
-      case False
-      from ex
-      have "ys!0 \<in> a"
-        by auto
-      thus ?thesis
-        using False
-        by simp
-    next
-      case True
-      with ex IH
-      show ?thesis
-        using 2 nth_Cons_Suc 
-        by fastforce
-    qed
+    thus "ys!i \<in> (a#xs)!i"
+      using IH 2 nth_Cons_Suc Suc_less_eq gr0_conv_Suc
+            length_Cons nth_non_equal_first_eq
+      by metis
   qed
 qed
 
@@ -483,7 +468,7 @@ proof -
   next
     case t1: True
     show ?thesis
-    proof (cases "length p > 0")
+    proof (cases "0 < length p")
       case t2: True
       show ?thesis
       proof (safe)
@@ -511,20 +496,20 @@ proof -
           fix i :: nat
           assume lt_len_x: "i < length x"
           with l
-          have "i < length p"
+          have i_lt_len_p: "i < length p"
             by simp
           hence "x!i \<in> replicate (length p) (list_to_rel ` permutations_of_set A)!i"
             using xprof ne 6 lt_len_x all_profiles.simps image_is_empty
             by metis
           hence "x!i \<in> list_to_rel ` permutations_of_set A"
-            using \<open>i < length p\<close>
+            using i_lt_len_p
             by simp
           hence relation_of:
-            "x!i \<in> {relation_of (\<lambda> y z. pos_in_list xs y \<ge> pos_in_list xs z) (set xs)
+            "x!i \<in> {relation_of (\<lambda> y z. pos_in_list xs z \<le> pos_in_list xs y) (set xs)
                       | xs. xs \<in> permutations_of_set A}"
             using list_to_rel_altdef permutations_of_setD
             by blast
-          let ?P = "\<lambda> xs y z. pos_in_list xs y \<ge> pos_in_list xs z"
+          let ?P = "\<lambda> xs y z. pos_in_list xs z \<le> pos_in_list xs y"
           have refl: "\<And> xs a. a \<in> (set xs) \<Longrightarrow> ?P xs a a"
             by simp
           moreover have trans:
@@ -590,16 +575,16 @@ proof -
            favoring_consensus_elections K a
             \<inter> Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
     by auto
-  moreover have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
-                   Inf (d (A,p) ` (favoring_consensus_elections K a
+  moreover have "Inf (d (A, p) ` (favoring_consensus_elections K a)) =
+                   Inf (d (A, p) ` (favoring_consensus_elections K a
                     \<inter> Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
-    using \<open>standard d\<close>
+    using std
     (* Since d in standard, d (A,p) (A,p') is \<infinity> for all p' not in the set. *)
     sorry
-  ultimately have "Inf (d (A,p) ` (favoring_consensus_elections K a)) = 
-                    Inf (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
+  ultimately have "Inf (d (A, p) ` (favoring_consensus_elections K a)) =
+                    Inf (d (A, p) ` (favoring_consensus_elections_std K a A (length p)))"
     by simp
-  also have "\<dots> = Min (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
+  also have "\<dots> = Min (d (A, p) ` (favoring_consensus_elections_std K a A (length p)))"
   proof (cases "favoring_consensus_elections_std K a A (length p) = {}")
     case True
     thus ?thesis
@@ -613,7 +598,7 @@ proof -
       sorry
   next
     case False
-    hence "d (A,p) ` (favoring_consensus_elections_std K a A (length p)) \<noteq> {}"
+    hence "d (A, p) ` (favoring_consensus_elections_std K a A (length p)) \<noteq> {}"
       by simp
     moreover have "finite (favoring_consensus_elections_std K a A (length p))"
     proof -
@@ -653,12 +638,12 @@ proof -
       thus ?thesis
         by simp
     qed
-    hence "finite (d (A,p) ` (favoring_consensus_elections_std K a A (length p)))"
+    hence "finite (d (A, p) ` (favoring_consensus_elections_std K a A (length p)))"
       by simp
     ultimately show ?thesis
       by (simp add: Lattices_Big.complete_linorder_class.Min_Inf)
   qed
-  finally show "score d K (A,p) a = score_std d K (A,p) a"
+  finally show "score d K (A, p) a = score_std d K (A, p) a"
     by simp
 qed
 
@@ -681,7 +666,7 @@ proof (unfold standard_def, clarify)
     have C_Neq_B: "C \<noteq> B"
       by simp
     thus ?thesis
-    proof (cases "length p > 0")
+    proof (cases "0 < length p")
       case False
       with C_Neq_B
       show ?thesis
@@ -697,7 +682,7 @@ proof (unfold standard_def, clarify)
       finally have first_el_is_infty: "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = \<infinity>"
         by simp
       moreover from True len_p_eq_len_q
-      have len_gt_zero: "length (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) > 0"
+      have len_gt_zero: "0 < length (map2 (\<lambda> x y. swap (C, x) (B, y)) p q)"
         by simp
       ultimately have l_one_is_infty: "l_one (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) = \<infinity>"
         (* Should not be very hard *)

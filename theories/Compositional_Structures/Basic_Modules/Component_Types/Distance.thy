@@ -28,7 +28,7 @@ subsection \<open>Definition\<close>
 type_synonym 'a Distance = "'a \<Rightarrow> 'a \<Rightarrow> ereal"
 
 definition distance :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
-  "distance S d \<equiv> (\<forall> x y. (x \<in> S \<and> y \<in> S) \<longrightarrow> (d x x = 0 \<and> d x y \<ge> 0))"
+  "distance S d \<equiv> (\<forall> x y. (x \<in> S \<and> y \<in> S) \<longrightarrow> (d x x = 0 \<and> 0 \<le> d x y))"
 
 type_synonym 'a Vote = "('a set \<times> 'a Preference_Relation)"
 
@@ -55,11 +55,11 @@ abbreviation election_distance_property :: "('a Election set
 
 definition el_distance_anonymity :: "'a Election Distance \<Rightarrow> bool" where
   "el_distance_anonymity d \<equiv>
-    (\<forall> C B pi p q. (\<forall>n. (pi n) permutes {..<n}) \<longrightarrow> 
-    d (C,p) (B,q) = d (C, permute_list (pi (length p)) p) (B, permute_list (pi (length q)) q))"
+    (\<forall> C B pi p q. (\<forall> n. (pi n) permutes {..< n}) \<longrightarrow>
+    d (C, p) (B, q) = d (C, permute_list (pi (length p)) p) (B, permute_list (pi (length q)) q))"
 
 definition standard :: "'a Election Distance \<Rightarrow> bool" where
- "standard d \<equiv> (\<forall> C B p q. length p \<noteq> length q \<or> C \<noteq> B \<longrightarrow> d (C,p) (B,q) = \<infinity>)"
+ "standard d \<equiv> (\<forall> C B p q. length p \<noteq> length q \<or> C \<noteq> B \<longrightarrow> d (C, p) (B, q) = \<infinity>)"
 
 lemma sum_mon: "(\<forall> a \<in> A. (f a :: int) \<le> g a) \<longrightarrow> (\<Sum> a \<in> A. f a) \<le> (\<Sum> a \<in> A. g a)"
   by (induction A rule: infinite_finite_induct, auto)

@@ -245,16 +245,13 @@ next
     hence
       "case snd (m A p) of (Aa, Ab) \<Rightarrow>
         case n A p of (Ac, Ad, Ae) \<Rightarrow>
-          x \<in> reject_r
-            (max_aggregator A
-              (elect m A p, Aa, Ab) (Ac, Ad, Ae))"
+          x \<in> reject_r (max_aggregator A (elect m A p, Aa, Ab) (Ac, Ad, Ae))"
       using el_rej_defer
       by force
     hence
       "let (e1, r1, d1) = m A p;
           (e2, r2, d2) = n A p in
-        x \<in> fst (snd (max_aggregator A
-          (e1, r1, d1) (e2, r2, d2)))"
+        x \<in> reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2))"
       by (simp add: case_prod_unfold)
     hence
       "let (e1, r1, d1) = m A p;
@@ -294,7 +291,7 @@ proof
   with a have
     "let (e1, r1, d1) = m A p;
           (e2, r2, d2) = n A p in
-      x \<in> fst (snd (max_aggregator A (e1, r1, d1) (e2, r2, d2)))"
+      x \<in> reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2))"
     by (simp add: prod.case_eq_if)
   hence
     "let (e1, r1, d1) = m A p;

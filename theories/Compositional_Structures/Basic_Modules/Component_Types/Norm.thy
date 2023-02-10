@@ -86,40 +86,37 @@ next
     using inj_on_A a_compl_A inj_on_insert
     unfolding bij_betw_def
     by (metis (no_types))
+  have "\<forall> f A A'. bij_betw f (A::'a set) (A'::'b set) = (inj_on f A \<and> f ` A = A')"
+    unfolding bij_betw_def
+    by simp
+  hence inv_without_a: "\<forall> a' \<in> (A' - {f a}). the_inv_into (A - {a}) f a' = the_inv_into A f a'"
+    using inj_on_A A'_sub_fa
+    by (simp add: inj_on_diff the_inv_into_f_eq)
   have card_without_a: "card (A - {a}) = x"
     using suc a_in_A Diff_empty card_Diff_insert diff_Suc_1 empty_iff
     by simp
+  hence card_A'_from_x: "card A' = Suc x \<and> card (A' - {f a}) = x"
+    using suc bij_A_A' bij_without_a
+    by (simp add: bij_betw_same_card)
   hence "(\<Sum> a \<in> A. g a) = (\<Sum> a \<in> (A - {a}). g a) + g a"
     using suc add.commute card_Diff1_less_iff insert_Diff
           insert_Diff_single lessI sum.insert_remove
+          card_without_a
     by metis
   also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into (A - {a}) f a')) + g a"
-    using IH[of "(A - {a})" "(A' - {f a})"] bij_without_a card_without_a
+    using IH bij_without_a card_without_a
     by simp
   also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into A f a')) + g a"
-  proof -
-    have "\<forall> f A A'. bij_betw f (A::'a set) (A'::'b set) = (inj_on f A \<and> f ` A = A')"
-      unfolding bij_betw_def
-      by simp
-    hence "\<forall> a' \<in> (A' - {f a}). the_inv_into (A - {a}) f a' = the_inv_into A f a'"
-      using inj_on_A A'_sub_fa
-      by (simp add: inj_on_diff the_inv_into_f_eq)
-    thus ?thesis
-      by simp
-  qed
+    using inv_without_a
+    by simp
   also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into A f a')) + g (the_inv_into A f (f a))"
     using a_in_A bij_A_A'
     by (simp add: bij_betw_imp_inj_on the_inv_into_f_f)
   also have "\<dots> = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"
-  proof -
-    have "card A' = Suc x \<and> card (A' - {f a}) = x"
-      using suc bij_A_A' card_without_a bij_without_a
-      by (simp add: bij_betw_same_card)
-    thus ?thesis
-      using add.commute card_Diff1_less_iff insert_Diff
-            insert_Diff_single lessI sum.insert_remove
-      by metis
-  qed
+    using add.commute card_Diff1_less_iff insert_Diff
+          insert_Diff_single lessI sum.insert_remove
+          card_A'_from_x
+    by metis
   finally show "(\<Sum> a \<in> A. g a) = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"
     by simp
 qed
@@ -144,9 +141,9 @@ proof (unfold symmetry_def, safe)
     by fastforce
   also from pi_perm
   have "\<dots> = (\<Sum> i < length xs. \<bar>xs!(pi (inv pi i))\<bar>)"
-    using permutes_imp_bij sum_over_image_of_bijection[of pi "{..< length xs}" "{..< length xs}"]
-          bijection_def bijection.inv_left f_the_inv_into_f_bij_betw permutes_bij sum.cong
-    by (smt (verit, ccfv_SIG))
+    using permutes_imp_bij sum_over_image_of_bijection bijection_def sum.cong
+          bijection.inv_left f_the_inv_into_f_bij_betw permutes_bij
+    by (smt (verit, best))
   also from pi_perm
   have "\<dots> = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
     using permutes_inv_eq
@@ -155,7 +152,8 @@ proof (unfold symmetry_def, safe)
     by simp
   moreover from pi_perm pi_xs_ys
   have "length xs = length ys"
-    by auto
+    using perm perm_length
+    by metis
   ultimately show "l_one xs = l_one ys"
     using l_one.elims
     by metis

@@ -205,7 +205,7 @@ lemma eq_vote_cond_anon: "consensus_condition_anonymity eq_vote_cond"
 proof (unfold eq_vote_cond.simps)
   show "consensus_condition_anonymity (\<lambda> E. \<exists> x. eq_vote_cond' x E)"
     using eq_vote_cond'_anon cond_anon_if_ex_cond_anon
-    by auto
+    by blast
 qed
 
 text \<open>
