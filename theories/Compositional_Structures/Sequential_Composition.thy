@@ -29,6 +29,24 @@ fun sequential_composition :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Mo
                   (reject m A p) \<union> (reject n new_A new_p),
                   defer n new_A new_p))"
 
+fun sequential_composition' :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module \<Rightarrow>
+        'a Electoral_Module" where
+  "sequential_composition' m n A pr =
+      (let (mel,mrej,mdef) = m A pr in
+      
+      let newA = mdef in
+      let new_p = limit_profile newA pr in
+    
+      let (nel,nrej,ndef) = n newA new_p in
+      
+      (mel \<union> nel, mrej \<union> nrej, ndef))"
+
+lemma seqcomp_alt_eq:
+  shows "sequential_composition' = sequential_composition"
+    unfolding sequential_composition'.simps sequential_composition.simps apply auto
+    by (metis (no_types, lifting) case_prod_beta')
+
+
 abbreviation sequence ::
   "'a Electoral_Module \<Rightarrow> 'a Electoral_Module \<Rightarrow> 'a Electoral_Module"
      (infix "\<triangleright>" 50) where
