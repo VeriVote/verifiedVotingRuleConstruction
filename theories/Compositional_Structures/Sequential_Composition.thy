@@ -43,7 +43,7 @@ fun sequential_composition' :: "'a Electoral_Module \<Rightarrow> 'a Electoral_M
 
 lemma seqcomp_alt_eq:
   shows "sequential_composition' = sequential_composition"
-    unfolding sequential_composition'.simps sequential_composition.simps apply auto
+    unfolding sequential_composition'.simps  sequential_composition.simps apply auto
     by (metis (no_types, lifting) case_prod_beta')
 
 
@@ -275,7 +275,7 @@ proof -
                 defer n ?new_A ?new_p)"
     by simp
   thus ?thesis
-    unfolding sequential_composition.simps
+    unfolding seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
     by metis
 qed
 
@@ -320,7 +320,7 @@ proof -
       defer n ?new_A ?new_p)"
     by simp
   thus ?thesis
-    unfolding sequential_composition.simps
+    unfolding seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
     by metis
 qed
 
@@ -377,7 +377,7 @@ proof
     by auto
   thus "elect (m \<triangleright> n) A p = elect m A p"
     using fst_conv
-    unfolding sequential_composition.simps
+    unfolding seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
     by metis
 next
   have rej_empty:
@@ -395,7 +395,7 @@ next
     by (metis (no_types))
   thus "snd ((m \<triangleright> n) A p) = snd (m A p)"
     using rej_empty empty_defer module_n prof_no_alt
-    by simp
+    by (simp add: seqcomp_alt_eq)
 qed
 
 lemma seq_comp_def_then_elect:
@@ -445,18 +445,76 @@ next
     "\<exists> a \<in> A. elect (m \<triangleright> n) A p =
         elect n {a} (limit_profile {a} p)"
     using prod.sel(1) prod.sel(2) sup_bot.left_neutral
-    unfolding sequential_composition.simps
+    unfolding seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
     by metis
   with def_card def electing_n n_electing_m f_prof
   have
     "\<exists> a \<in> A. elect (m \<triangleright> n) A p = {a}"
     using electing_for_only_alt prod.sel(1) def_presv_fin_prof sup_bot.left_neutral
-    unfolding non_electing_def sequential_composition.simps
+    unfolding seqcomp_alt_eq non_electing_def seqcomp_alt_eq sequential_composition.simps
     by metis
   with def def_card electing_n n_electing_m f_prof res_m
   show ?thesis
     using def_presv_fin_prof electing_for_only_alt fst_conv sup_bot.left_neutral
-    unfolding non_electing_def sequential_composition.simps
+    unfolding non_electing_def seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
+    by metis
+qed
+
+lemma seq_comp_def_then_elect2:
+  assumes
+    n_electing_m: "non_electing m" and
+   def_card:
+    "card (defer m A p) = 1" and
+    electing_n: "electing n" and
+    f_prof: "finite_profile A p"
+  shows "elect (m \<triangleright> n) A p = defer m A p"
+proof cases
+  assume "A = {}"
+  with electing_n n_electing_m f_prof
+  show ?thesis
+    using bot.extremum_uniqueI defer_in_alts elect_in_alts seq_comp_sound
+    unfolding electing_def non_electing_def
+    by metis
+next
+  assume assm: "A \<noteq> {}"
+  from n_electing_m f_prof
+  have ele: "elect m A p = {}"
+    unfolding non_electing_def
+    by simp
+  with n_electing_m f_prof def_card
+  have def:
+    "\<exists> a \<in> A. defer m A p = {a}"
+    using card_1_singletonE defer_in_alts singletonI subsetCE
+    unfolding non_electing_def
+    by metis
+  from ele def n_electing_m
+  have rej:
+    "\<exists> a \<in> A. reject m A p = A - {a}"
+    using Diff_empty def_card f_prof reject_not_elec_or_def
+    unfolding defers_def
+    by (metis non_electing_def)    
+  from ele rej def n_electing_m f_prof
+  have res_m:
+    "\<exists> a \<in> A. m A p = ({}, A - {a}, {a})"
+    using Diff_empty combine_ele_rej_def reject_not_elec_or_def
+    unfolding non_electing_def
+    by metis
+  hence
+    "\<exists> a \<in> A. elect (m \<triangleright> n) A p =
+        elect n {a} (limit_profile {a} p)"
+    using prod.sel(1) prod.sel(2) sup_bot.left_neutral
+    unfolding seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
+    by metis
+  with def_card def electing_n n_electing_m f_prof
+  have
+    "\<exists> a \<in> A. elect (m \<triangleright> n) A p = {a}"
+    using electing_for_only_alt prod.sel(1) def_presv_fin_prof sup_bot.left_neutral
+    unfolding seqcomp_alt_eq non_electing_def seqcomp_alt_eq sequential_composition.simps
+    by metis
+  with def def_card electing_n n_electing_m f_prof res_m
+  show ?thesis
+    using def_presv_fin_prof electing_for_only_alt fst_conv sup_bot.left_neutral
+    unfolding non_electing_def seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
     by metis
 qed
 
@@ -467,8 +525,10 @@ lemma seq_comp_def_card_bounded:
     f_prof: "finite_profile A p"
   shows "card (defer (m \<triangleright> n) A p) \<le> card (defer m A p)"
   using card_mono defer_in_alts module_m module_n f_prof def_presv_fin_prof snd_conv
-  unfolding sequential_composition.simps
+  unfolding seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
   by metis
+
+
 
 lemma seq_comp_def_set_bounded:
   assumes
@@ -477,7 +537,7 @@ lemma seq_comp_def_set_bounded:
     f_prof: "finite_profile A p"
   shows "defer (m \<triangleright> n) A p \<subseteq> defer m A p"
   using defer_in_alts module_m module_n prod.sel(2) f_prof def_presv_fin_prof
-  unfolding sequential_composition.simps
+  unfolding seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
   by metis
 
 lemma seq_comp_defers_def_set:
@@ -489,7 +549,7 @@ lemma seq_comp_defers_def_set:
     "defer (m \<triangleright> n) A p =
       defer n (defer m A p) (limit_profile (defer m A p) p)"
   using snd_conv
-  unfolding sequential_composition.simps
+  unfolding seqcomp_alt_eq  seqcomp_alt_eq sequential_composition.simps
   by metis
 
 lemma seq_comp_def_then_elect_elec_set:
@@ -502,7 +562,7 @@ lemma seq_comp_def_then_elect_elec_set:
       elect n (defer m A p) (limit_profile (defer m A p) p) \<union>
       (elect m A p)"
   using Un_commute fst_conv
-  unfolding sequential_composition.simps
+  unfolding seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
   by metis
 
 lemma seq_comp_elim_one_red_def_set:
@@ -514,7 +574,7 @@ lemma seq_comp_elim_one_red_def_set:
   shows "defer (m \<triangleright> n) A p \<subset> defer m A p"
   using enough_leftover module_m module_n f_prof snd_conv
         def_presv_fin_prof single_elim_imp_red_def_set
-  unfolding sequential_composition.simps
+  unfolding seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
   by metis
 
 lemma seq_comp_def_set_sound:
@@ -601,7 +661,8 @@ proof -
     proof (safe)
       show "electoral_module (m \<triangleright> n)"
         using emod_reject_m emod_reject_n
-        by simp
+          seq_comp_sound by auto
+     
     next
       fix
         A :: "'a set" and
@@ -677,7 +738,7 @@ proof (unfold non_electing_def, safe)
     unfolding non_electing_def
     by blast
   thus "electoral_module (m \<triangleright> n)"
-    by simp
+    using seq_comp_sound by auto
 next
   fix
     A :: "'a set" and
@@ -691,7 +752,7 @@ next
   show "x \<in> {}"
     unfolding non_electing_def
     using seq_comp_def_then_elect_elec_set def_presv_fin_prof
-          Diff_empty Diff_partition empty_subsetI
+      Diff_empty Diff_partition empty_subsetI
     by metis
 qed
 
@@ -717,7 +778,7 @@ proof -
     "\<forall> A p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow>
         defer m1 A p \<noteq> {}"
     using One_nat_def Suc_leI card_eq_0_iff
-          card_gt_0_iff zero_neq_one
+      card_gt_0_iff zero_neq_one
     by metis
   thus ?thesis
   proof -
@@ -755,7 +816,7 @@ proof -
     with f_mod f_elect def_card_one
     show ?thesis
       using seq_comp_def_then_elect_elec_set def_presv_fin_prof
-            def_m1_not_empty bot_eq_sup_iff
+        def_m1_not_empty bot_eq_sup_iff
       by metis
   qed
 qed
@@ -787,7 +848,7 @@ proof -
     by blast
   hence mono_m: "m A p = m A q"
     using monotone_m def_and_lifted modules profile_p
-          seq_comp_def_set_trans
+      seq_comp_def_set_trans
     unfolding defer_lift_invariance_def
     by metis
   hence new_A_eq: "?new_Ap = ?new_Aq"
@@ -795,7 +856,7 @@ proof -
   have defer_eq:
     "defer (m \<triangleright> n) A p = defer n ?new_Ap ?new_p"
     using snd_conv
-    unfolding sequential_composition.simps
+    unfolding seqcomp_alt_eq seqcomp_alt_eq sequential_composition.simps
     by metis
   hence mono_n:
     "n ?new_Ap ?new_p = n ?new_Aq ?new_q"
@@ -851,7 +912,7 @@ proof -
           (Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a \<or>
            (?new_p!i) = (?new_q!i))"
       using limit_lifted_imp_eq_or_lifted defer_in_alts
-            limit_prof_presv_size nth_map
+        limit_prof_presv_size nth_map
       unfolding Profile.lifted_def limit_profile.simps
       by (metis (no_types, lifting))
     with 0 eql_lengths mono_m
@@ -861,7 +922,7 @@ proof -
   qed
   from mono_m mono_n
   show ?thesis
-    unfolding sequential_composition.simps
+    unfolding seqcomp_alt_eq sequential_composition.simps
     by (metis (full_types))
 qed
 
@@ -875,7 +936,7 @@ theorem seq_comp_presv_def_lift_inv[simp]:
     monotone_n: "defer_lift_invariance n"
   shows "defer_lift_invariance (m \<triangleright> n)"
   using monotone_m monotone_n def_lift_inv_seq_comp_help
-        seq_comp_sound defer_lift_invariance_def
+    seq_comp_sound defer_lift_invariance_def
   by (metis (full_types))
 
 text \<open>
@@ -902,7 +963,7 @@ proof (unfold defers_def, safe)
     by simp
   show "electoral_module (m \<triangleright> n)"
     using electoral_mod_m electoral_mod_n
-    by simp
+    using seq_comp_sound by auto 
 next
   fix
     A :: "'a set" and
@@ -1052,13 +1113,13 @@ next
         by metis
       ultimately show
         "(m \<triangleright> m2) S p = (m \<triangleright> m2) S q"
-        unfolding sequential_composition.simps
+        unfolding seqcomp_alt_eq sequential_composition.simps
         by (metis (full_types))
     qed
     moreover have
       "\<forall> a \<in> A. \<forall> p. finite_profile S p \<longrightarrow> a \<in> reject (m \<triangleright> m2) S p"
       using A UnI1 prod.sel
-      unfolding sequential_composition.simps
+      unfolding seqcomp_alt_eq sequential_composition.simps
       by metis
     ultimately show
       "A \<subseteq> S \<and>
@@ -1096,7 +1157,7 @@ proof (unfold monotonicity_def, safe)
     by simp
   show "electoral_module (m \<triangleright> n)"
     using electoral_mod_m electoral_mod_n
-    by simp
+    seq_comp_sound by auto
 next
   fix
     A :: "'a set" and
@@ -1142,7 +1203,7 @@ proof (unfold defer_lift_invariance_def, safe)
     by metis
   show "electoral_module (m \<triangleright> n)"
     using electoral_mod_m electoral_mod_n
-    by simp
+    using seq_comp_sound by auto
 next
   fix
     A :: "'a set" and
@@ -1235,7 +1296,7 @@ next
       have emod_n_then_mn:
         "electoral_module n \<longrightarrow> electoral_module (m \<triangleright> n)"
         using electoral_mod_m
-        by simp
+        using seq_comp_sound by auto
       have "defers (Suc 0) n"
         using defers_1
         by simp
@@ -1343,7 +1404,7 @@ next
         by (simp add: electoral_mod_m eq_def_and_elect_imp_eq)
       hence "(m \<triangleright> n) A p = (m \<triangleright> n) A q"
         using same_profile
-        by auto
+        by (auto simp add: seqcomp_alt_eq)
       thus ?thesis
         by blast
     next

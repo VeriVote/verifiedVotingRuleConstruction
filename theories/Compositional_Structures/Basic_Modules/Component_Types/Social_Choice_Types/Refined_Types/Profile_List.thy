@@ -1,3 +1,8 @@
+(*  File:       Profile_List.thy
+    Copyright   2022  Karlsruhe Institute of Technology (KIT)
+*)
+\<^marker>\<open>creator "Valentin Springsklee, Karlsruhe Institute of Technology (KIT)"\<close>
+
 theory Profile_List
   imports "../Profile" 
     Preference_List
@@ -36,8 +41,5 @@ proof (-)
   from wf assms this show "linear_order_on A ((pl_to_pr_\<alpha> pl) ! i)"
     by (metis linorder_l_imp_rel ir length_map nth_map pl_to_pr_\<alpha>_def)
 qed
-
-
-
 
 end
