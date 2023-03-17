@@ -1,8 +1,9 @@
 (*  File:       Blacks_Rule.thy
-    Copyright   2021  Karlsruhe Institute of Technology (KIT)
+    Copyright   2023  Karlsruhe Institute of Technology (KIT)
 *)
 \<^marker>\<open>creator "Stephan Bohr, Karlsruhe Institute of Technology (KIT)"\<close>
 \<^marker>\<open>contributor "Michael Kirsten, Karlsruhe Institute of Technology (KIT)"\<close>
+\<^marker>\<open>contributor "Valentin Springsklee, Karlsruhe Institute of Technology (KIT)"\<close>
 
 section \<open>Black's Rule\<close>
 
