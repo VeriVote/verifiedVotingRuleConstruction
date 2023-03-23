@@ -3,11 +3,23 @@
 *)
 \<^marker>\<open>creator "Valentin Springsklee, Karlsruhe Institute of Technology (KIT)"\<close>
 
+
+chapter \<open>List Data Type for Ranking\<close>
+
+section \<open>Preference Relation\<close>
+
 theory Preference_List
   imports 
     "../Preference_Relation"
     "List-Index.List_Index"
 begin
+
+text \<open>
+Express Ranking of Alternatives as ordered list of alternative.
+Transfer the required functionality from relations.
+\<close>
+
+subsection \<open>Definition\<close>
 
 text \<open>                          
   ordered from most to least preferred candidate
@@ -17,6 +29,8 @@ type_synonym 'a Preference_List = "'a list"
 
 definition well_formed_pl :: "'a Preference_List \<Rightarrow> bool" where
   "well_formed_pl pl \<equiv> distinct pl"
+
+subsection \<open>Ranking\<close>
 
 text \<open>
   rank 1 is top prefernce, rank 0 is not in list
@@ -128,11 +142,21 @@ lemma above_trans:
   using assms
   by (simp add: above_l_def set_take_subset_set_take) 
 
+text \<open>                          
+  Valid ballots
+\<close>
+
 abbreviation ballot_on :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> bool" where
   "ballot_on A pl \<equiv> well_formed_pl pl \<and> linear_order_on_l A pl"
 
+text \<open>                          
+  A list based ranking can be abstracted to a relation with the corresponding abstraction function.
+\<close>
+
 definition pl_\<alpha> :: "'a Preference_List \<Rightarrow> 'a Preference_Relation" where
   "pl_\<alpha> l = {(a, b). a \<lesssim>\<^sub>l b}"
+
+subsection \<open>Correctness of Transferred Functions\<close>
 
 
 lemma is_less_preferred_than_eq:
@@ -151,8 +175,6 @@ unfolding pl_\<alpha>_def linear_order_on_l_def linear_order_on_def
   Preference_List.limited_def is_less_preferred_than_l.simps
   by (auto simp add: index_size_conv)
 
-find_theorems find_index
-
 lemma limit_eq:
   assumes wf: "well_formed_pl bal"
   shows "pl_\<alpha> (limit_l A bal) = limit A (pl_\<alpha> bal)"
@@ -169,7 +191,6 @@ next
     by presburger
 qed
   
-
 
 theorem aboveeq: 
   fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
@@ -254,6 +275,7 @@ theorem rankeq: fixes A :: "'a set" and l :: "'a Preference_List" and a :: 'a
   assumes wf: "well_formed_pl l"
   shows "rank_l l a = Preference_Relation.rank (pl_\<alpha> l) a"
   using rankeq_aux assms by metis
+
 
 theorem linorder_l_imp_rel:
   fixes l :: "'a Preference_List"
