@@ -24,8 +24,8 @@ subsection \<open>Definition\<close>
 fun pass_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
   "pass_module n r A p =
     ({},
-    {a \<in> A. card(above (limit A r) a) > n},
-    {a \<in> A. card(above (limit A r) a) \<le> n})"
+    {a \<in> A. rank (limit A r) a > n},
+    {a \<in> A. rank (limit A r) a \<le> n})"
 
 subsection \<open>Soundness\<close>
 
