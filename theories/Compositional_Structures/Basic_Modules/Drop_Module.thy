@@ -26,8 +26,8 @@ subsection \<open>Definition\<close>
 fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
   "drop_module n r A p =
     ({},
-    {a \<in> A. card(above (limit A r) a) \<le> n},
-    {a \<in> A. card(above (limit A r) a) > n})"
+    {a \<in> A. rank (limit A r) a \<le> n},
+    {a \<in> A. rank (limit A r) a > n})"
 
 subsection \<open>Soundness\<close>
 

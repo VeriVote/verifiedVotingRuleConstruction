@@ -383,7 +383,7 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
   qed
 qed
 
-section \<open>Aux lemmas for constructing establisched voting rules as max eliminator\<close>
+section \<open>Aux lemmas for constructing established voting rules as max eliminator\<close>
 
 lemma score_bounded:
   fixes f:: "'a \<Rightarrow> nat"

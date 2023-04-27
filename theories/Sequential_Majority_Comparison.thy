@@ -26,8 +26,8 @@ subsection \<open>Definition\<close>
 
 fun smc :: "'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
   "smc x A p =
-      ((((((pass_module 2 x) \<triangleright> ((plurality\<down>) \<triangleright> (pass_module 1 x))) \<parallel>\<^sub>\<up>
-      (drop_module 2 x)) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) \<triangleright> elect_module) A p)"
+      ((elector ((((pass_module 2 x) \<triangleright> ((plurality\<down>) \<triangleright> (pass_module 1 x))) \<parallel>\<^sub>\<up>
+      (drop_module 2 x)) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d)) A p)"
 
 subsection \<open>Soundness\<close>
 
@@ -276,7 +276,7 @@ proof -
   show ?thesis
     using 2 3 assms seq_comp_electing smc_sound
     unfolding Defer_One_Loop_Composition.iter.simps
-              smc.simps electing_def
+              smc.simps electing_def elector.simps
     by metis
 qed
 
@@ -390,7 +390,7 @@ proof -
     using 0 1 2 3 assms seq_comp_mono
     unfolding Electoral_Module.monotonicity_def
               Defer_One_Loop_Composition.iter.simps
-              smc_sound smc.simps
+              smc_sound smc.simps elector.simps
     by (metis (full_types))
 qed
 

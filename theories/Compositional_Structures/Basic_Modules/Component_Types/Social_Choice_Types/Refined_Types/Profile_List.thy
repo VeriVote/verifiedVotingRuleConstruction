@@ -1,3 +1,10 @@
+(*  File:       Profile_List.thy
+    Copyright   2022  Karlsruhe Institute of Technology (KIT)
+*)
+\<^marker>\<open>creator "Valentin Springsklee, Karlsruhe Institute of Technology (KIT)"\<close>
+
+section \<open>Profile of List-based Ballots\<close>
+
 theory Profile_List
   imports "../Profile" 
     Preference_List
@@ -14,6 +21,8 @@ lemma length_preserving:
   fixes pr:: "'a Profile_List"
   shows "length pl = length (pl_to_pr_\<alpha> pl)" unfolding pl_to_pr_\<alpha>_def
   by simp
+
+text \<open>Valid (list-based) profile predicate. \<close>
 
 definition profile_l :: "'a set \<Rightarrow> 'a Profile_List \<Rightarrow> bool" where
   "profile_l A pl \<equiv> (\<forall> i < length pl. ballot_on A (pl!i))"
@@ -36,8 +45,5 @@ proof (-)
   from wf assms this show "linear_order_on A ((pl_to_pr_\<alpha> pl) ! i)"
     by (metis linorder_l_imp_rel ir length_map nth_map pl_to_pr_\<alpha>_def)
 qed
-
-
-
 
 end

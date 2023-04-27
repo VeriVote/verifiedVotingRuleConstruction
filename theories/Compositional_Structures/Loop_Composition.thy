@@ -227,7 +227,7 @@ proof (induct arbitrary: acc rule: less_induct)
     "\<forall> (f::'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) g.
       (electoral_module f \<and> electoral_module g) \<longrightarrow>
         electoral_module (f \<triangleright> g)"
-    by auto
+    using seq_comp_sound by auto 
   hence "electoral_module (acc \<triangleright> m)"
     using less.prems module_m
     by metis
@@ -269,7 +269,7 @@ proof (induct arbitrary: acc rule: less_induct)
   case (less)
   have emod_acc_m: "electoral_module (acc \<triangleright> m)"
     using less.prems module_m
-    by simp
+    using seq_comp_sound by auto 
   have "\<forall> A A'. infinite (A::'a set) \<or> \<not> A' \<subset> A \<or> card A' < card A"
     using psubset_card_mono
     by metis
@@ -635,7 +635,7 @@ proof (induct n arbitrary: acc rule: less_induct)
       "\<forall> (f::'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) g.
         (non_electing f \<and> non_electing g) \<longrightarrow>
           non_electing (f \<triangleright> g)"
-      by simp
+      using seq_comp_presv_non_electing by blast        
     hence seq_acc_m_non_elect: "non_electing (acc \<triangleright> m)"
       using acc_non_elect non_electing_m
       by blast
@@ -691,7 +691,7 @@ lemma loop_comp_helper_iter_elim_def_n_helper:
   shows "card (defer (loop_comp_helper acc m t) A p) = x"
   using n_ge_x def_card_gt_one acc_nonelect n_acc_defer_card
 proof (induct n arbitrary: acc rule: less_induct)
-  case (less n)
+  case (less)
   have subset:
     "(card (defer acc A p) > 1 \<and> finite_profile A p \<and> electoral_module acc) \<longrightarrow>
         defer (acc \<triangleright> m) A p \<subset> defer acc A p"
@@ -761,7 +761,7 @@ proof (induct n arbitrary: acc rule: less_induct)
         by metis
       hence "electoral_module acc \<longrightarrow> i = card (defer acc A p) - 1"
         using snd_conv i_is_new_card
-        unfolding sequential_composition.simps
+        unfolding seqcomp_alt_eq sequential_composition.simps
         by metis
       hence "electoral_module acc \<longrightarrow> i \<ge> x"
         using card_too_big
@@ -785,7 +785,7 @@ proof (induct n arbitrary: acc rule: less_induct)
       thus ?thesis
       proof cases
         assume new_card_greater_x: "electoral_module acc \<longrightarrow> i > x"
-        hence "electoral_module acc \<longrightarrow> 1 < card (defer (acc \<triangleright> m) A p)"
+        hence morethanonedef: "electoral_module acc \<longrightarrow> 1 < card (defer (acc \<triangleright> m) A p)"
           using x_greater_zero i_is_new_card
           by linarith
         moreover have new_card_still_big_enough2_step:
@@ -803,17 +803,19 @@ proof (induct n arbitrary: acc rule: less_induct)
               electoral_module (acc \<triangleright> m)"
           using non_electing_m seq_comp_sound
           unfolding non_electing_def
-          by simp
+          using seq_comp_sound by auto
         moreover have non_electing_new:
           "non_electing acc \<longrightarrow> non_electing (acc \<triangleright> m)"
           using non_electing_m
-          by simp
+          using seq_comp_presv_non_electing by blast
+           
         ultimately have card_x:
           "(n = card (defer acc A p) \<and> non_electing acc \<and>
               electoral_module acc) \<longrightarrow>
                   card (defer (loop_comp_helper (acc \<triangleright> m) m t) A p) = x"
           using less.hyps i_is_new_card new_card_greater_x
-          by metis
+          using less.prems(4) by blast
+          
         have f1: "loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p"
           using enough_leftover f_prof less.prems(3) rec_step
           by metis
@@ -823,7 +825,8 @@ proof (induct n arbitrary: acc rule: less_induct)
           by simp
         thus ?thesis
           using f1 card_x less.prems(3) less.prems(4)
-          by presburger
+          by (metis morethanonedef enough_leftover f_prof i_is_new_card less.hyps new_card_still_big_enough2_step non_electing_new psubset_card_mono step_profile subset)
+          
       next
         assume i_not_gt_x: "\<not>(electoral_module acc \<longrightarrow> i > x)"
         hence "electoral_module acc \<and> electoral_module m \<longrightarrow> i = x"

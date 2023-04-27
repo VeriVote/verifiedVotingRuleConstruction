@@ -651,7 +651,14 @@ theorem above_rank: assumes
  lo: "linear_order_on A r"
   shows "above r a = {a} \<longleftrightarrow> rank r a = 1"
   by (metis lo rankone1 rankone2)
-  
+
+lemma rank_unique:
+  assumes "linear_order_on A r" and "finite A"
+  shows "\<forall> a \<in> A. \<forall> b \<in> A. b \<noteq> a \<longrightarrow> rank r a \<noteq> rank r b "
+  unfolding rank.simps above_def
+  using assms unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def total_on_def
+  apply auto
+  by (smt (verit, best) antisym_def assms(1) card_subset_eq connex_imp_refl lin_ord_imp_connex mem_Collect_eq refl_on_domain rev_finite_subset subset_eq transE)
 
 lemma above_presv_limit:
   shows "above (limit A r) x \<subseteq> A"
