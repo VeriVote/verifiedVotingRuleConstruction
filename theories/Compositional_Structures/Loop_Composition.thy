@@ -771,15 +771,15 @@ proof (induct n arbitrary: acc rule: less_induct)
   have mod_acc: "electoral_module acc"
     using less.prems(3) non_electing_def
     by metis
-  hence step_reduces_defer_set:
-    "defer (acc \<triangleright> m) A p \<subset> defer acc A p"
+  hence step_reduces_defer_set: "defer (acc \<triangleright> m) A p \<subset> defer acc A p"
     using seq_comp_elim_one_red_def_set single_elimination
           f_prof less.prems(2)
     by metis
   thus ?case
-  proof (cases)
+  proof (cases "t (acc A p)")
+    case True
     assume term_satisfied: "t (acc A p)"
-    have "card (defer_r (loop_comp_helper acc m t A p)) = x"
+    thus "card (defer_r (loop_comp_helper acc m t A p)) = x"
       using loop_comp_helper.simps(1) term_satisfied terminate_if_n_left
       by metis
   next
@@ -790,8 +790,7 @@ proof (induct n arbitrary: acc rule: less_induct)
     have "\<not>(infinite (defer acc A p))"
       using def_presv_fin_prof f_prof mod_acc
       by (metis (full_types))
-    hence rec_step:
-      "loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p"
+    hence rec_step: "loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p"
       using False loop_comp_helper.simps(2) step_reduces_defer_set
       by metis
     have card_too_big: "card (defer acc A p) > x"
@@ -803,49 +802,6 @@ proof (induct n arbitrary: acc rule: less_induct)
     obtain k where
       new_card_k: "k = card (defer (acc \<triangleright> m) A p)"
       by metis
-    thus ?case
-    proof (cases)
-      assume card_too_small:
-        "card (defer acc A p) < x"
-      thus ?thesis
-        using not_le card_too_small less.prems(1, 4) not_le
-        by (metis (no_types))
-    next
-      assume old_card_at_least_x: "\<not>(card (defer acc A p) < x)"
-      obtain i where
-        i_is_new_card: "i = card (defer (acc \<triangleright> m) A p)"
-        by simp
-      with card_not_eq_x
-      have card_too_big:
-        "card (defer acc A p) > x"
-        using nat_neq_iff old_card_at_least_x
-        by simp
-      hence enough_leftover:
-        "card (defer acc A p) > 1"
-        using x_greater_zero
-        by simp
-      have "electoral_module acc \<longrightarrow> (defer acc A p) \<subseteq> A"
-        by (simp add: defer_in_alts f_prof)
-      hence step_profile:
-        "electoral_module acc \<longrightarrow>
-            finite_profile (defer acc A p)
-              (limit_profile (defer acc A p) p)"
-        using f_prof limit_profile_sound
-        by metis
-      hence
-        "electoral_module acc \<longrightarrow>
-            card (defer m (defer acc A p)
-              (limit_profile (defer acc A p) p)) =
-                card (defer acc A p) - 1"
-        using non_electing_m single_elimination
-              single_elim_decr_def_card_2 enough_leftover
-        by metis
-      hence "electoral_module acc \<longrightarrow> i = card (defer acc A p) - 1"
-        using snd_conv i_is_new_card
-        unfolding sequential_composition.simps
-        by metis
-      hence "electoral_module acc \<longrightarrow> i \<ge> x"
-        using card_too_big
     have "defer acc A p \<subseteq> A"
       using defer_in_alts f_prof mod_acc
       by metis
@@ -856,7 +812,7 @@ proof (induct n arbitrary: acc rule: less_induct)
     hence
       "card (defer m (defer acc A p) (limit_profile (defer acc A p) p)) =
         card (defer acc A p) - 1"
-      using enough_leftover non_electing_m single_elim_decr_def_card2
+      using enough_leftover non_electing_m single_elim_decr_def_card_2
             single_elimination
       by metis
     hence k_card: "k = card (defer acc A p) - 1"
@@ -871,68 +827,32 @@ proof (induct n arbitrary: acc rule: less_induct)
       case True
       hence "1 < card (defer (acc \<triangleright> m) A p)"
         using new_card_k x_greater_zero
-      proof (cases)
-        assume new_card_greater_x: "electoral_module acc \<longrightarrow> i > x"
-        hence "electoral_module acc \<longrightarrow> 1 < card (defer (acc \<triangleright> m) A p)"
-          using x_greater_zero i_is_new_card
-          by linarith
-        moreover have new_card_still_big_enough2_step:
-          "electoral_module acc \<longrightarrow> x \<le> i"
-          using i_is_new_card new_card_still_big_enough
-          by metis
-        moreover have n_card_then_i_lt_n_step:
-          "n = card (defer acc A p) \<longrightarrow>
-              (electoral_module acc \<longrightarrow> i < n)"
-          using subset step_profile enough_leftover f_prof psubset_card_mono
-                i_is_new_card
-          by metis
-        moreover have acc_mod_then_acc_seq_m_mod_step:
-          "electoral_module acc \<longrightarrow>
-              electoral_module (acc \<triangleright> m)"
-          using non_electing_m seq_comp_sound
-          unfolding non_electing_def
-          by simp
-        moreover have non_electing_new:
-          "non_electing acc \<longrightarrow> non_electing (acc \<triangleright> m)"
-          using non_electing_m
-          by simp
-        ultimately have card_x:
-          "(n = card (defer acc A p) \<and> non_electing acc \<and>
-              electoral_module acc) \<longrightarrow>
-                  card (defer (loop_comp_helper (acc \<triangleright> m) m t) A p) = x"
-          using less.hyps i_is_new_card new_card_greater_x
-          by metis
-        have loop_comp_helper_seq:
-          "loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p"
-          using enough_leftover f_prof less.prems(3) rec_step
-          by metis
-        have "electoral_module acc"
-          using less.prems(3)
-          unfolding non_electing_def
-          by simp
-        thus ?thesis
-          using loop_comp_helper_seq card_x less.prems(3, 4)
-          by presburger
-      next
-        assume i_not_gt_x: "\<not>(electoral_module acc \<longrightarrow> i > x)"
-        hence "electoral_module acc \<and> electoral_module m \<longrightarrow> i = x"
-          using i_geq_x
-          by simp
-        hence "electoral_module acc \<and> electoral_module m \<longrightarrow> t ((acc \<triangleright> m) A p)"
-          using i_is_new_card terminate_if_n_left
-          by metis
-        hence
-          "electoral_module acc \<and> electoral_module m \<longrightarrow>
-              card (defer_r (loop_comp_helper (acc \<triangleright> m) m t A p)) = x"
-          using loop_comp_helper.simps(1) terminate_if_n_left
-          by metis
-        thus ?thesis
-          using i_not_gt_x dual_order.strict_iff_order i_is_new_card
-                loop_comp_helper.simps(1) new_card_still_big_enough
-                f_prof rec_step terminate_if_n_left
-                enough_leftover less.prems(3)
-          by metis
-      qed
+        by linarith
+      moreover have "k < n"
+        using step_reduces_defer_set step_profile psubset_card_mono
+              new_card_k less.prems(4)
+        by blast
+      moreover have "electoral_module (acc \<triangleright> m)"
+        using mod_acc eliminates_def seq_comp_sound
+              single_elimination
+        by metis
+      moreover have "non_electing (acc \<triangleright> m)"
+        using less.prems(3) non_electing_m
+        by simp
+      ultimately have
+        "card (defer (loop_comp_helper (acc \<triangleright> m) m t) A p) = x"
+        using new_card_k new_card_still_big_enough less.hyps
+        by metis
+      thus ?thesis
+        using rec_step
+        by presburger
+    next
+      case False (* k \<le> x (but actually, we can show k = x) *)
+      thus ?thesis
+        using dual_order.strict_iff_order new_card_k
+              new_card_still_big_enough rec_step
+              terminate_if_n_left
+        by simp
     qed
   qed
 qed
