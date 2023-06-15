@@ -57,8 +57,10 @@ instance proof
       enum_ex_alternative_def UNIV_alternative, simp_all)
 end
 
+(*
 value "drswap strong_unanimity {a, b, c :: alternative}
          [{(a, c), (b, c), (c, c), (a, b), (b, b), (a, a)},
           {(c, b), (a, b), (b, b), (c, a), (a, a), (c, c)}]"
+*)
 
 end

@@ -36,6 +36,11 @@ theorem minimax_sound: "electoral_module minimax"
 subsection \<open>Lemma\<close>
 
 lemma non_cond_winner_minimax_score:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    w :: "'a" and
+    l :: "'a"
   assumes
     prof: "profile A p" and
     winner: "condorcet_winner A p w" and

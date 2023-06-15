@@ -29,6 +29,7 @@ abbreviation rev ::
 subsection \<open>Soundness\<close>
 
 theorem rev_comp_sound[simp]:
+  fixes m :: "'a Electoral_Module"
   assumes "electoral_module m"
   shows "electoral_module (revision_composition m)"
 proof -
@@ -59,6 +60,7 @@ text \<open>
 \<close>
 
 theorem rev_comp_non_electing[simp]:
+  fixes m :: "'a Electoral_Module"
   assumes "electoral_module m"
   shows "non_electing (m\<down>)"
   using assms
@@ -71,6 +73,7 @@ text \<open>
 \<close>
 
 theorem rev_comp_non_blocking[simp]:
+  fixes m :: "'a Electoral_Module"
   assumes "electing m"
   shows "non_blocking (m\<down>)"
 proof (unfold non_blocking_def, safe, simp_all)
@@ -106,6 +109,7 @@ text \<open>
 \<close>
 
 theorem rev_comp_def_inv_mono[simp]:
+  fixes m :: "'a Electoral_Module"
   assumes "invariant_monotonicity m"
   shows "defer_invariant_monotonicity (m\<down>)"
 proof (unfold defer_invariant_monotonicity_def, safe)

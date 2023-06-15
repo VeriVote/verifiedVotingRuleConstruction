@@ -38,6 +38,7 @@ text \<open>
 \<close>
 
 theorem smc_sound:
+  fixes x :: "'a Preference_Relation"
   assumes order: "linear_order x"
   shows "electoral_module (smc x)"
 proof (unfold electoral_module_def, simp, safe, simp_all)
@@ -203,6 +204,7 @@ text \<open>
 \<close>
 
 theorem smc_electing:
+  fixes x :: "'a Preference_Relation"
   assumes "linear_order x"
   shows "electing (smc x)"
 proof -
@@ -288,6 +290,7 @@ text \<open>
 \<close>
 
 theorem smc_monotone:
+  fixes x :: "'a Preference_Relation"
   assumes "linear_order x"
   shows "monotonicity (smc x)"
 proof -

@@ -20,18 +20,23 @@ options [browser_info, timeout = 300, document = pdf, document_output = "output"
 
 sessions
   "HOL-Combinatorics"
+  "List-Index"
 
 directories
   "Compositional_Structures"
   "Compositional_Structures/Basic_Modules"
   "Compositional_Structures/Basic_Modules/Component_Types"
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types"
+  "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Refined_Types"
 
 theories
 (* "Social-Choice Types" *)
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Preference_Relation"
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Result"
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Profile"
+(* "Refined Data Types" *)
+  "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Refined_Types/Preference_List"
+  "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Refined_Types/Profile_List"
 (* "Component Types" *)
   "Compositional_Structures/Basic_Modules/Component_Types/Electoral_Module"
   "Compositional_Structures/Basic_Modules/Component_Types/Evaluation_Function"

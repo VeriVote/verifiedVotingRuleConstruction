@@ -28,6 +28,7 @@ fun elector :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module" where
 subsection \<open>Soundness\<close>
 
 theorem elector_sound[simp]:
+  fixes m :: "'a Electoral_Module"
   assumes "electoral_module m"
   shows "electoral_module (elector m)"
   using assms
@@ -36,6 +37,7 @@ theorem elector_sound[simp]:
 subsection \<open>Electing\<close>
 
 theorem elector_electing[simp]:
+  fixes m :: "'a Electoral_Module"
   assumes
     module_m: "electoral_module m" and
     non_block_m: "non_blocking m"
@@ -99,6 +101,7 @@ text \<open>
 \<close>
 
 lemma dcc_imp_cc_elector:
+  fixes m :: "'a Electoral_Module"
   assumes "defer_condorcet_consistency m"
   shows "condorcet_consistency (elector m)"
 proof (unfold defer_condorcet_consistency_def
@@ -200,7 +203,7 @@ next
   thus "xa = x"
     using 1 2 condorcet_winner.simps assms empty_iff xa_in_A
           defer_condorcet_consistency_def 3 DiffI
-          cond_winner_unique3 insert_iff prod.sel(2)
+          cond_winner_unique_3 insert_iff prod.sel(2)
     by (metis (no_types, lifting))
 next
   fix
@@ -229,7 +232,7 @@ next
   ultimately show "x \<in> elect m A p"
     using 1 condorcet_winner.simps assms
           defer_condorcet_consistency_def
-          cond_winner_unique3 insert_iff eq_snd_iff
+          cond_winner_unique_3 insert_iff eq_snd_iff
     by (metis (no_types, lifting))
 next
   fix
