@@ -6,7 +6,7 @@
 section \<open>Preference (List) Profile\<close>
 
 theory Profile_List
-  imports "../Profile" 
+  imports "../Profile"
           Preference_List
 begin
 
@@ -17,6 +17,8 @@ text \<open>
 \<close>
 
 type_synonym 'a Profile_List = "('a Preference_List) list"
+
+type_synonym 'a Election_List = "('a set \<times> 'a Profile_List)"
 
 text \<open>
   Abstraction from profile list to profile.

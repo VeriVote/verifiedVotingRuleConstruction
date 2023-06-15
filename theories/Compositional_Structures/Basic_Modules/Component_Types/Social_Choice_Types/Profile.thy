@@ -30,6 +30,8 @@ text \<open>
 
 type_synonym 'a Profile = "('a Preference_Relation) list"
 
+type_synonym 'a Election = "('a set \<times> 'a Profile)"
+
 text \<open>
   A profile on a finite set of alternatives A contains only ballots that are
   linear orders on A.
