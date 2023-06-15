@@ -300,10 +300,10 @@ proof
         a \<in> reject_r (max_aggregator A
           (elect m A p, Aa, Ab) (Ac, Ad, Ae))"
     by force
-  with rej_a have
-    "let (e1, r1, d1) = m A p;
+  with rej_a
+  have "let (e1, r1, d1) = m A p;
           (e2, r2, d2) = n A p in
-      a \<in> reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2))"
+            a \<in> reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2))"
     by (simp add: prod.case_eq_if)
   hence
     "let (e1, r1, d1) = m A p;

@@ -18,6 +18,8 @@ text \<open>
 
 type_synonym 'a Profile_List = "('a Preference_List) list"
 
+type_synonym 'a Election_List = "('a set \<times> 'a Profile_List)"
+
 text \<open>
   Abstraction from profile list to profile.
 \<close>
