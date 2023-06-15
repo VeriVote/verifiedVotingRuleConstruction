@@ -36,7 +36,7 @@ subsection \<open>Properties\<close>
 
 definition agg_commutative :: "'a Aggregator \<Rightarrow> bool" where
   "agg_commutative agg \<equiv>
-    aggregator agg \<and> (\<forall>A e1 e2 d1 d2 r1 r2.
+    aggregator agg \<and> (\<forall> A e1 e2 d1 d2 r1 r2.
       agg A (e1, r1, d1) (e2, r2, d2) = agg A (e2, r2, d2) (e1, r1, d1))"
 
 definition agg_conservative :: "'a Aggregator \<Rightarrow> bool" where

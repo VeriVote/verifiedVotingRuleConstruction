@@ -69,7 +69,12 @@ fun leq_average_eliminator :: "'a Evaluation_Function \<Rightarrow>
 
 subsection \<open>Soundness\<close>
 
-lemma elim_mod_sound[simp]: "electoral_module (elimination_module e t r)"
+lemma elim_mod_sound[simp]:
+  fixes
+    e :: "'a Evaluation_Function" and
+    t :: "Threshold_Value" and
+    r :: "Threshold_Relation"
+  shows "electoral_module (elimination_module e t r)"
 proof (unfold electoral_module_def, safe)
   fix
     A :: "'a set" and
@@ -80,7 +85,11 @@ proof (unfold electoral_module_def, safe)
     by simp
 qed
 
-lemma less_elim_sound[simp]: "electoral_module (less_eliminator e t)"
+lemma less_elim_sound[simp]:
+  fixes
+    e :: "'a Evaluation_Function" and
+    t :: "Threshold_Value"
+  shows "electoral_module (less_eliminator e t)"
 proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
@@ -91,7 +100,11 @@ proof (unfold electoral_module_def, safe, simp)
     by safe
 qed
 
-lemma leq_elim_sound[simp]: "electoral_module (leq_eliminator e t)"
+lemma leq_elim_sound[simp]:
+  fixes
+    e :: "'a Evaluation_Function" and
+    t :: "Threshold_Value"
+  shows "electoral_module (leq_eliminator e t)"
 proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
@@ -102,7 +115,9 @@ proof (unfold electoral_module_def, safe, simp)
     by safe
 qed
 
-lemma max_elim_sound[simp]: "electoral_module (max_eliminator e)"
+lemma max_elim_sound[simp]:
+  fixes e :: "'a Evaluation_Function"
+  shows "electoral_module (max_eliminator e)"
 proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
@@ -113,48 +128,65 @@ proof (unfold electoral_module_def, safe, simp)
     by safe
 qed
 
-lemma min_elim_sound[simp]: "electoral_module (min_eliminator e)"
+lemma min_elim_sound[simp]:
+  fixes e :: "'a Evaluation_Function"
+  shows "electoral_module (min_eliminator e)"
 proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
     p :: "'a Profile"
   show
-    "{a \<in> A. e a A p \<le> Min {e x A p |x. x \<in> A}} \<noteq> A \<longrightarrow>
-      {a \<in> A. e a A p \<le> Min {e x A p |x. x \<in> A}} \<union> A = A"
+    "{a \<in> A. e a A p \<le> Min {e x A p | x. x \<in> A}} \<noteq> A \<longrightarrow>
+      {a \<in> A. e a A p \<le> Min {e x A p | x. x \<in> A}} \<union> A = A"
     by safe
 qed
 
-lemma less_avg_elim_sound[simp]: "electoral_module (less_average_eliminator e)"
+lemma less_avg_elim_sound[simp]:
+  fixes e :: "'a Evaluation_Function"
+  shows "electoral_module (less_average_eliminator e)"
 proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
     p :: "'a Profile"
   show
-    "{a \<in> A. e a A p < (\<Sum>x\<in>A. e x A p) div card A} \<noteq> A \<longrightarrow>
-      {a \<in> A. e a A p < (\<Sum>x\<in>A. e x A p) div card A} \<union> A = A"
+    "{a \<in> A. e a A p < (\<Sum> x \<in> A. e x A p) div card A} \<noteq> A \<longrightarrow>
+      {a \<in> A. e a A p < (\<Sum> x \<in> A. e x A p) div card A} \<union> A = A"
     by safe
 qed
 
-lemma leq_avg_elim_sound[simp]: "electoral_module (leq_average_eliminator e)"
+lemma leq_avg_elim_sound[simp]:
+  fixes e :: "'a Evaluation_Function"
+  shows "electoral_module (leq_average_eliminator e)"
 proof (unfold electoral_module_def, safe, simp)
   fix
     A :: "'a set" and
     p :: "'a Profile"
   show
-    "{a \<in> A. e a A p \<le> (\<Sum>x\<in>A. e x A p) div card A} \<noteq> A \<longrightarrow>
-      {a \<in> A. e a A p \<le> (\<Sum>x\<in>A. e x A p) div card A} \<union> A = A"
+    "{a \<in> A. e a A p \<le> (\<Sum> x \<in> A. e x A p) div card A} \<noteq> A \<longrightarrow>
+      {a \<in> A. e a A p \<le> (\<Sum> x \<in> A. e x A p) div card A} \<union> A = A"
     by safe
 qed
 
 subsection \<open>Non-Electing\<close>
 
 lemma elim_mod_non_electing:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    e :: "'a Evaluation_Function" and
+    t :: "Threshold_Value" and
+    r :: "Threshold_Relation"
   assumes profile: "finite_profile A p"
-  shows "non_electing (elimination_module e t r )"
+  shows "non_electing (elimination_module e t r)"
   unfolding non_electing_def
   by simp
 
 lemma less_elim_non_electing:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    e :: "'a Evaluation_Function" and
+    t :: "Threshold_Value"
   assumes profile: "finite_profile A p"
   shows "non_electing (less_eliminator e t)"
   using elim_mod_non_electing profile less_elim_sound
@@ -162,24 +194,41 @@ lemma less_elim_non_electing:
   by simp
 
 lemma leq_elim_non_electing:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    e :: "'a Evaluation_Function" and
+    t :: "Threshold_Value"
   assumes profile: "finite_profile A p"
   shows "non_electing (leq_eliminator e t)"
   unfolding non_electing_def
   by simp
 
 lemma max_elim_non_electing:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    e :: "'a Evaluation_Function"
   assumes profile: "finite_profile A p"
   shows "non_electing (max_eliminator e)"
   unfolding non_electing_def
   by simp
 
 lemma min_elim_non_electing:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    e :: "'a Evaluation_Function"
   assumes profile: "finite_profile A p"
   shows "non_electing (min_eliminator e)"
   unfolding non_electing_def
   by simp
 
 lemma less_avg_elim_non_electing:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    e :: "'a Evaluation_Function"
   assumes profile: "finite_profile A p"
   shows "non_electing (less_average_eliminator e)"
 proof (unfold non_electing_def, safe)
@@ -187,13 +236,13 @@ proof (unfold non_electing_def, safe)
     by simp
 next
   fix
-    A :: "'b set" and
-    p :: "'b Profile" and
-    x :: "'b"
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a"
   assume
     fin_A: "finite A" and
     prof_p: "profile A p" and
-    elect_x: "x \<in> elect (less_average_eliminator e) A p"
+    elect_a: "a \<in> elect (less_average_eliminator e) A p"
   hence fin_prof: "finite_profile A p"
     by metis
   have "non_electing (less_average_eliminator e)"
@@ -203,12 +252,16 @@ next
     using fin_prof
     unfolding non_electing_def
     by metis
-  thus "x \<in> {}"
-    using elect_x
+  thus "a \<in> {}"
+    using elect_a
     by metis
 qed
 
 lemma leq_avg_elim_non_electing:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    e :: "'a Evaluation_Function"
   assumes profile: "finite_profile A p"
   shows "non_electing (leq_average_eliminator e)"
 proof (unfold non_electing_def, safe)
@@ -216,24 +269,22 @@ proof (unfold non_electing_def, safe)
     by simp
 next
   fix
-    A :: "'b set" and
-    p :: "'b Profile" and
-    x :: "'b"
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a"
   assume
     fin_A: "finite A" and
     prof_p: "profile A p" and
-    elect_x: "x \<in> elect (leq_average_eliminator e) A p"
-  hence fin_prof: "finite_profile A p"
-    by metis
+    elect_a: "a \<in> elect (leq_average_eliminator e) A p"
   have "non_electing (leq_average_eliminator e)"
     unfolding non_electing_def
     by simp
   hence "{} = elect (leq_average_eliminator e) A p"
-    using fin_prof
+    using fin_A prof_p
     unfolding non_electing_def
     by metis
-  thus "x \<in> {}"
-    using elect_x
+  thus "a \<in> {}"
+    using elect_a
     by metis
 qed
 
@@ -245,6 +296,10 @@ text \<open>
 \<close>
 
 theorem cr_eval_imp_ccomp_max_elim[simp]:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    e :: "'a Evaluation_Function"
   assumes
     profile: "finite_profile A p" and
     rating: "condorcet_rating e"
@@ -254,68 +309,71 @@ proof (unfold condorcet_compatibility_def, safe)
     by simp
 next
   fix
-    A :: "'b set" and
-    p :: "'b Profile" and
-    w :: "'b"
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a"
   assume
-    c_win: "condorcet_winner A p w" and
-    rej_w: "w \<in> reject (max_eliminator e) A p"
-  have "e w A p = Max {e a A p | a. a \<in> A}"
+    c_win: "condorcet_winner A p a" and
+    rej_a: "a \<in> reject (max_eliminator e) A p"
+  have "e a A p = Max {e b A p | b. b \<in> A}"
     using c_win cond_winner_imp_max_eval_val rating
     by fastforce
-  hence "w \<notin> reject (max_eliminator e) A p"
+  hence "a \<notin> reject (max_eliminator e) A p"
     by simp
   thus "False"
-    using rej_w
+    using rej_a
     by linarith
 next
   fix
-    A :: "'b set" and
-    p :: "'b Profile" and
-    l :: "'b"
-  assume elect_l: "l \<in> elect (max_eliminator e) A p"
-  have "l \<notin> elect (max_eliminator e) A p"
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a"
+  assume elect_a: "a \<in> elect (max_eliminator e) A p"
+  have "a \<notin> elect (max_eliminator e) A p"
     by simp
   thus False
-    using elect_l
+    using elect_a
     by linarith
 next
   fix
-    A :: "'b set" and
-    p :: "'b Profile" and
-    w :: "'b" and
-    l :: "'b"
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a" and
+    a' :: "'a"
   assume
-    "condorcet_winner A p w" and
-    "w \<in> elect (max_eliminator e) A p"
-  thus "l \<in> reject (max_eliminator e) A p"
+    "condorcet_winner A p a" and
+    "a \<in> elect (max_eliminator e) A p"
+  thus "a' \<in> reject (max_eliminator e) A p"
     using profile rating condorcet_winner.elims(2)
           empty_iff max_elim_non_electing
     unfolding non_electing_def
     by metis
 qed
 
-lemma cr_eval_imp_dcc_max_elim_helper1:
+lemma cr_eval_imp_dcc_max_elim_helper:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    e :: "'a Evaluation_Function" and
+    a :: "'a"
   assumes
     f_prof: "finite_profile A p" and
     rating: "condorcet_rating e" and
-    winner: "condorcet_winner A p w"
-  shows "elimination_set e (Max {e x A p | x. x \<in> A}) (<) A p = A - {w}"
+    winner: "condorcet_winner A p a"
+  shows "elimination_set e (Max {e b A p | b. b \<in> A}) (<) A p = A - {a}"
 proof (safe, simp_all, safe)
-  assume
-    "e w A p < Max {e x A p |x. x \<in> A}"
+  assume "e a A p < Max {e b A p | b. b \<in> A}"
   thus False
     using cond_winner_imp_max_eval_val
           rating winner f_prof
     by fastforce
 next
-  fix x :: "'a"
+  fix a' :: "'a"
   assume
-    x_in_A: "x \<in> A" and
-    not_max: "\<not> e x A p < Max {e y A p |y. y \<in> A}"
-  show "x = w"
-    using non_cond_winner_not_max_eval x_in_A
-          rating winner f_prof not_max
+    "a' \<in> A" and
+    "\<not> e a' A p < Max {e b A p | b. b \<in> A}"
+  thus "a' = a"
+    using non_cond_winner_not_max_eval rating winner f_prof
     by (metis (mono_tags, lifting))
 qed
 
@@ -325,29 +383,30 @@ text \<open>
 \<close>
 
 theorem cr_eval_imp_dcc_max_elim[simp]:
+  fixes e :: "'a Evaluation_Function"
   assumes rating: "condorcet_rating e"
   shows "defer_condorcet_consistency (max_eliminator e)"
 proof (unfold defer_condorcet_consistency_def, safe, simp)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
-    w :: "'a"
+    a :: "'a"
   assume
-    winner: "condorcet_winner A p w" and
+    winner: "condorcet_winner A p a" and
     finite: "finite A"
   hence profile: "finite_profile A p"
     by simp
-  let ?trsh = "(Max {e y A p | y. y \<in> A})"
+  let ?trsh = "(Max {e b A p | b. b \<in> A})"
   show
     "max_eliminator e A p =
       ({},
         A - defer (max_eliminator e) A p,
-        {a \<in> A. condorcet_winner A p a})"
+        {b \<in> A. condorcet_winner A p b})"
   proof (cases "elimination_set e (?trsh) (<) A p \<noteq> A")
     case True
     from profile rating winner
-    have 0: "(elimination_set e ?trsh (<) A p) = A - {w}"
-      using cr_eval_imp_dcc_max_elim_helper1
+    have 0: "(elimination_set e ?trsh (<) A p) = A - {a}"
+      using cr_eval_imp_dcc_max_elim_helper
       by (metis (mono_tags, lifting))
     have
       "max_eliminator e A p =
@@ -356,25 +415,25 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
           A - (elimination_set e ?trsh (<) A p))"
       using True
       by simp
-    also have "... = ({}, A - {w}, {w})"
+    also have "... = ({}, A - {a}, {a})"
       using 0 winner
       by auto
-    also have "... = ({},A - defer (max_eliminator e) A p, {w})"
+    also have "... = ({},A - defer (max_eliminator e) A p, {a})"
       using calculation
       by simp
     also have
       "... =
         ({},
           A - defer (max_eliminator e) A p,
-          {d \<in> A. condorcet_winner A p d})"
-      using cond_winner_unique3 winner Collect_cong
+          {b \<in> A. condorcet_winner A p b})"
+      using cond_winner_unique_3 winner Collect_cong
       by (metis (no_types, lifting))
     finally show ?thesis
       using finite winner
       by metis
   next
     case False
-    have "?trsh = e w A p"
+    have "?trsh = e a A p"
       using rating winner
       by (simp add: cond_winner_imp_max_eval_val)
     thus ?thesis

@@ -15,15 +15,16 @@ begin
 
 text \<open>
   The very core of the composable modules voting framework: types and
-  functions, derivations, lemmata, operations on preference relations, etc.
+  functions, derivations, lemmas, operations on preference relations, etc.
 \<close>
 
 subsection \<open>Definition\<close>
 
-(*
+text \<open>
   Each voter expresses pairwise relations between all alternatives,
   thereby inducing a linear order.
-*)
+\<close>
+
 type_synonym 'a Preference_Relation = "'a rel"
 
 fun is_less_preferred_than ::
@@ -31,6 +32,9 @@ fun is_less_preferred_than ::
     "x \<preceq>\<^sub>r y = ((x, y) \<in> r)"
 
 lemma lin_imp_antisym:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation"
   assumes "linear_order_on A r"
   shows "antisym r"
   using assms
@@ -38,6 +42,9 @@ lemma lin_imp_antisym:
   by simp
 
 lemma lin_imp_trans:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation"
   assumes "linear_order_on A r"
   shows "trans r"
   using assms order_on_defs
@@ -49,6 +56,9 @@ fun rank :: "'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> nat" where
   "rank r x = card (above r x)"
 
 lemma rank_gt_zero:
+  fixes
+    r :: "'a Preference_Relation" and
+    x :: "'a"
   assumes
     refl: "x \<preceq>\<^sub>r x" and
     fin:  "finite r"
@@ -76,12 +86,25 @@ definition limited :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow>
   "limited A r \<equiv> r \<subseteq> A \<times> A"
 
 lemma limitedI:
-  "(\<And> x y. \<lbrakk> x \<preceq>\<^sub>r y \<rbrakk> \<Longrightarrow>  x \<in> A \<and> y \<in> A) \<Longrightarrow> limited A r"
+  fixes
+    r :: "'a Preference_Relation" and
+    A :: "'a set"
+  assumes "\<And> x y. x \<preceq>\<^sub>r y \<Longrightarrow> x \<in> A \<and> y \<in> A"
+  shows "limited A r"
+  using assms
   unfolding limited_def
   by auto
 
 lemma limited_dest:
-  "(\<And> x y. \<lbrakk> x \<preceq>\<^sub>r y; limited A r \<rbrakk> \<Longrightarrow>  x \<in> A \<and> y \<in> A)"
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    x :: "'a" and
+    y :: "'a"
+  assumes
+    "x \<preceq>\<^sub>r y" and
+    "limited A r"
+  shows "x \<preceq>\<^sub>r y \<Longrightarrow> limited A r \<Longrightarrow> x \<in> A \<and> y \<in> A"
   unfolding limited_def
   by auto
 
@@ -92,6 +115,9 @@ definition connex :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 
   "connex A r \<equiv> limited A r \<and> (\<forall> x \<in> A. \<forall> y \<in> A. x \<preceq>\<^sub>r y \<or> y \<preceq>\<^sub>r x)"
 
 lemma connex_imp_refl:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation"
   assumes "connex A r"
   shows "refl_on A r"
 proof
@@ -111,6 +137,9 @@ next
 qed
 
 lemma lin_ord_imp_connex:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation"
   assumes "linear_order_on A r"
   shows "connex A r"
 proof (unfold connex_def limited_def, safe)
@@ -133,25 +162,28 @@ next
     by metis
 next
   fix
-    x :: "'a" and
-    y :: "'a"
+    a :: "'a" and
+    b :: "'a"
   assume
-    x_in_A: "x \<in> A" and
-    y_in_A: "y \<in> A" and
-    not_y_pref_r_x: "\<not> y \<preceq>\<^sub>r x"
-  have "(y, x) \<notin> r"
+    a_in_A: "a \<in> A" and
+    b_in_A: "b \<in> A" and
+    not_y_pref_r_x: "\<not> b \<preceq>\<^sub>r a"
+  have "(b, a) \<notin> r"
     using not_y_pref_r_x
     by simp
-  with x_in_A y_in_A
-  have "(x, y) \<in> r"
+  with a_in_A b_in_A
+  have "(a, b) \<in> r"
     using assms partial_order_onD(1) refl_onD
     unfolding linear_order_on_def total_on_def
     by metis
-  thus "x \<preceq>\<^sub>r y"
+  thus "a \<preceq>\<^sub>r b"
     by simp
 qed
 
 lemma connex_antsym_and_trans_imp_lin_ord:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation"
   assumes
     connex_r: "connex A r" and
     antisym_r: "antisym r" and
@@ -175,9 +207,9 @@ next
     using connex_r refl_on_domain connex_imp_refl
     by metis
 next
-  fix x :: "'a"
-  assume "x \<in> A"
-  thus "(x, x) \<in> r"
+  fix a :: "'a"
+  assume "a \<in> A"
+  thus "(a, a) \<in> r"
     using connex_r connex_imp_refl refl_onD
     by metis
 next
@@ -190,29 +222,37 @@ next
     by simp
 next
   fix
-    x :: "'a" and
-    y :: "'a"
+    a :: "'a" and
+    b :: "'a"
   assume
-    x_in_A: "x \<in> A" and
-    y_in_A: "y \<in> A" and
-    y_not_pref_r_x: "(y, x) \<notin> r"
-  from x_in_A y_in_A
-  have "x \<preceq>\<^sub>r y \<or> y \<preceq>\<^sub>r x"
+    a_in_A: "a \<in> A" and
+    b_in_A: "b \<in> A" and
+    b_not_pref_r_a: "(b, a) \<notin> r"
+  from a_in_A b_in_A
+  have "a \<preceq>\<^sub>r b \<or> b \<preceq>\<^sub>r a"
     using connex_r
     unfolding connex_def
     by metis
-  hence "(x, y) \<in> r \<or> (y, x) \<in> r"
+  hence "(a, b) \<in> r \<or> (b, a) \<in> r"
     by simp
-  thus "(x, y) \<in> r"
-    using y_not_pref_r_x
+  thus "(a, b) \<in> r"
+    using b_not_pref_r_a
     by metis
 qed
 
-lemma limit_to_limits: "limited A (limit A r)"
+lemma limit_to_limits:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation"
+  shows "limited A (limit A r)"
   unfolding limited_def
   by fastforce
 
 lemma limit_presv_connex:
+  fixes
+    S :: "'a set" and
+    A :: "'a set" and
+    r :: "'a Preference_Relation"
   assumes
     connex: "connex S r" and
     subset: "A \<subseteq> S"
@@ -243,6 +283,9 @@ proof (unfold connex_def limited_def, simp, safe)
 qed
 
 lemma limit_presv_antisym:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation"
   assumes "antisym r"
   shows "antisym (limit A r)"
   using assms
@@ -250,6 +293,9 @@ lemma limit_presv_antisym:
   by simp
 
 lemma limit_presv_trans:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation"
   assumes "trans r"
   shows "trans (limit A r)"
   unfolding trans_def
@@ -257,18 +303,24 @@ lemma limit_presv_trans:
   by auto
 
 lemma limit_presv_lin_ord:
+  fixes
+    A :: "'a set" and
+    S :: "'a set" and
+    r :: "'a Preference_Relation"
   assumes
     "linear_order_on S r" and
       "A \<subseteq> S"
     shows "linear_order_on A (limit A r)"
-  using assms connex_antsym_and_trans_imp_lin_ord
-            limit_presv_antisym limit_presv_connex
-            limit_presv_trans lin_ord_imp_connex
-            order_on_defs(1) order_on_defs(2)
-            order_on_defs(3)
+  using assms connex_antsym_and_trans_imp_lin_ord limit_presv_antisym limit_presv_connex
+        limit_presv_trans lin_ord_imp_connex order_on_defs(1, 2, 3)
   by metis
 
-lemma limit_presv_prefs1:
+lemma limit_presv_prefs_1:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    x :: "'a" and
+    y :: "'a"
   assumes
     x_less_y: "x \<preceq>\<^sub>r y" and
     x_in_A: "x \<in> A" and
@@ -277,26 +329,38 @@ lemma limit_presv_prefs1:
   using x_in_A x_less_y y_in_A
   by simp
 
-lemma limit_presv_prefs2:
+lemma limit_presv_prefs_2:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    x :: "'a" and
+    y :: "'a"
   assumes "(x, y) \<in> limit A r"
   shows "x \<preceq>\<^sub>r y"
   using mem_Collect_eq assms
   by simp
 
 lemma limit_trans:
+  fixes
+    B :: "'a set" and
+    C :: "'a set" and
+    r :: "'a Preference_Relation"
   assumes "C \<subseteq> B"
   shows "limit C r = limit C (limit B r)"
   using assms
   by auto
 
 lemma lin_ord_not_empty:
+  fixes r :: "'a Preference_Relation"
   assumes "r \<noteq> {}"
   shows "\<not> linear_order_on {} r"
   using assms connex_imp_refl lin_ord_imp_connex
         refl_on_domain subrelI
   by fastforce
 
-lemma lin_ord_singleton: "\<forall> r. linear_order_on {a} r \<longrightarrow> r = {(a, a)}"
+lemma lin_ord_singleton:
+  fixes a :: "'a"
+  shows "\<forall> r. linear_order_on {a} r \<longrightarrow> r = {(a, a)}"
 proof (clarify)
   fix r :: "'a Preference_Relation"
   assume lin_ord_r_a: "linear_order_on {a} r"
@@ -313,9 +377,13 @@ proof (clarify)
     by auto
 qed
 
-subsection \<open>Auxiliary Lemmata\<close>
+subsection \<open>Auxiliary Lemmas\<close>
 
 lemma above_trans:
+  fixes
+    r :: "'a Preference_Relation" and
+    a :: "'a" and
+    b :: "'a"
   assumes
     "trans r" and
     "(a, b) \<in> r"
@@ -325,6 +393,10 @@ lemma above_trans:
   by metis
 
 lemma above_refl:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    a :: "'a"
   assumes
     "refl_on A r" and
      "a \<in> A"
@@ -334,6 +406,11 @@ lemma above_refl:
   by simp
 
 lemma above_subset_geq_one:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    s :: "'a Preference_Relation" and
+    a :: "'a"
   assumes
     "linear_order_on A r \<and> linear_order_on A s" and
     "above r a \<subseteq> above s a" and
@@ -346,6 +423,10 @@ lemma above_subset_geq_one:
   by metis
 
 lemma above_connex:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    a :: "'a"
   assumes
     "connex A r" and
     "a \<in> A"
@@ -353,34 +434,53 @@ lemma above_connex:
   using assms connex_imp_refl above_refl
   by metis
 
-lemma pref_imp_in_above: "a \<preceq>\<^sub>r b \<longleftrightarrow> b \<in> above r a"
+lemma pref_imp_in_above:
+  fixes
+    r :: "'a Preference_Relation" and
+    a :: "'a" and
+    b :: "'a"
+  shows "a \<preceq>\<^sub>r b \<equiv> b \<in> above r a"
   unfolding above_def
   by simp
 
 lemma limit_presv_above:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    a :: "'a" and
+    b :: "'a"
   assumes
     "b \<in> above r a" and
     "a \<in> A" and
     "b \<in> A"
   shows "b \<in> above (limit A r) a"
-  using assms pref_imp_in_above limit_presv_prefs1
+  using assms pref_imp_in_above limit_presv_prefs_1
   by metis
 
-lemma limit_presv_above2:
+lemma limit_presv_above_2:
+  fixes
+    A :: "'a set" and
+    B :: "'a set" and
+    r :: "'a Preference_Relation" and
+    a :: "'a" and
+    b :: "'a"
   assumes "b \<in> above (limit B r) a"
   shows "b \<in> above r a"
-  using assms limit_presv_prefs2
+  using assms limit_presv_prefs_2
         mem_Collect_eq pref_imp_in_above
   unfolding above_def
   by metis
 
 lemma above_one:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation"
   assumes
     lin_ord_r: "linear_order_on A r" and
     fin_ne_A: "finite A \<and> A \<noteq> {}"
   shows "\<exists> a \<in> A. above r a = {a} \<and> (\<forall> x \<in> A. above r x = {x} \<longrightarrow> x = a)"
 proof -
-  obtain n::nat where
+  obtain n :: nat where
     len_n_plus_one: "n + 1 = card A"
     using Suc_eq_plus1 antisym_conv2 fin_ne_A card_eq_0_iff
           gr0_implies_Suc le0
@@ -395,7 +495,8 @@ proof -
       assume
         lin_ord_r: "linear_order_on A r" and
         len_A_is_one: "0 + 1 = card A"
-      then obtain a where "{a} = A"
+      then obtain a where
+        "{a} = A"
         using card_1_singletonE add.left_neutral
         by metis
       hence "a \<in> A \<and> above r a = {a}"
@@ -436,7 +537,7 @@ proof -
         unfolding above_def
         by metis
       hence b_pref_b: "b \<preceq>\<^sub>r b"
-        using CollectD limit_presv_prefs2 singletonI
+        using CollectD limit_presv_prefs_2 singletonI
         by (metis (lifting))
       show "\<exists> a. a \<in> A \<and> above r a = {a}"
       proof (cases)
@@ -472,13 +573,12 @@ proof -
           using alt_b
           unfolding above_def
           by (metis (no_types))
-        have ff2:
-          "(b, b) \<in> {(a', a). (a', a) \<in> r \<and> a' \<in> B \<and> a \<in> B}"
+        have b_refl: "(b, b) \<in> {(a', a). (a', a) \<in> r \<and> a' \<in> B \<and> a \<in> B}"
           using b_in_lim_B_r
           by simp
         moreover have b_wins_B:
           "\<forall> x \<in> B. b \<in> above r x"
-          using subset_B_card b_in_r b_wins ff2 CollectI
+          using subset_B_card b_in_r b_wins b_refl CollectI
                 Product_Type.Collect_case_prodD
           unfolding above_def
           by fastforce
@@ -492,7 +592,7 @@ proof -
           using CollectD lin_ord_r lin_imp_antisym
           unfolding above_def antisym_def
           by metis
-        hence "\<forall> x \<in> A. x \<in> above r b \<longleftrightarrow> x = b"
+        hence "\<forall> x \<in> A. (x \<in> above r b) = (x = b)"
           using b_wins
           by blast
         moreover have above_b_in_A: "above r b \<subseteq> A"
@@ -548,21 +648,19 @@ proof -
           using limit_B
           by simp
         hence "\<forall> x \<in> B. b \<in> above r x"
-          using limit_presv_prefs2 pref_imp_in_above singletonD mem_Collect_eq
+          using limit_presv_prefs_2 pref_imp_in_above singletonD mem_Collect_eq
                 lin_ord_r alt_b b_above b_pref_b subset_B_card b_in_B
           by (metis (lifting))
-        hence
-          "\<forall> x \<in> B. x \<preceq>\<^sub>r b"
+        hence "\<forall> x \<in> B. x \<preceq>\<^sub>r b"
           unfolding above_def
           by simp
-        hence b_wins2:
-          "\<forall> x \<in> B. (x, b) \<in> r"
+        hence b_wins_2: "\<forall> x \<in> B. (x, b) \<in> r"
           by simp
         have "trans r"
           using lin_ord_r lin_imp_trans
           by metis
         hence "\<forall> x \<in> B. (x, a) \<in> r"
-          using transE b_smaller_a_0 b_wins2
+          using transE b_smaller_a_0 b_wins_2
           by metis
         hence "\<forall> x \<in> B. x \<preceq>\<^sub>r a"
           by simp
@@ -570,7 +668,7 @@ proof -
           using a lin_ord_r lin_ord_imp_connex above_connex Diff_iff
                 empty_iff insert_iff pref_imp_in_above
           by metis
-        have "\<forall> x \<in> A. x \<in> above r a \<longleftrightarrow> x = a"
+        have "\<forall> x \<in> A.( x \<in> above r a) = (x = a)"
           using lin_ord_r lin_imp_antisym nothing_above_a pref_imp_in_above CollectD
           unfolding antisym_def above_def
           by metis
@@ -598,7 +696,12 @@ proof -
     by metis
 qed
 
-lemma above_one2:
+lemma above_one_2:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    a :: "'a" and
+    b :: "'a"
   assumes
     lin_ord: "linear_order_on A r" and
     fin_not_emp: "finite A \<and> A \<noteq> {}" and
@@ -626,34 +729,60 @@ proof -
     by metis
 qed
 
-
-lemma rankone1: assumes "above r a = {a}"
+lemma rank_one_1:
+  fixes
+    r :: "'a Preference_Relation" and
+    a :: "'a"
+  assumes "above r a = {a}"
   shows "rank r a = 1"
-  unfolding rank.simps using assms by auto
+  using assms
+  by simp
 
-lemma rankone2: assumes
- lo: "linear_order_on A r" and 
- ro: "rank r a = 1"
-shows "above r a = {a}"
+lemma rank_one_2:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    a :: "'a"
+  assumes
+    lin_ord: "linear_order_on A r" and
+    rank_one: "rank r a = 1"
+  shows "above r a = {a}"
 proof -
-  from lo have refl: "refl_on A r"
-    using linear_order_on_def partial_order_onD(1) by blast 
-  from lo ro have "a \<in> A" unfolding rank.simps above_def linear_order_on_def 
+  from lin_ord
+  have refl: "refl_on A r"
+    using linear_order_on_def partial_order_onD(1)
+    by blast
+  from lin_ord rank_one
+  have "a \<in> A"
+    unfolding rank.simps above_def linear_order_on_def
     partial_order_on_def preorder_on_def total_on_def
-    by (metis card_1_singletonE insertI1 mem_Collect_eq refl_onD1) 
-  from this refl have "a \<in> above r a"
-    using above_refl by fastforce
-  from this ro show "above r a = {a}"
-    by (metis card_1_singletonE rank.simps singletonD)
+    using card_1_singletonE insertI1 mem_Collect_eq refl_onD1
+    by metis
+  with refl
+  have "a \<in> above r a"
+    using above_refl
+    by fastforce
+  with rank_one
+  show "above r a = {a}"
+    using card_1_singletonE rank.simps singletonD
+    by metis
 qed
 
-theorem above_rank: assumes
- lo: "linear_order_on A r"
-  shows "above r a = {a} \<longleftrightarrow> rank r a = 1"
-  by (metis lo rankone1 rankone2)
-  
+theorem above_rank:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    a :: "'a"
+  assumes lin_ord: "linear_order_on A r"
+  shows "(above r a = {a}) = (rank r a = 1)"
+  using lin_ord rank_one_1 rank_one_2
+  by metis
 
 lemma above_presv_limit:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    x :: "'a"
   shows "above (limit A r) x \<subseteq> A"
   unfolding above_def
   by auto
@@ -664,7 +793,7 @@ definition equiv_rel_except_a :: "'a set \<Rightarrow> 'a Preference_Relation \<
                                     'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> bool" where
   "equiv_rel_except_a A r s a \<equiv>
     linear_order_on A r \<and> linear_order_on A s \<and> a \<in> A \<and>
-    (\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. x \<preceq>\<^sub>r y \<longleftrightarrow> x \<preceq>\<^sub>s y)"
+    (\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. (x \<preceq>\<^sub>r y) = (x \<preceq>\<^sub>s y))"
 
 definition lifted :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow>
                         'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> bool" where
@@ -672,6 +801,9 @@ definition lifted :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow>
     equiv_rel_except_a A r s a \<and> (\<exists> x \<in> A - {a}. a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a)"
 
 lemma trivial_equiv_rel:
+  fixes
+    A :: "'a set" and
+    p :: "'a Preference_Relation"
   assumes "linear_order_on A p"
   shows "\<forall> a \<in> A. equiv_rel_except_a A p p a"
   unfolding equiv_rel_except_a_def
@@ -679,6 +811,11 @@ lemma trivial_equiv_rel:
   by simp
 
 lemma lifted_imp_equiv_rel_except_a:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    s :: "'a Preference_Relation" and
+    a :: "'a"
   assumes "lifted A r s a"
   shows "equiv_rel_except_a A r s a"
   using assms
@@ -686,6 +823,11 @@ lemma lifted_imp_equiv_rel_except_a:
   by simp
 
 lemma lifted_mono:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    s :: "'a Preference_Relation" and
+    a :: "'a"
   assumes "lifted A r s a"
   shows "\<forall> x \<in> A - {a}. \<not>(x \<preceq>\<^sub>r a \<and> a \<preceq>\<^sub>s x)"
 proof (safe)
@@ -696,11 +838,14 @@ proof (safe)
     x_neq_a:  "x \<noteq> a" and
     x_pref_a: "x \<preceq>\<^sub>r a" and
     a_pref_x: "a \<preceq>\<^sub>s x"
-  from x_pref_a have x_pref_a_0: "(x, a) \<in> r"
+  from x_pref_a
+  have x_pref_a_0: "(x, a) \<in> r"
     by simp
-  from a_pref_x have a_pref_x_0: "(a, x) \<in> s"
+  from a_pref_x
+  have a_pref_x_0: "(a, x) \<in> s"
     by simp
-  from assms have "antisym r"
+  from assms
+  have "antisym r"
     using lifted_imp_equiv_rel_except_a lin_imp_antisym
     unfolding equiv_rel_except_a_def
     by metis
@@ -711,26 +856,29 @@ proof (safe)
   hence imp_x_eq_a:
     "\<lbrakk>(x, a) \<in> r; (a, x) \<in> r\<rbrakk> \<Longrightarrow> x = a"
     by simp
-  from assms have lift_ex: "\<exists> x \<in> A - {a}. a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a"
+  from assms
+  have lift_ex: "\<exists> x \<in> A - {a}. a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a"
     unfolding lifted_def
     by metis
-  from lift_ex obtain y :: 'a where
+  from lift_ex
+  obtain y :: 'a where
     "y \<in> A - {a} \<and> a \<preceq>\<^sub>r y \<and> y \<preceq>\<^sub>s a"
     by metis
   hence y_eq_r_s_exc_a:
     "y \<in> A - {a} \<and> (a, y) \<in> r \<and> (y, a) \<in> s"
     by simp
-  from assms have equiv_r_s_exc_a: "equiv_rel_except_a A r s a"
+  from assms
+  have equiv_r_s_exc_a: "equiv_rel_except_a A r s a"
     unfolding lifted_def
     by metis
-  hence "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. x \<preceq>\<^sub>r y \<longleftrightarrow> x \<preceq>\<^sub>s y"
+  hence "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. (x \<preceq>\<^sub>r y) = (x \<preceq>\<^sub>s y)"
     unfolding equiv_rel_except_a_def
     by metis
   hence equiv_r_s_exc_a_0:
-    "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. (x, y) \<in> r \<longleftrightarrow> (x, y) \<in> s"
+    "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. ((x, y) \<in> r) = ((x, y) \<in> s)"
     by simp
-  from equiv_r_s_exc_a have trans:
-    "\<forall> x y z. (x, y) \<in> r \<longrightarrow> (y, z) \<in> r \<longrightarrow> (x, z) \<in> r"
+  from equiv_r_s_exc_a
+  have trans: "\<forall> x y z. (x, y) \<in> r \<longrightarrow> (y, z) \<in> r \<longrightarrow> (x, z) \<in> r"
     unfolding equiv_rel_except_a_def linear_order_on_def
               partial_order_on_def preorder_on_def trans_def
     by metis
@@ -752,23 +900,30 @@ proof (safe)
 qed
 
 lemma lifted_mono2:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    s :: "'a Preference_Relation" and
+    a :: "'a"
   assumes
     lifted: "lifted A r s a" and
     x_pref_a: "x \<preceq>\<^sub>r a"
   shows "x \<preceq>\<^sub>s a"
 proof (simp)
-  from x_pref_a have x_pref_a_0: "(x, a) \<in> r"
+  from x_pref_a
+  have x_pref_a_0: "(x, a) \<in> r"
     by simp
-  with lifted have x_in_A: "x \<in> A"
+  with lifted
+  have x_in_A: "x \<in> A"
     using connex_imp_refl lin_ord_imp_connex refl_on_domain
     unfolding equiv_rel_except_a_def lifted_def
     by metis
-  have "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. x \<preceq>\<^sub>r y \<longleftrightarrow> x \<preceq>\<^sub>s y"
+  have "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. (x \<preceq>\<^sub>r y) = (x \<preceq>\<^sub>s y)"
     using lifted
     unfolding lifted_def equiv_rel_except_a_def
     by metis
   hence rest_eq:
-    "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. (x, y) \<in> r \<longleftrightarrow> (x, y) \<in> s"
+    "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. ((x, y) \<in> r) = ((x, y) \<in> s)"
     by simp
   have "\<exists> x \<in> A - {a}. a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a"
     using lifted
@@ -795,37 +950,46 @@ proof (simp)
 qed
 
 lemma lifted_above:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    s :: "'a Preference_Relation" and
+    a :: "'a"
   assumes "lifted A r s a"
   shows "above s a \<subseteq> above r a"
 proof (unfold above_def, safe)
   fix x :: "'a"
   assume a_pref_x: "(a, x) \<in> s"
-  from assms have "\<exists> x \<in> A - {a}. a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a"
+  from assms
+  have "\<exists> x \<in> A - {a}. a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a"
     unfolding lifted_def
     by metis
   hence lifted_r: "\<exists> x \<in> A - {a}. (a, x) \<in> r \<and> (x, a) \<in> s"
     by simp
-  from assms have "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. x \<preceq>\<^sub>r y \<longleftrightarrow> x \<preceq>\<^sub>s y"
+  from assms
+  have "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. (x \<preceq>\<^sub>r y) = (x \<preceq>\<^sub>s y)"
     unfolding lifted_def equiv_rel_except_a_def
     by metis
   hence rest_eq:
-    "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. (x, y) \<in> r \<longleftrightarrow> (x, y) \<in> s"
+    "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. ((x, y) \<in> r) = ((x, y) \<in> s)"
     by simp
-  from assms have trans_r:
-    "\<forall> x y z. (x, y) \<in> r \<longrightarrow> (y, z) \<in> r \<longrightarrow> (x, z) \<in> r"
+  from assms
+  have trans_r: "\<forall> x y z. (x, y) \<in> r \<longrightarrow> (y, z) \<in> r \<longrightarrow> (x, z) \<in> r"
     using lin_imp_trans
     unfolding trans_def lifted_def equiv_rel_except_a_def
     by metis
-  from assms have trans_s:
-    "\<forall> x y z. (x, y) \<in> s \<longrightarrow> (y, z) \<in> s \<longrightarrow> (x, z) \<in> s"
+  from assms
+  have trans_s: "\<forall> x y z. (x, y) \<in> s \<longrightarrow> (y, z) \<in> s \<longrightarrow> (x, z) \<in> s"
     using lin_imp_trans
     unfolding trans_def lifted_def equiv_rel_except_a_def
     by metis
-  from assms have refl_r: "(a, a) \<in> r"
+  from assms
+  have refl_r: "(a, a) \<in> r"
     using connex_imp_refl lin_ord_imp_connex refl_onD
     unfolding equiv_rel_except_a_def lifted_def
     by metis
-  from a_pref_x assms have "x \<in> A"
+  from a_pref_x assms
+  have "x \<in> A"
     using connex_imp_refl lin_ord_imp_connex refl_onD2
     unfolding equiv_rel_except_a_def lifted_def
     by metis
@@ -835,7 +999,13 @@ proof (unfold above_def, safe)
     by (metis (full_types))
 qed
 
-lemma lifted_above2:
+lemma lifted_above_2:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    s :: "'a Preference_Relation" and
+    a :: "'a" and
+    x :: "'a"
   assumes
     lifted_a: "lifted A r s a" and
     x_in_A_sub_a: "x \<in> A - {a}"
@@ -845,16 +1015,16 @@ proof (safe, simp)
   assume
     y_in_above_r: "y \<in> above r x" and
     y_not_in_above_s: "y \<notin> above s x"
-  have "\<forall> z \<in> A - {a}. x \<preceq>\<^sub>r z \<longleftrightarrow> x \<preceq>\<^sub>s z"
+  have "\<forall> z \<in> A - {a}. (x \<preceq>\<^sub>r z) = (x \<preceq>\<^sub>s z)"
     using x_in_A_sub_a lifted_a
     unfolding lifted_def equiv_rel_except_a_def
     by metis
-  hence "\<forall> z \<in> A - {a}. (x, z) \<in> r \<longleftrightarrow> (x, z) \<in> s"
+  hence "\<forall> z \<in> A - {a}. ((x, z) \<in> r) = ((x, z) \<in> s)"
     by simp
-  hence "\<forall> z \<in> A - {a}. z \<in> above r x \<longleftrightarrow> z \<in> above s x"
+  hence "\<forall> z \<in> A - {a}. (z \<in> above r x) = (z \<in> above s x)"
     unfolding above_def
     by simp
-  hence "y \<in> above r x \<longleftrightarrow> y \<in> above s x"
+  hence "(y \<in> above r x) = (y \<in> above s x)"
     using lifted_a y_not_in_above_s lifted_mono2 limited_dest lifted_def
           lin_ord_imp_connex member_remove pref_imp_in_above
     unfolding equiv_rel_except_a_def remove_def connex_def
@@ -865,25 +1035,31 @@ proof (safe, simp)
 qed
 
 lemma limit_lifted_imp_eq_or_lifted:
+  fixes
+    A :: "'a set" and
+    S :: "'a set" and
+    r :: "'a Preference_Relation" and
+    s :: "'a Preference_Relation" and
+    a :: "'a"
   assumes
     lifted: "lifted S r s a" and
     subset: "A \<subseteq> S"
   shows "limit A r = limit A s \<or> lifted A (limit A r) (limit A s) a"
 proof -
-  from lifted have
-    "\<forall> x \<in> S - {a}. \<forall> y \<in> S - {a}. x \<preceq>\<^sub>r y \<longleftrightarrow> x \<preceq>\<^sub>s y"
+  from lifted
+  have "\<forall> x \<in> S - {a}. \<forall> y \<in> S - {a}. (x \<preceq>\<^sub>r y) = (x \<preceq>\<^sub>s y)"
     unfolding lifted_def equiv_rel_except_a_def
     by simp
-  with subset have temp:
-    "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. x \<preceq>\<^sub>r y \<longleftrightarrow> x \<preceq>\<^sub>s y"
+  with subset
+  have temp: "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}. (x \<preceq>\<^sub>r y) = (x \<preceq>\<^sub>s y)"
     by auto
   hence eql_rs:
       "\<forall> x \<in> A - {a}. \<forall> y \<in> A - {a}.
-      (x, y) \<in> (limit A r) \<longleftrightarrow> (x, y) \<in> (limit A s)"
-    using DiffD1 limit_presv_prefs1 limit_presv_prefs2
+      ((x, y) \<in> (limit A r)) = ((x, y) \<in> (limit A s))"
+    using DiffD1 limit_presv_prefs_1 limit_presv_prefs_2
     by simp
-  from lifted subset have lin_ord_r_s:
-    "linear_order_on A (limit A r) \<and> linear_order_on A (limit A s)"
+  from lifted subset
+  have lin_ord_r_s: "linear_order_on A (limit A r) \<and> linear_order_on A (limit A s)"
     using lifted_def equiv_rel_except_a_def limit_presv_lin_ord
     by metis
   show ?thesis
@@ -892,10 +1068,11 @@ proof -
     thus ?thesis
     proof (cases)
       assume "\<exists> x \<in> A - {a}. a \<preceq>\<^sub>r x \<and> x \<preceq>\<^sub>s a"
-      with a_in_A have keep_lift:
+      with a_in_A
+      have keep_lift:
         "\<exists> x \<in> A - {a}. (let q = limit A r in a \<preceq>\<^sub>q x) \<and>
             (let u = limit A s in x \<preceq>\<^sub>u a)"
-        using DiffD1 limit_presv_prefs1
+        using DiffD1 limit_presv_prefs_1
         by simp
       thus ?thesis
         using a_in_A temp lin_ord_r_s
@@ -915,23 +1092,22 @@ proof -
         using lifted subset limit_presv_lin_ord lin_ord_imp_connex
         unfolding lifted_def equiv_rel_except_a_def
         by metis
-      moreover have connex1:
+      moreover have connex_1:
         "\<forall> A r. connex A r =
-          (limited A r \<and> (\<forall>a. (a::'a) \<in> A \<longrightarrow>
+          (limited A r \<and> (\<forall> a. (a::'a) \<in> A \<longrightarrow>
             (\<forall> a'. a' \<in> A \<longrightarrow> a \<preceq>\<^sub>r a' \<or> a' \<preceq>\<^sub>r a)))"
         unfolding connex_def
         by (simp add: Ball_def_raw)
-      hence limit1:
+      hence limit_1:
         "limited A (limit A r) \<and>
           (\<forall> a. a \<notin> A \<or>
             (\<forall> a'.
               a' \<notin> A \<or> (a, a') \<in> limit A r \<or>
                 (a', a) \<in> limit A r ))"
-        using connex connex1
+        using connex connex_1
         by simp
-      have limit2:
-        "\<forall> a a' A r. (a::'a, a') \<notin> limit A r \<or> a \<preceq>\<^sub>r a'"
-        using limit_presv_prefs2
+      have limit_2: "\<forall> a a' A r. (a::'a, a') \<notin> limit A r \<or> a \<preceq>\<^sub>r a'"
+        using limit_presv_prefs_2
         by metis
       have
         "limited A (limit A s) \<and>
@@ -941,30 +1117,28 @@ proof -
         using connex
         unfolding connex_def
         by metis
-      hence connex2:
+      hence connex_2:
         "limited A (limit A s) \<and>
           (\<forall> a. a \<notin> A \<or>
             (\<forall> a'. a' \<notin> A \<or>
               ((a, a') \<in> limit A s \<or> (a', a) \<in> limit A s)))"
         by simp
-      ultimately have
-          "\<forall> x \<in> A - {a}. (a \<preceq>\<^sub>r x \<and> a \<preceq>\<^sub>s x) \<or> (x \<preceq>\<^sub>r a \<and> x \<preceq>\<^sub>s a)"
-        using DiffD1 limit1 limit_presv_prefs2 a_in_A
+      ultimately have "\<forall> x \<in> A - {a}. (a \<preceq>\<^sub>r x \<and> a \<preceq>\<^sub>s x) \<or> (x \<preceq>\<^sub>r a \<and> x \<preceq>\<^sub>s a)"
+        using DiffD1 limit_1 limit_presv_prefs_2 a_in_A
         by metis
       hence r_eq_s_on_A_0:
         "\<forall> x \<in> A - {a}. ((a, x) \<in> r \<and> (a, x) \<in> s) \<or> ((x, a) \<in> r \<and> (x, a) \<in> s)"
         by simp
-      have
-        "\<forall> x \<in> A - {a}. (a, x) \<in> (limit A r) \<longleftrightarrow> (a, x) \<in> (limit A s)"
-        using DiffD1 limit2 limit1 connex2 a_in_A strict_pref_to_a not_worse
+      have "\<forall> x \<in> A - {a}. ((a, x) \<in> (limit A r)) = ((a, x) \<in> (limit A s))"
+        using DiffD1 limit_2 limit_1 connex_2 a_in_A strict_pref_to_a not_worse
         by metis
       hence
         "\<forall> x \<in> A - {a}.
-          (let q = limit A r in a \<preceq>\<^sub>q x) \<longleftrightarrow> (let q = limit A s in a \<preceq>\<^sub>q x)"
+          (let q = limit A r in a \<preceq>\<^sub>q x) = (let q = limit A s in a \<preceq>\<^sub>q x)"
         by simp
       moreover have
-        "\<forall> x \<in> A - {a}. (x, a) \<in> (limit A r) \<longleftrightarrow> (x, a) \<in> (limit A s)"
-        using a_in_A strict_pref_to_a not_worse DiffD1 limit_presv_prefs2 connex2 limit1
+        "\<forall> x \<in> A - {a}. ((x, a) \<in> (limit A r)) = ((x, a) \<in> (limit A s))"
+        using a_in_A strict_pref_to_a not_worse DiffD1 limit_presv_prefs_2 connex_2 limit_1
         by metis
       moreover have
         "(a, a) \<in> (limit A r) \<and> (a, a) \<in> (limit A s)"
@@ -975,7 +1149,7 @@ proof -
         using limit_to_limits
         by metis
       ultimately have
-        "\<forall> x y. (x, y) \<in> limit A r \<longleftrightarrow> (x, y) \<in> limit A s"
+        "\<forall> x y. ((x, y) \<in> limit A r) = ((x, y) \<in> limit A s)"
         using eql_rs
         by auto
       thus ?thesis
@@ -983,8 +1157,8 @@ proof -
     qed
   next
     assume "a \<notin> A"
-    with eql_rs have
-      "\<forall> x \<in> A. \<forall> y \<in> A. (x, y) \<in> (limit A r) \<longleftrightarrow> (x, y) \<in> (limit A s)"
+    with eql_rs
+    have "\<forall> x \<in> A. \<forall> y \<in> A. ((x, y) \<in> (limit A r)) = ((x, y) \<in> (limit A s))"
       by simp
     thus ?thesis
       using limit_to_limits limited_dest subrelI subset_antisym
@@ -993,6 +1167,12 @@ proof -
 qed
 
 lemma negl_diff_imp_eq_limit:
+  fixes
+    S :: "'a set" and
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    s :: "'a Preference_Relation" and
+    a :: "'a"
   assumes
     change: "equiv_rel_except_a S r s a" and
     subset: "A \<subseteq> S" and
@@ -1003,7 +1183,7 @@ proof -
     unfolding subset_Diff_insert
     using notInA subset
     by simp
-  hence "\<forall> x \<in> A. \<forall> y \<in> A. x \<preceq>\<^sub>r y \<longleftrightarrow> x \<preceq>\<^sub>s y"
+  hence "\<forall> x \<in> A. \<forall> y \<in> A. (x \<preceq>\<^sub>r y) = (x \<preceq>\<^sub>s y)"
     using change in_mono
     unfolding equiv_rel_except_a_def
     by metis
@@ -1012,12 +1192,18 @@ proof -
 qed
 
 theorem lifted_above_winner:
+  fixes
+    X :: "'a set" and
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    s :: "'a Preference_Relation" and
+    a :: "'a"
   assumes
     lifted_a: "lifted A r s a" and
     above_x: "above r x = {x}" and
     fin_A: "finite A"
   shows "above s x = {x} \<or> above s a = {a}"
-proof cases
+proof (cases)
   assume "x = a"
   thus ?thesis
     using above_subset_geq_one lifted_a above_x lifted_above
@@ -1044,7 +1230,7 @@ next
         by simp
       with alts_not_empty y_in_A
       show "y \<preceq>\<^sub>r x"
-        using above_one above_one2 above_x fin_A lin_ord_imp_connex
+        using above_one above_one_2 above_x fin_A lin_ord_imp_connex
               pref_imp_in_above singletonD
         unfolding connex_def
         by (metis (no_types))
@@ -1054,7 +1240,7 @@ next
       unfolding lifted_def
       by metis
     moreover have "x \<in> A - {a}"
-      using above_one above_one2 x_neq_a assms calculation
+      using above_one above_one_2 x_neq_a assms calculation
             insert_not_empty member_remove insert_absorb
       unfolding equiv_rel_except_a_def remove_def
       by metis
@@ -1074,7 +1260,12 @@ next
   qed
 qed
 
-theorem lifted_above_winner2:
+theorem lifted_above_winner_2:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    s :: "'a Preference_Relation" and
+    a :: "'a"
   assumes
     "lifted A r s a" and
     "above r a = {a}" and
@@ -1083,7 +1274,13 @@ theorem lifted_above_winner2:
   using assms lifted_above_winner
   by metis
 
-theorem lifted_above_winner3:
+theorem lifted_above_winner_3:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    s :: "'a Preference_Relation" and
+    a :: "'a" and
+    x :: "'a"
   assumes
     lifted_a: "lifted A r s a" and
     above_x: "above s x = {x}" and
@@ -1092,7 +1289,8 @@ theorem lifted_above_winner3:
   shows "above r x = {x}"
 proof (rule ccontr)
   assume not_above_x: "above r x \<noteq> {x}"
-  then obtain y where y: "above r y = {y}"
+  then obtain y where
+    y: "above r y = {y}"
     using lifted_a fin_A insert_Diff insert_not_empty above_one
     unfolding lifted_def equiv_rel_except_a_def
     by metis
@@ -1100,7 +1298,7 @@ proof (rule ccontr)
     using lifted_a fin_A lifted_above_winner
     by metis
   moreover have "\<forall> b. above s b = {b} \<longrightarrow> b = x"
-    using all_not_in_conv lifted_a above_x fin_A above_one2
+    using all_not_in_conv lifted_a above_x fin_A above_one_2
     unfolding lifted_def equiv_rel_except_a_def
     by metis
   ultimately have "y = x"

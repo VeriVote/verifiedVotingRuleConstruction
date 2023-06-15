@@ -75,9 +75,9 @@ next
   fix
     A :: "'a set" and
     p :: "'a Profile" and
-    w :: "'a"
+    a :: "'a"
   assume
-    cwin_w: "condorcet_winner A p w" and
+    cwin_w: "condorcet_winner A p a" and
     finA: "finite A"
   have max_cscore_dcc:
     "defer_condorcet_consistency (max_eliminator condorcet_score)"
@@ -85,9 +85,9 @@ next
     by (simp add: condorcet_score_is_condorcet_rating)
   have
     "max_eliminator condorcet_score A p =
-  ({},
-  A - defer (max_eliminator condorcet_score) A p,
-  {a \<in> A. condorcet_winner A p a})"
+      ({},
+      A - defer (max_eliminator condorcet_score) A p,
+      {b \<in> A. condorcet_winner A p b})"
     using cwin_w finA max_cscore_dcc
     unfolding defer_condorcet_consistency_def
     by (metis (no_types))
