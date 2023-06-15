@@ -28,6 +28,13 @@ fun condorcet_score :: "'a Evaluation_Function" where
 fun condorcet :: "'a Electoral_Module" where
   "condorcet A p = (max_eliminator condorcet_score) A p"
 
+subsection \<open>Soundness\<close>
+
+theorem condorcet_sound: "electoral_module condorcet"
+  unfolding condorcet.simps
+  using max_elim_sound
+  by metis
+
 subsection \<open>Property\<close>
 
 (* Condorcet score is Condorcet rating. *)
@@ -68,9 +75,9 @@ next
   fix
     A :: "'a set" and
     p :: "'a Profile" and
-    w :: "'a"
+    a :: "'a"
   assume
-    cwin_w: "condorcet_winner A p w" and
+    cwin_w: "condorcet_winner A p a" and
     finA: "finite A"
   have max_cscore_dcc:
     "defer_condorcet_consistency (max_eliminator condorcet_score)"
@@ -78,9 +85,9 @@ next
     by (simp add: condorcet_score_is_condorcet_rating)
   have
     "max_eliminator condorcet_score A p =
-  ({},
-  A - defer (max_eliminator condorcet_score) A p,
-  {a \<in> A. condorcet_winner A p a})"
+      ({},
+      A - defer (max_eliminator condorcet_score) A p,
+      {b \<in> A. condorcet_winner A p b})"
     using cwin_w finA max_cscore_dcc
     unfolding defer_condorcet_consistency_def
     by (metis (no_types))

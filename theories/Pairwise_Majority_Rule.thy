@@ -29,6 +29,22 @@ fun condorcet' :: "'a Electoral_Module" where
 fun pairwise_majority_rule' :: "'a Electoral_Module" where
 "pairwise_majority_rule' A p = iterelect condorcet' A p"
 
+subsection \<open>Soundness\<close>
+
+theorem pairwise_majority_rule_sound: "electoral_module pairwise_majority_rule"
+  unfolding pairwise_majority_rule.simps
+  using condorcet_sound elector_sound
+  by metis
+
+theorem condorcet'_rule_sound: "electoral_module condorcet'"
+  unfolding condorcet'.simps
+  by (simp add: loop_comp_sound)
+
+theorem pairwise_majority_rule'_sound: "electoral_module pairwise_majority_rule'"
+  unfolding pairwise_majority_rule'.simps
+  using condorcet'_rule_sound elector_sound iter.simps iterelect.simps loop_comp_sound
+  by metis
+
 subsection \<open>Condorcet Consistency Property\<close>
 
 theorem condorcet_condorcet: "condorcet_consistency pairwise_majority_rule"

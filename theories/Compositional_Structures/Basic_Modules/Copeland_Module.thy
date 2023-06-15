@@ -28,25 +28,36 @@ fun copeland_score :: "'a Evaluation_Function" where
 fun copeland :: "'a Electoral_Module" where
   "copeland A p = max_eliminator copeland_score A p"
 
-subsection \<open>Lemmata\<close>
+subsection \<open>Soundness\<close>
+
+theorem copeland_sound: "electoral_module copeland"
+  unfolding copeland.simps
+  using max_elim_sound
+  by metis
+
+subsection \<open>Lemmas\<close>
 
 text \<open>
   For a Condorcet winner w, we have: "card {y in A . wins x p y} = |A| - 1".
 \<close>
 
 lemma cond_winner_imp_win_count:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    w :: "'a"
   assumes "condorcet_winner A p w"
-  shows "card {y \<in> A . wins w p y} = card A - 1"
+  shows "card {a \<in> A. wins w p a} = card A - 1"
 proof -
   from assms
-  have 0: "\<forall> x \<in> A - {w} . wins w p x"
+  have 0: "\<forall> a \<in> A - {w}. wins w p a"
     by simp
-  have 1: "\<forall> M . {x \<in> M . True} = M"
+  have 1: "\<forall> M. {x \<in> M. True} = M"
     by blast
   from 0 1
-  have "{x \<in> A - {w} . wins w p x} = A - {w}"
+  have "{a \<in> A - {w}. wins w p a} = A - {w}"
     by blast
-  hence 10: "card {x \<in> A - {w} . wins w p x} = card (A - {w})"
+  hence 10: "card {a \<in> A - {w}. wins w p a} = card (A - {w})"
     by simp
   from assms
   have 11: "w \<in> A"
@@ -54,42 +65,42 @@ proof -
   hence "card (A - {w}) = card A - 1"
     using card_Diff_singleton assms
     by metis
-  hence amount1:
-    "card {x \<in> A - {w} . wins w p x} = card (A) - 1"
+  hence winner_amount_one:
+    "card {a \<in> A - {w}. wins w p a} = card (A) - 1"
     using "10"
     by linarith
-  have 2: "\<forall> x \<in> {w} . \<not> wins x p x"
+  have 2: "\<forall> a \<in> {w}. \<not> wins a p a"
     by (simp add: wins_irreflex)
-  have 3: "\<forall> M . {x \<in> M . False} = {}"
+  have 3: "\<forall> M. {x \<in> M . False} = {}"
     by blast
   from 2 3
-  have "{x \<in> {w} . wins w p x} = {}"
+  have "{a \<in> {w}. wins w p a} = {}"
     by blast
-  hence amount2: "card {x \<in> {w} . wins w p x} = 0"
+  hence winner_amount_zero: "card {a \<in> {w}. wins w p a} = 0"
     by simp
   have disjunct:
-    "{x \<in> A - {w} . wins w p x} \<inter> {x \<in> {w} . wins w p x} = {}"
+    "{a \<in> A - {w}. wins w p a} \<inter> {a \<in> {w}. wins w p a} = {}"
     by blast
   have union:
-    "{x \<in> A - {w} . wins w p x} \<union> {x \<in> {w} . wins w p x} =
-        {x \<in> A . wins w p x}"
+    "{a \<in> A - {w}. wins w p a} \<union> {x \<in> {w}. wins w p x} =
+        {a \<in> A. wins w p a}"
     using 2
     by blast
-  have finiteness1: "finite {x \<in> A - {w} . wins w p x}"
+  have finite_defeated: "finite {a \<in> A - {w}. wins w p a}"
     using assms
     by simp
-  have finiteness2: "finite {x \<in> {w} . wins w p x}"
+  have finitene_winners: "finite {a \<in> {w}. wins w p a}"
     by simp
-  from finiteness1 finiteness2 disjunct card_Un_disjoint
+  from finite_defeated finitene_winners disjunct card_Un_disjoint
   have
-    "card ({x \<in> A - {w} . wins w p x} \<union> {x \<in> {w} . wins w p x}) =
-        card {x \<in> A - {w} . wins w p x} + card {x \<in> {w} . wins w p x}"
+    "card ({a \<in> A - {w}. wins w p a} \<union> {a \<in> {w}. wins w p a}) =
+        card {a \<in> A - {w}. wins w p a} + card {a \<in> {w}. wins w p a}"
     by blast
   with union
-  have "card {x \<in> A . wins w p x} =
-          card {x \<in> A - {w} . wins w p x} + card {x \<in> {w} . wins w p x}"
+  have "card {a \<in> A. wins w p a} =
+          card {a \<in> A - {w}. wins w p a} + card {a \<in> {w}. wins w p a}"
     by simp
-  with amount1 amount2
+  with winner_amount_one winner_amount_zero
   show ?thesis
     by linarith
 qed
@@ -99,8 +110,12 @@ text \<open>
 \<close>
 
 lemma cond_winner_imp_loss_count:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    w :: "'a"
   assumes winner: "condorcet_winner A p w"
-  shows "card {y \<in> A . wins y p w} = 0"
+  shows "card {a \<in> A. wins a p w} = 0"
   using Collect_empty_eq card_eq_0_iff insert_Diff insert_iff
         wins_antisym winner
   unfolding condorcet_winner.simps
@@ -111,6 +126,10 @@ text \<open>
 \<close>
 
 lemma cond_winner_imp_copeland_score:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    w :: "'a"
   assumes winner: "condorcet_winner A p w"
   shows "copeland_score w A p = card A - 1"
 proof (unfold copeland_score.simps)
@@ -123,7 +142,7 @@ proof (unfold copeland_score.simps)
   have "card A - 1 - 0 = card A - 1"
     by simp
   thus
-    "card {y \<in> A. wins w p y} - card {y \<in> A. wins y p w} =
+    "card {a \<in> A. wins w p a} - card {a \<in> A. wins a p w} =
       card A - 1"
     using card_zero card_A_sub_one
     by simp
@@ -135,11 +154,16 @@ text \<open>
 \<close>
 
 lemma non_cond_winner_imp_win_count:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile" and
+    w :: "'a" and
+    l :: "'a"
   assumes
     winner: "condorcet_winner A p w" and
     loser: "l \<noteq> w" and
     l_in_A: "l \<in> A"
-  shows "card {y \<in> A . wins l p y} \<le> card A - 2"
+  shows "card {a \<in> A . wins l p a} \<le> card A - 2"
 proof -
   from winner loser l_in_A
   have "wins w p l"

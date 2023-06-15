@@ -31,7 +31,11 @@ fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a El
 
 subsection \<open>Soundness\<close>
 
-theorem drop_mod_sound[simp]: "electoral_module (drop_module n r)"
+theorem drop_mod_sound[simp]:
+  fixes
+    r :: "'a Preference_Relation" and
+    n :: nat
+  shows "electoral_module (drop_module n r)"
 proof (intro electoral_modI)
   fix
     A :: "'a set" and
@@ -68,6 +72,9 @@ text \<open>
 \<close>
 
 theorem drop_mod_non_electing[simp]:
+  fixes
+    r :: "'a Preference_Relation" and
+    n :: nat
   assumes "linear_order r"
   shows "non_electing (drop_module n r)"
   unfolding non_electing_def
@@ -81,6 +88,9 @@ text \<open>
 \<close>
 
 theorem drop_mod_def_lift_inv[simp]:
+  fixes
+    r :: "'a Preference_Relation" and
+    n :: nat
   assumes "linear_order r"
   shows "defer_lift_invariance (drop_module n r)"
   unfolding defer_lift_invariance_def
