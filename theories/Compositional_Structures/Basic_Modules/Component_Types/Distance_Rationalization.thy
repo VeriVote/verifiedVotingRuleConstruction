@@ -23,7 +23,7 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun favoring_consensus_elections :: "'a Consensus_Rule \<Rightarrow> 'a  \<Rightarrow> 'a Election set" where
+fun favoring_consensus_elections :: "'a Consensus_Rule \<Rightarrow> 'a \<Rightarrow> 'a Election set" where
   "favoring_consensus_elections K a =
     {(A, p) | A p. (fst K) (A, p) \<and> finite_profile A p \<and> elect_r ((snd K) A p) = {a}}"
 
@@ -54,94 +54,85 @@ fun pos_in_list_acc :: "nat \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow>
   "pos_in_list_acc acc [] y = acc + 1" |
   "pos_in_list_acc acc (x#xs) y = (if x = y then acc else pos_in_list_acc (acc + 1) xs y)"
 
-(* Index of the first occurrence of y in xs *)
+text \<open>
+  Index of the first occurrence of y in xs
+\<close>
+
 fun pos_in_list :: "'a list \<Rightarrow> 'a \<Rightarrow> nat" where
   "pos_in_list xs y = pos_in_list_acc 0 xs y"
 
-lemma a:
+lemma pos_in_list_acc_assoc:
   fixes
-    xs :: "'a list" and
-    x :: "'a"
-  shows "\<And> acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1"
-proof (induct xs)
-  case Nil
+    l :: "'a list" and
+    a :: "'a" and
+    n :: nat
+  shows "pos_in_list_acc (n + 1) l a = pos_in_list_acc n l a + 1"
+proof (induct l arbitrary: a n, simp)
+  fix
+    l' :: "'a list" and
+    a :: "'a" and
+    b :: "'a" and
+    n :: nat
+  case (Cons b l')
   thus ?case
-    by simp
-next
-  case (Cons b ys)
-  thus ?case
-  proof (cases "b = x")
-    case True
-    thus ?thesis
-      by simp
-  next
+  proof (cases "b = a", simp)
     case False
-    hence "pos_in_list_acc (acc + 1) (b#ys) x = pos_in_list_acc (acc + 2) ys x"
+    hence "pos_in_list_acc (n + 1) (b#l') a = pos_in_list_acc (n + 2) l' a"
       by simp
     also from False
-    have "\<dots> = pos_in_list_acc (acc + 1) ys x + 1"
+    have "\<dots> = pos_in_list_acc (n + 1) l' a + 1"
       using Suc_eq_plus1 add_2_eq_Suc' Cons
       by presburger
     also from False
-    have "\<dots> = pos_in_list_acc acc (b#ys) x + 1"
+    have "\<dots> = pos_in_list_acc n (b#l') a + 1"
       by simp
     finally show ?thesis
       by simp
   qed
 qed
 
-lemma p:
+lemma pos_in_list_yields_pos:
   fixes
-    xs :: "'a list" and
-    x :: "'a" and
-    i :: "nat"
+    l :: "'a list" and
+    a :: "'a" and
+    n :: "nat"
   assumes
-    "i < length xs" and
-    "\<forall> j < i. xs!j \<noteq> x" and
-    "xs!i = x"
-  shows "pos_in_list xs x = i"
+    "n < length l" and
+    "\<forall> j < n. l!j \<noteq> a" and
+    "l!n = a"
+  shows "pos_in_list l a = n"
   using assms
-proof (induction xs arbitrary: i)
-case Nil
+proof (induction l arbitrary: n, simp)
+  fix b :: "'a"
+  case (Cons b l)
   thus ?case
-    by simp
-next
-  case (Cons a xs)
-  thus ?case
-  proof (cases i)
-    case 0
-    with Cons.prems(3)
-    show ?thesis
+  proof (cases n, simp)
+    fix n' :: nat
+    case (Suc n')
+    with Cons.prems(1)
+    have "n' < length l"
       by simp
-  next
-    case (Suc nat)
-    from Cons.prems(1)
-    have "nat < length xs"
-      using Suc
-      by simp
-    moreover from Cons.prems(2)
-    have "\<forall> j < nat. xs!j \<noteq> x"
-      using Suc
+    moreover from Cons.prems(2) Suc
+    have "\<forall> i < n'. l!i \<noteq> a"
       by auto
-    moreover from Cons.prems(3)
-    have "xs!nat = x"
-      using Suc
+    moreover from Cons.prems(3) Suc
+    have "l!n' = a"
       by simp
-    ultimately have x_pos: "pos_in_list xs x = nat"
+    ultimately have a_pos: "pos_in_list l a = n'"
       using Cons.IH
       by simp
-    from Cons.prems(2) Suc
-    have "a \<noteq> x"
+    have "b \<noteq> a"
+      using Cons.prems(2) Suc
       by auto
-    hence "pos_in_list (a#xs) x = pos_in_list_acc 1 xs x"
+    hence "pos_in_list (b#l) a = pos_in_list_acc 1 l a"
       by simp
-    also have "\<dots> = pos_in_list_acc 0 xs x + 1"
-      using a
+    also have "\<dots> = pos_in_list_acc 0 l a + 1"
+      using pos_in_list_acc_assoc
       by simp
-    also have "\<dots> = pos_in_list xs x + 1"
+    also have "\<dots> = pos_in_list l a + 1"
       by simp
-    also have "\<dots> = i"
-      using Suc x_pos
+    also have "\<dots> = n"
+      using Suc a_pos
       by simp
     finally show ?thesis
       by simp
@@ -152,74 +143,43 @@ qed
   x \<in> set xs \<Longrightarrow> (\<And> i. i < length xs \<Longrightarrow> i < (pos_in_list xs x) \<Longrightarrow> xs!i \<noteq> x *)
 lemma pos_in_list_altdef:
   fixes
-    xs :: "'a list" and
-    x :: "'a"
-  assumes "x \<in> set xs"
-  shows "xs!(pos_in_list xs x) = x"
+    l :: "'a list" and
+    a :: "'a"
+  assumes "a \<in> set l"
+  shows "l!(pos_in_list l a) = a"
   using assms
-proof (induction xs)
-  case Nil
-  thus ?case
-    by simp
-next
-  case (Cons a xs)
-  thus ?case
-  proof (cases "x = a")
-    case True
-    thus ?thesis
-      by simp
-  next
-    case False
-    with Cons
-    have "x \<in> set xs"
-      by simp
-    with Cons
-    have "xs!(pos_in_list xs x) = x"
-      by simp
-    moreover have "pos_in_list (a#xs) x = pos_in_list xs x + 1"
-    proof -
-      have acc_pos_list: "\<And> acc. pos_in_list_acc (acc + 1) xs x = pos_in_list_acc acc xs x + 1"
-      proof (induct xs)
-        case Nil
-        thus ?case
-          by simp
-      next
-        case (Cons b xs)
-        thus ?case
-        proof (cases "b = x")
-          case True
-          thus ?thesis
-            by simp
-        next
-          case False
-          hence "pos_in_list_acc (acc + 1) (b#xs) x = pos_in_list_acc (acc + 2) xs x"
-            by simp
-          also from Cons
-          have "\<dots> = pos_in_list_acc (acc + 1) xs x + 1"
-            by simp
-          also from False
-          have "\<dots> = pos_in_list_acc acc (b#xs) x + 1"
-            by simp
-          finally show ?thesis
-            by simp
-        qed
-      qed
-      have "pos_in_list (a#xs) x = pos_in_list_acc 0 (a#xs) x"
+proof (induction l, simp)
+  case (Cons b l)
+  have acc_pos_list: "\<And> n. pos_in_list_acc (n + 1) l a = pos_in_list_acc n l a + 1"
+  proof (induct l, simp)
+    case (Cons b' l)
+    show ?case
+    proof (cases "b' = a", simp)
+      case False
+      hence "pos_in_list_acc (n + 1) (b'#l) a = pos_in_list_acc (n + 2) l a"
         by simp
-      also have "\<dots> = (if a = x then 0 else pos_in_list_acc 1 xs x)"
+      also from Cons
+      have "\<dots> = pos_in_list_acc (n + 1) l a + 1"
         by simp
-      also have "\<dots> = pos_in_list_acc 1 xs x"
-        using False
-        by simp
-      also have "\<dots> = pos_in_list_acc 0 xs x + 1"
-        using acc_pos_list
-        by simp
-      also have "\<dots> = pos_in_list xs x + 1"
+      also from False
+      have "\<dots> = pos_in_list_acc n (b'#l) a + 1"
         by simp
       finally show ?thesis
         by simp
     qed
-    ultimately show "(a#xs)!(pos_in_list (a#xs) x) = x"
+  qed
+  show ?case
+  proof (cases "a = b", simp)
+    case False with Cons
+    have "a \<in> set l"
+      by simp
+    with Cons
+    have "l!(pos_in_list l a) = a"
+      by simp
+    moreover have "pos_in_list (b#l) a = pos_in_list l a + 1"
+      using False acc_pos_list
+      by simp
+    ultimately show "(b#l)!(pos_in_list (b#l) a) = a"
       by simp
   qed
 qed
@@ -227,40 +187,34 @@ qed
 (* Alternative expression of list_to_rel using relation_of. 
   This is used in the proof that list_to_rel produces linear orders. *)
 lemma list_to_rel_altdef:
-  fixes xs
-  assumes "distinct xs"
-  shows "relation_of (\<lambda> y z. pos_in_list xs z \<le> pos_in_list xs y) (set xs) = list_to_rel xs"
-  using assms
+  fixes l :: "'a list"
+  assumes "distinct l"
+  shows "relation_of (\<lambda> y z. pos_in_list l z \<le> pos_in_list l y) (set l) = list_to_rel l"
 proof (unfold relation_of_def, safe)
   fix
-    xs :: "'a list" and
     a :: "'a" and
     b :: "'a"
   assume
-    dist_xs: "distinct xs" and
-    b_above_a: "pos_in_list xs b \<le> pos_in_list xs a" and
-    a_in_xs: "a \<in> set xs" and
-    b_in_xs: "b \<in> set xs"
-  show "(a, b) \<in> list_to_rel xs"
-    (* During the execution of "list_to_rel xs",
+    b_above_a: "pos_in_list l b \<le> pos_in_list l a" and
+    a_in_l: "a \<in> set l" and
+    b_in_l: "b \<in> set l"
+  show "(a, b) \<in> list_to_rel l"
+    (* During the execution of "list_to_rel l",
       (a, b) is added by the recursive call of list_to_rel on a list where b is the head *)
     sorry
 next
   fix
-    xs :: "'a list" and
     a :: "'a" and
     b :: "'a"
-  assume
-    dist_xs: "distinct xs" and
-    ab_in_xs: "(a, b) \<in> list_to_rel xs"
+  assume ab_in_l: "(a, b) \<in> list_to_rel l"
   (* For the proofs of the following statements, look at the two ways (a, b) can be added to 
-    "list_to_rel xs": by the second or third pattern matching case of the definition of list_to_rel.
+    "list_to_rel l": by the second or third pattern matching case of the definition of list_to_rel.
   *)
-  show "a \<in> set xs"
+  show "a \<in> set l"
     sorry
-  show "b \<in> set xs"
+  show "b \<in> set l"
     sorry
-  show "pos_in_list xs b \<le> pos_in_list xs a"
+  show "pos_in_list l b \<le> pos_in_list l a"
     sorry
 qed
 
@@ -294,16 +248,16 @@ fun dr_winners_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Ri
 fun dr_rule_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Electoral_Module" where
   "dr_rule_std d K A p = (dr_winners_std d K A p, A - dr_winners_std d K A p, {})"
 
-lemma 1:
+lemma list_cons_presv_finiteness:
   fixes
     A :: "'a set" and
     B :: "'a list set"
   assumes
-    finA: "finite A" and
-    finB: "finite B"
+    fin_A: "finite A" and
+    fin_B: "finite B"
   shows "finite {a#b | a b. a \<in> A \<and> b \<in> B}"
 proof -
-  let ?P = "\<lambda> A. finite {a#b |a b. a \<in> A \<and> b \<in> B}"
+  let ?P = "\<lambda> A. finite {a#b | a b. a \<in> A \<and> b \<in> B}"
   have "\<And> a A'. finite A' \<Longrightarrow> a \<notin> A' \<Longrightarrow> ?P A' \<Longrightarrow> ?P (insert a A')"
   proof -
     fix
@@ -317,7 +271,7 @@ proof -
             = {a#b | a b. a \<in> A' \<and> b \<in> B} \<union> {a#b | b. b \<in> B}"
       by auto
     moreover have "finite {a#b | b. b \<in> B}"
-      using finB
+      using fin_B
       by simp
     ultimately have "finite {a'#b | a' b. a' \<in> insert a A' \<and> b \<in> B}"
       using fin_set
@@ -328,120 +282,101 @@ proof -
   moreover have "?P {}"
     by simp
   ultimately show "?P A"
-    using finite_induct[of A ?P] finA
+    using finite_induct[of A ?P] fin_A
     by simp
 qed
 
-lemma 2: "\<forall> xs. (\<forall> i < length xs. finite (xs!i)) \<longrightarrow> finite (listset xs)"
-proof
-  fix xs :: "'b set list"
-  show "(\<forall> i < length xs. finite (xs!i)) \<longrightarrow> finite (listset xs)"
-  proof (induct xs)
-    case Nil
-    thus ?case
-      by simp
-  next
-    case (Cons a ys)
-    fix
-      a :: "'b set" and
-      ys :: "'b set list"
-    assume assm1: "(\<forall> i < length ys. finite (ys!i)) \<longrightarrow> finite (listset ys)"
-    show "(\<forall> i < length (a#ys). finite ((a#ys)!i)) \<longrightarrow> finite (listset (a#ys))"
-    proof (clarify)
-      assume assm2: "\<forall> i < length (a#ys). finite ((a#ys)!i)"
-      hence "finite a"
-        by auto
-      moreover from assm2
-      have "\<forall> i < length ys. finite (ys!i)"
-        by auto
-      with assm1
-      have "finite (listset ys)"
-        by simp
-      ultimately have "finite {x#xs' | x xs'. x \<in> a \<and> xs' \<in> (listset ys)}"
-        using 1
-        by auto
-      thus "finite (listset (a#ys))"
-        by (simp add: set_Cons_def)
-    qed
-  qed
-qed
-
-lemma 3: "\<forall> xs. 0 < length xs \<and> (\<forall> i < length xs. xs!i = {}) \<longrightarrow> listset xs = {}"
-proof
-  fix xs :: "'b set list"
-  show "0 < length xs \<and> (\<forall> i < length xs. xs!i = {}) \<longrightarrow> listset xs = {}"
-  proof (induct xs)
-    case Nil
-    thus ?case
-      by simp
-  next
-    case (Cons a xs)
-      fix
-        a :: "'b set" and
-        xs :: "'b set list"
-    assume assm1: "0 < length xs \<and> (\<forall> i < length xs. xs!i = {}) \<longrightarrow> listset xs = {}"
-    show "0 < length (a#xs) \<and> (\<forall> i < length (a#xs). (a#xs)!i = {}) \<longrightarrow> listset (a#xs) = {}"
-    proof (clarify)
-      assume assm2: "\<forall> i < length (a#xs). (a#xs)!i = {}"
-      hence "a = {}"
-        by auto
-      moreover from assm2
-      have "\<forall> i < length xs. xs!i = {}"
-        by auto
-      ultimately have "{x#xs' | x xs'. x \<in> a \<and> xs' \<in> (listset xs)} = {}"
-        by simp
-      thus "listset (a#xs) = {}"
-        by (simp add: set_Cons_def)
-    qed
-  qed
-qed
-
-lemma 5: "\<forall> ys \<in> listset xs. length ys = length xs"
-proof (induct xs)
-  case Nil
-  thus ?case
-    by simp
-next
-  case (Cons a xs)
-  assume IH: "\<forall> ys \<in> listset xs. length ys = length xs"
-  have "\<forall> ys \<in> {x#xs' | x xs'. x \<in> a \<and> xs' \<in> (listset xs)}. length ys = 1 + length xs"
-    using IH
+lemma listset_finiteness:
+  fixes l :: "'a set list"
+  assumes "\<forall> i::nat. i < length l \<longrightarrow> finite (l!i)"
+  shows "finite (listset l)"
+  using assms
+proof (induct l, simp)
+  case (Cons a l)
+  fix
+    a :: "'a set" and
+    l :: "'a set list"
+  assume
+    elems_fin_then_set_fin: "\<forall> i::nat < length l. finite (l!i) \<Longrightarrow> finite (listset l)" and
+    fin_all_elems: "\<forall> i::nat < length (a#l). finite ((a#l)!i)"
+  hence "finite a"
     by auto
-  hence "\<forall> ys \<in> {x#xs' | x xs'. x \<in> a \<and> xs' \<in> (listset xs)}. length ys = length (a#xs)"
+  moreover from fin_all_elems
+  have "\<forall> i < length l. finite (l!i)"
+    by auto
+  with elems_fin_then_set_fin
+  have "finite (listset l)"
+    by simp
+  ultimately have "finite {a'#l' | a' l'. a' \<in> a \<and> l' \<in> (listset l)}"
+    using list_cons_presv_finiteness
+    by auto
+  thus "finite (listset (a#l))"
+    by (simp add: set_Cons_def)
+qed
+
+lemma ls_entries_empty_imp_ls_set_empty:
+  fixes l :: "'a set list"
+  assumes
+    "0 < length l" and
+    "\<forall> i ::nat. i < length l \<longrightarrow> l!i = {}"
+  shows "listset l = {}"
+  using assms
+proof (induct l, simp)
+  case (Cons a l)
+  fix
+    a :: "'a set" and
+    l :: "'a set list"
+  assume all_elems_empty: "\<forall> i::nat < length (a#l). (a#l)!i = {}"
+  hence "a = {}"
+    by auto
+  moreover from all_elems_empty have "\<forall> i < length l. l!i = {}"
+    by auto
+  ultimately have "{a'#l' | a' l'. a' \<in> a \<and> l' \<in> (listset l)} = {}"
+    by simp
+  thus "listset (a#l) = {}"
+    by (simp add: set_Cons_def)
+qed
+
+lemma all_ls_elems_same_len:
+  fixes l :: "'a set list"
+  shows "\<forall> m::('a list). m \<in> listset l \<longrightarrow> length m = length l"
+proof (induct l, simp)
+  case (Cons a l)
+  assume "\<forall> l'::('a list). l' \<in> listset l \<longrightarrow> length l' = length l"
+  hence "\<forall> m \<in> {x#l' | x l'. x \<in> a \<and> l' \<in> listset l}. length m = 1 + length l"
+    by auto
+  hence "\<forall> m \<in> {x#l' | x l'. x \<in> a \<and> l' \<in> listset l}. length m = length (a#l)"
     by simp
   thus ?case
     by (simp add: set_Cons_def)
 qed
 
-lemma 6: "\<forall> ys \<in> listset xs. (\<forall> i < length ys. ys!i \<in> xs!i)"
-proof (induct xs)
-case Nil
-  thus ?case
+lemma all_ls_elems_in_ls_set:
+  fixes l :: "'a set list"
+  shows "\<forall> l'::('a list). \<forall> i::nat. l' \<in> listset l \<longrightarrow> i < length l' \<longrightarrow> l'!i \<in> l!i"
+proof (induct l, simp, safe)
+  case (Cons a l)
+  fix
+    a :: "'a set" and
+    l :: "'a set list" and
+    l' :: "'a list" and
+    i :: nat
+  assume elems_in_set_then_elems_pos:
+    "\<forall> l'::('a list). \<forall> i::nat. l' \<in> listset l \<longrightarrow> i < length l' \<longrightarrow> l'!i \<in> l!i" and
+    l_prime_in_set_a_l: "l' \<in> listset (a#l)" and
+    i_lt_len_l_prime: "i < length l'"
+  have "l' \<in> set_Cons a (listset l)"
+    using l_prime_in_set_a_l
     by simp
-next
-  case (Cons a xs)
-  assume IH: "\<forall> ys \<in> listset xs. \<forall> i < length ys. ys!i \<in> xs!i"
-  show "\<forall> ys \<in> listset (a#xs). \<forall> i < length ys. ys!i \<in> (a#xs)!i"
-  proof (safe)
-    fix
-      ys :: "'a list" and
-      i :: nat
-    assume
-      1: "ys \<in> listset (a#xs)" and
-      2: "i < length ys"
-    have "ys \<in> set_Cons a (listset xs)"
-      using 1
-      by simp
-    hence "ys \<in> {ys. \<exists> b bs. ys = b#bs \<and> b \<in> a \<and> bs \<in> (listset xs)}"
-      unfolding set_Cons_def
-      by simp
-    hence "\<exists> b bs. ys = b#bs \<and> b \<in> a \<and> bs \<in> (listset xs)"
-      by simp
-    thus "ys!i \<in> (a#xs)!i"
-      using IH 2 nth_Cons_Suc Suc_less_eq gr0_conv_Suc
-            length_Cons nth_non_equal_first_eq
-      by metis
-  qed
+  hence "l' \<in> {ys. \<exists> b m. ys = b#m \<and> b \<in> a \<and> m \<in> (listset l)}"
+    unfolding set_Cons_def
+    by simp
+  hence "\<exists> b m. l' = b#m \<and> b \<in> a \<and> m \<in> (listset l)"
+    by simp
+  thus "l'!i \<in> (a#l)!i"
+    using elems_in_set_then_elems_pos i_lt_len_l_prime nth_Cons_Suc
+          Suc_less_eq gr0_conv_Suc length_Cons nth_non_equal_first_eq
+    by metis
 qed
 
 lemma standard_implies_equal_score:
@@ -467,6 +402,7 @@ proof -
       by simp
   next
     case t1: True
+    assume fin_A: "finite A"
     show ?thesis
     proof (cases "0 < length p")
       case t2: True
@@ -474,7 +410,7 @@ proof -
       proof (safe)
         fix x :: "'a Profile"
         assume xprof: "x \<in> all_profiles (length p) A"
-        from t1
+        from fin_A
         show "finite A"
           by simp
         from xprof
@@ -486,7 +422,7 @@ proof -
           by simp
         hence "\<forall> xs \<in> listset (replicate (length p) (list_to_rel ` permutations_of_set A)).
                 length xs = length p"
-          using 5
+          using all_ls_elems_same_len
           by metis
         thus l: "length x = length p"
           using xprof ne
@@ -499,7 +435,7 @@ proof -
           have i_lt_len_p: "i < length p"
             by simp
           hence "x!i \<in> replicate (length p) (list_to_rel ` permutations_of_set A)!i"
-            using xprof ne 6 lt_len_x all_profiles.simps image_is_empty
+            using xprof ne all_ls_elems_in_ls_set lt_len_x all_profiles.simps image_is_empty
             by metis
           hence "x!i \<in> list_to_rel ` permutations_of_set A"
             using i_lt_len_p
@@ -542,7 +478,7 @@ proof -
       next
         fix x :: "'a Profile"
         assume
-          leneq: "length x = length p" and
+          len_eq: "length x = length p" and
           fin_A: "finite A" and
           prof_A_x: "profile A x"
         show "x \<in> all_profiles (length p) A"
@@ -607,7 +543,7 @@ proof -
       hence "finite (list_to_rel ` permutations_of_set A)"
         by simp
       moreover have fin_A_imp_fin_all: "\<forall> l A. finite A \<longrightarrow> finite (all_profiles l A)"
-        using 2
+        using listset_finiteness
         by force
       hence "finite (all_profiles (length p) A)"
       proof (cases "finite A")
@@ -627,7 +563,7 @@ proof -
         have "\<forall> i < length ?xs. ?xs!i = {}"
           by simp
         hence "finite (listset (replicate (length p) (list_to_rel ` permutations_of_set A)))"
-          by (simp add: 2)
+          by (simp add: listset_finiteness)
         thus ?thesis
           by simp
       qed

@@ -48,10 +48,10 @@ function loop_comp_helper ::
     "'a Electoral_Module \<Rightarrow> 'a Electoral_Module \<Rightarrow>
         'a Termination_Condition \<Rightarrow> 'a Electoral_Module" where
   "t (acc A p) \<or> \<not>((defer (acc \<triangleright> m) A p) \<subset> (defer acc A p)) \<or>
-    infinite (defer acc A p) \<Longrightarrow>
+    \<not> finite (defer acc A p) \<Longrightarrow>
       loop_comp_helper acc m t A p = acc A p" |
   "\<not> (t (acc A p) \<or> \<not>((defer (acc \<triangleright> m) A p) \<subset> (defer acc A p)) \<or>
-    infinite (defer acc A p)) \<Longrightarrow>
+    \<not> finite (defer acc A p)) \<Longrightarrow>
       loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p"
 proof -
   fix
@@ -97,33 +97,33 @@ next
       A :: "'a set" and
       p :: "'a Profile" and
       m :: "'a Electoral_Module" and
-      ta :: "'a Termination_Condition" and
-      acca :: "'a Electoral_Module" and
-      Aa :: "'a set" and
-      pa :: "'a Profile" and
-      ma :: "'a Electoral_Module"
+      t' :: "'a Termination_Condition" and
+      acc' :: "'a Electoral_Module" and
+      A' :: "'a set" and
+      p' :: "'a Profile" and
+      m' :: "'a Electoral_Module"
     assume
       a1: "t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or>
             infinite (defer acc A p)" and
-      a2: "\<not> (ta (acca Aa pa) \<or> \<not> defer (acca \<triangleright> ma) Aa pa \<subset> defer acca Aa pa \<or>
-            infinite (defer acca Aa pa))" and
-      "(acc, m, t, A, p) = (acca, ma, ta, Aa, pa)"
+      a2: "\<not> (t' (acc' A' p') \<or> \<not> defer (acc' \<triangleright> m') A' p' \<subset> defer acc' A' p' \<or>
+            infinite (defer acc' A' p'))" and
+      "(acc, m, t, A, p) = (acc', m', t', A', p')"
     hence False
       using a2 a1
       by force
-  thus "acc A p = loop_comp_helper_sumC (acca \<triangleright> ma, ma, ta, Aa, pa)"
+  thus "acc A p = loop_comp_helper_sumC (acc' \<triangleright> m', m', t', A', p')"
     by auto
 qed
 next
   show
-    "\<And> t acc A p m ta acca Aa pa ma.
+    "\<And> t acc A p m t' acc' A' p' m'.
        \<not> (t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or>
           infinite (defer acc A p)) \<Longrightarrow>
-           \<not> (ta (acca Aa pa) \<or> \<not> defer (acca \<triangleright> ma) Aa pa \<subset> defer acca Aa pa \<or>
-            infinite (defer acca Aa pa)) \<Longrightarrow>
-             (acc, m, t, A, p) = (acca, ma, ta, Aa, pa) \<Longrightarrow>
+           \<not> (t' (acc' A' p') \<or> \<not> defer (acc' \<triangleright> m') A' p' \<subset> defer acc' A' p' \<or>
+            infinite (defer acc' A' p')) \<Longrightarrow>
+             (acc, m, t, A, p) = (acc', m', t', A', p') \<Longrightarrow>
                 loop_comp_helper_sumC (acc \<triangleright> m, m, t, A, p) =
-                  loop_comp_helper_sumC (acca \<triangleright> ma, ma, ta, Aa, pa)"
+                  loop_comp_helper_sumC (acc' \<triangleright> m', m', t', A', p')"
     by force
 qed
 termination

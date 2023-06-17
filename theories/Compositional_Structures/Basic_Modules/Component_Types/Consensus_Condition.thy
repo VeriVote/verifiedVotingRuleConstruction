@@ -21,8 +21,8 @@ type_synonym 'a Consensus_Condition = "'a Election \<Rightarrow> bool"
 subsection \<open>TODO\<close>
 
 definition consensus_condition_anonymity :: "'a Consensus_Condition \<Rightarrow> bool" where
-  "consensus_condition_anonymity CC \<equiv>
-    \<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<longrightarrow> CC (A, p) \<longrightarrow> CC (A, q)"
+  "consensus_condition_anonymity cc \<equiv>
+    \<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<longrightarrow> cc (A, p) \<longrightarrow> cc (A, q)"
 
 lemma cond_anon_if_ex_cond_anon:
   fixes
@@ -110,18 +110,20 @@ fun eq_top_cond' :: "'a \<Rightarrow> 'a Consensus_Condition" where
 fun eq_top_cond :: "'a Consensus_Condition" where
   "eq_top_cond E = (\<exists> a. eq_top_cond' a E)"
 
-lemma eq_top_cond'_anon: "\<forall> a. consensus_condition_anonymity (eq_top_cond' a)"
+lemma eq_top_cond'_anon:
+  fixes a :: "'a"
+  shows "consensus_condition_anonymity (eq_top_cond' a)"
 proof (unfold consensus_condition_anonymity_def, clarify)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
-    q :: "'a Profile" and
-    a :: "'a"
+    q :: "'a Profile"
   assume
     perm: "p <~~> q" and
     top_cons_a: "eq_top_cond' a (A, p)"
   from perm obtain pi where
-    "pi permutes {..< length p}" "permute_list pi p = q"
+    perm_pi: "pi permutes {..< length p}" and
+    perm_list_q: "permute_list pi p = q"
     using mset_eq_permutation
     by metis
   from perm
@@ -129,20 +131,17 @@ proof (unfold consensus_condition_anonymity_def, clarify)
     using perm_length
     by force
   hence "\<forall> i < length q. pi i < length p"
-    using \<open>pi permutes {..< length p}\<close> permutes_in_image
+    using perm_pi permutes_in_image
     by fastforce
-  moreover from \<open>permute_list pi p = q\<close>
-  have "\<forall> i < length q. q!i = p!(pi i)"
+  moreover from perm_list_q have "\<forall> i < length q. q!i = p!(pi i)"
     unfolding permute_list_def
     by auto
-  moreover from top_cons_a
-  have winner: "\<forall> i < length p. above (p!i) a = {a}"
+  moreover from top_cons_a have winner: "\<forall> i < length p. above (p!i) a = {a}"
     by simp
   ultimately have "\<forall> i < length p. above (q!i) a = {a}"
     using l
     by metis
-  moreover from top_cons_a
-  have "a \<in> A"
+  moreover from top_cons_a have "a \<in> A"
     by simp
   ultimately show "eq_top_cond' a (A, q)"
     using l
@@ -164,7 +163,9 @@ fun eq_vote_cond' :: "'a Preference_Relation \<Rightarrow> 'a Consensus_Conditio
 fun eq_vote_cond :: "'a Consensus_Condition" where
   "eq_vote_cond E = (\<exists> pref. eq_vote_cond' pref E)"
 
-lemma eq_vote_cond'_anon: "\<forall> pref. consensus_condition_anonymity (eq_vote_cond' pref)"
+lemma eq_vote_cond'_anon:
+  fixes pref :: "'a Preference_Relation"
+  shows "consensus_condition_anonymity (eq_vote_cond' pref)"
 proof (unfold consensus_condition_anonymity_def, clarify)
   fix
     A :: "'a set" and
@@ -175,7 +176,8 @@ proof (unfold consensus_condition_anonymity_def, clarify)
     perm: "p <~~> q" and
     equal_votes_pref: "eq_vote_cond' pref (A, p)" 
   from perm obtain pi where
-    "pi permutes {..< length p}" "permute_list pi p = q"
+    perm_pi: "pi permutes {..< length p}" and
+    perm_list_q: "permute_list pi p = q"
     using mset_eq_permutation
     by metis
   from perm
@@ -183,9 +185,9 @@ proof (unfold consensus_condition_anonymity_def, clarify)
     using perm_length
     by force
   hence "\<forall> i < length q. pi i < length p"
-    using \<open>pi permutes {..< length p}\<close> permutes_in_image
+    using perm_pi permutes_in_image
     by fastforce
-  moreover from \<open>permute_list pi p = q\<close>
+  moreover from perm_list_q
   have "\<forall> i < length q. q!i = p!(pi i)"
     unfolding permute_list_def
     by auto

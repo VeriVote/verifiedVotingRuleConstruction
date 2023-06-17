@@ -34,7 +34,12 @@ fun l_one :: "Norm" where
   "l_one xs = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
 
 lemma sum_over_image_of_bijection:
-  "bij_betw f A A' \<longrightarrow> (\<Sum> a \<in> A. g a) = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"
+  fixes
+    A :: "'a set" and
+    A' :: "'b set" and
+    f :: "'a \<Rightarrow> 'b" and
+    g
+  shows "bij_betw f A A' \<longrightarrow> (\<Sum> a \<in> A. g a) = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"
 proof (safe, induction "card A" arbitrary: A A')
   case 0
   assume "bij_betw f A A'"

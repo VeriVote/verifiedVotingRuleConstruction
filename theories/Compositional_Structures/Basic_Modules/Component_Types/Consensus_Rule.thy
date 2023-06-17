@@ -63,7 +63,7 @@ lemma cons_rule_anon:
     anon_cons_cond: "consensus_condition_anonymity \<alpha>" and
     conditions_univ: "\<forall> x. determined_if (\<lambda> E. \<alpha> E \<and> \<beta>' x E) m"
   shows "consensus_rule_anonymity (em_with_condition (\<lambda> E. \<alpha> E \<and> \<beta> E) m)"
-proof(unfold consensus_rule_anonymity_def, safe)
+proof (unfold consensus_rule_anonymity_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
@@ -124,7 +124,8 @@ definition unanimity :: "'a Consensus_Rule" where
   "unanimity = em_with_condition unanimity_condition elect_first_module"
 
 lemma elect_fst_mod_determined_if_unanimity_cond:
-  "\<forall> a. determined_if (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_top_cond' a E)
+  fixes a :: "'a"
+  shows "determined_if (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_top_cond' a E)
                      elect_first_module"
 proof (unfold determined_if_def, safe)
   fix
@@ -191,11 +192,11 @@ proof (unfold unanimity_def)
   ultimately have "consensus_rule_anonymity
      (em_with_condition (\<lambda> e. ne_set_cond e \<and> ne_profile_cond e \<and> eq_top_cond e)
                         elect_first_module)"
-    using cons_rule_anon[of eq_top_cond eq_top_cond' ?ne_cond]
-          ne_set_cond_anon ne_profile_cond_anon eq_top_cond'_anon
+    using cons_rule_anon[of eq_top_cond eq_top_cond' ?ne_cond] eq_top_cond'_anon
           elect_fst_mod_determined_if_unanimity_cond
-    by simp
-  moreover have "unanimity_condition = (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_top_cond E)"
+    by fastforce
+  moreover have
+    "unanimity_condition = (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_top_cond E)"
     by force
   hence "em_with_condition (\<lambda> e. ne_set_cond e \<and> ne_profile_cond e \<and> eq_top_cond e)
                            elect_first_module
@@ -214,7 +215,8 @@ definition strong_unanimity :: "'a Consensus_Rule" where
   "strong_unanimity = em_with_condition strong_unanimity_condition elect_first_module"
 
 lemma elect_fst_mod_determined_if_strong_unanimity_cond:
-  "\<forall> v. determined_if (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_vote_cond' v E)
+  fixes v :: "'a Preference_Relation"
+  shows "determined_if (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_vote_cond' v E)
                      elect_first_module"
 proof (unfold determined_if_def, safe)
   fix
@@ -253,9 +255,10 @@ proof (unfold strong_unanimity_def)
     using cons_rule_anon[of eq_vote_cond eq_vote_cond' "\<lambda> E. ne_set_cond E \<and> ne_profile_cond E"]
           ne_set_cond_anon ne_profile_cond_anon eq_vote_cond'_anon
           elect_fst_mod_determined_if_strong_unanimity_cond
-    by simp
+    by fastforce
   moreover have
-    "strong_unanimity_condition = (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_vote_cond E)"
+    "strong_unanimity_condition =
+      (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_vote_cond E)"
     by force
   hence
     "em_with_condition (\<lambda> e. ne_set_cond e \<and> ne_profile_cond e \<and> eq_vote_cond e)
