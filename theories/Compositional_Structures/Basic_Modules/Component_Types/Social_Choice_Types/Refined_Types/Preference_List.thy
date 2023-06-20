@@ -130,7 +130,7 @@ lemma limited_dest:
 fun limit_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> 'a Preference_List" where
   "limit_l A pl = List.filter (\<lambda> x. x \<in> A) pl"
 
-definition above_l :: "'a Preference_List \<Rightarrow> 'a \<Rightarrow> 'a Preference_List" where
+definition above_l :: "'a Preference_List \<Rightarrow> 'a \<Rightarrow> 'a list" where
   "above_l r c \<equiv> take (rank_l r c) r"
 
 lemma above_trans:
@@ -185,7 +185,7 @@ next
   case (Cons a bal)
   then show ?case unfolding well_formed_pl_def
     apply (clarsimp, safe)
-    unfolding pl_\<alpha>_def index_def apply auto
+    unfolding pl_\<alpha>_def index_def apply auto 
     unfolding is_less_preferred_than_l.simps
     subgoal by blast
     by presburger

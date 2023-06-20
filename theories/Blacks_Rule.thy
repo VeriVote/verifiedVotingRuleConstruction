@@ -52,9 +52,7 @@ proof (unfold blackdef_eq[symmetric] blacks_rule'.simps seqcomp_alt_eq elector.s
     unfolding borda_rule.simps[symmetric]
     using borda_rule_sound .
   have nbb: "non_blocking borda" unfolding non_blocking_def  
-    apply (rule conjI)        
-    subgoal using borda_sound . 
-    by clarsimp
+   using borda_sound by (auto) 
   have electingeb: "electing (elector borda)"
     using elector_electing[OF borda_sound nbb] .
   have nec: "non_electing condorcet" unfolding non_electing_def by (auto simp add: condorcet_sound)
@@ -62,9 +60,8 @@ proof (unfold blackdef_eq[symmetric] blacks_rule'.simps seqcomp_alt_eq elector.s
      using condorcet_sound emin seq_comp_sound by blast
   show "condorcet_consistency (condorcet \<triangleright> elector borda)"
     unfolding condorcet_consistency3 condorcet_consistency_def
-    apply safe
-    using comp_sound apply blast 
-  proof (-)   
+    using comp_sound
+  proof (safe, blast)   
     fix A :: "'alt set"
     fix p :: "'alt Profile"
     fix w :: 'alt
@@ -80,11 +77,10 @@ proof (unfold blackdef_eq[symmetric] blacks_rule'.simps seqcomp_alt_eq elector.s
     using seq_comp_def_then_elect2[OF nec cc1 electingeb fprof] .
   from electcondw dw have electcbw: "elect (condorcet \<triangleright> elector borda) A p = {w}"
     by blast
-  have non_def: "defer (condorcet \<triangleright> elector borda) A p = {}" unfolding seqcomp_alt_eq[symmetric]
-      apply (auto simp del: condorcet.simps borda.simps)
-    by (metis (no_types, lifting) case_prod_beta' empty_iff snd_conv)
+  have non_def: "defer (condorcet \<triangleright> elector borda) A p = {}" 
+    by (auto simp del: condorcet.simps borda.simps, metis equals0D sndI)
   have rejrest: "reject (condorcet \<triangleright> elector borda) A p = A - {w}"
-    unfolding electoral_module_def using fprof  
+    unfolding electoral_module_def using fprof
     apply (auto simp del: condorcet.simps borda.simps sequential_composition.simps)
     subgoal by (metis Diff_iff comp_sound elector.simps reject_not_elec_or_def)
     subgoal by (metis comp_sound dw electcondw elector.elims insert_disjoint(1) result_disj)

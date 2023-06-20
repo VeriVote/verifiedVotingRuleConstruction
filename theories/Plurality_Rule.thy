@@ -19,7 +19,7 @@ subsection \<open>Definition\<close>
 
 fun plurality_rule :: "'a Electoral_Module" where
   "plurality_rule A p = elector plurality_mod A p"
-
+                                        
 lemma plureq: 
   assumes "A \<noteq> {}" and "finite A"
   shows "plurality_rule A p = plurality A p"
@@ -54,6 +54,8 @@ theorem plurality_rule_sound: "electoral_module plurality_rule"
   unfolding plurality_rule.simps
   using elector_sound plurmod_sound
   by blast
+
+
   
 
 end
