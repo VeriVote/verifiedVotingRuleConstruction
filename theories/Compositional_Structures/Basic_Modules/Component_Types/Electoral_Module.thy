@@ -1131,35 +1131,35 @@ next
   assume fin_S: "finite A"
   obtain B where
     old_A:
-      "(B \<subseteq> A \<and>
+      "B \<subseteq> A \<and>
         (\<forall> a \<in> B. indep_of_alt m A a \<and>
           (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p)) \<and>
         (\<forall> a \<in> A - B. indep_of_alt n A a \<and>
-          (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p)))"
+          (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p))"
     using assms fin_S
     unfolding disjoint_compatibility_def
     by metis
   hence
-    "(\<exists> B \<subseteq> A.
+    "\<exists> B \<subseteq> A.
       (\<forall> a \<in> A - B. indep_of_alt n A a \<and>
         (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p)) \<and>
       (\<forall> a \<in> B. indep_of_alt m A a \<and>
-        (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p)))"
+        (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p))"
     by auto
   hence
-    "(\<exists> B \<subseteq> A.
+    "\<exists> B \<subseteq> A.
       (\<forall> a \<in> A - B. indep_of_alt n A a \<and>
         (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p)) \<and>
       (\<forall> a \<in> A - (A - B). indep_of_alt m A a \<and>
-        (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p)))"
+        (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p))"
     using double_diff order_refl
     by metis
   thus
-    "(\<exists> B \<subseteq> A.
+    "\<exists> B \<subseteq> A.
         (\<forall> a \<in> B. indep_of_alt n A a \<and>
           (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p)) \<and>
         (\<forall> a \<in> A - B. indep_of_alt m A a \<and>
-          (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p)))"
+          (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p))"
     by fastforce
 qed
 

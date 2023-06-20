@@ -67,6 +67,46 @@ fun leq_average_eliminator :: "'a Evaluation_Function \<Rightarrow>
                                 'a Electoral_Module" where
   "leq_average_eliminator e A p = leq_eliminator e (average e A p) A p"
 
+subsection \<open>Auxiliary Lemmas\<close>
+
+lemma score_bounded:
+  fixes
+    e :: "'a \<Rightarrow> nat" and
+    A :: "'a set" and
+    a :: "'a"
+  assumes
+    a_in_A: "a \<in> A" and
+    fin_A: "finite A"
+  shows "e a \<le> Max {e x | x. x \<in> A}"
+proof -
+  have "e a \<in> {e x |x. x \<in> A}"
+    using a_in_A
+    by blast
+  thus ?thesis
+    using fin_A Max_ge
+    by simp
+qed
+
+lemma max_score_contained:
+  fixes
+    e :: "'a \<Rightarrow> nat" and
+    A :: "'a set" and
+    a :: "'a"
+  assumes
+    A_not_empty: "A \<noteq> {}" and
+    fin_A: "finite A"
+  shows "\<exists> a' \<in> A. e a' = Max {e x |x. x \<in> A}"
+proof -
+  have "finite {e x |x. x \<in> A}"
+    using fin_A
+    by simp
+  hence "Max {e x |x. x \<in> A} \<in> {e x |x. x \<in> A}"
+    using A_not_empty Max_in
+    by blast
+  thus ?thesis
+    by auto
+qed
+
 subsection \<open>Soundness\<close>
 
 lemma elim_mod_sound[simp]:
@@ -396,7 +436,7 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
     finite: "finite A"
   hence profile: "finite_profile A p"
     by simp
-  let ?trsh = "(Max {e b A p | b. b \<in> A})"
+  let ?trsh = "Max {e b A p | b. b \<in> A}"
   show
     "max_eliminator e A p =
       ({},

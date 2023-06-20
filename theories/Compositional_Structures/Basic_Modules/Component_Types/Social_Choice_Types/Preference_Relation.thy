@@ -27,6 +27,8 @@ text \<open>
 
 type_synonym 'a Preference_Relation = "'a rel"
 
+type_synonym 'a Vote = "'a set \<times> 'a Preference_Relation"
+
 fun is_less_preferred_than ::
   "'a \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> bool" ("_ \<preceq>\<^sub>_ _" [50, 1000, 51] 50) where
     "x \<preceq>\<^sub>r y = ((x, y) \<in> r)"
@@ -777,6 +779,49 @@ theorem above_rank:
   shows "(above r a = {a}) = (rank r a = 1)"
   using lin_ord rank_one_1 rank_one_2
   by metis
+
+lemma rank_unique:
+  fixes
+    A :: "'a set" and
+    r :: "'a Preference_Relation" and
+    a :: "'a" and
+    b :: "'a"
+  assumes
+    lin_ord: "linear_order_on A r" and
+    fin_A: "finite A" and
+    a_in_A: "a \<in> A" and
+    b_in_A: "b \<in> A" and
+    a_neq_b: "a \<noteq> b"
+  shows "rank r a \<noteq> rank r b"
+proof (unfold rank.simps above_def, clarify)
+  assume card_eq: "card {b. (a, b) \<in> r} = card {ba. (b, ba) \<in> r}"
+  have r_trans: "trans r"
+    using lin_ord lin_imp_trans
+    by metis
+  have r_total: "\<forall> x \<in> A. \<forall> y \<in> A. x \<noteq> y \<longrightarrow> (x, y) \<in> r \<or> (y, x) \<in> r"
+    using lin_ord
+    unfolding linear_order_on_def total_on_def
+    by metis
+  have sets_eq: "{a'. (a, a') \<in> r} = {b'. (b, b') \<in> r}"
+    using card_subset_eq connex_imp_refl lin_ord lin_ord_imp_connex mem_Collect_eq
+          refl_on_domain rev_finite_subset subset_eq transE
+    using card_eq fin_A r_trans r_total
+    by (smt (verit, best))
+  hence "(b, a) \<in> r"
+    using a_in_A above_connex lin_ord lin_ord_imp_connex
+    unfolding above_def
+    by fastforce
+  hence "(a, b) \<notin> r"
+    using lin_ord lin_imp_antisym a_neq_b antisymD
+    by metis
+  hence "b \<notin> A"
+    using lin_ord partial_order_onD(1) sets_eq
+    unfolding linear_order_on_def refl_on_def
+    by blast
+  thus "False"
+    using b_in_A
+    by presburger
+qed
 
 lemma above_presv_limit:
   fixes

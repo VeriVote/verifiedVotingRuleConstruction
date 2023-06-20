@@ -55,19 +55,19 @@ proof -
       ?eMax = "Max {e b A p | b. b \<in> A}" and
       ?eW = "e a A p"
   from f_prof
-  have 0: "finite ?set"
+  have fin_eval_set: "finite ?set"
     by simp
-  have 1: "?set \<noteq> {}"
+  have eval_set_non_empty: "?set \<noteq> {}"
     using condorcet_winner.simps winner
     by fastforce
-  have 2: "?eW \<in> ?set"
+  have eval_func_in_eval_set: "?eW \<in> ?set"
     using CollectI condorcet_winner.simps winner
     by (metis (mono_tags, lifting))
-  have 3: "\<forall> e \<in> ?set . e \<le> ?eW"
+  have all_eval_elems_lte_eval_func: "\<forall> e \<in> ?set. e \<le> ?eW"
   proof (safe)
     fix b :: "'a"
     assume b_in_A: "b \<in> A"
-    have "\<forall> n na. (n::nat) \<noteq> na \<or> n \<le> na"
+    have "\<forall> n n'. (n::nat) = n' \<longrightarrow> n \<le> n'"
       by simp
     with b_in_A
     show "e b A p \<le> e a A p"
@@ -75,10 +75,10 @@ proof -
       unfolding condorcet_rating_def
       by (metis (no_types))
   qed
-  from 2 3
-  have 4: "?eW \<in> ?set \<and> (\<forall> a \<in> ?set. a \<le> ?eW)"
+  from eval_func_in_eval_set all_eval_elems_lte_eval_func
+  have "?eW \<in> ?set \<and> (\<forall> e \<in> ?set. e \<le> ?eW)"
     by blast
-  from 0 1 4 Max_eq_iff
+  with fin_eval_set eval_set_non_empty Max_eq_iff
   show ?thesis
     by (metis (no_types, lifting))
 qed

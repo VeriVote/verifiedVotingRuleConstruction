@@ -127,9 +127,10 @@ next
         p_func :: "('a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) \<Rightarrow> 'a Profile" where
         well_f:
         "\<forall> f.
-          (\<not> electoral_module f \<or>
+          (electoral_module f \<longrightarrow>
             (\<forall> A prof. (finite A \<and> profile A prof) \<longrightarrow> well_formed A (f A prof))) \<and>
-          (electoral_module f \<or> finite (s_func f) \<and> profile (s_func f) (p_func f) \<and>
+          (\<not> electoral_module f \<longrightarrow>
+            finite (s_func f) \<and> profile (s_func f) (p_func f) \<and>
             \<not> well_formed (s_func f) (f (s_func f) (p_func f)))"
         unfolding electoral_module_def
         by moura
