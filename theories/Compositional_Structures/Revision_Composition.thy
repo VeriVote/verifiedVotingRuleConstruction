@@ -188,15 +188,14 @@ next
     q :: "'a Profile" and
     a :: "'a" and
     x :: "'a" and
-    xa :: "'a"
+    x' :: "'a"
   assume
-    rev_p_defer_a: "a \<in> defer (m\<down>) A p" and
-    a_lifted: "lifted A p q a" and
-    rev_q_defer_xa: "xa \<in> defer (m\<down>) A q"
-  from assms
-  show "xa \<in> defer (m\<down>) A p"
-    using a_lifted empty_iff insertE rev_p_defer_a rev_q_defer_xa
-          snd_conv revision_composition.elims
+    "a \<in> defer (m\<down>) A p" and
+    "lifted A p q a" and
+    "x' \<in> defer (m\<down>) A q"
+  with assms
+  show "x' \<in> defer (m\<down>) A p"
+    using empty_iff insertE snd_conv revision_composition.elims
     unfolding invariant_monotonicity_def
     by metis
 next
@@ -206,7 +205,7 @@ next
     q :: "'a Profile" and
     a :: "'a" and
     x :: "'a" and
-    xa :: "'a"
+    x' :: "'a"
   assume
     rev_p_defer_a: "a \<in> defer (m\<down>) A p" and
     a_lifted: "lifted A p q a" and
@@ -221,7 +220,7 @@ next
     by simp
   have q_defer_rev_eq_elect: "defer (m\<down>) A q = elect m A q"
     by simp
-  thus "xa \<in> defer (m\<down>) A q"
+  thus "x' \<in> defer (m\<down>) A q"
     using p_defer_rev_eq_elect lifted_inv a_lifted rev_p_defer_a rev_q_not_defer_a
     by blast
 qed

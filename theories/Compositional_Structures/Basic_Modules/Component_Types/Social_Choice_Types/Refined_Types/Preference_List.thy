@@ -61,7 +61,7 @@ lemma rank_gt_zero:
   by simp
 
 definition pl_\<alpha> :: "'a Preference_List \<Rightarrow> 'a Preference_Relation" where
-  "pl_\<alpha> l = {(a, b). a \<lesssim>\<^sub>l b}"
+  "pl_\<alpha> l \<equiv> {(a, b). a \<lesssim>\<^sub>l b}"
 
 lemma rel_trans:
   fixes l :: "'a Preference_List"
@@ -75,7 +75,7 @@ definition limited :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> boo
   "limited A r \<equiv> (\<forall> x. (List.member r x) \<longrightarrow>  x \<in> A)"
 
 fun limit_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> 'a Preference_List" where
-  "limit_l A pl =  List.filter (\<lambda> a. a \<in> A) pl"
+  "limit_l A pl = List.filter (\<lambda> a. a \<in> A) pl"
 
 lemma limitedI:
   fixes
@@ -94,7 +94,7 @@ lemma limited_dest:
     x :: "'a" and
     y :: "'a"
   assumes
-    "is_less_preferred_than_l x l y" and
+    "x \<lesssim>\<^sub>l y" and
     "limited A l"
   shows "x \<in> A \<and> y \<in> A"
   using assms
@@ -339,6 +339,98 @@ next
     unfolding pl_\<alpha>_def
     using connex_def lin_ord_imp_connex assms total_on_l_def less_preferred_l_rel_eq
       is_less_preferred_than_l.elims(2)
+    by metis
+qed
+
+subsection \<open>First Occurrence Indices\<close>
+
+lemma pos_in_list_yields_rank:
+  fixes
+    l :: "'a Preference_List" and
+    a :: "'a" and
+    n :: "nat"
+  assumes
+    no_idx_before: "\<forall> (j::nat) \<le> n. l!j \<noteq> a" and
+    fst_idx: "l!(n - 1) = a"
+  shows "rank_l l a = n"
+  using assms
+proof (induction l arbitrary: n, simp_all) qed
+
+lemma ranked_alt_not_at_pos_before:
+  fixes
+    l :: "'a Preference_List" and
+    a :: "'a" and
+    n :: nat
+  assumes
+    a_in_l: "a \<in> set l" and
+    n_plus_one_lt_rank_a: "n < (rank_l l a) - 1"
+  shows "l!n \<noteq> a"
+  using add_diff_cancel_right' a_in_l n_plus_one_lt_rank_a
+        index_first member_def rank_l.simps
+  by metis
+
+lemma pos_in_list_yields_pos:
+  fixes
+    l :: "'a Preference_List" and
+    a :: "'a"
+  assumes "a \<in> set l"
+  shows "l!(rank_l l a - 1) = a"
+  using assms
+proof (induction l, simp)
+  fix
+    l :: "'a Preference_List" and
+    b :: "'a"
+  case (Cons b l)
+  assume a_in_b_cons_l: "a \<in> set (b#l)"
+  hence "rank_l (b # l) a = 1 + index (b#l) a"
+    using Suc_eq_plus1 add_Suc add_cancel_left_left member_def rank_l.simps
+    by metis
+  thus "(b#l)!(rank_l (b#l) a - 1) = a"
+    using a_in_b_cons_l diff_add_inverse nth_index
+    by metis
+qed
+
+(* Alternative expression of list_to_rel using relation_of.
+  This is used in the proof that list_to_rel produces linear orders.  *)
+lemma rel_of_pref_pred_for_set_eq_list_to_rel:
+  fixes l :: "'a Preference_List"
+  assumes
+    len_l: "0 < length l" and
+    dist_l: "distinct l"
+  shows "relation_of (\<lambda> y z. y \<lesssim>\<^sub>l z) (set l) = pl_\<alpha> l"
+proof (unfold relation_of_def, safe)
+  fix
+    a :: "'a" and
+    b :: "'a"
+  assume b_above_a: "a \<lesssim>\<^sub>l b"
+  have "(a \<lesssim>\<^sub>l b) = (a \<preceq>\<^sub>(pl_\<alpha> l) b)"
+    using less_preferred_l_rel_eq
+    by (metis (no_types))
+  hence "a \<preceq>\<^sub>(pl_\<alpha> l) b"
+    using b_above_a
+    by presburger
+  thus "(a, b) \<in> pl_\<alpha> l"
+    by simp
+next
+  fix
+    a :: "'a" and
+    b :: "'a"
+  assume ab_in_l: "(a, b) \<in> pl_\<alpha> l"
+  thus "a \<in> set l"
+    using is_less_preferred_than.simps is_less_preferred_than_l.elims(2)
+          less_preferred_l_rel_eq member_def
+    by metis
+  show "b \<in> set l"
+    using ab_in_l is_less_preferred_than.simps is_less_preferred_than_l.elims(2)
+          less_preferred_l_rel_eq member_def
+    by (metis (no_types))
+  have a_less_preferred_b_l_rel_eq: "(a \<lesssim>\<^sub>l b) = (a \<preceq>\<^sub>(pl_\<alpha> l) b)"
+    using less_preferred_l_rel_eq
+    by (metis (no_types))
+  hence "a \<preceq>\<^sub>(pl_\<alpha> l) b"
+    by (simp add: ab_in_l)
+  thus "a \<lesssim>\<^sub>l b"
+    using a_less_preferred_b_l_rel_eq
     by metis
 qed
 

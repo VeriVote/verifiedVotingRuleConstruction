@@ -24,8 +24,8 @@ subsection \<open>Definition\<close>
 fun pass_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
   "pass_module n r A p =
     ({},
-    {a \<in> A. card(above (limit A r) a) > n},
-    {a \<in> A. card(above (limit A r) a) \<le> n})"
+    {a \<in> A. rank (limit A r) a > n},
+    {a \<in> A. rank (limit A r) a \<le> n})"
 
 subsection \<open>Soundness\<close>
 
@@ -40,9 +40,8 @@ proof (intro electoral_modI)
     A :: "'a set" and
     p :: "'a Profile"
   let ?mod = "pass_module n r"
-  have
-    "(\<forall> a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) > n} \<or>
-              a \<in> {x \<in> A. card(above (limit A r) x) \<le> n})"
+  have "\<forall> a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) > n} \<or>
+                 a \<in> {x \<in> A. card(above (limit A r) x) \<le> n}"
     using CollectI not_less
     by metis
   hence
@@ -51,9 +50,8 @@ proof (intro electoral_modI)
     by blast
   hence 0: "set_equals_partition A (pass_module n r A p)"
     by simp
-  have
-    "(\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) > n} \<and>
-                 a \<in> {x \<in> A. card(above (limit A r) x) \<le> n}))"
+  have "\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) > n} \<and>
+                   a \<in> {x \<in> A. card(above (limit A r) x) \<le> n})"
     by auto
   hence
     "{a \<in> A. card(above (limit A r) a) > n} \<inter>

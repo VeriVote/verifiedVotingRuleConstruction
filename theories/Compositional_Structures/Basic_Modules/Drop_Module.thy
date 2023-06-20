@@ -26,8 +26,8 @@ subsection \<open>Definition\<close>
 fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
   "drop_module n r A p =
     ({},
-    {a \<in> A. card(above (limit A r) a) \<le> n},
-    {a \<in> A. card(above (limit A r) a) > n})"
+    {a \<in> A. rank (limit A r) a \<le> n},
+    {a \<in> A. rank (limit A r) a > n})"
 
 subsection \<open>Soundness\<close>
 
@@ -42,8 +42,8 @@ proof (intro electoral_modI)
     p :: "'a Profile"
   let ?mod = "drop_module n r"
   have
-    "(\<forall> a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<or>
-        a \<in> {x \<in> A. card(above (limit A r) x) > n})"
+    "\<forall> a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<or>
+        a \<in> {x \<in> A. card(above (limit A r) x) > n}"
     by auto
   hence
     "{a \<in> A. card(above (limit A r) a) \<le> n} \<union>
@@ -52,8 +52,8 @@ proof (intro electoral_modI)
   hence 0: "set_equals_partition A (drop_module n r A p)"
     by simp
   have
-    "(\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<and>
-        a \<in> {x \<in> A. card(above (limit A r) x) > n}))"
+    "\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<and>
+        a \<in> {x \<in> A. card(above (limit A r) x) > n})"
     by auto
   hence
     "{a \<in> A. card(above (limit A r) a) \<le> n} \<inter>

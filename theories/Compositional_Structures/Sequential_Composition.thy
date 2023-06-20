@@ -34,6 +34,14 @@ abbreviation sequence ::
      (infix "\<triangleright>" 50) where
   "m \<triangleright> n == sequential_composition m n"
 
+fun sequential_composition' :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module \<Rightarrow>
+        'a Electoral_Module" where
+  "sequential_composition' m n A p =
+    (let (m_e, m_r, m_d) = m A p; new_A = m_d;
+        new_p = limit_profile new_A p;
+        (n_e, n_r, n_d) = n new_A new_p in
+            (m_e \<union> n_e, m_r \<union> n_r, n_d))"
+
 lemma seq_comp_presv_disj:
   fixes
     m :: "'a Electoral_Module" and
@@ -66,8 +74,7 @@ proof -
     unfolding electoral_module_def well_formed.simps
     by blast
   from module_m module_n def_presv_fin_prof f_prof
-  have disjoint_n:
-    "(disjoint3 (n ?new_A ?new_p))"
+  have disjoint_n: "disjoint3 (n ?new_A ?new_p)"
     unfolding electoral_module_def well_formed.simps
     by metis
   have disj_n:
@@ -83,8 +90,7 @@ proof -
     using def_presv_fin_prof reject_in_alts
     by metis
   with disjoint_m module_m module_n f_prof
-  have 0:
-    "(elect m A p \<inter> reject n ?new_A ?new_p) = {}"
+  have 0: "elect m A p \<inter> reject n ?new_A ?new_p = {}"
     using disj_n
     by (simp add: disjoint_iff_not_equal subset_eq)
   from f_prof module_m module_n
@@ -95,14 +101,12 @@ proof -
     by metis
   from disjoint_m disjoint_n def_presv_fin_prof f_prof
        module_m module_n
-  have 1:
-    "(elect m A p \<inter> defer n ?new_A ?new_p) = {}"
+  have 1: "elect m A p \<inter> defer n ?new_A ?new_p = {}"
   proof -
     obtain sf :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a" where
       "\<forall> a b.
         (\<exists> c. c \<in> b \<and> (\<exists> d. d \<in> a \<and> c = d)) =
-          (sf a b \<in> b \<and>
-            (\<exists> e. e \<in> a \<and> sf a b = e))"
+          (sf a b \<in> b \<and> (\<exists> e. e \<in> a \<and> sf a b = e))"
       by moura
     then obtain sf2 :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a" where
       "\<forall> A B.
@@ -116,20 +120,18 @@ proof -
   qed
   from disjoint_m disjoint_n def_presv_fin_prof f_prof
        module_m module_n
-  have 2:
-    "(reject m A p \<inter> reject n ?new_A ?new_p) = {}"
+  have 2: "reject m A p \<inter> reject n ?new_A ?new_p = {}"
     using disjoint_iff_not_equal reject_in_alts
           set_rev_mp result_disj Int_Un_distrib2
           Un_Diff_Int boolean_algebra_cancel.inf2
           inf.order_iff inf_sup_aci(1) subsetD
           rej_n_in_def_m disj_n
     by auto
-  have "\<forall> A A'. \<not> (A::'a set) \<subseteq> A' \<or> A = A \<inter> A'"
+  have "\<forall> (A::'a set) (A'::'a set). A \<subseteq> A' \<longrightarrow> A = A \<inter> A'"
     by blast
   with disjoint_m disjoint_n def_presv_fin_prof f_prof
        module_m module_n elec_n_in_def_m
-  have 3:
-    "(reject m A p \<inter> elect n ?new_A ?new_p) = {}"
+  have 3: "reject m A p \<inter> elect n ?new_A ?new_p = {}"
     using disj_n
     by blast
   have
@@ -313,6 +315,27 @@ proof -
     by simp
   thus ?thesis
     unfolding sequential_composition.simps
+    by metis
+qed
+
+lemma seq_comp_alt_eq[code]: "sequential_composition = sequential_composition'"
+proof (unfold sequential_composition'.simps sequential_composition.simps)
+  have "\<forall> m n A E.
+      (case m A E of (e, r, d) \<Rightarrow>
+        case n d (limit_profile d E) of (e', r', d') \<Rightarrow>
+        (e \<union> e', r \<union> r', d')) =
+          (elect m A E \<union> elect n (defer m A E) (limit_profile (defer m A E) E),
+            reject m A E \<union> reject n (defer m A E) (limit_profile (defer m A E) E),
+            defer n (defer m A E) (limit_profile (defer m A E) E))"
+    using case_prod_beta'
+    by (metis (no_types, lifting))
+  thus
+    "(\<lambda> m n A p.
+        let A' = defer m A p; p' = limit_profile A' p in
+      (elect m A p \<union> elect n A' p', reject m A p \<union> reject n A' p', defer n A' p')) =
+      (\<lambda> m n A pr.
+        let (e, r, d) = m A pr; A' = d; p' = limit_profile A' pr; (e', r', d') = n A' p' in
+      (e \<union> e', r \<union> r', d'))"
     by metis
 qed
 
@@ -603,7 +626,7 @@ proof -
   fix
     A :: "'a set" and
     p :: "'a Profile"
-  let ?input_sound = "((A::'a set) \<noteq> {} \<and> finite_profile A p)"
+  let ?input_sound = "(A::'a set) \<noteq> {} \<and> finite_profile A p"
   from non_blocking_m have
     "?input_sound \<longrightarrow> reject m A p \<noteq> A"
     unfolding non_blocking_def
@@ -886,9 +909,9 @@ proof -
       by simp
     ultimately have 0:
       "(\<forall> i::nat. i < length ?new_p \<longrightarrow>
-          \<not>Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a) \<or>
+          \<not> Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a) \<or>
        (\<exists> i::nat. i < length ?new_p \<and>
-          \<not>Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a \<and>
+          \<not> Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a \<and>
               (?new_p!i) \<noteq> (?new_q!i))"
       using a2
       unfolding lifted_def
