@@ -26,8 +26,8 @@ subsection \<open>Definition\<close>
 
 fun smc :: "'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
   "smc x A p =
-      ((((((pass_module 2 x) \<triangleright> ((plurality\<down>) \<triangleright> (pass_module 1 x))) \<parallel>\<^sub>\<up>
-      (drop_module 2 x)) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) \<triangleright> elect_module) A p)"
+      ((elector ((((pass_module 2 x) \<triangleright> ((plurality\<down>) \<triangleright> (pass_module 1 x))) \<parallel>\<^sub>\<up>
+      (drop_module 2 x)) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d)) A p)"
 
 subsection \<open>Soundness\<close>
 
@@ -278,7 +278,7 @@ proof -
   show ?thesis
     using 2 3 assms seq_comp_electing smc_sound
     unfolding Defer_One_Loop_Composition.iter.simps
-              smc.simps electing_def
+              smc.simps elector.simps electing_def
     by metis
 qed
 
@@ -295,7 +295,7 @@ theorem smc_monotone:
   shows "monotonicity (smc x)"
 proof -
   let ?pass2 = "pass_module 2 x"
-  let ?tie_breaker = "(pass_module 1 x)"
+  let ?tie_breaker = "pass_module 1 x"
   let ?plurality_defer = "(plurality\<down>) \<triangleright> ?tie_breaker"
   let ?compare_two = "?pass2 \<triangleright> ?plurality_defer"
   let ?drop2 = "drop_module 2 x"
@@ -391,7 +391,7 @@ proof -
 
   show ?thesis
     using 0 1 2 3 assms seq_comp_mono
-    unfolding Electoral_Module.monotonicity_def
+    unfolding Electoral_Module.monotonicity_def elector.simps
               Defer_One_Loop_Composition.iter.simps
               smc_sound smc.simps
     by (metis (full_types))

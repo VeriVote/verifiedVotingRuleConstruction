@@ -153,7 +153,7 @@ next
         a \<in> reject (drop_module n r) A p"
       by auto
     moreover have
-      "(\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) A a)"
+      "\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) A a"
       using assms
       unfolding indep_of_alt_def
       by simp
