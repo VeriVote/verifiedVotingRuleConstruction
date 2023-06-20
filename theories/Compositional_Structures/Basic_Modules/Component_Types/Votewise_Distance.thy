@@ -19,7 +19,7 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm \<Rightarrow> ('a set \<times> 'a Profile) Distance" where
+fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm \<Rightarrow> 'a Election Distance" where
   "votewise_distance d n (A, xs) (A', ys) =
     (if length xs = length ys \<and> (0 < length xs \<or> A = A')
     then n (map2 (\<lambda> x y. d (A, x) (A', y)) xs ys)

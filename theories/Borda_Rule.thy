@@ -27,8 +27,8 @@ subsection \<open>Definition\<close>
 fun borda_rule :: "'a Electoral_Module" where
   "borda_rule A p = elector borda A p"
 
-fun borda_rule_dr :: "'a Electoral_Module" where
-  "borda_rule_dr A p = (dr_rule (votewise_distance swap l_one) unanimity) A p"
+fun borda_dr_rule :: "'a Electoral_Module" where
+  "borda_dr_rule A p = (dr_rule (votewise_distance swap l_one) unanimity) A p"
 
 subsection \<open>Soundness\<close>
 
@@ -37,11 +37,16 @@ theorem borda_rule_sound: "electoral_module borda_rule"
   using elector_sound borda_sound
   by metis
 
+theorem borda_dr_rule_sound: "electoral_module borda_dr_rule"
+  unfolding borda_dr_rule.simps
+  using dr_sound
+  by metis
+
 subsection \<open>Anonymity Property\<close>
 
-theorem borda_dr_anonymous: "anonymity borda_rule_dr"
-proof (unfold borda_rule_dr.simps)
-  let ?swap_dist = "(votewise_distance swap l_one)"
+theorem borda_dr_anonymous: "anonymity borda_dr_rule"
+proof (unfold borda_dr_rule.simps)
+  let ?swap_dist = "votewise_distance swap l_one"
   from l_one_is_symm
   have "el_distance_anonymity ?swap_dist"
     using el_dist_anon_if_norm_symm[of l_one]

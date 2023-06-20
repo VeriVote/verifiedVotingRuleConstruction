@@ -23,7 +23,7 @@ subsection \<open>Definition\<close>
 type_synonym Norm = "ereal list  \<Rightarrow> ereal"
 
 definition norm :: "Norm \<Rightarrow> bool" where
-  "norm n \<equiv> (\<forall> (x::ereal list). n x \<ge> 0 \<and> (\<forall> i < length x. (x!i = 0) \<longrightarrow> n x = 0))"
+  "norm n \<equiv> \<forall> (x::ereal list). n x \<ge> 0 \<and> (\<forall> i < length x. (x!i = 0) \<longrightarrow> n x = 0)"
 
 subsection \<open>TODO\<close>
 
@@ -38,14 +38,15 @@ lemma sum_over_image_of_bijection:
     A :: "'a set" and
     A' :: "'b set" and
     f :: "'a \<Rightarrow> 'b" and
-    g
-  shows "bij_betw f A A' \<longrightarrow> (\<Sum> a \<in> A. g a) = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"
-proof (safe, induction "card A" arbitrary: A A')
+    g :: "'a \<Rightarrow> ereal"
+  assumes "bij_betw f A A'"
+  shows "(\<Sum> a \<in> A. g a) = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"
+  using assms
+proof (induction "card A" arbitrary: A A')
   case 0
-  assume "bij_betw f A A'"
-  with 0
-  have "card A' = 0"
-    using bij_betw_same_card
+  hence "card A' = 0"
+    using bij_betw_same_card assms
+    using assms
     by metis
   hence "(\<Sum> a \<in> A. g a) = 0 \<and> (\<Sum> a' \<in> A'. g (the_inv_into A f a')) = 0"
     using 0 card_0_eq sum.empty sum.infinite
@@ -56,7 +57,8 @@ next
   case (Suc x)
   fix
     A :: "'a set" and
-    A' :: "'b set"
+    A' :: "'b set" and
+    x :: nat
   assume
     IH: "\<And> A A'. x = card A \<Longrightarrow>
             bij_betw f A A' \<Longrightarrow> sum g A = (\<Sum> a \<in> A'. g (the_inv_into A f a))" and

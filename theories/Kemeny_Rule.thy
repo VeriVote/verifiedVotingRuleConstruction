@@ -23,11 +23,18 @@ subsection \<open>Definition\<close>
 fun kemeny_rule :: "'a Electoral_Module" where
   "kemeny_rule A p = (dr_rule (votewise_distance swap l_one) strong_unanimity) A p"
 
+subsection \<open>Soundness\<close>
+
+theorem kemeny_rule_sound: "electoral_module kemeny_rule"
+  unfolding kemeny_rule.simps
+  using dr_sound
+  by metis
+
 subsection \<open>Anonymity Property\<close>
 
 theorem kemeny_anonymous: "anonymity kemeny_rule"
 proof (unfold kemeny_rule.simps)
-  let ?swap_dist = "(votewise_distance swap l_one)"
+  let ?swap_dist = "votewise_distance swap l_one"
   from l_one_is_symm
   have "el_distance_anonymity ?swap_dist"
     using el_dist_anon_if_norm_symm[of l_one]
@@ -38,9 +45,11 @@ proof (unfold kemeny_rule.simps)
     by metis
 qed
 
+subsection \<open>Datatype Instantiation\<close>
+
 datatype alternative = a | b | c | d
 
-lemma UNIV_alternative [code_unfold]: "UNIV = {a, b, c, d}" (is "_ = ?A")
+lemma alternative_univ [code_unfold]: "UNIV = {a, b, c, d}" (is "_ = ?A")
 proof (rule UNIV_eq_I)
   fix x :: "alternative"
   show "x \<in> ?A"
@@ -49,12 +58,12 @@ qed
 
 instantiation alternative :: enum
 begin
-  definition "Enum.enum = [a, b, c, d]"
-  definition "Enum.enum_all P \<longleftrightarrow> P a \<and> P b \<and> P c \<and> P d"
-  definition "Enum.enum_ex P \<longleftrightarrow> P a \<or> P b \<or> P c \<or> P d"
+  definition "Enum.enum \<equiv> [a, b, c, d]"
+  definition "Enum.enum_all P \<equiv> P a \<and> P b \<and> P c \<and> P d"
+  definition "Enum.enum_ex P \<equiv> P a \<or> P b \<or> P c \<or> P d"
 instance proof
   qed (simp_all only: enum_alternative_def enum_all_alternative_def
-      enum_ex_alternative_def UNIV_alternative, simp_all)
+      enum_ex_alternative_def alternative_univ, simp_all)
 end
 
 (*

@@ -23,7 +23,7 @@ fun elect_first_module :: "'a Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-theorem first_mod_is_em: "electoral_module elect_first_module"
+theorem first_mod_sound: "electoral_module elect_first_module"
 proof (intro electoral_modI)
   fix
     A :: "'a set" and
@@ -33,8 +33,7 @@ proof (intro electoral_modI)
   hence "set_equals_partition A (elect_first_module A p)"
     by simp
   moreover have
-    "(\<forall> a \<in> A. \<not>(a \<in> {a \<in> A.  above (p!0) a = {a}} \<and>
-                 a \<in> {a \<in> A. above (p!0) a \<noteq> {a}}))"
+    "\<forall> a \<in> A. (a \<notin> {a' \<in> A.  above (p!0) a' = {a'}} \<or> a \<notin> {a' \<in> A. above (p!0) a' \<noteq> {a'}})"
     by simp
   hence "{a \<in> A. above (p!0) a = {a}} \<inter> {a \<in> A. above (p!0) a \<noteq> {a}} = {}"
     by blast
