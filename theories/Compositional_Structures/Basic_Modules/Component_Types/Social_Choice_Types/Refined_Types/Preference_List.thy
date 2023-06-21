@@ -394,9 +394,6 @@ qed
   This is used in the proof that list_to_rel produces linear orders.  *)
 lemma rel_of_pref_pred_for_set_eq_list_to_rel:
   fixes l :: "'a Preference_List"
-  assumes
-    len_l: "0 < length l" and
-    dist_l: "distinct l"
   shows "relation_of (\<lambda> y z. y \<lesssim>\<^sub>l z) (set l) = pl_\<alpha> l"
 proof (unfold relation_of_def, safe)
   fix

@@ -20,14 +20,18 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
+declare seq_comp_alt_eq[simp]
+
 fun blacks_rule :: "'a Electoral_Module" where
-  "blacks_rule A p = (pairwise_majority_rule \<triangleright> borda_rule) A p"
+  "blacks_rule A p = elector (condorcet \<triangleright> borda) A p"
+
+declare seq_comp_alt_eq[simp del]
 
 subsection \<open>Soundness\<close>
 
 theorem blacks_rule_sound: "electoral_module blacks_rule"
   unfolding blacks_rule.simps
-  using pairwise_majority_rule_sound borda_rule_sound seq_comp_sound
+  using elector_sound seq_comp_sound condorcet_sound borda_sound
   by metis
 
 end
