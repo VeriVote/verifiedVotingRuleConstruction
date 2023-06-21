@@ -67,6 +67,12 @@ fun leq_average_eliminator :: "'a Evaluation_Function \<Rightarrow>
                                 'a Electoral_Module" where
   "leq_average_eliminator e A p = leq_eliminator e (average e A p) A p"
 
+
+lemma elimset_sub:
+  shows "elimination_set e t r A p \<subseteq> A" 
+  unfolding elimination_set.simps
+  by simp
+
 subsection \<open>Soundness\<close>
 
 lemma elim_mod_sound[simp]: "electoral_module (elimination_module e t r)"
