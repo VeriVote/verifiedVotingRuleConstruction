@@ -30,11 +30,17 @@ fun blacks_rule' :: "'a Electoral_Module" where
   "blacks_rule' A p = sequential_composition' 
   condorcet (sequential_composition' borda elect_module)  A p"
 
+theorem elector_seqcomp:
+  fixes a b :: "'a Electoral_Module"
+  shows "(a \<triangleright> (elector b)) = (elector (a \<triangleright> b))"
+  unfolding elector.simps elect_module.simps sequential_composition.simps
+  by (clarsimp, metis (no_types, opaque_lifting) boolean_algebra_cancel.sup2 
+      fst_eqD snd_eqD sup_commute)
+
 lemma blackdef_eq:
   shows "blacks_rule' = blacks_rule"
-  unfolding blacks_rule'.simps blacks_rule.simps seqcomp_alt_eq
-  apply (auto simp del: condorcet.simps borda.simps)
-  by (metis (no_types, opaque_lifting) boolean_algebra_cancel.sup2 fst_eqD inf_sup_aci(5) snd_eqD)
+  unfolding blacks_rule'.simps blacks_rule.simps seqcomp_alt_eq elector.simps[symmetric]
+  using elector_seqcomp[of condorcet borda] .
   
 
 subsection \<open>Soundness\<close>
@@ -80,12 +86,26 @@ proof (unfold blackdef_eq[symmetric] blacks_rule'.simps seqcomp_alt_eq elector.s
   have non_def: "defer (condorcet \<triangleright> elector borda) A p = {}" 
     by (auto simp del: condorcet.simps borda.simps, metis equals0D sndI)
   have rejrest: "reject (condorcet \<triangleright> elector borda) A p = A - {w}"
-    unfolding electoral_module_def using fprof
-    apply (auto simp del: condorcet.simps borda.simps sequential_composition.simps)
-    subgoal by (metis Diff_iff comp_sound elector.simps reject_not_elec_or_def)
-    subgoal by (metis comp_sound dw electcondw elector.elims insert_disjoint(1) result_disj)
-    by (metis comp_sound dw electcondw elector.simps electoral_mod_defer_elem empty_iff insert_iff non_def)
-  from electcbw non_def rejrest 
+    unfolding electoral_module_def
+  proof (auto simp del: condorcet.simps borda.simps sequential_composition.simps)
+    fix x
+    show "x \<in> reject (condorcet \<triangleright> (borda \<triangleright> elect_module)) A p \<Longrightarrow> x \<in> A"
+      using fprof by (metis Diff_iff comp_sound elector.simps reject_not_elec_or_def)
+  next
+    assume w_rej: "w \<in> reject (condorcet \<triangleright> (borda \<triangleright> elect_module)) A p"
+    have "(w \<notin> reject (condorcet \<triangleright> (borda \<triangleright> elect_module)) A p)"
+    using fprof by (metis comp_sound dw electcondw elector.elims insert_disjoint(1) result_disj)
+    with w_rej show "False"
+      by blast 
+  next
+    fix x
+    assume "x \<in> A"
+    and    "x \<notin> reject (condorcet \<triangleright> (borda \<triangleright> elect_module)) A p"
+    thus "x = w" using fprof
+      by (metis comp_sound dw electcondw elector.simps electoral_mod_defer_elem 
+          empty_iff insert_iff non_def)
+  qed
+  from electcbw non_def rejrest
   show "(condorcet \<triangleright> elector borda) A p = ({w}, A - {w}, {})"
     by (metis combine_ele_rej_def)
   qed

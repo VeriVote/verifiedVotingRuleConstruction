@@ -35,17 +35,70 @@ fun plurality_mod :: "'a Electoral_Module" where
   "plurality_mod A p = max_eliminator plur_score A p"
 
 
-
+(* Thos proof could be done in Isar but I think it would not be as compact *)
 lemma plurality_elim_eq:
   assumes "A \<noteq> {}" and "finite A"
   shows "plurality_mod A p = (plurality\<down>) A p"
-  unfolding plurality_mod.simps  plurality.simps
+  unfolding plurality_mod.simps plur_score.simps
   apply (auto simp del: win_count.simps)
   using assms(2) score_bounded[where A= A and f = "(\<lambda> x. win_count p x)"]
   apply fastforce+
   using assms nless_le max_score_in[where A= A and f = "(\<lambda> x. win_count p x)"]
     apply auto
   done
+
+lemma plurality_elim_eq2:
+  assumes "A \<noteq> {}" and fin_prof_A: "finite_profile A p"
+  shows "plurality_mod A p = (plurality\<down>) A p"
+  unfolding plurality_mod.simps plur_score.simps
+proof (standard, unfold revision_composition.simps)
+  show "elect (max_eliminator (\<lambda>x A p. win_count p x)) A p =
+    elect_r ({}, A - elect plurality A p, elect plurality A p)"
+    using max_elim_non_electing fin_prof_A
+    by auto
+next
+  have rej_eq: "reject (max_eliminator (\<lambda>x A p. win_count p x)) A p = A - elect plurality A p"
+  proof (simp del: win_count.simps, safe, simp_all del: win_count.simps, fastforce)
+    fix xa xb
+    assume xa_in_A: "xa \<in> A" and xb_in_A: "xb \<in> A"
+    assume "\<not> win_count p xb \<le> win_count p xa"
+    from this xa_in_A xb_in_A show "win_count p xa < Max {win_count p x |x. x \<in> A}"
+      using score_bounded[where A= A and f = "(\<lambda> x. win_count p x)"] assms(2)
+      by force
+  next
+    fix xa x
+    assume "{a \<in> A. win_count p a < Max {win_count p x |x. x \<in> A}} = A"
+    then have "A = {}" 
+     using max_score_in[where A= A and f = "(\<lambda> x. win_count p x)"] assms
+     nat_less_le by auto
+   from assms(1) this have "False" by simp
+   thus "win_count p xa \<le> win_count p x" by simp
+  qed
+  have "defer (max_eliminator (\<lambda>x A p. win_count p x)) A p = elect plurality A p"
+  proof (auto simp del: win_count.simps)
+    fix xa xb
+    assume xa_in_A: "xa \<in> A" and xb_in_A: "xb \<in> A"
+    assume "\<not> win_count p xa < Max {win_count p x |x. x \<in> A}"
+    then have "win_count p xa = Max {win_count p x |x. x \<in> A}"
+       using score_bounded[where A= A and f = "(\<lambda> x. win_count p x)"] assms(2)
+       order_le_imp_less_or_eq xa_in_A by blast
+    from this xb_in_A show "win_count p xb \<le> win_count p xa" 
+      using score_bounded[where A= A and f = "(\<lambda> x. win_count p x)"] assms(2)
+      by presburger
+  next
+    fix x xa
+    assume "{a \<in> A. win_count p a < Max {win_count p x |x. x \<in> A}} = A"
+    then have "A = {}" 
+      using max_score_in[where A= A and f = "(\<lambda> x. win_count p x)"] assms
+      nat_less_le by auto
+    from this assms(1) have "False" by simp
+    thus "win_count p xa \<le> win_count p x" by simp
+  qed
+  with rej_eq show "snd (max_eliminator (\<lambda>x A p. win_count p x) A p) =
+    snd ({}, A - elect plurality A p, elect plurality A p)"
+    by (metis prod.collapse snd_conv)
+qed
+
 
 subsection \<open>Soundness\<close>
 
