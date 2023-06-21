@@ -216,17 +216,8 @@ lemma standard_implies_equal_score:
 proof -
   have all_profiles_set:
     "all_profiles (length p) A = {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
-  proof (cases "finite A")
-    case False
-    hence "all_profiles (length p) A = {}"
-      by simp
-    moreover have "{x. finite_profile A x \<and> length x = (length p)} = {}"
-      using False
-      by simp
-    ultimately show ?thesis
-      by simp
-  next
-    case fin_A: True
+  proof (cases "\<not> finite A", simp)
+    case fin_A: False
     show ?thesis
     proof (cases "0 < length p")
       case True
@@ -248,14 +239,14 @@ proof -
                 length xs = length p"
           using all_ls_elems_same_len
           by metis
-        thus l: "length x = length p"
+        thus len_eq: "length x = length p"
           using xprof ne
           by simp
         show "profile A x"
         proof (unfold profile_def, safe)
           fix i :: nat
           assume lt_len_x: "i < length x"
-          with l
+          with len_eq
           have i_lt_len_p: "i < length p"
             by simp
           hence "x!i \<in> replicate (length p) (pl_\<alpha> ` permutations_of_set A)!i"
@@ -265,19 +256,143 @@ proof -
             using i_lt_len_p
             by simp
           hence relation_of:
-            "x!i \<in> {relation_of (\<lambda> y z. rank_l xs z \<le> rank_l xs y) (set xs)
-                      | xs. xs \<in> permutations_of_set A}"
-            using rel_of_pref_pred_for_set_eq_list_to_rel permutations_of_setD
-            sorry
-            (* by blast *)
+            "x!i \<in> {relation_of (\<lambda> y z. rank_l l z \<le> rank_l l y) (set l)
+                      | l. l \<in> permutations_of_set A}"
+          proof (safe)
+            fix l :: "'a Preference_List"
+            assume
+              i_th_rel: "x!i = pl_\<alpha> l" and
+              perm_l: "l \<in> permutations_of_set A"
+            have rel_of_set_l_eq_l_list: "relation_of (\<lambda> y z. y \<lesssim>\<^sub>l z) (set l) = pl_\<alpha> l"
+              using rel_of_pref_pred_for_set_eq_list_to_rel
+              by blast
+            have "relation_of (\<lambda> y z. rank_l l z \<le> rank_l l y) (set l) = pl_\<alpha> l"
+            proof (unfold relation_of_def rank_l.simps, safe)
+              fix
+                a :: "'a" and
+                b :: "'a"
+              assume
+                idx_b_lte_idx_a: "(if List.member l b then index l b + 1 else 0) \<le>
+                                    (if List.member l a then index l a + 1 else 0)" and
+                a_in_l: "a \<in> set l" and
+                b_in_l : "b \<in> set l"
+              have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+                using rel_of_set_l_eq_l_list
+                by (simp add: relation_of_def)
+              have "List.member l a"
+                unfolding member_def
+                using a_in_l
+                by simp
+              thus "(a, b) \<in> pl_\<alpha> l"
+                using l_set_eq_l_list idx_b_lte_idx_a b_in_l member_def
+                by fastforce
+            next
+              fix
+                a :: "'a" and
+                b :: "'a"
+              assume "(a, b) \<in> pl_\<alpha> l"
+              thus "a \<in> set l"
+                using Collect_mem_eq case_prod_eta in_rel_Collect_case_prod_eq
+                      is_less_preferred_than_l.elims(2) member_def pl_\<alpha>_def
+                by (metis (no_types))
+            next
+              fix
+                a :: "'a" and
+                b :: "'a"
+              assume a_b_in_rel_of_l: "(a, b) \<in> pl_\<alpha> l"
+              have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+                using rel_of_set_l_eq_l_list
+                by (simp add: relation_of_def)
+              thus "b \<in> set l"
+                using a_b_in_rel_of_l is_less_preferred_than_l.elims(2)
+                by blast
+            next
+              fix
+                a :: "'a" and
+                b :: "'a"
+                assume a_b_in_rel_of_l: "(a, b) \<in> pl_\<alpha> l"
+                have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+                  using rel_of_set_l_eq_l_list
+                  by (simp add: relation_of_def)
+                hence "a \<lesssim>\<^sub>l b"
+                  using a_b_in_rel_of_l case_prodE mem_Collect_eq prod.inject
+                  by blast
+                thus "(if List.member l b then index l b + 1 else 0) \<le>
+                        (if List.member l a then index l a + 1 else 0)"
+                  by force
+              qed
+            show "\<exists> l'. x!i = relation_of (\<lambda> y z. rank_l l' z \<le> rank_l l' y) (set l') \<and>
+                  l' \<in> permutations_of_set A"
+            proof
+              have "relation_of (\<lambda> y z. rank_l l z \<le> rank_l l y) (set l) = pl_\<alpha> l"
+              proof (unfold relation_of_def rank_l.simps, safe)
+                fix
+                  a :: "'a" and
+                  b :: "'a"
+                assume
+                  idx_b_lte_idx_a: "(if List.member l b then index l b + 1 else 0) \<le>
+                          (if List.member l a then index l a + 1 else 0)" and
+                  a_in_l: "a \<in> set l" and
+                  b_in_l : "b \<in> set l"
+                have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+                  using rel_of_set_l_eq_l_list
+                  by (simp add: relation_of_def)
+                have  "List.member l a"
+                  unfolding member_def
+                  using a_in_l
+                  by simp
+                thus "(a, b) \<in> pl_\<alpha> l"
+                  using l_set_eq_l_list idx_b_lte_idx_a b_in_l member_def
+                  by fastforce
+              next
+                fix
+                  a :: "'a" and
+                  b :: "'a"
+                assume "(a, b) \<in> pl_\<alpha> l"
+                thus "a \<in> set l"
+                  using Collect_mem_eq case_prod_eta in_rel_Collect_case_prod_eq
+                        is_less_preferred_than_l.elims(2) member_def pl_\<alpha>_def
+                  by (metis (no_types))
+              next
+                fix
+                  a :: "'a" and
+                  b :: "'a"
+                assume a_b_in_rel_of_l: "(a, b) \<in> pl_\<alpha> l"
+                have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+                  using rel_of_set_l_eq_l_list
+                  by (simp add: relation_of_def)
+                thus "b \<in> set l"
+                  using a_b_in_rel_of_l is_less_preferred_than_l.elims(2)
+                  by blast
+              next
+                fix
+                  a :: "'a" and
+                  b :: "'a"
+                assume a_b_in_rel_of_l: "(a, b) \<in> pl_\<alpha> l"
+                have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+                  using rel_of_set_l_eq_l_list
+                  by (simp add: relation_of_def)
+                hence "a \<lesssim>\<^sub>l b"
+                  using a_b_in_rel_of_l case_prodE mem_Collect_eq prod.inject
+                  by blast
+                thus "(if List.member l b then index l b + 1 else 0) \<le>
+                        (if List.member l a then index l a + 1 else 0)"
+                  by force
+              qed
+              thus "x!i = relation_of (\<lambda> y z. rank_l l z \<le> rank_l l y) (set l) \<and>
+                      l \<in> permutations_of_set A"
+                using perm_l i_th_rel
+                by presburger
+            qed
+          qed
           let ?P = "\<lambda> xs y z. rank_l xs z \<le> rank_l xs y"
-          have refl: "\<And> xs a. a \<in> (set xs) \<Longrightarrow> ?P xs a a"
+          have "\<And> xs a. a \<in> (set xs) \<Longrightarrow> ?P xs a a"
             by simp
-          moreover have trans:
+          moreover have
             "\<And> xs a b c. \<lbrakk> a \<in> (set xs); b \<in> (set xs); c \<in> (set xs) \<rbrakk>
               \<Longrightarrow> ?P xs a b \<Longrightarrow> ?P xs b c \<Longrightarrow> ?P xs a c"
             by simp
-          moreover have antisym:
+          moreover have
             "\<And> xs a b. \<lbrakk> a \<in> (set xs); b \<in> (set xs) \<rbrakk> \<Longrightarrow> ?P xs a b \<Longrightarrow> ?P xs b a \<Longrightarrow> a = b"
             using pos_in_list_yields_pos le_antisym
             by metis
@@ -307,11 +422,25 @@ proof -
           fin_A: "finite A" and
           prof_A_x: "profile A x"
         show "x \<in> all_profiles (length p) A"
+          using fin_A
+        proof (unfold all_profiles.simps, clarsimp)
+          assume fin_A: "finite A"
           (* Intermediate step: Show that all linear orders over A 
-          are in "list_to_rel ' (permutations_of_set A)".  
-          Then, use the argument that "listset (replicate l S))" for a set S is the set of lists 
-          of length l where each item is in S. *)
-          sorry
+             are in "list_to_rel ' (permutations_of_set A)".
+             Then, use the argument that "listset (replicate l S))" for a set S is the set of lists
+             of length l where each item is in S. *)
+          have "x \<in> listset
+                (replicate (length p)
+                  ((\<lambda> x. {(a, b).
+                    (List.member x b \<longrightarrow>
+                      (List.member x a \<longrightarrow> index x b \<le> index x a) \<and> List.member x a) \<and>
+                    List.member x b}) `
+                {l. set l = A \<and> well_formed_l l}))"
+            sorry
+          thus "x \<in> listset (replicate (length p) (pl_\<alpha> ` permutations_of_set A))"
+            unfolding pl_\<alpha>_def permutations_of_set_def
+            by clarsimp
+        qed
       qed
     next
       case not_zero_lt_len_p: False
@@ -351,9 +480,9 @@ proof -
     thus ?thesis
     (* Find out what "Min {}" does. If it is not \<infinity>, redefine score_std:
     "score_std d K E a = 
-      (if favoring_consensus_elections_std K a (fst E) (length (snd E)) = {}
+      (if consensus_elections_std K a (fst E) (length (snd E)) = {}
       then \<infinity>
-      else Min (d E ` (favoring_consensus_elections_std K a (fst E) (length (snd E)))))" 
+      else Min (d E ` (consensus_elections_std K a (fst E) (length (snd E)))))"
     This is consistent with the convention that the distance from empty consensus sets is \<infinity>
     mentioned by Hadjibeyli and Wilson after remark 3.5 *)
       sorry
