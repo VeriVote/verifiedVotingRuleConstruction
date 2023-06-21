@@ -63,7 +63,10 @@ fun consensus_elections_std :: "'a Consensus_Rule \<Rightarrow> 'a \<Rightarrow>
                                 (all_profiles l A))"
 
 fun score_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Election \<Rightarrow> 'a \<Rightarrow> ereal" where
-  "score_std d K E a = Min (d E ` (consensus_elections_std K a (fst E) (length (snd E))))"
+  "score_std d K E a =
+    (if consensus_elections_std K a (fst E) (length (snd E)) = {}
+      then \<infinity>
+      else Min (d E ` (consensus_elections_std K a (fst E) (length (snd E)))))"
 
 fun dr_winners_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a set
                           \<Rightarrow> 'a Profile \<Rightarrow> 'a set" where
@@ -471,10 +474,12 @@ proof -
     using std
     (* Since d in standard, d (A,p) (A,p') is \<infinity> for all p' not in the set. *)
     sorry
-  ultimately have "Inf (d (A, p) ` (consensus_elections K a)) =
-                    Inf (d (A, p) ` (consensus_elections_std K a A (length p)))"
+  ultimately have inf_eq_inf_for_std_cons:
+    "Inf (d (A, p) ` (consensus_elections K a)) =
+      Inf (d (A, p) ` (consensus_elections_std K a A (length p)))"
     by simp
-  also have "\<dots> = Min (d (A, p) ` (consensus_elections_std K a A (length p)))"
+  also have inf_eq_min_for_std_cons:
+    "\<dots> = Min (d (A, p) ` (consensus_elections_std K a A (length p)))"
   proof (cases "consensus_elections_std K a A (length p) = {}")
     case True
     thus ?thesis
@@ -534,6 +539,7 @@ proof -
       by (simp add: Lattices_Big.complete_linorder_class.Min_Inf)
   qed
   finally show "score d K (A, p) a = score_std d K (A, p) a"
+    using inf_eq_inf_for_std_cons inf_eq_min_for_std_cons top_ereal_def
     by simp
 qed
 
@@ -544,44 +550,35 @@ proof (unfold standard_def, clarify)
     B :: "'a set" and
     p :: "'a Profile" and
     q :: "'a Profile"
-  assume assm: "length p \<noteq> length q \<or> C \<noteq> B"
+  assume len_p_neq_len_q_or_C_neq_B: "length p \<noteq> length q \<or> C \<noteq> B"
   thus "votewise_distance swap l_one (C, p) (B, q) = \<infinity>"
-  proof (cases "length p = length q")
+  proof (cases "length p \<noteq> length q \<or> length p = 0", simp)
     case False
-    thus ?thesis
+    hence C_neq_B: "C \<noteq> B"
+      using len_p_neq_len_q_or_C_neq_B
       by simp
-  next
-    case len_p_eq_len_q: True
-    with assm
-    have C_Neq_B: "C \<noteq> B"
+    from False
+    have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = swap (C, (p!0)) (B, (q!0))"
+      using case_prod_conv length_zip min.idem nth_map nth_zip zero_less_iff_neq_zero
+      by (metis (no_types, lifting))
+    also have "\<dots> = \<infinity>"
+      using C_neq_B
+      by simp
+    finally have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = \<infinity>"
+      by simp
+    have len_gt_zero: "0 < length (map2 (\<lambda> x y. swap (C, x) (B, y)) p q)"
+      using False
+      by force
+    moreover have "(\<Sum> i::nat < min (length p) (length q). ereal_of_enat (\<infinity>)) = \<infinity>"
+      using finite_lessThan sum_Pinfty ereal_of_enat_simps(2) lessThan_iff min.idem
+            False not_gr_zero of_nat_eq_enat
+      by metis
+    ultimately have "l_one (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) = \<infinity>"
+      using C_neq_B
       by simp
     thus ?thesis
-    proof (cases "0 < length p")
-      case False
-      with C_Neq_B
-      show ?thesis
-        by simp
-    next
-      case True
-      with len_p_eq_len_q
-      have map_fst_eq_swap:
-        "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = swap (C, (p!0)) (B, (q!0))"
-        by simp
-      also have map_fst_is_infty: "\<dots> = \<infinity>"
-        using C_Neq_B
-        by simp
-      finally have first_el_is_infty: "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = \<infinity>"
-        by simp
-      moreover from True len_p_eq_len_q
-      have len_gt_zero: "0 < length (map2 (\<lambda> x y. swap (C, x) (B, y)) p q)"
-        by simp
-      ultimately have l_one_is_infty: "l_one (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) = \<infinity>"
-        (* Should not be very hard *)
-        sorry
-      with True len_p_eq_len_q
-      show ?thesis
-        by simp
-    qed
+      using False
+      by simp
   qed
 qed
 
