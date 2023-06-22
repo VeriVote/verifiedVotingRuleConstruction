@@ -429,7 +429,7 @@ proof -
         proof (unfold all_profiles.simps, clarsimp)
           assume fin_A: "finite A"
           (* Intermediate step: Show that all linear orders over A 
-             are in "list_to_rel ' (permutations_of_set A)".
+             are in "pl_\<alpha> ' (permutations_of_set A)".
              Then, use the argument that "listset (replicate l S))" for a set S is the set of lists
              of length l where each item is in S. *)
           have "x \<in> listset
@@ -439,6 +439,7 @@ proof -
                       (List.member x a \<longrightarrow> index x b \<le> index x a) \<and> List.member x a) \<and>
                     List.member x b}) `
                 {l. set l = A \<and> well_formed_l l}))"
+
             sorry
           thus "x \<in> listset (replicate (length p) (pl_\<alpha> ` permutations_of_set A))"
             unfolding pl_\<alpha>_def permutations_of_set_def
@@ -654,7 +655,8 @@ next
         y_in_S: "y \<in> S" and
         g_y_lt_g_x: "g y < g x"
       have f_eq_g_for_elems_in_S: "\<forall> a. a \<in> S \<longrightarrow> f a = g a"
-        by (simp add: assms)
+        using assms
+        by simp
       hence "g x = f x"
         using x_in_S
         by presburger
@@ -738,8 +740,8 @@ proof (unfold anonymity_def, clarify)
         let
           ?A = "fst E" and
           ?p = "snd E"
-        assume assm: "E \<in> {(A', p') | A' p'. ?P a A' p'}"
-        hence 2: "?P a ?A ?p"
+        assume consensus_election_E: "E \<in> {(A', p') | A' p'. ?P a A' p'}"
+        hence consens_elect_E_inst: "?P a ?A ?p"
           by simp
         show "E \<in> {(A', ?listpi' p') | A' p'. ?P a A' p'}"
         proof (cases "length ?p = length p")
@@ -747,7 +749,7 @@ proof (unfold anonymity_def, clarify)
           hence "permute_list (inv pi) ?p <~~> ?p"
             using pi_perm
             by (simp add: permutes_inv)
-          with apply_perm 2
+          with apply_perm consens_elect_E_inst
           have "?P a ?A (permute_list (inv pi) ?p)"
             by presburger
           moreover have "length (permute_list (inv pi) ?p) = length p"
@@ -768,7 +770,7 @@ proof (unfold anonymity_def, clarify)
             by auto
         next
           case False
-          with assm
+          with consensus_election_E
           show ?thesis
             by fastforce (* because ?listpi ?p = ?p *)
         qed
@@ -780,12 +782,12 @@ proof (unfold anonymity_def, clarify)
         let
           ?A = "fst E" and
           ?r = "snd E"
-        assume assm: "E \<in> {(A', ?listpi' p') | A' p'. ?P a A' p'}"
+        assume consensus_elect_permut_E: "E \<in> {(A', ?listpi' p') | A' p'. ?P a A' p'}"
         hence "\<exists> p'. ?r = ?listpi' p' \<and> ?P a ?A p'"
           by auto
         then obtain p' where
           rp': "?r = ?listpi' p'" and
-          2: "?P a ?A p'"
+          consens_elect_inst: "?P a ?A p'"
           by metis
         show "E \<in> {(A', p') | A' p'. ?P a A' p'}"
         proof (cases "length p' = length p")
@@ -793,7 +795,7 @@ proof (unfold anonymity_def, clarify)
           have "?r <~~> p'"
             using pi_perm rp'
             by simp
-          with 2 apply_perm rp'
+          with consens_elect_inst apply_perm rp'
           have "?P a ?A ?r"
             by presburger
           moreover have "length ?r = length p"
@@ -803,9 +805,8 @@ proof (unfold anonymity_def, clarify)
             by simp
         next
           case False
-          with assm
-          show ?thesis
-            using rp'
+          thus ?thesis
+            using consensus_elect_permut_E rp'
             by fastforce (* because ?listpi ?p = ?p *)
         qed
       qed

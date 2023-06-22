@@ -78,7 +78,7 @@ fun pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relation \<Rig
                                       ('a \<times> 'a) set" where
   "pairwise_disagreements A x y = {(u, v) \<in> A \<times> A. u \<noteq> v \<and> neq_ord x y u v}"
 
-definition pairwise_disagreements' :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
+fun pairwise_disagreements' :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
                                       ('a \<times> 'a) set" where
   "pairwise_disagreements' A x y = Set.filter (\<lambda> (u, v). u \<noteq> v \<and> neq_ord x y u v) (A \<times> A)"
 
@@ -90,7 +90,7 @@ lemma set_eq_filter:
   by auto
 
 lemma pairwise_disagreements_eq[code]: "pairwise_disagreements = pairwise_disagreements'"
-  unfolding pairwise_disagreements.simps pairwise_disagreements'_def
+  unfolding pairwise_disagreements.simps pairwise_disagreements'.simps
   by fastforce
 
 fun swap :: "'a Vote Distance" where
