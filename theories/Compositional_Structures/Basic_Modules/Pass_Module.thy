@@ -40,27 +40,25 @@ proof (intro electoral_modI)
     A :: "'a set" and
     p :: "'a Profile"
   let ?mod = "pass_module n r"
-  have "\<forall> a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) > n} \<or>
-                 a \<in> {x \<in> A. card(above (limit A r) x) \<le> n}"
+  have "\<forall> a \<in> A. a \<in> {x \<in> A. rank (limit A r) x > n} \<or>
+                 a \<in> {x \<in> A. rank (limit A r) x \<le> n}"
     using CollectI not_less
     by metis
   hence
-    "{a \<in> A. card(above (limit A r) a) > n} \<union>
-      {a \<in> A. card(above (limit A r) a) \<le> n} = A"
+    "{a \<in> A. rank (limit A r) a > n} \<union>
+      {a \<in> A. rank (limit A r) a \<le> n} = A"
     by blast
-  hence 0: "set_equals_partition A (pass_module n r A p)"
+  hence set_partition: "set_equals_partition A (pass_module n r A p)"
     by simp
-  have "\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) > n} \<and>
-                   a \<in> {x \<in> A. card(above (limit A r) x) \<le> n})"
+  have "\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. rank (limit A r) x > n} \<and>
+                   a \<in> {x \<in> A. rank (limit A r) x \<le> n})"
     by auto
   hence
-    "{a \<in> A. card(above (limit A r) a) > n} \<inter>
-      {a \<in> A. card(above (limit A r) a) \<le> n} = {}"
+    "{a \<in> A. rank (limit A r) a > n} \<inter>
+      {a \<in> A. rank (limit A r) a \<le> n} = {}"
     by blast
-  hence 1: "disjoint3 (?mod A p)"
-    by simp
-  from 0 1
-  show "well_formed A (?mod A p)"
+  thus "well_formed A (?mod A p)"
+    using set_partition
     by simp
 qed
 
@@ -182,14 +180,15 @@ next
     by blast
   hence
     "\<forall> a A'. \<not> connex A' (limit A r) \<or> a \<notin> A' \<or> a \<notin> A \<or>
-              \<not> card (above (limit A r) a) \<le> 0"
+              \<not> rank (limit A r) a \<le> 0"
     using above_connex above_presv_limit card_eq_0_iff
           equals0D finite_A assms rev_finite_subset
+    unfolding rank.simps
     by (metis (no_types))
-  hence "{a \<in> A. card (above (limit A r) a) \<le> 0} = {}"
+  hence "{a \<in> A. rank (limit A r) a \<le> 0} = {}"
     using limit_is_connex
-    by auto
-  hence "card {a \<in> A. card (above (limit A r) a) \<le> 0} = 0"
+    by simp
+  hence "card {a \<in> A. rank (limit A r) a \<le> 0} = 0"
     using card.empty
     by metis
   thus "card (defer (pass_module 0 r) A p) = 0"
@@ -238,21 +237,21 @@ next
         (\<forall> a \<in> A. above (limit A r) a = {a} \<longrightarrow> a = w)"
       using above_one
       by auto
-    hence "{a \<in> A. card(above (limit A r) a) \<le> 1} = {w}"
+    hence "{a \<in> A. rank (limit A r) a \<le> 1} = {w}"
     proof
       assume
         w_top: "above (limit A r) w = {w}" and
         w_unique: "\<forall> a \<in> A. above (limit A r) a = {a} \<longrightarrow> a = w"
-      have "card (above (limit A r) w) \<le> 1"
+      have "rank (limit A r) w \<le> 1"
         using w_top
         by auto
-      hence "{w} \<subseteq> {a \<in> A. card (above (limit A r) a) \<le> 1}"
+      hence "{w} \<subseteq> {a \<in> A. rank (limit A r) a \<le> 1}"
         using winner_exists w_unique_top
         by blast
-      moreover have "{a \<in> A. card(above (limit A r) a) \<le> 1} \<subseteq> {w}"
+      moreover have "{a \<in> A. rank (limit A r) a \<le> 1} \<subseteq> {w}"
       proof
         fix a :: "'a"
-        assume a_in_winner_set: "a \<in> {b \<in> A. card (above (limit A r) b) \<le> 1}"
+        assume a_in_winner_set: "a \<in> {b \<in> A. rank (limit A r) b \<le> 1}"
         hence a_in_A: "a \<in> A"
           by auto
         hence connex_limit: "connex A (limit A r)"
@@ -273,17 +272,18 @@ next
         hence above_finite: "finite (above (limit A r) a)"
           using finite_A finite_subset
           by simp
-        have "card (above (limit A r) a) \<le> 1"
+        have "rank (limit A r) a \<le> 1"
           using a_in_winner_set
           by simp
-        moreover have "card (above (limit A r) a) \<ge> 1"
+        moreover have "rank (limit A r) a \<ge> 1"
           using One_nat_def Suc_leI above_finite card_eq_0_iff
                 equals0D neq0_conv a_above_a
+          unfolding rank.simps
           by metis
-        ultimately have "card (above (limit A r) a) = 1"
+        ultimately have "rank (limit A r) a = 1"
           by simp
         hence "{a} = above (limit A r) a"
-          using is_singletonE is_singleton_altdef singletonD a_above_a
+          using a_above_a lin_ord_on_A rank_one_2
           by metis
         hence "a = w"
           using w_unique
@@ -292,7 +292,7 @@ next
           by simp
       qed
       ultimately have
-        "{w} = {a \<in> A. card (above (limit A r) a) \<le> 1}"
+        "{w} = {a \<in> A. rank (limit A r) a \<le> 1}"
         by auto
       thus ?thesis
         by simp
@@ -318,8 +318,8 @@ next
     p :: "'a Profile"
   assume
     min_2_card: "2 \<le> card A" and
-    finA: "finite A" and
-    profA: "profile A p"
+    fin_A: "finite A" and
+    prof_A: "profile A p"
   from min_2_card
   have not_empty_A: "A \<noteq> {}"
     by auto
@@ -328,8 +328,8 @@ next
     using limit_presv_lin_ord assms
     by auto
   ultimately obtain a where
-    a: "above (limit A r) a = {a}"
-    using above_one min_2_card finA profA
+    a_above: "above (limit A r) a = {a}"
+    using above_one min_2_card fin_A prof_A
     by blast
   hence "\<forall> b \<in> A. let q = limit A r in (b \<preceq>\<^sub>q a)"
     using limitA_order pref_imp_in_above empty_iff
@@ -341,16 +341,17 @@ next
   hence a_above: "\<forall> b \<in> A. a \<in> above (limit A r) b"
     unfolding above_def
     by simp
-  from a have "a \<in> {a \<in> A. card(above (limit A r) a) \<le> 2}"
-    using CollectI Suc_leI not_empty_A a_above card_UNIV_bool
-          card_eq_0_iff card_insert_disjoint empty_iff finA
-          finite.emptyI insert_iff limitA_order above_one
-          UNIV_bool nat.simps(3) zero_less_Suc
+  from a_above have "a \<in> {a \<in> A. rank (limit A r) a \<le> 2}"
+    using CollectI Suc_leI not_empty_A a_above card_UNIV_bool card_eq_0_iff
+          card_insert_disjoint empty_iff fin_A finite.emptyI insert_iff
+          limitA_order above_one UNIV_bool nat.simps(3) zero_less_Suc
+          One_nat_def above_rank
     by (metis (no_types, lifting))
   hence a_in_defer: "a \<in> defer (pass_module 2 r) A p"
     by simp
   have "finite (A - {a})"
-    by (simp add: finA)
+    using fin_A
+    by simp
   moreover have A_not_only_a: "A - {a} \<noteq> {}"
     using min_2_card Diff_empty Diff_idemp Diff_insert0
           One_nat_def not_empty_A card.insert_remove
@@ -388,7 +389,7 @@ next
   ultimately have above_b_eq_ab: "above (limit A r) b = {a, b}"
     using a_above
     by auto
-  hence card_above_b_eq_2: "card (above (limit A r) b) = 2"
+  hence card_above_b_eq_2: "rank (limit A r) b = 2"
     using A_not_only_a b_in_limit
     by auto
   hence b_in_defer: "b \<in> defer (pass_module 2 r) A p"
@@ -409,14 +410,15 @@ next
     by auto
   moreover have "\<forall> c \<in> A - {a, b}. card {a, b, c} = 3"
     using DiffE Suc_1 above_b_eq_ab card_above_b_eq_2
-          above_subset card_insert_disjoint finA finite_subset
+          above_subset card_insert_disjoint fin_A finite_subset
           insert_commute numeral_3_eq_3
-    unfolding One_nat_def
+    unfolding One_nat_def rank.simps
     by metis
-  ultimately have "\<forall> c \<in> A - {a, b}. card (above (limit A r) c) \<ge> 3"
-    using card_mono finA finite_subset above_presv_limit assms
+  ultimately have "\<forall> c \<in> A - {a, b}. rank (limit A r) c \<ge> 3"
+    using card_mono fin_A finite_subset above_presv_limit assms
+    unfolding rank.simps
     by metis
-  hence "\<forall> c \<in> A - {a, b}. card (above (limit A r) c) > 2"
+  hence "\<forall> c \<in> A - {a, b}. rank (limit A r) c > 2"
     using less_le_trans numeral_less_iff order_refl semiring_norm(79)
     by metis
   hence "\<forall> c \<in> A - {a, b}. c \<notin> defer (pass_module 2 r) A p"
@@ -430,6 +432,7 @@ next
     by fastforce
   thus "card (defer (pass_module 2 r) A p) = 2"
     using above_b_eq_ab card_above_b_eq_2
+    unfolding rank.simps
     by presburger
 qed
 

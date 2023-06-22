@@ -994,7 +994,7 @@ proof -
   hence "finite (reject m A p) \<and> finite (reject n A p)"
     using rev_finite_subset f_prof
     by metis
-  hence 0:
+  hence card_difference:
     "card (reject (m \<parallel>\<^sub>\<up> n) A p) =
         card A + c -
           card ((reject m A p) \<union> (reject n A p))"
@@ -1006,10 +1006,10 @@ proof -
   hence "A = reject m A p \<union> reject n A p"
     using subsets
     by force
-  hence 1: "card ((reject m A p) \<union> (reject n A p)) = card A"
+  hence "card ((reject m A p) \<union> (reject n A p)) = card A"
     by presburger
-  from 0 1
-  show "card (reject (m \<parallel>\<^sub>\<up> n) A p) = c"
+  thus "card (reject (m \<parallel>\<^sub>\<up> n) A p) = c"
+    using card_difference
     by simp
 qed
 

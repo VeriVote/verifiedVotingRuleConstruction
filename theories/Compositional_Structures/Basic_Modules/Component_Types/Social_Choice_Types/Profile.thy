@@ -417,77 +417,26 @@ lemma pref_count:
     neq: "x \<noteq> y"
   shows "prefer_count p x y = (length p) - (prefer_count p y x)"
 proof -
-  have 00: "card {i::nat. i < length p} = length p"
-    by simp
-  have 10:
-    "{i::nat. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
-        {i::nat. i < length p} -
-          {i::nat. i < length p \<and> \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x))}"
-    by auto
-  have 0: "\<forall> i::nat. i < length p \<longrightarrow> linear_order_on A (p!i)"
+  have "\<forall> i::nat. i < length p \<longrightarrow> connex A (p!i)"
     using prof
     unfolding profile_def
-    by simp
-  hence "\<forall> i::nat. i < length p \<longrightarrow> connex A (p!i)"
     by (simp add: lin_ord_imp_connex)
-  hence 1: "\<forall> i::nat. i < length p \<longrightarrow>
+  hence asym: "\<forall> i::nat. i < length p \<longrightarrow>
               \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x)) \<longrightarrow> (let r = (p!i) in (x \<preceq>\<^sub>r y))"
     using x_in_A y_in_A
     unfolding connex_def
     by metis
-  from 0
-  have "\<forall> i::nat. i < length p \<longrightarrow> antisym  (p!i)"
-    using lin_imp_antisym
+  have "\<forall> i::nat. i < length p \<longrightarrow> ((y, x) \<in> (p!i) \<longrightarrow> (x, y) \<notin> (p!i))"
+    using antisymD neq lin_imp_antisym prof
+    unfolding profile_def
     by metis
-  hence "\<forall> i::nat. i < length p \<longrightarrow> ((y, x) \<in> (p!i) \<longrightarrow> (x, y) \<notin> (p!i))"
-    using antisymD neq
-    by metis
-  hence "\<forall> i::nat. i < length p \<longrightarrow>
-          ((let r = (p!i) in (y \<preceq>\<^sub>r x)) \<longrightarrow> \<not> (let r = (p!i) in (x \<preceq>\<^sub>r y)))"
-    by simp
-  with 1
-  have
-    "\<forall> i::nat. i < length p \<longrightarrow>
-      \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x)) = (let r = (p!i) in (x \<preceq>\<^sub>r y))"
-    by metis
-  hence 2:
-    "{i::nat. i < length p \<and> \<not> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
-        {i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}"
-    by metis
-  hence 20:
-    "{i::nat. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
-        {i::nat. i < length p} -
-          {i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}"
-    using 10 2
-    by simp
-  have
-    "{i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))} \<subseteq>
-        {i::nat. i < length p}"
-    by (simp add: Collect_mono)
-  hence 30:
-    "card ({i::nat. i < length p} -
-        {i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}) =
-      (card {i::nat. i < length p}) -
-        card ({i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))})"
-    by (simp add: card_Diff_subset)
-  have "prefer_count p x y =
-          card {i::nat. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))}"
-    by simp
-  also have
-    "... = card ({i::nat. i < length p} -
-            {i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))})"
-    using 20
-    by simp
-  also have
-    "... = (card {i::nat. i < length p}) -
-              card ({i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))})"
-    using 30
-    by metis
-  also have
-    "... = length p - (prefer_count p y x)"
-    by simp
-  finally show ?thesis
-    by (simp add: 20 30)
+  hence "{i::nat. i < length p \<and> (let r = (p!i) in (y \<preceq>\<^sub>r x))} =
+            {i::nat. i < length p} -
+              {i::nat. i < length p \<and> (let r = (p!i) in (x \<preceq>\<^sub>r y))}"
+    using asym
+    by auto
+  thus ?thesis
+    by (simp add: card_Diff_subset Collect_mono)
 qed
 
 lemma pref_count_sym:
@@ -502,31 +451,25 @@ lemma pref_count_sym:
     a_in_A: "a \<in> A" and
     b_in_A: "b \<in> A" and
     x_in_A: "x \<in> A" and
-    neq_1: "a \<noteq> x" and
-    neq_2: "x \<noteq> b"
+    a_neq_x: "a \<noteq> x" and
+    x_neq_b: "x \<noteq> b"
   shows "prefer_count p b x \<ge> prefer_count p x a"
 proof -
-  from prof a_in_A x_in_A neq_1
-  have 0: "prefer_count p a x = (length p) - (prefer_count p x a)"
-    using pref_count
+  have "prefer_count p a x = (length p) - (prefer_count p x a)"
+    using pref_count prof a_in_A x_in_A a_neq_x
     by metis
-  moreover from prof x_in_A b_in_A neq_2
-  have 1: "prefer_count p x b = (length p) - (prefer_count p b x)"
-    using pref_count
+  moreover have pref_count_b_eq: "prefer_count p x b = (length p) - (prefer_count p b x)"
+    using pref_count prof x_in_A b_in_A x_neq_b
     by (metis (mono_tags, lifting))
-  hence 2: "(length p) - (prefer_count p x a) \<ge>
-              (length p) - (prefer_count p b x)"
+  hence "(length p) - (prefer_count p b x) \<le> (length p) - (prefer_count p x a)"
     using calculation pref_count_ineq
-    by auto
-  hence 3: "(prefer_count p x a) - (length p) \<le>
-              (prefer_count p b x) - (length p)"
-    using a_in_A diff_is_0_eq diff_le_self neq_1
+    by simp
+  hence "(prefer_count p x a) - (length p) \<le> (prefer_count p b x) - (length p)"
+    using a_in_A diff_is_0_eq diff_le_self a_neq_x
           pref_count prof x_in_A
     by (metis (no_types))
-  hence "(prefer_count p x a) \<le> (prefer_count p b x)"
-    using 1 3 calculation pref_count_ineq
-    by linarith
   thus ?thesis
+    using pref_count_b_eq calculation pref_count_ineq
     by linarith
 qed
 

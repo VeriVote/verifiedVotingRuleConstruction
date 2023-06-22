@@ -974,19 +974,17 @@ lemma ccomp_and_dd_imp_def_only_winner:
 proof (rule ccontr)
   assume not_w: "defer m A p \<noteq> {a}"
   from dd
-  have def_1:
-    "defers 1 m"
+  have def_1: "defers 1 m"
     unfolding defer_deciding_def
     by metis
-  hence c_win:
-    "finite_profile A p \<and>  a \<in> A \<and> (\<forall> b \<in> A - {a}. wins a p b)"
+  hence c_win: "finite_profile A p \<and>  a \<in> A \<and> (\<forall> b \<in> A - {a}. wins a p b)"
     using winner
     by simp
   hence "card (defer m A p) = 1"
     using Suc_leI card_gt_0_iff def_1 equals0D
     unfolding One_nat_def defers_def
     by metis
-  hence 0: "\<exists> b \<in> A. defer m A p = {b}"
+  hence defer_b_exists: "\<exists> b \<in> A. defer m A p = {b}"
     using card_1_singletonE dd defer_in_alts insert_subset c_win
     unfolding defer_deciding_def
     by metis
@@ -1043,57 +1041,30 @@ next
                    card {i. i < length p \<and> (b, a) \<in> (p!i)}"
   hence winner: "condorcet_winner A p a"
     by simp
+  hence elect_empty: "elect m A p = {}"
+    using dd
+    unfolding defer_deciding_def non_electing_def
+    by simp
+  have cond_winner_a: "{a} = {c \<in> A. condorcet_winner A p c}"
+    using cond_winner_unique_3 winner
+    by metis
+  have defer_a: "defer m A p = {a}"
+    using winner dd ccomp ccomp_and_dd_imp_def_only_winner winner
+    by simp
+  hence reject_defer_complement: "reject m A p = A - defer m A p"
+    using Diff_empty dd reject_not_elec_or_def winner elect_empty
+    unfolding defer_deciding_def
+    by fastforce
+  hence "m A p = ({}, A - defer m A p, {a})"
+    using elect_empty defer_a
+    using combine_ele_rej_def
+    by metis
   hence
     "m A p =
       ({},
         A - defer m A p,
         {c \<in> A. condorcet_winner A p c})"
-  proof -
-    from dd
-    have 0: "elect m A p = {}"
-      using winner
-      unfolding defer_deciding_def non_electing_def
-      by simp
-    from dd ccomp
-    have 1: "defer m A p = {a}"
-      using ccomp_and_dd_imp_def_only_winner winner
-      by simp
-    from 0 1
-    have 2: "reject m A p = A - defer m A p"
-      using Diff_empty dd reject_not_elec_or_def winner
-      unfolding defer_deciding_def
-      by fastforce
-    from 0 1 2
-    have 3: "m A p = ({}, A - defer m A p, {a})"
-      using combine_ele_rej_def
-      by metis
-    have "{a} = {c \<in> A. condorcet_winner A p c}"
-      using cond_winner_unique_3 winner
-      by metis
-    thus ?thesis
-      using 3
-      by simp
-  qed
-  hence
-    "m A p =
-      ({},
-        A - defer m A p,
-        {c \<in> A. \<forall> b \<in> A - {c}. wins c p b})"
-    using finiteness prof_A winner Collect_cong
-    by simp
-  hence
-    "m A p =
-        ({},
-          A - defer m A p,
-          {c \<in> A. \<forall> b \<in> A - {c}. prefer_count p b c < prefer_count p c b})"
-    by simp
-  hence
-    "m A p =
-        ({},
-          A - defer m A p,
-          {c \<in> A. \<forall> b \<in> A - {c}.
-            card {i. i < length p \<and> (let r = (p!i) in (c \<preceq>\<^sub>r b))} <
-                card {i. i < length p \<and> (let r = (p!i) in (b \<preceq>\<^sub>r c))}})"
+    using cond_winner_a
     by simp
   thus
     "m A p =
@@ -1102,6 +1073,7 @@ next
           {c \<in> A. \<forall> b \<in> A - {c}.
             card {i. i < length p \<and> (c, b) \<in> (p!i)} <
               card {i. i < length p \<and> (b, c) \<in> (p!i)}})"
+    using finiteness prof_A winner Collect_cong
     by simp
 qed
 

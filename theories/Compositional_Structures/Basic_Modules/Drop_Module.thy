@@ -42,26 +42,25 @@ proof (intro electoral_modI)
     p :: "'a Profile"
   let ?mod = "drop_module n r"
   have
-    "\<forall> a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<or>
-        a \<in> {x \<in> A. card(above (limit A r) x) > n}"
+    "\<forall> a \<in> A. a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<or>
+        a \<in> {x \<in> A. rank (limit A r) x > n}"
     by auto
   hence
-    "{a \<in> A. card(above (limit A r) a) \<le> n} \<union>
-        {a \<in> A. card(above (limit A r) a) > n} = A"
+    "{a \<in> A. rank (limit A r) a \<le> n} \<union>
+        {a \<in> A. rank (limit A r) a > n} = A"
     by blast
-  hence 0: "set_equals_partition A (drop_module n r A p)"
+  hence set_partition: "set_equals_partition A (drop_module n r A p)"
     by simp
   have
-    "\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<and>
-        a \<in> {x \<in> A. card(above (limit A r) x) > n})"
+    "\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<and>
+        a \<in> {x \<in> A. rank (limit A r) x > n})"
     by auto
   hence
-    "{a \<in> A. card(above (limit A r) a) \<le> n} \<inter>
-        {a \<in> A. card(above (limit A r) a) > n} = {}"
+    "{a \<in> A. rank (limit A r) a \<le> n} \<inter>
+        {a \<in> A. rank (limit A r) a > n} = {}"
     by blast
-  hence 1: "disjoint3 (?mod A p)"
-    by simp
-  from 0 1 show "well_formed A (?mod A p)"
+  thus "well_formed A (?mod A p)"
+    using set_partition
     by simp
 qed
 

@@ -90,7 +90,7 @@ proof -
     using def_presv_fin_prof reject_in_alts
     by metis
   with disjoint_m module_m module_n f_prof
-  have 0: "elect m A p \<inter> reject n ?new_A ?new_p = {}"
+  have elect_reject_diff: "elect m A p \<inter> reject n ?new_A ?new_p = {}"
     using disj_n
     by (simp add: disjoint_iff_not_equal subset_eq)
   from f_prof module_m module_n
@@ -101,7 +101,7 @@ proof -
     by metis
   from disjoint_m disjoint_n def_presv_fin_prof f_prof
        module_m module_n
-  have 1: "elect m A p \<inter> defer n ?new_A ?new_p = {}"
+  have elect_defer_diff: "elect m A p \<inter> defer n ?new_A ?new_p = {}"
   proof -
     obtain sf :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a" where
       "\<forall> a b.
@@ -120,7 +120,7 @@ proof -
   qed
   from disjoint_m disjoint_n def_presv_fin_prof f_prof
        module_m module_n
-  have 2: "reject m A p \<inter> reject n ?new_A ?new_p = {}"
+  have rej_old_new_diff_empty: "reject m A p \<inter> reject n ?new_A ?new_p = {}"
     using disjoint_iff_not_equal reject_in_alts
           set_rev_mp result_disj Int_Un_distrib2
           Un_Diff_Int boolean_algebra_cancel.inf2
@@ -157,7 +157,7 @@ proof -
         (limit_profile (defer m A p) p)"
     from elec_x rej_lim_x
     show "x \<in> {}"
-      using 0
+      using elect_reject_diff
       by blast
   next
     fix x :: "'a"
@@ -182,13 +182,14 @@ proof -
             module_n prof_def_lim rej_lim_x result_disj
       by metis
   qed
-  moreover from 0 1 2 3 disjoint_n module_m module_n f_prof
+  moreover from elect_reject_diff elect_defer_diff 2 3 disjoint_n module_m module_n f_prof
   have
     "(elect m A p \<union> elect n ?new_A ?new_p) \<inter>
           (defer n ?new_A ?new_p) = {}"
     using Int_Un_distrib2 Un_empty def_presv_fin_prof result_disj
     by metis
-  moreover from 0 1 2 3 f_prof disjoint_m disjoint_n module_m module_n
+  moreover from elect_reject_diff elect_defer_diff 2 3 f_prof
+    disjoint_m disjoint_n module_m module_n
   have
     "(reject m A p \<union> reject n ?new_A ?new_p) \<inter>
           (defer n ?new_A ?new_p) = {}"
@@ -286,8 +287,7 @@ proof -
     unfolding electoral_module_def
     by simp
   with module_m f_prof
-  have 0:
-    "elect m A p \<union> reject m A p \<union> ?new_A = A"
+  have elect_reject_diff: "elect m A p \<union> reject m A p \<union> ?new_A = A"
     by (simp add: result_presv_alts)
   from module_n def_presv_fin_prof f_prof module_m
   have
@@ -295,13 +295,13 @@ proof -
     unfolding electoral_module_def well_formed.simps
     by metis
   with module_m module_n f_prof
-  have 1:
+  have full_set:
     "elect n ?new_A ?new_p \<union>
         reject n ?new_A ?new_p \<union>
         defer n ?new_A ?new_p = ?new_A"
     using def_presv_fin_prof result_presv_alts
     by metis
-  from 0 1
+  with elect_reject_diff
   have
     "(elect m A p \<union> elect n ?new_A ?new_p) \<union>
         (reject m A p \<union> reject n ?new_A ?new_p) \<union>
@@ -627,17 +627,17 @@ proof -
     A :: "'a set" and
     p :: "'a Profile"
   let ?input_sound = "(A::'a set) \<noteq> {} \<and> finite_profile A p"
-  from non_blocking_m have
-    "?input_sound \<longrightarrow> reject m A p \<noteq> A"
+  from non_blocking_m
+  have "?input_sound \<longrightarrow> reject m A p \<noteq> A"
     unfolding non_blocking_def
     by simp
-  with non_blocking_m have 0:
-    "?input_sound \<longrightarrow> A - reject m A p \<noteq> {}"
+  with non_blocking_m
+  have A_reject_diff: "?input_sound \<longrightarrow> A - reject m A p \<noteq> {}"
     using Diff_eq_empty_iff reject_in_alts subset_antisym
     unfolding non_blocking_def
     by metis
-  from non_blocking_m have
-    "?input_sound \<longrightarrow> well_formed A (m A p)"
+  from non_blocking_m
+  have "?input_sound \<longrightarrow> well_formed A (m A p)"
     unfolding electoral_module_def non_blocking_def
     by simp
   hence
@@ -646,7 +646,7 @@ proof -
     using non_blocking_m elec_and_def_not_rej
     unfolding non_blocking_def
     by metis
-  with 0 have
+  with A_reject_diff have
     "?input_sound \<longrightarrow> elect m A p \<union> defer m A p \<noteq> {}"
     by simp
   hence "?input_sound \<longrightarrow> (elect m A p \<noteq> {} \<or> defer m A p \<noteq> {})"
@@ -890,13 +890,11 @@ proof -
       unfolding lifted_def
       by simp
     with modules new_A_eq
-    have 1:
-      "finite_profile ?new_Ap ?new_q"
+    have fin_prof: "finite_profile ?new_Ap ?new_q"
       using def_presv_fin_prof
       by (metis (no_types))
     moreover from modules profile_p def_and_lifted
-    have 0:
-      "finite_profile ?new_Ap ?new_p"
+    have fin_prof: "finite_profile ?new_Ap ?new_p"
       using def_presv_fin_prof
       by (metis (no_types))
     moreover from defer_subset def_and_lifted
@@ -907,7 +905,7 @@ proof -
       "length ?new_p = length ?new_q"
       unfolding lifted_def
       by simp
-    ultimately have 0:
+    ultimately have lifted_stmt:
       "(\<forall> i::nat. i < length ?new_p \<longrightarrow>
           \<not> Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a) \<or>
        (\<exists> i::nat. i < length ?new_p \<and>
@@ -932,7 +930,7 @@ proof -
             limit_prof_presv_size nth_map
       unfolding Profile.lifted_def limit_profile.simps
       by (metis (no_types, lifting))
-    with 0 eql_lengths mono_m
+    with lifted_stmt eql_lengths mono_m
     show ?thesis
       using leI not_less_zero nth_equalityI
       by metis

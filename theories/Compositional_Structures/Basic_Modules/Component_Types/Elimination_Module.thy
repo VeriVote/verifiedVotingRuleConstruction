@@ -445,7 +445,7 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
   proof (cases "elimination_set e (?trsh) (<) A p \<noteq> A")
     case True
     from profile rating winner
-    have 0: "(elimination_set e ?trsh (<) A p) = A - {a}"
+    have elim_set: "(elimination_set e ?trsh (<) A p) = A - {a}"
       using cr_eval_imp_dcc_max_elim_helper
       by (metis (mono_tags, lifting))
     have
@@ -456,7 +456,7 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
       using True
       by simp
     also have "... = ({}, A - {a}, {a})"
-      using 0 winner
+      using elim_set winner
       by auto
     also have "... = ({},A - defer (max_eliminator e) A p, {a})"
       using calculation
