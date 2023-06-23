@@ -131,19 +131,17 @@ proof -
     by blast
   with disjoint_m disjoint_n def_presv_fin_prof f_prof
        module_m module_n elec_n_in_def_m
-  have 3: "reject m A p \<inter> elect n ?new_A ?new_p = {}"
+  have rej_intersect_new_elect_empty: "reject m A p \<inter> elect n ?new_A ?new_p = {}"
     using disj_n
     by blast
-  have
-    "(elect m A p \<union> elect n ?new_A ?new_p) \<inter>
-          (reject m A p \<union> reject n ?new_A ?new_p) = {}"
+  have elects_intersect_rejects_empty:
+    "(elect m A p \<union> elect n ?new_A ?new_p) \<inter> (reject m A p \<union> reject n ?new_A ?new_p) = {}"
   proof (safe)
     fix x :: "'a"
     assume
-      elec_x: "x \<in> elect m A p" and
-      rej_x: "x \<in> reject m A p"
-    from elec_x rej_x
-    have "x \<in> elect m A p \<inter> reject m A p"
+      "x \<in> elect m A p" and
+      "x \<in> reject m A p"
+    hence "x \<in> elect m A p \<inter> reject m A p"
       by simp
     thus "x \<in> {}"
       using disj_n
@@ -151,70 +149,39 @@ proof -
   next
     fix x :: "'a"
     assume
-      elec_x: "x \<in> elect m A p" and
-      rej_lim_x:
+      "x \<in> elect m A p" and
       "x \<in> reject n (defer m A p)
         (limit_profile (defer m A p) p)"
-    from elec_x rej_lim_x
-    show "x \<in> {}"
+    thus "x \<in> {}"
       using elect_reject_diff
       by blast
   next
     fix x :: "'a"
     assume
-      elec_lim_x:
       "x \<in> elect n (defer m A p) (limit_profile (defer m A p) p)" and
-      rej_x: "x \<in> reject m A p"
-    from elec_lim_x rej_x
-    show "x \<in> {}"
-      using 3
+      "x \<in> reject m A p"
+    thus "x \<in> {}"
+      using rej_intersect_new_elect_empty
       by blast
   next
     fix x :: "'a"
     assume
-      elec_lim_x:
       "x \<in> elect n (defer m A p) (limit_profile (defer m A p) p)" and
-      rej_lim_x:
       "x \<in> reject n (defer m A p) (limit_profile (defer m A p) p)"
-    from elec_lim_x rej_lim_x
-    show "x \<in> {}"
-      using disjoint_iff_not_equal elec_lim_x fin_def
-            module_n prof_def_lim rej_lim_x result_disj
+    thus "x \<in> {}"
+      using disjoint_iff_not_equal fin_def module_n prof_def_lim result_disj
       by metis
   qed
-  moreover from elect_reject_diff elect_defer_diff 2 3 disjoint_n module_m module_n f_prof
-  have
-    "(elect m A p \<union> elect n ?new_A ?new_p) \<inter>
-          (defer n ?new_A ?new_p) = {}"
-    using Int_Un_distrib2 Un_empty def_presv_fin_prof result_disj
-    by metis
-  moreover from elect_reject_diff elect_defer_diff 2 3 f_prof
-    disjoint_m disjoint_n module_m module_n
-  have
-    "(reject m A p \<union> reject n ?new_A ?new_p) \<inter>
-          (defer n ?new_A ?new_p) = {}"
+  from elect_reject_diff elect_defer_diff disjoint_n module_m module_n f_prof
+  have elects_intersect_defer_empty:
+    "(elect m A p \<union> elect n ?new_A ?new_p) \<inter> (defer n ?new_A ?new_p) = {}"
+    using Int_Un_distrib2 Un_empty elect_defer_diff fin_def module_n prof_def_lim result_disj
+    by (metis (no_types))
+  have rejects_intersect_defer_empty:
+    "(reject m A p \<union> reject n ?new_A ?new_p) \<inter> (defer n ?new_A ?new_p) = {}"
   proof (safe)
     fix x :: "'a"
     assume
-      elec_rej_disj:
-      "elect m A p \<inter>
-        reject n (defer m A p) (limit_profile (defer m A p) p) = {}" and
-      elec_def_disj:
-      "elect m A p \<inter>
-        defer n (defer m A p) (limit_profile (defer m A p) p) = {}" and
-      rej_rej_disj:
-      "reject m A p \<inter>
-        reject n (defer m A p) (limit_profile (defer m A p) p) = {}" and
-      rej_elec_disj:
-      "reject m A p \<inter>
-        elect n (defer m A p) (limit_profile (defer m A p) p) = {}" and
-      disj_p: "disjoint3 (m A p)" and
-      disj_limit:
-      "disjoint3 (n (defer m A p) (limit_profile (defer m A p) p))" and
-      mod_m: "electoral_module m" and
-      mod_n: "electoral_module n" and
-      fin_A: "finite A" and
-      prof_A: "profile A p" and
       x_in_def:
       "x \<in> defer n (defer m A p) (limit_profile (defer m A p) p)" and
       x_in_rej: "x \<in> reject m A p"
@@ -231,38 +198,18 @@ proof -
   next
     fix x :: "'a"
     assume
-      elec_rej_disj:
-      "elect m A p \<inter>
-        reject n (defer m A p) (limit_profile (defer m A p) p) = {}" and
-      elec_def_disj:
-      "elect m A p \<inter>
-        defer n (defer m A p) (limit_profile (defer m A p) p) = {}" and
-      rej_rej_disj:
-      "reject m A p \<inter>
-        reject n (defer m A p) (limit_profile (defer m A p) p) = {}" and
-      rej_elec_disj:
-      "reject m A p \<inter>
-        elect n (defer m A p) (limit_profile (defer m A p) p) = {}" and
-      disj_p: "disjoint3 (m A p)" and
-      disj_limit:
-      "disjoint3 (n (defer m A p) (limit_profile (defer m A p) p))" and
-      mod_m: "electoral_module m" and
-      mod_n: "electoral_module n" and
-      fin_A: "finite A" and
-      prof_A: "profile A p" and
-      x_in_def:
       "x \<in> defer n (defer m A p) (limit_profile (defer m A p) p)" and
-      x_in_rej:
       "x \<in> reject n (defer m A p) (limit_profile (defer m A p) p)"
-    from x_in_def x_in_rej
-    show "x \<in> {}"
+    thus "x \<in> {}"
       using fin_def module_n prof_def_lim reject_not_elec_or_def
       by fastforce
   qed
-  ultimately have
+  have
     "disjoint3 (elect m A p \<union> elect n ?new_A ?new_p,
                 reject m A p \<union> reject n ?new_A ?new_p,
                 defer n ?new_A ?new_p)"
+    using elects_intersect_rejects_empty elects_intersect_defer_empty
+          rejects_intersect_defer_empty
     by simp
   thus ?thesis
     unfolding sequential_composition.simps
@@ -443,12 +390,12 @@ proof (cases)
     unfolding electing_def non_electing_def
     by metis
 next
-  assume assm: "A \<noteq> {}"
+  assume non_empty_A: "A \<noteq> {}"
   from n_electing_m f_prof
   have ele: "elect m A p = {}"
     unfolding non_electing_def
     by simp
-  from assm def_one_m f_prof finite
+  from non_empty_A def_one_m f_prof finite
   have def_card:
     "card (defer m A p) = 1"
     unfolding defers_def
@@ -898,7 +845,7 @@ proof -
       using def_presv_fin_prof
       by (metis (no_types))
     moreover from defer_subset def_and_lifted
-    have 2: "a \<in> ?new_Ap"
+    have "a \<in> ?new_Ap"
       by blast
     moreover from def_and_lifted
     have eql_lengths:
@@ -915,17 +862,15 @@ proof -
       unfolding lifted_def
       by (metis (no_types, lifting))
     from def_and_lifted modules
-    have
-      "\<forall> i. (0 \<le> i \<and> i < length ?new_p) \<longrightarrow>
-          (Preference_Relation.lifted A (p!i) (q!i) a \<or> (p!i) = (q!i))"
+    have "\<forall> i. (0 \<le> i \<and> i < length ?new_p) \<longrightarrow>
+            (Preference_Relation.lifted A (p!i) (q!i) a \<or> (p!i) = (q!i))"
       using limit_prof_presv_size
       unfolding Profile.lifted_def
       by metis
     with def_and_lifted modules mono_m
-    have
-      "\<forall> i. (0 \<le> i \<and> i < length ?new_p) \<longrightarrow>
-          (Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a \<or>
-           (?new_p!i) = (?new_q!i))"
+    have "\<forall> i. (0 \<le> i \<and> i < length ?new_p) \<longrightarrow>
+            (Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a \<or>
+              (?new_p!i) = (?new_q!i))"
       using limit_lifted_imp_eq_or_lifted defer_in_alts
             limit_prof_presv_size nth_map
       unfolding Profile.lifted_def limit_profile.simps

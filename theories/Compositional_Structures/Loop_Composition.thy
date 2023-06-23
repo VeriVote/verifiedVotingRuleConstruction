@@ -30,9 +30,9 @@ lemma loop_termination_helper:
     A :: "'a set" and
     p :: "'a Profile"
   assumes
-    not_term: "\<not>t (acc A p)" and
-    subset: "defer (acc \<triangleright> m) A p \<subset> defer acc A p" and
-    not_inf: "\<not>infinite (defer acc A p)"
+    "\<not>t (acc A p)" and
+    "defer (acc \<triangleright> m) A p \<subset> defer acc A p" and
+    "\<not>infinite (defer acc A p)"
   shows
     "((acc \<triangleright> m, m, t, A, p), (acc, m, t, A, p)) \<in>
         measure (\<lambda>(acc, m, t, A, p). card (defer acc A p))"
@@ -58,134 +58,88 @@ proof -
     P :: bool and
     x :: "('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
           ('a Termination_Condition) \<times> 'a set \<times> 'a Profile"
-  have x_exists: "\<exists> f A p p2 g. (g, f, p, A, p2) = x"
+  have x_exists: "\<exists> f A p p' g. (g, f, p, A, p') = x"
     using prod_cases5
     by metis
   assume
-    a1: "\<And> t acc A p m.
-          t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or> \<not> finite (defer acc A p) \<Longrightarrow>
-            x = (acc, m, t, A, p) \<Longrightarrow> P" and
-    a2: "\<And> t acc A p m.
-          \<not> (t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or> \<not> finite (defer acc A p)) \<Longrightarrow>
-            x = (acc, m, t, A, p) \<Longrightarrow> P"
+    "\<And> t acc A p m.
+      t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or> \<not> finite (defer acc A p) \<Longrightarrow>
+        x = (acc, m, t, A, p) \<Longrightarrow> P" and
+    "\<And> t acc A p m.
+      \<not> (t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or> \<not> finite (defer acc A p)) \<Longrightarrow>
+        x = (acc, m, t, A, p) \<Longrightarrow> P"
   thus P
     using x_exists
     by (metis (no_types))
 next
   show
-    "\<And> t acc A p m ta acca Aa pa ma.
+    "\<And> t acc A p m t' acc' A' p' m'.
        t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or>
         \<not> finite (defer acc A p) \<Longrightarrow>
-          ta (acca Aa pa) \<or> \<not> defer (acca \<triangleright> ma) Aa pa \<subset> defer acca Aa pa \<or>
-          \<not> finite (defer acca Aa pa) \<Longrightarrow>
-           (acc, m, t, A, p) = (acca, ma, ta, Aa, pa) \<Longrightarrow>
-              acc A p = acca Aa pa"
+          t' (acc' A' p') \<or> \<not> defer (acc' \<triangleright> m') A' p' \<subset> defer acc' A' p' \<or>
+          \<not> finite (defer acc' A' p') \<Longrightarrow>
+           (acc, m, t, A, p) = (acc', m', t', A', p') \<Longrightarrow>
+              acc A p = acc' A' p'"
     by fastforce
 next
   show
-    "\<And> t acc A p m ta acca Aa pa ma.
+    "\<And> t acc A p m t' acc' A' p' m'.
        t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or>
         infinite (defer acc A p) \<Longrightarrow>
-          \<not> (ta (acca Aa pa) \<or> \<not> defer (acca \<triangleright> ma) Aa pa \<subset> defer acca Aa pa \<or>
-          infinite (defer acca Aa pa)) \<Longrightarrow>
-           (acc, m, t, A, p) = (acca, ma, ta, Aa, pa) \<Longrightarrow>
-              acc A p = loop_comp_helper_sumC (acca \<triangleright> ma, ma, ta, Aa, pa)"
-  proof -
-    fix
-      t :: "'a Termination_Condition" and
-      acc :: "'a Electoral_Module" and
-      A :: "'a set" and
-      p :: "'a Profile" and
-      m :: "'a Electoral_Module" and
-      ta :: "'a Termination_Condition" and
-      acca :: "'a Electoral_Module" and
-      Aa :: "'a set" and
-      pa :: "'a Profile" and
-      ma :: "'a Electoral_Module"
-    assume
-      a1: "t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or>
-            infinite (defer acc A p)" and
-      a2: "\<not> (ta (acca Aa pa) \<or> \<not> defer (acca \<triangleright> ma) Aa pa \<subset> defer acca Aa pa \<or>
-            infinite (defer acca Aa pa))" and
-      "(acc, m, t, A, p) = (acca, ma, ta, Aa, pa)"
-    hence False
-      using a2 a1
-      by force
-  thus "acc A p = loop_comp_helper_sumC (acca \<triangleright> ma, ma, ta, Aa, pa)"
-    by auto
-qed
+          \<not> (t' (acc' A' p') \<or> \<not> defer (acc' \<triangleright> m') A' p' \<subset> defer acc' A' p' \<or>
+          infinite (defer acc' A' p')) \<Longrightarrow>
+           (acc, m, t, A, p) = (acc', m', t', A', p') \<Longrightarrow>
+              acc A p = loop_comp_helper_sumC (acc' \<triangleright> m', m', t', A', p')"
+    by force
 next
   show
-    "\<And> t acc A p m ta acca Aa pa ma.
+    "\<And> t acc A p m t' acc' A' p' m'.
        \<not> (t (acc A p) \<or> \<not> defer (acc \<triangleright> m) A p \<subset> defer acc A p \<or>
           infinite (defer acc A p)) \<Longrightarrow>
-           \<not> (ta (acca Aa pa) \<or> \<not> defer (acca \<triangleright> ma) Aa pa \<subset> defer acca Aa pa \<or>
-            infinite (defer acca Aa pa)) \<Longrightarrow>
-             (acc, m, t, A, p) = (acca, ma, ta, Aa, pa) \<Longrightarrow>
+           \<not> (t' (acc' A' p') \<or> \<not> defer (acc' \<triangleright> m') A' p' \<subset> defer acc' A' p' \<or>
+            infinite (defer acc' A' p')) \<Longrightarrow>
+             (acc, m, t, A, p) = (acc', m', t', A', p') \<Longrightarrow>
                 loop_comp_helper_sumC (acc \<triangleright> m, m, t, A, p) =
-                  loop_comp_helper_sumC (acca \<triangleright> ma, ma, ta, Aa, pa)"
+                  loop_comp_helper_sumC (acc' \<triangleright> m', m', t', A', p')"
     by force
 qed
 termination
-proof -
+proof (safe)
+  fix
+    m :: "'a Electoral_Module" and
+    n :: "'a Electoral_Module" and
+    t :: "'a Termination_Condition" and
+    A :: "'a set" and
+    p :: "'a Profile"
   have func_term:
     "\<exists> r. wf r \<and>
-        (\<forall> p f (A::'a set) prof g.
-          p (f A prof) \<or>
-          \<not> defer (f \<triangleright> g) A prof \<subset> defer f A prof \<or>
-          infinite (defer f A prof) \<or>
-          ((f \<triangleright> g, g, p, A, prof), (f, g, p, A, prof)) \<in> r)"
+        (t (m A p) \<or> \<not> defer (m \<triangleright> n) A p \<subset> defer m A p \<or> infinite (defer m A p) \<or>
+          ((m \<triangleright> n, n, t, A, p), (m, n, t, A, p)) \<in> r)"
     using loop_termination_helper wf_measure "termination"
     by (metis (no_types))
-  hence
-    "\<forall> r p.
-      Ex ((\<lambda> ra. \<forall> f (A::'a set) prof pa g.
-            \<exists> prof' pb p_rel pc pd h (B::'a set) prof'' i pe.
-        \<not> wf r \<or>
-          loop_comp_helper_dom
-            (p::('a Electoral_Module) \<times> (_ Electoral_Module) \<times>
-              (_ Termination_Condition) \<times> _ set \<times> _ Profile) \<or>
-          infinite (defer f A prof) \<or>
-          pa (f A prof) \<and>
-            wf
-              (prof'::((
-                ('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
-                ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) \<times> _) set) \<and>
-            \<not> loop_comp_helper_dom (pb::
-                ('a Electoral_Module) \<times> (_ Electoral_Module) \<times>
-                (_ Termination_Condition) \<times> _ set \<times> _ Profile) \<or>
-          wf p_rel \<and> \<not> defer (f \<triangleright> g) A prof \<subset> defer f A prof \<and>
-            \<not> loop_comp_helper_dom
-                (pc::('a Electoral_Module) \<times> (_ Electoral_Module) \<times>
-                  (_ Termination_Condition) \<times> _ set \<times> _ Profile) \<or>
-            ((f \<triangleright> g, g, pa, A, prof), f, g, pa, A, prof) \<in> p_rel \<and> wf p_rel \<and>
-            \<not> loop_comp_helper_dom
-                (pd::('a Electoral_Module) \<times> (_ Electoral_Module) \<times>
-                  (_ Termination_Condition) \<times> _ set \<times> _ Profile) \<or>
-            finite (defer h B prof'') \<and>
-            defer (h \<triangleright> i) B prof'' \<subset> defer h B prof'' \<and>
-            \<not> pe (h B prof'') \<and>
-            ((h \<triangleright> i, i, pe, B, prof''), h, i, pe, B, prof'') \<notin> r)::
-          ((('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
+  obtain
+    r ::  "((('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
             ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) \<times>
             ('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
-            ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) set \<Rightarrow> bool)"
-    by metis
-  obtain
-    p_rel ::  "((('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
-               ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) \<times>
-               ('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
-               ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) set" where
-      "wf p_rel \<and>
-        (\<forall> p f A prof g. p (f A prof) \<or>
-          \<not> defer (f \<triangleright> g) A prof \<subset> defer f A prof \<or>
-          infinite (defer f A prof) \<or>
-          ((f \<triangleright> g, g, p, A, prof), f, g, p, A, prof) \<in> p_rel)"
+            ('a Termination_Condition) \<times> 'a set \<times> 'a Profile) set" where
+    "wf r \<and>
+      (t (m A p) \<or>
+        \<not> defer (m \<triangleright> n) A p \<subset> defer m A p \<or> infinite (defer m A p) \<or>
+          ((m \<triangleright> n, n, t, A, p), m, n, t, A, p) \<in> r)"
     using func_term
     by presburger
-  thus ?thesis
+  have "\<forall> r. All
+    (loop_comp_helper_dom::
+      ('a Electoral_Module) \<times> ('a Electoral_Module) \<times>
+          ('a Termination_Condition) \<times> _ set \<times> (_ \<times> _) set list \<Rightarrow> bool) \<or>
+      (\<exists> s f A q f'. wf r \<longrightarrow>
+        ((f \<triangleright> f', f', s, A::'a set, q), f, f', s, A, q) \<notin> r \<and> finite (defer f A q) \<and>
+          defer (f \<triangleright> f') A q \<subset> defer f A q \<and> \<not> s (f A q))"
     using "termination"
     by metis
+  thus "loop_comp_helper_dom (m, n, t, A, p)"
+    using loop_termination_helper wf_measure
+    by (metis (no_types))
 qed
 
 lemma loop_comp_code_helper[code]:
@@ -356,7 +310,7 @@ proof (induct n arbitrary: acc rule: less_induct)
     "defer_lift_invariance acc \<longrightarrow>
         (\<forall> q a. (a \<in> (defer (acc \<triangleright> m) A p) \<and> lifted A p q a) \<longrightarrow>
             card (defer (acc) A p) = card (defer (acc) A q))"
-    using monotone_m f_prof seq_comp_def_set_trans
+    using assms seq_comp_def_set_trans
     unfolding defer_lift_invariance_def
     by metis
   thus ?case
@@ -596,14 +550,13 @@ lemma loop_comp_helper_def_lift_inv:
     A :: "'a set" and
     p :: "'a Profile"
   assumes
-    monotone_m: "defer_lift_invariance m" and
-    monotone_acc: "defer_lift_invariance acc" and
-    profile: "finite_profile A p"
+    "defer_lift_invariance m" and
+    "defer_lift_invariance acc" and
+    "finite_profile A p"
   shows
     "\<forall> q a. (lifted A p q a \<and> a \<in> (defer (loop_comp_helper acc m t) A p)) \<longrightarrow>
         (loop_comp_helper acc m t) A p = (loop_comp_helper acc m t) A q"
-  using loop_comp_helper_def_lift_inv_helper
-        monotone_m monotone_acc profile
+  using loop_comp_helper_def_lift_inv_helper assms
   by blast
 
 lemma loop_comp_helper_def_lift_inv_2:
@@ -616,15 +569,13 @@ lemma loop_comp_helper_def_lift_inv_2:
     q :: "'a Profile" and
     a :: "'a"
   assumes
-    monotone_m: "defer_lift_invariance m" and
-    monotone_acc: "defer_lift_invariance acc" and
-    finite_A_p: "finite_profile A p" and
-    lifted_A_pq: "lifted A p q a" and
-    a_in_defer_acc: "a \<in> defer (loop_comp_helper acc m t) A p"
+    "defer_lift_invariance m" and
+    "defer_lift_invariance acc" and
+    "finite_profile A p" and
+    "lifted A p q a" and
+    "a \<in> defer (loop_comp_helper acc m t) A p"
   shows "(loop_comp_helper acc m t) A p = (loop_comp_helper acc m t) A q"
-  using finite_A_p lifted_A_pq a_in_defer_acc
-        loop_comp_helper_def_lift_inv
-        monotone_acc monotone_m
+  using loop_comp_helper_def_lift_inv assms
   by blast
 
 lemma lifted_imp_fin_prof:
@@ -645,12 +596,12 @@ lemma loop_comp_helper_presv_def_lift_inv:
     t :: "'a Termination_Condition" and
     acc :: "'a Electoral_Module"
   assumes
-    monotone_m: "defer_lift_invariance m" and
-    monotone_acc: "defer_lift_invariance acc"
+    "defer_lift_invariance m" and
+    "defer_lift_invariance acc"
   shows "defer_lift_invariance (loop_comp_helper acc m t)"
 proof (unfold defer_lift_invariance_def, safe)
   show "electoral_module (loop_comp_helper acc m t)"
-    using electoral_modI loop_comp_helper_imp_partit monotone_acc monotone_m
+    using electoral_modI loop_comp_helper_imp_partit assms
     unfolding defer_lift_invariance_def
     by (metis (no_types))
 next
@@ -660,11 +611,10 @@ next
     q :: "'a Profile" and
     a :: "'a"
   assume
-    defer_a: "a \<in> defer (loop_comp_helper acc m t) A p" and
-    lift_a: "Profile.lifted A p q a"
-  show "loop_comp_helper acc m t A p = loop_comp_helper acc m t A q"
-    using defer_a lift_a lifted_imp_fin_prof loop_comp_helper_def_lift_inv
-          monotone_acc monotone_m
+    "a \<in> defer (loop_comp_helper acc m t) A p" and
+    "Profile.lifted A p q a"
+  thus "loop_comp_helper acc m t A p = loop_comp_helper acc m t A q"
+    using lifted_imp_fin_prof loop_comp_helper_def_lift_inv assms
     by (metis (full_types))
 qed
 
@@ -866,19 +816,16 @@ lemma loop_comp_helper_iter_elim_def_n:
     p :: "'a Profile" and
     x :: nat
   assumes
-    non_electing_m: "non_electing m" and
-    single_elimination: "eliminates 1 m" and
-    terminate_if_n_left: "\<forall> r. ((t r) = (card (defer_r r) = x))" and
-    x_greater_zero: "x > 0" and
-    f_prof: "finite_profile A p" and
-    acc_defers_enough: "card (defer acc A p) \<ge> x" and
-    non_electing_acc: "non_electing acc"
+    "non_electing m" and
+    "eliminates 1 m" and
+    "\<forall> r. ((t r) = (card (defer_r r) = x))" and
+    "x > 0" and
+    "finite_profile A p" and
+    "card (defer acc A p) \<ge> x" and
+    "non_electing acc"
   shows "card (defer (loop_comp_helper acc m t) A p) = x"
-  using acc_defers_enough gr_implies_not0 le_neq_implies_less
-        less_one linorder_neqE_nat loop_comp_helper.simps(1)
-        loop_comp_helper_iter_elim_def_n_helper non_electing_acc
-        non_electing_m f_prof single_elimination nat_neq_iff
-        terminate_if_n_left x_greater_zero less_le
+  using assms gr_implies_not0 le_neq_implies_less less_one linorder_neqE_nat nat_neq_iff
+        less_le loop_comp_helper_iter_elim_def_n_helper loop_comp_helper.simps(1)
   by (metis (no_types, lifting))
 
 lemma iter_elim_def_n_helper:
@@ -899,7 +846,8 @@ lemma iter_elim_def_n_helper:
 proof (cases)
   assume "card A = x"
   thus ?thesis
-    by (simp add: terminate_if_n_left)
+    using terminate_if_n_left
+    by simp
 next
   assume card_not_x: "\<not> card A = x"
   thus ?thesis
@@ -909,7 +857,7 @@ next
       using enough_alternatives not_le
       by blast
   next
-    assume "\<not>card A < x"
+    assume "\<not> card A < x"
     hence card_big_enough_A: "card A > x"
       using card_not_x
       by linarith
@@ -921,7 +869,8 @@ next
       using card_big_enough_A
       by linarith
     hence "(m \<circlearrowleft>\<^sub>t) A p = (loop_comp_helper m m t) A p"
-      by (simp add: card_not_x terminate_if_n_left)
+      using card_not_x terminate_if_n_left
+      by simp
     thus ?thesis
       using card_big_enough_m non_electing_m f_prof single_elimination
             terminate_if_n_left x_greater_zero
@@ -943,8 +892,8 @@ theorem loop_comp_presv_def_lift_inv[simp]:
   assumes "defer_lift_invariance m"
   shows "defer_lift_invariance (m \<circlearrowleft>\<^sub>t)"
 proof (unfold defer_lift_invariance_def, safe)
-  from assms
   have "electoral_module m"
+    using assms
     unfolding defer_lift_invariance_def
     by simp
   thus "electoral_module (m \<circlearrowleft>\<^sub>t)"
@@ -977,11 +926,11 @@ theorem loop_comp_presv_non_electing[simp]:
   fixes
     m :: "'a Electoral_Module" and
     t :: "'a Termination_Condition"
-  assumes non_electing_m: "non_electing m"
+  assumes "non_electing m"
   shows "non_electing (m \<circlearrowleft>\<^sub>t)"
-proof (unfold non_electing_def, safe, simp_all)
+proof (unfold non_electing_def, safe)
   show "electoral_module (m \<circlearrowleft>\<^sub>t)"
-    using loop_comp_sound non_electing_m
+    using loop_comp_sound assms
     unfolding non_electing_def
     by metis
 next
@@ -993,9 +942,8 @@ next
     "finite A" and
     "profile A p" and
     "x \<in> elect (m \<circlearrowleft>\<^sub>t) A p"
-  thus False
-    using def_mod_non_electing loop_comp_presv_non_electing_helper
-          non_electing_m empty_iff loop_comp_code
+  thus "x \<in> {}"
+    using def_mod_non_electing loop_comp_presv_non_electing_helper assms empty_iff loop_comp_code
     unfolding non_electing_def
     by (metis (no_types))
 qed
@@ -1025,8 +973,7 @@ next
     "finite A" and
     "profile A p"
   thus "card (defer (m \<circlearrowleft>\<^sub>t) A p) = n"
-    using iter_elim_def_n_helper non_electing_m single_elimination
-          terminate_if_n_left x_greater_zero
+    using iter_elim_def_n_helper assms
     by metis
 qed
 

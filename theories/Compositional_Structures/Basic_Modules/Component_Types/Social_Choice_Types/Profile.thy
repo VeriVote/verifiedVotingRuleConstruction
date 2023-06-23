@@ -595,82 +595,21 @@ lemma cond_winner_unique_3:
     a :: "'a"
   assumes "condorcet_winner A p a"
   shows "{b \<in> A. condorcet_winner A p b} = {a}"
-proof (safe, simp_all, safe)
+proof (safe)
   fix b :: "'a"
-  assume
-    fin_A: "finite A" and
-    prof_A: "profile A p" and
-    b_in_A: "b \<in> A" and
-    b_wins:
-      "\<forall> x \<in> A - {b}.
-        card {i. i < length p \<and> (b, x) \<in> p!i} <
-          card {i. i < length p \<and> (x, b) \<in> p!i}"
-  from assms
-  have assm:
-    "finite_profile A p \<and>  a \<in> A \<and>
-      (\<forall> x \<in> A - {a}.
-        card {i::nat. i < length p \<and> (a, x) \<in> p!i} <
-          card {i::nat. i < length p \<and> (x, a) \<in> p!i})"
-    by simp
-  hence
-    "(\<forall> x \<in> A - {a}.
-      card {i::nat. i < length p \<and> (a, x) \<in> p!i} <
-        card {i::nat. i < length p \<and> (x, a) \<in> p!i})"
-    by simp
-  hence a_beats_b:
-    "b \<noteq> a \<Longrightarrow>
-      card {i::nat. i < length p \<and> (a, b) \<in> p!i} <
-        card {i::nat. i < length p \<and> (b, a) \<in> p!i}"
-    using b_in_A
-    by simp
-  also from assm
-  have "finite_profile A p"
-    by simp
-  moreover from assm
-  have "a \<in> A"
-    by simp
-  hence b_beats_a:
-    "b \<noteq> a \<Longrightarrow>
-      card {i. i < length p \<and> (b, a) \<in> p!i} <
-        card {i. i < length p \<and> (a, b) \<in> p!i}"
-    using b_wins
-    by simp
-  from a_beats_b b_beats_a
-  show "b = a"
-    by linarith
-next
-  from assms
-  show "a \<in> A"
-    by simp
-next
-  from assms
-  show "finite A"
-    by simp
-next
-  from assms
-  show "profile A p"
-    by simp
-next
-  from assms
-  show "a \<in> A"
-    by simp
-next
-  fix b :: "'a"
-  assume
-    b_in_A: "b \<in> A" and
-    a_wins:
-      "\<not> card {i. i < length p \<and> (a, b) \<in> p!i} <
-        card {i. i < length p \<and> (b, a) \<in> p!i}"
-  from assms
-  have
-    "finite_profile A p \<and> a \<in> A \<and>
-      (\<forall> x \<in> A - {a}.
-        card {i::nat. i < length p \<and> (a, x) \<in> p!i} <
-          card {i::nat. i < length p \<and> (x, a) \<in> p!i})"
-    by simp
+  assume "condorcet_winner A p b"
   thus "b = a"
-    using b_in_A a_wins insert_Diff insert_iff
-    by (metis (no_types, lifting))
+    using assms cond_winner_unique
+    by metis
+next
+  show "a \<in> A"
+    using assms
+    unfolding condorcet_winner.simps
+    by (metis (no_types))
+next
+  show "condorcet_winner A p a"
+    using assms
+    by presburger
 qed
 
 subsection \<open>Limited Profile\<close>
