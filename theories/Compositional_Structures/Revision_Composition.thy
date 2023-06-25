@@ -129,13 +129,13 @@ next
     q :: "'a Profile" and
     a :: "'a" and
     x :: "'a" and
-    xa :: "'a"
+    x' :: "'a"
   assume
     rev_p_defer_a: "a \<in> defer (m\<down>) A p" and
     a_lifted: "lifted A p q a" and
     rev_q_defer_x: "x \<in> defer (m\<down>) A q" and
     x_non_eq_a: "x \<noteq> a" and
-    rev_q_defer_xa: "xa \<in> defer (m\<down>) A q"
+    rev_q_defer_x': "x' \<in> defer (m\<down>) A q"
   from rev_p_defer_a
   have elect_a_in_p: "a \<in> elect m A p"
     by simp
@@ -147,8 +147,8 @@ next
     using a_lifted elect_a_in_p elect_no_unique_a_in_q
     unfolding invariant_monotonicity_def
     by (metis (no_types))
-  thus "xa \<in> defer (m\<down>) A p"
-    using rev_q_defer_xa
+  thus "x' \<in> defer (m\<down>) A p"
+    using rev_q_defer_x'
     by simp
 next
   fix
@@ -157,13 +157,13 @@ next
     q :: "'a Profile" and
     a :: "'a" and
     x :: "'a" and
-    xa :: "'a"
+    x' :: "'a"
   assume
     rev_p_defer_a: "a \<in> defer (m\<down>) A p" and
     a_lifted: "lifted A p q a" and
     rev_q_defer_x: "x \<in> defer (m\<down>) A q" and
     x_non_eq_a: "x \<noteq> a" and
-    rev_p_defer_xa: "xa \<in> defer (m\<down>) A p"
+    rev_p_defer_x': "x' \<in> defer (m\<down>) A p"
   have reject_and_defer:
     "(A - elect m A q, elect m A q) = snd ((m\<down>) A q)"
     by force
@@ -176,8 +176,8 @@ next
     using rev_q_defer_x x_non_eq_a
     by force
   with assms
-  show "xa \<in> defer (m\<down>) A q"
-    using a_lifted rev_p_defer_xa snd_conv elect_a_in_p
+  show "x' \<in> defer (m\<down>) A q"
+    using a_lifted rev_p_defer_x' snd_conv elect_a_in_p
           elect_p_eq_defer_rev_p reject_and_defer
     unfolding invariant_monotonicity_def
     by (metis (no_types))

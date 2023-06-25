@@ -36,20 +36,15 @@ next
   assume
     finite_A: "finite A" and
     prof_A: "profile A p"
-  have f1: "connex UNIV r"
+  have "connex UNIV r"
     using assms lin_ord_imp_connex
     by auto
-  have connex:
-    "connex A (limit A r)"
-    using f1 limit_presv_connex subset_UNIV
+  hence connex: "connex A (limit A r)"
+    using limit_presv_connex subset_UNIV
     by metis
-  have
-    "\<forall> B a. B \<noteq> {} \<or> (a::'a) \<notin> B"
+  have "\<forall> B a. B \<noteq> {} \<or> (a::'a) \<notin> B"
     by simp
-  hence
-    "\<forall> a B.
-      \<not> connex B (limit A r) \<or> a \<notin> B \<or> a \<notin> A \<or>
-        \<not> card (above (limit A r) a) \<le> 0"
+  hence "\<forall> a B. a \<in> A \<and> a \<in> B \<longrightarrow> connex B (limit A r) \<longrightarrow> \<not> card (above (limit A r) a) \<le> 0"
     using above_connex above_presv_limit card_eq_0_iff
           finite_A finite_subset le_0_eq assms
     by (metis (no_types))
@@ -73,8 +68,7 @@ theorem drop_two_mod_rej_two[simp]:
   assumes "linear_order r"
   shows "rejects 2 (drop_module 2 r)"
 proof -
-  have rej_drop_eq_def_pass:
-    "reject (drop_module 2 r) = defer (pass_module 2 r)"
+  have rej_drop_eq_def_pass: "reject (drop_module 2 r) = defer (pass_module 2 r)"
     by simp
   obtain
     m :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a set" and
@@ -122,24 +116,21 @@ next
     by simp
 next
   fix A :: "'a set"
-  assume fin: "finite A"
-  obtain p :: "'a Profile" where
+  assume "finite A"
+  then obtain p :: "'a Profile" where
     "finite_profile A p"
-    using empty_iff empty_set fin profile_set
+    using empty_iff empty_set profile_set
     by metis
   show
     "\<exists> B \<subseteq> A.
       (\<forall> a \<in> B. indep_of_alt (drop_module n r) A a \<and>
-        (\<forall> p. finite_profile A p \<longrightarrow>
-          a \<in> reject (drop_module n r) A p)) \<and>
+        (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (drop_module n r) A p)) \<and>
       (\<forall> a \<in> A - B. indep_of_alt (pass_module n r) A a \<and>
-        (\<forall> p. finite_profile A p \<longrightarrow>
-          a \<in> reject (pass_module n r) A p))"
+        (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (pass_module n r) A p))"
   proof
     have same_A:
       "\<forall> p q. (finite_profile A p \<and> finite_profile A q) \<longrightarrow>
-        reject (drop_module n r) A p =
-          reject (drop_module n r) A q"
+        reject (drop_module n r) A p = reject (drop_module n r) A q"
       by auto
     let ?A = "reject (drop_module n r) A p"
     have "?A \<subseteq> A"
@@ -148,27 +139,20 @@ next
       using assms
       unfolding indep_of_alt_def
       by simp
-    moreover have
-      "\<forall> a \<in> ?A. \<forall> p. finite_profile A p \<longrightarrow>
-        a \<in> reject (drop_module n r) A p"
+    moreover have "\<forall> a \<in> ?A. \<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (drop_module n r) A p"
       by auto
-    moreover have
-      "\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) A a"
+    moreover have "\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) A a"
       using assms
       unfolding indep_of_alt_def
       by simp
-    moreover have
-      "\<forall> a \<in> A - ?A. \<forall> p. finite_profile A p \<longrightarrow>
-        a \<in> reject (pass_module n r) A p"
+    moreover have "\<forall> a \<in> A - ?A. \<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (pass_module n r) A p"
       by auto
     ultimately show
       "?A \<subseteq> A \<and>
         (\<forall> a \<in> ?A. indep_of_alt (drop_module n r) A a \<and>
-          (\<forall> p. finite_profile A p \<longrightarrow>
-            a \<in> reject (drop_module n r) A p)) \<and>
+          (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (drop_module n r) A p)) \<and>
         (\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) A a \<and>
-          (\<forall> p. finite_profile A p \<longrightarrow>
-            a \<in> reject (pass_module n r) A p))"
+          (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (pass_module n r) A p))"
       by simp
   qed
 qed
