@@ -48,18 +48,17 @@ lemma refinement:
   shows "profile A (pl_to_pr_\<alpha> p)"
 proof (unfold profile_def, intro allI impI)
   fix i :: nat
-  assume ir: "i < length (pl_to_pr_\<alpha> p)"
-  from ir assms
-  have wf: "well_formed_l (p!i)"
+  assume in_range: "i < length (pl_to_pr_\<alpha> p)"
+  moreover have "well_formed_l (p!i)"
+    using assms in_range
     unfolding profile_l_def
     by simp
-  from ir assms
-  have "linear_order_on_l A (p!i)"
-  unfolding profile_l_def
+  moreover have "linear_order_on_l A (p!i)"
+    using assms in_range
+    unfolding profile_l_def
     by simp
-  with wf assms
-  show "linear_order_on A ((pl_to_pr_\<alpha> p)!i)"
-    using lin_ord_l_imp_rel ir length_map nth_map pl_to_pr_\<alpha>.simps
+  ultimately show "linear_order_on A ((pl_to_pr_\<alpha> p)!i)"
+    using lin_ord_l_imp_rel length_map nth_map pl_to_pr_\<alpha>.simps
     by metis
 qed
 

@@ -54,7 +54,8 @@ proof -
     by simp
   hence "{a \<in> A - {w}. wins w p a} = A - {w}"
     by blast
-  hence winner_wins_against_all_others: "card {a \<in> A - {w}. wins w p a} = card (A - {w})"
+  hence winner_wins_against_all_others:
+    "card {a \<in> A - {w}. wins w p a} = card (A - {w})"
     by simp
   have "w \<in> A"
     using assms
@@ -71,11 +72,8 @@ proof -
     by blast
   hence winner_amount_zero: "card {a \<in> {w}. wins w p a} = 0"
     by simp
-  have "{a \<in> A - {w}. wins w p a} \<inter> {a \<in> {w}. wins w p a} = {}"
-    by blast
   have union:
-    "{a \<in> A - {w}. wins w p a} \<union> {x \<in> {w}. wins w p x} =
-        {a \<in> A. wins w p a}"
+    "{a \<in> A - {w}. wins w p a} \<union> {x \<in> {w}. wins w p x} = {a \<in> A. wins w p a}"
     using win_for_winner_not_reflexive
     by blast
   have finite_defeated: "finite {a \<in> A - {w}. wins w p a}"
@@ -83,13 +81,11 @@ proof -
     by simp
   have "finite {a \<in> {w}. wins w p a}"
     by simp
-  hence
-    "card ({a \<in> A - {w}. wins w p a} \<union> {a \<in> {w}. wins w p a}) =
-        card {a \<in> A - {w}. wins w p a} + card {a \<in> {w}. wins w p a}"
+  hence "card ({a \<in> A - {w}. wins w p a} \<union> {a \<in> {w}. wins w p a}) =
+          card {a \<in> A - {w}. wins w p a} + card {a \<in> {w}. wins w p a}"
     using finite_defeated card_Un_disjoint
     by blast
-  hence "card {a \<in> A. wins w p a} =
-          card {a \<in> A - {w}. wins w p a} + card {a \<in> {w}. wins w p a}"
+  hence "card {a \<in> A. wins w p a} = card {a \<in> A - {w}. wins w p a} + card {a \<in> {w}. wins w p a}"
     using union
     by simp
   thus ?thesis
@@ -108,8 +104,7 @@ lemma cond_winner_imp_loss_count:
     w :: "'a"
   assumes "condorcet_winner A p w"
   shows "card {a \<in> A. wins a p w} = 0"
-  using Collect_empty_eq card_eq_0_iff insert_Diff insert_iff
-        wins_antisym assms
+  using Collect_empty_eq card_eq_0_iff insert_Diff insert_iff wins_antisym assms
   unfolding condorcet_winner.simps
   by (metis (no_types, lifting))
 
@@ -131,11 +126,7 @@ proof (unfold copeland_score.simps)
   moreover have "card {a \<in> A. wins a p w} = 0"
     using cond_winner_imp_loss_count assms
     by (metis (no_types))
-  moreover have "card A - 1 - 0 = card A - 1"
-    by simp
-  ultimately show
-    "card {a \<in> A. wins w p a} - card {a \<in> A. wins a p w} =
-      card A - 1"
+  ultimately show "card {a \<in> A. wins w p a} - card {a \<in> A. wins a p w} = card A - 1"
     by simp
 qed
 
@@ -174,7 +165,7 @@ proof -
     using finite_Diff winner
     by simp
   ultimately have "card {y \<in> A - {l, w} . wins l p y} \<le> card (A - {l, w})"
-    using finite_Diff winner
+    using winner
     by (metis (full_types))
   thus ?thesis
     using assms wins_of_loser_eq_without_winner
@@ -244,20 +235,15 @@ next
     p :: "'a Profile" and
     w :: "'a"
   assume
-    cwin_w: "condorcet_winner A p w" and
-    fin_A: "finite A"
-  have max_cplscore_dcc:
-    "defer_condorcet_consistency (max_eliminator copeland_score)"
-    using cr_eval_imp_dcc_max_elim
+    "condorcet_winner A p w" and
+    "finite A"
+  moreover have "defer_condorcet_consistency (max_eliminator copeland_score)"
     by (simp add: copeland_score_is_cr)
-  have "\<forall> A p. (copeland A p = max_eliminator copeland_score A p)"
+  moreover have "\<forall> A p. (copeland A p = max_eliminator copeland_score A p)"
     by simp
-  thus
-    "copeland A p =
-      ({},
-       A - defer copeland A p,
-       {d \<in> A. condorcet_winner A p d})"
-    using Collect_cong cwin_w fin_A max_cplscore_dcc
+  ultimately show
+    "copeland A p = ({}, A - defer copeland A p, {d \<in> A. condorcet_winner A p d})"
+    using Collect_cong
     unfolding defer_condorcet_consistency_def
     by (metis (no_types, lifting))
 qed

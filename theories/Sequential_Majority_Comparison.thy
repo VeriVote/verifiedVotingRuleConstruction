@@ -39,7 +39,7 @@ text \<open>
 
 theorem smc_sound:
   fixes x :: "'a Preference_Relation"
-  assumes order: "linear_order x"
+  assumes "linear_order x"
   shows "electoral_module (smc x)"
 proof (unfold electoral_module_def, simp, safe, simp_all)
   fix
@@ -58,7 +58,7 @@ proof (unfold electoral_module_def, simp, safe, simp_all)
     "x' \<in> reject (?smc) A p" and
     "x' \<in> elect (?smc) A p"
   thus False
-    using IntI drop_mod_sound emptyE loop_comp_sound max_agg_sound order par_comp_sound
+    using IntI drop_mod_sound emptyE loop_comp_sound max_agg_sound assms par_comp_sound
           pass_mod_sound plurality_sound result_disj rev_comp_sound seq_comp_sound
     by metis
 next
@@ -78,7 +78,7 @@ next
     "x' \<in> reject (?smc) A p" and
     "x' \<in> defer (?smc) A p"
   thus False
-    using IntI order result_disj emptyE drop_mod_sound loop_comp_sound max_agg_sound
+    using IntI assms result_disj emptyE drop_mod_sound loop_comp_sound max_agg_sound
           par_comp_sound pass_mod_sound plurality_sound rev_comp_sound seq_comp_sound
     by metis
 next
@@ -97,7 +97,7 @@ next
     "profile A p" and
       "x' \<in> elect (?smc) A p"
   thus "x' \<in> A"
-    using drop_mod_sound elect_in_alts in_mono order loop_comp_sound max_agg_sound
+    using drop_mod_sound elect_in_alts in_mono assms loop_comp_sound max_agg_sound
           par_comp_sound pass_mod_sound plurality_sound rev_comp_sound seq_comp_sound
     by metis
 next
@@ -116,7 +116,7 @@ next
     "profile A p" and
     "x' \<in> defer (?smc) A p"
   thus "x' \<in> A"
-    using drop_mod_sound defer_in_alts in_mono order loop_comp_sound max_agg_sound
+    using drop_mod_sound defer_in_alts in_mono assms loop_comp_sound max_agg_sound
           par_comp_sound pass_mod_sound plurality_sound rev_comp_sound seq_comp_sound
     by (metis (no_types, lifting))
 next
@@ -137,10 +137,9 @@ next
   have "electoral_module (plurality::'a set \<Rightarrow> (_ \<times> _) set list \<Rightarrow> _ set \<times> _ set \<times> _ set\<down>)"
     by simp
   moreover have "electoral_module (drop_module 2 x)"
-    using order
     by simp
   ultimately show "x' \<in> A"
-    using reject_x' fin_A prof_A in_mono order reject_in_alts loop_comp_sound
+    using reject_x' fin_A prof_A in_mono assms reject_in_alts loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound seq_comp_sound
     by (metis (no_types))
 next
@@ -158,10 +157,10 @@ next
     "finite A" and
     "profile A p" and
     "x' \<in> A" and
-      "x' \<notin> defer (?smc) A p" and
-      "x' \<notin> reject (?smc) A p"
+    "x' \<notin> defer (?smc) A p" and
+    "x' \<notin> reject (?smc) A p"
   thus "x' \<in> elect (?smc) A p"
-    using order electoral_mod_defer_elem drop_mod_sound loop_comp_sound max_agg_sound
+    using assms electoral_mod_defer_elem drop_mod_sound loop_comp_sound max_agg_sound
           par_comp_sound pass_mod_sound plurality_sound rev_comp_sound seq_comp_sound
     by metis
 qed
@@ -229,7 +228,7 @@ proof -
     by simp
   have 200: "defers 1 ?compare_two"
     using 2000 1000 2001 seq_comp_def_one
-    by auto
+    by simp
   have 201: "rejects 2 ?drop2"
     using assms
     by simp
@@ -239,7 +238,7 @@ proof -
     by simp
   have 20: "eliminates 1 ?eliminator"
     using 200 100 201 002 par_comp_elim_one
-    by metis
+    by simp
 
   have 2: "defers 1 ?loop"
     using 10 20
@@ -334,14 +333,14 @@ proof -
     by simp (* max_agg_conserv *)
   have 200: "defers 1 ?compare_two"
     using 2000 1000 2001 seq_comp_def_one
-    by auto
+    by simp
   have 201: "rejects 2 ?drop2"
     using assms
     by simp (* drop_two_mod_rej_two *)
 
   have 00: "defer_lift_invariance ?eliminator"
     using 000 001 002 par_comp_def_lift_inv
-    by simp (* par_comp_def_lift_inv *)
+    by blast (* par_comp_def_lift_inv *)
   have 10: "non_electing ?eliminator"
     using 100 101 102
     by simp (* conserv_agg_presv_non_electing *)

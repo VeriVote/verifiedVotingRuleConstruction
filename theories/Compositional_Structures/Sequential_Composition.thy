@@ -58,15 +58,12 @@ proof -
   have fin_def: "finite (defer m A p)"
     using def_presv_fin_prof f_prof module_m
     by metis
-  have prof_def_lim:
-    "profile (defer m A p) (limit_profile (defer m A p) p)"
+  have prof_def_lim: "profile (defer m A p) (limit_profile (defer m A p) p)"
     using def_presv_fin_prof f_prof module_m
     by metis
   have defer_in_A:
-    "\<forall> prof f a A.
-      (profile A prof \<and> finite A \<and> electoral_module f \<and>
-        (a::'a) \<in> defer f A prof) \<longrightarrow>
-          a \<in> A"
+    "\<forall> A' p' m' a.
+      (profile A' p' \<and> finite A' \<and> electoral_module m' \<and> (a::'a) \<in> defer m' A' p') \<longrightarrow> a \<in> A'"
     using UnCI result_presv_alts
     by (metis (mono_tags))
   from module_m f_prof
@@ -83,59 +80,38 @@ proof -
       reject m A p \<inter> defer m A p = {}"
     using f_prof module_m
     by (simp add: result_disj)
-  from f_prof module_m module_n
-  have rej_n_in_def_m:
-    "reject n (defer m A p)
-      (limit_profile (defer m A p) p) \<subseteq> defer m A p"
-    using def_presv_fin_prof reject_in_alts
+  have "reject n (defer m A p) (limit_profile (defer m A p) p) \<subseteq> defer m A p"
+    using def_presv_fin_prof reject_in_alts f_prof module_m module_n
     by metis
   with disjoint_m module_m module_n f_prof
   have elect_reject_diff: "elect m A p \<inter> reject n ?new_A ?new_p = {}"
     using disj_n
     by (simp add: disjoint_iff_not_equal subset_eq)
   from f_prof module_m module_n
-  have elec_n_in_def_m:
-    "elect n (defer m A p)
-      (limit_profile (defer m A p) p) \<subseteq> defer m A p"
+  have elec_n_in_def_m: "elect n (defer m A p) (limit_profile (defer m A p) p) \<subseteq> defer m A p"
     using def_presv_fin_prof elect_in_alts
     by metis
-  from disjoint_m disjoint_n def_presv_fin_prof f_prof
-       module_m module_n
   have elect_defer_diff: "elect m A p \<inter> defer n ?new_A ?new_p = {}"
   proof -
-    obtain sf :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a" where
-      "\<forall> a b.
-        (\<exists> c. c \<in> b \<and> (\<exists> d. d \<in> a \<and> c = d)) =
-          (sf a b \<in> b \<and> (\<exists> e. e \<in> a \<and> sf a b = e))"
+    obtain f :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a" where
+      "\<forall> B B'.
+        (\<exists> a b. a \<in> B' \<and> b \<in> B \<and> a = b) =
+          (f B B' \<in> B' \<and> (\<exists> a. a \<in> B \<and> f B B' = a))"
       by moura
-    then obtain sf2 :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a" where
-      "\<forall> A B.
-        (A \<inter> B \<noteq> {} \<or> (\<forall> a. a \<notin> A \<or> (\<forall> b. b \<notin> B \<or> a \<noteq> b))) \<and>
-          (A \<inter> B = {} \<or> sf B A \<in> A \<and> sf2 B A \<in> B \<and>
-            sf B A = sf2 B A)"
+    then obtain g :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a" where
+      "\<forall> B B'.
+        (B \<inter> B' = {} \<longrightarrow> (\<forall> a b. a \<in> B \<and> b \<in> B' \<longrightarrow> a \<noteq> b)) \<and>
+          (B \<inter> B' \<noteq> {} \<longrightarrow> (f B B' \<in> B \<and> g B B' \<in> B' \<and> f B B' = g B B'))"
       by auto
     thus ?thesis
       using defer_in_A disj_n fin_def module_n prof_def_lim
       by (metis (no_types))
   qed
-  from disjoint_m disjoint_n def_presv_fin_prof f_prof
-       module_m module_n
-  have rej_old_new_diff_empty: "reject m A p \<inter> reject n ?new_A ?new_p = {}"
-    using disjoint_iff_not_equal reject_in_alts
-          set_rev_mp result_disj Int_Un_distrib2
-          Un_Diff_Int boolean_algebra_cancel.inf2
-          inf.order_iff inf_sup_aci(1) subsetD
-          rej_n_in_def_m disj_n
-    by auto
-  have "\<forall> (A::'a set) (A'::'a set). A \<subseteq> A' \<longrightarrow> A = A \<inter> A'"
-    by blast
-  with disjoint_m disjoint_n def_presv_fin_prof f_prof
-       module_m module_n elec_n_in_def_m
   have rej_intersect_new_elect_empty: "reject m A p \<inter> elect n ?new_A ?new_p = {}"
-    using disj_n
+    using disj_n disjoint_m disjoint_n def_presv_fin_prof f_prof
+          module_m module_n elec_n_in_def_m
     by blast
-  have elects_intersect_rejects_empty:
-    "(elect m A p \<union> elect n ?new_A ?new_p) \<inter> (reject m A p \<union> reject n ?new_A ?new_p) = {}"
+  have "(elect m A p \<union> elect n ?new_A ?new_p) \<inter> (reject m A p \<union> reject n ?new_A ?new_p) = {}"
   proof (safe)
     fix x :: "'a"
     assume
@@ -172,18 +148,14 @@ proof -
       using disjoint_iff_not_equal fin_def module_n prof_def_lim result_disj
       by metis
   qed
-  from elect_reject_diff elect_defer_diff disjoint_n module_m module_n f_prof
-  have elects_intersect_defer_empty:
-    "(elect m A p \<union> elect n ?new_A ?new_p) \<inter> (defer n ?new_A ?new_p) = {}"
+  moreover have "(elect m A p \<union> elect n ?new_A ?new_p) \<inter> (defer n ?new_A ?new_p) = {}"
     using Int_Un_distrib2 Un_empty elect_defer_diff fin_def module_n prof_def_lim result_disj
     by (metis (no_types))
-  have rejects_intersect_defer_empty:
-    "(reject m A p \<union> reject n ?new_A ?new_p) \<inter> (defer n ?new_A ?new_p) = {}"
+  moreover have "(reject m A p \<union> reject n ?new_A ?new_p) \<inter> (defer n ?new_A ?new_p) = {}"
   proof (safe)
     fix x :: "'a"
     assume
-      x_in_def:
-      "x \<in> defer n (defer m A p) (limit_profile (defer m A p) p)" and
+      x_in_def: "x \<in> defer n (defer m A p) (limit_profile (defer m A p) p)" and
       x_in_rej: "x \<in> reject m A p"
     from x_in_def
     have "x \<in> defer m A p"
@@ -204,12 +176,10 @@ proof -
       using fin_def module_n prof_def_lim reject_not_elec_or_def
       by fastforce
   qed
-  have
+  ultimately have
     "disjoint3 (elect m A p \<union> elect n ?new_A ?new_p,
                 reject m A p \<union> reject n ?new_A ?new_p,
                 defer n ?new_A ?new_p)"
-    using elects_intersect_rejects_empty elects_intersect_defer_empty
-          rejects_intersect_defer_empty
     by simp
   thus ?thesis
     unfolding sequential_composition.simps
@@ -229,36 +199,23 @@ lemma seq_comp_presv_alts:
 proof -
   let ?new_A = "defer m A p"
   let ?new_p = "limit_profile ?new_A p"
-  from module_m f_prof
-  have "set_equals_partition A (m A p)"
-    unfolding electoral_module_def
-    by simp
-  with module_m f_prof
   have elect_reject_diff: "elect m A p \<union> reject m A p \<union> ?new_A = A"
+    using module_m f_prof
     by (simp add: result_presv_alts)
-  from module_n def_presv_fin_prof f_prof module_m
-  have
-    "set_equals_partition ?new_A (n ?new_A ?new_p)"
-    unfolding electoral_module_def well_formed.simps
+  have "elect n ?new_A ?new_p \<union>
+          reject n ?new_A ?new_p \<union>
+            defer n ?new_A ?new_p = ?new_A"
+    using module_m module_n f_prof def_presv_fin_prof result_presv_alts
     by metis
-  with module_m module_n f_prof
-  have full_set:
-    "elect n ?new_A ?new_p \<union>
-        reject n ?new_A ?new_p \<union>
-        defer n ?new_A ?new_p = ?new_A"
-    using def_presv_fin_prof result_presv_alts
-    by metis
-  with elect_reject_diff
-  have
-    "(elect m A p \<union> elect n ?new_A ?new_p) \<union>
-        (reject m A p \<union> reject n ?new_A ?new_p) \<union>
-         defer n ?new_A ?new_p = A"
+  hence "(elect m A p \<union> elect n ?new_A ?new_p) \<union>
+          (reject m A p \<union> reject n ?new_A ?new_p) \<union>
+            defer n ?new_A ?new_p = A"
+    using elect_reject_diff
     by blast
-  hence
-    "set_equals_partition A
-      (elect m A p \<union> elect n ?new_A ?new_p,
-      reject m A p \<union> reject n ?new_A ?new_p,
-      defer n ?new_A ?new_p)"
+  hence "set_equals_partition A
+          (elect m A p \<union> elect n ?new_A ?new_p,
+            reject m A p \<union> reject n ?new_A ?new_p,
+              defer n ?new_A ?new_p)"
     by simp
   thus ?thesis
     unfolding sequential_composition.simps
@@ -295,8 +252,8 @@ theorem seq_comp_sound[simp]:
     A :: "'a set" and
     p :: "'a Profile"
   assumes
-    module_m: "electoral_module m" and
-    module_n: "electoral_module n"
+    "electoral_module m" and
+    "electoral_module n"
   shows "electoral_module (m \<triangleright> n)"
 proof (unfold electoral_module_def, safe)
   fix
@@ -309,8 +266,7 @@ proof (unfold electoral_module_def, safe)
           (disjoint3 r \<and> set_equals_partition A r)"
     by simp
   thus "well_formed A ((m \<triangleright> n) A p)"
-    using module_m module_n seq_comp_presv_disj
-          seq_comp_presv_alts fin_A prof_A
+    using assms seq_comp_presv_disj seq_comp_presv_alts fin_A prof_A
     by metis
 qed
 
@@ -330,21 +286,15 @@ lemma seq_comp_dec_only_def:
   shows "(m \<triangleright> n) A p =  m A p"
 proof
   have
-    "\<forall> f A prof.
-      (electoral_module f \<and> finite_profile A prof) \<longrightarrow>
-        finite_profile (defer f A prof)
-          (limit_profile (defer f A prof) prof)"
+    "\<forall> m' A' p'.
+      (electoral_module m' \<and> finite_profile A' p') \<longrightarrow>
+        finite_profile (defer m' A' p') (limit_profile (defer m' A' p') p')"
     using def_presv_fin_prof
     by metis
-  hence prof_no_alt:
-    "profile {} (limit_profile (defer m A p) p)"
+  hence "profile {} (limit_profile (defer m A p) p)"
     using empty_defer f_prof module_m
     by metis
-  hence
-    "(elect m A p) \<union>
-      (elect n (defer m A p)
-        (limit_profile (defer m A p) p))
-    = elect m A p"
+  hence "(elect m A p) \<union> (elect n (defer m A p) (limit_profile (defer m A p) p)) = elect m A p"
     using elect_in_alts empty_defer module_n
     by auto
   thus "elect (m \<triangleright> n) A p = elect m A p"
@@ -353,9 +303,9 @@ proof
     by metis
 next
   have rej_empty:
-    "\<forall> f prof.
-      (electoral_module f \<and> profile ({}::'a set) prof) \<longrightarrow>
-        reject f {} prof = {}"
+    "\<forall> m' p'.
+      (electoral_module m' \<and> profile ({}::'a set) p') \<longrightarrow>
+        reject m' {} p' = {}"
     using bot.extremum_uniqueI infinite_imp_nonempty reject_in_alts
     by metis
   have prof_no_alt: "profile {} (limit_profile (defer m A p) p)"
@@ -396,37 +346,30 @@ next
     unfolding non_electing_def
     by simp
   from non_empty_A def_one_m f_prof finite
-  have def_card:
-    "card (defer m A p) = 1"
+  have def_card: "card (defer m A p) = 1"
     unfolding defers_def
     by (simp add: Suc_leI card_gt_0_iff)
   with n_electing_m f_prof
-  have def:
-    "\<exists> a \<in> A. defer m A p = {a}"
+  have def: "\<exists> a \<in> A. defer m A p = {a}"
     using card_1_singletonE defer_in_alts singletonI subsetCE
     unfolding non_electing_def
     by metis
   from ele def n_electing_m
-  have rej:
-    "\<exists> a \<in> A. reject m A p = A - {a}"
+  have rej: "\<exists> a \<in> A. reject m A p = A - {a}"
     using Diff_empty def_one_m f_prof reject_not_elec_or_def
     unfolding defers_def
     by metis
   from ele rej def n_electing_m f_prof
-  have res_m:
-    "\<exists> a \<in> A. m A p = ({}, A - {a}, {a})"
+  have res_m: "\<exists> a \<in> A. m A p = ({}, A - {a}, {a})"
     using Diff_empty combine_ele_rej_def reject_not_elec_or_def
     unfolding non_electing_def
     by metis
-  hence
-    "\<exists> a \<in> A. elect (m \<triangleright> n) A p =
-        elect n {a} (limit_profile {a} p)"
+  hence "\<exists> a \<in> A. elect (m \<triangleright> n) A p = elect n {a} (limit_profile {a} p)"
     using prod.sel(1, 2) sup_bot.left_neutral
     unfolding sequential_composition.simps
     by metis
   with def_card def electing_n n_electing_m f_prof
-  have
-    "\<exists> a \<in> A. elect (m \<triangleright> n) A p = {a}"
+  have "\<exists> a \<in> A. elect (m \<triangleright> n) A p = {a}"
     using electing_for_only_alt prod.sel(1) def_presv_fin_prof sup_bot.left_neutral
     unfolding non_electing_def sequential_composition.simps
     by metis
@@ -444,11 +387,11 @@ lemma seq_comp_def_card_bounded:
     A :: "'a set" and
     p :: "'a Profile"
   assumes
-    module_m: "electoral_module m" and
-    module_n: "electoral_module n" and
-    f_prof: "finite_profile A p"
+    "electoral_module m" and
+    "electoral_module n" and
+    "finite_profile A p"
   shows "card (defer (m \<triangleright> n) A p) \<le> card (defer m A p)"
-  using card_mono defer_in_alts module_m module_n f_prof def_presv_fin_prof snd_conv
+  using card_mono defer_in_alts assms def_presv_fin_prof snd_conv
   unfolding sequential_composition.simps
   by metis
 
@@ -459,11 +402,11 @@ lemma seq_comp_def_set_bounded:
     A :: "'a set" and
     p :: "'a Profile"
   assumes
-    module_m: "electoral_module m" and
-    module_n: "electoral_module n" and
-    f_prof: "finite_profile A p"
+    "electoral_module m" and
+    "electoral_module n" and
+    "finite_profile A p"
   shows "defer (m \<triangleright> n) A p \<subseteq> defer m A p"
-  using defer_in_alts module_m module_n prod.sel(2) f_prof def_presv_fin_prof
+  using defer_in_alts assms prod.sel(2) def_presv_fin_prof
   unfolding sequential_composition.simps
   by metis
 
@@ -473,13 +416,7 @@ lemma seq_comp_defers_def_set:
     n :: "'a Electoral_Module" and
     A :: "'a set" and
     p :: "'a Profile"
-  assumes
-    module_m: "electoral_module m" and
-    module_n: "electoral_module n" and
-    f_prof: "finite_profile A p"
-  shows
-    "defer (m \<triangleright> n) A p =
-      defer n (defer m A p) (limit_profile (defer m A p) p)"
+  shows "defer (m \<triangleright> n) A p = defer n (defer m A p) (limit_profile (defer m A p) p)"
   using snd_conv
   unfolding sequential_composition.simps
   by metis
@@ -490,14 +427,7 @@ lemma seq_comp_def_then_elect_elec_set:
     n :: "'a Electoral_Module" and
     A :: "'a set" and
     p :: "'a Profile"
-  assumes
-    module_m: "electoral_module m" and
-    module_n: "electoral_module n" and
-    f_prof: "finite_profile A p"
-  shows
-    "elect (m \<triangleright> n) A p =
-      elect n (defer m A p) (limit_profile (defer m A p) p) \<union>
-      (elect m A p)"
+  shows "elect (m \<triangleright> n) A p = elect n (defer m A p) (limit_profile (defer m A p) p) \<union> (elect m A p)"
   using Un_commute fst_conv
   unfolding sequential_composition.simps
   by metis
@@ -509,13 +439,12 @@ lemma seq_comp_elim_one_red_def_set:
     A :: "'a set" and
     p :: "'a Profile"
   assumes
-    module_m: "electoral_module m" and
-    module_n: "eliminates 1 n" and
-    f_prof: "finite_profile A p" and
-    enough_leftover: "card (defer m A p) > 1"
+    "electoral_module m" and
+    "eliminates 1 n" and
+    "finite_profile A p" and
+    "card (defer m A p) > 1"
   shows "defer (m \<triangleright> n) A p \<subset> defer m A p"
-  using enough_leftover module_m module_n f_prof snd_conv
-        def_presv_fin_prof single_elim_imp_red_def_set
+  using assms snd_conv def_presv_fin_prof single_elim_imp_red_def_set
   unfolding sequential_composition.simps
   by metis
 
@@ -526,17 +455,12 @@ lemma seq_comp_def_set_sound:
     A :: "'a set" and
     p :: "'a Profile"
   assumes
-    e_mod_m: "electoral_module m" and
-    e_mod_n: "electoral_module n" and
-    fin_prof_p: "finite_profile A p"
+    "electoral_module m" and
+    "electoral_module n" and
+    "finite_profile A p"
   shows "defer (m \<triangleright> n) A p \<subseteq> defer m A p"
-proof (safe)
-  fix x :: "'a"
-  assume "x \<in> defer (m \<triangleright> n) A p"
-  thus "x \<in> defer m A p"
-    using e_mod_m e_mod_n fin_prof_p in_mono seq_comp_def_set_bounded
-    by (metis (no_types, lifting))
-qed
+  using assms seq_comp_def_set_bounded
+  by simp
 
 lemma seq_comp_def_set_trans:
   fixes
@@ -551,8 +475,7 @@ lemma seq_comp_def_set_trans:
     "electoral_module m \<and> electoral_module n" and
     "finite_profile A p"
   shows "a \<in> defer n (defer m A p) (limit_profile (defer m A p) p) \<and> a \<in> defer m A p"
-  using seq_comp_def_set_bounded assms
-        in_mono seq_comp_defers_def_set
+  using seq_comp_def_set_bounded assms in_mono seq_comp_defers_def_set
   by (metis (no_types, opaque_lifting))
 
 subsection \<open>Composition Rules\<close>
@@ -573,7 +496,7 @@ proof -
   fix
     A :: "'a set" and
     p :: "'a Profile"
-  let ?input_sound = "(A::'a set) \<noteq> {} \<and> finite_profile A p"
+  let ?input_sound = "A \<noteq> {} \<and> finite_profile A p"
   from non_blocking_m
   have "?input_sound \<longrightarrow> reject m A p \<noteq> A"
     unfolding non_blocking_def
@@ -587,14 +510,12 @@ proof -
   have "?input_sound \<longrightarrow> well_formed A (m A p)"
     unfolding electoral_module_def non_blocking_def
     by simp
-  hence
-    "?input_sound \<longrightarrow>
-        elect m A p \<union> defer m A p = A - reject m A p"
+  hence "?input_sound \<longrightarrow> elect m A p \<union> defer m A p = A - reject m A p"
     using non_blocking_m elec_and_def_not_rej
     unfolding non_blocking_def
     by metis
-  with A_reject_diff have
-    "?input_sound \<longrightarrow> elect m A p \<union> defer m A p \<noteq> {}"
+  with A_reject_diff
+  have "?input_sound \<longrightarrow> elect m A p \<union> defer m A p \<noteq> {}"
     by simp
   hence "?input_sound \<longrightarrow> (elect m A p \<noteq> {} \<or> defer m A p \<noteq> {})"
     by simp
@@ -603,18 +524,11 @@ proof -
   proof (unfold non_blocking_def)
     assume
       emod_reject_m:
-      "electoral_module m \<and>
-        (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow>
-          reject m A p \<noteq> A)" and
+      "electoral_module m \<and> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> reject m A p \<noteq> A)" and
       emod_reject_n:
-      "electoral_module n \<and>
-        (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow>
-          reject n A p \<noteq> A)"
+      "electoral_module n \<and> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> reject n A p \<noteq> A)"
     show
-      "electoral_module (m \<triangleright> n) \<and>
-        (\<forall> A p.
-          A \<noteq> {} \<and> finite_profile A p \<longrightarrow>
-            reject (m \<triangleright> n) A p \<noteq> A)"
+      "electoral_module (m \<triangleright> n) \<and> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> reject (m \<triangleright> n) A p \<noteq> A)"
     proof (safe)
       show "electoral_module (m \<triangleright> n)"
         using emod_reject_m emod_reject_n
@@ -630,26 +544,20 @@ proof -
         rej_mn: "reject (m \<triangleright> n) A p = A" and
         x_in_A: "x \<in> A"
       from emod_reject_m fin_A prof_A
-      have fin_defer:
-        "finite_profile (defer m A p) (limit_profile (defer m A p) p)"
+      have fin_defer: "finite_profile (defer m A p) (limit_profile (defer m A p) p)"
         using def_presv_fin_prof
         by (metis (no_types))
       from emod_reject_m emod_reject_n fin_A prof_A
       have seq_elect:
-        "elect (m \<triangleright> n) A p =
-          elect n (defer m A p) (limit_profile (defer m A p) p) \<union>
-            elect m A p"
+        "elect (m \<triangleright> n) A p = elect n (defer m A p) (limit_profile (defer m A p) p) \<union> elect m A p"
         using seq_comp_def_then_elect_elec_set
         by metis
       from emod_reject_n emod_reject_m fin_A prof_A
-      have def_limit:
-        "defer (m \<triangleright> n) A p =
-          defer n (defer m A p) (limit_profile (defer m A p) p)"
+      have def_limit: "defer (m \<triangleright> n) A p = defer n (defer m A p) (limit_profile (defer m A p) p)"
         using seq_comp_defers_def_set
         by metis
       from emod_reject_n emod_reject_m fin_A prof_A
-      have
-        "elect (m \<triangleright> n) A p \<union> defer (m \<triangleright> n) A p = A - reject (m \<triangleright> n) A p"
+      have "elect (m \<triangleright> n) A p \<union> defer (m \<triangleright> n) A p = A - reject (m \<triangleright> n) A p"
         using elec_and_def_not_rej seq_comp_sound
         by metis
       hence elect_def_disj:
@@ -688,12 +596,12 @@ theorem seq_comp_presv_non_electing[simp]:
     m :: "'a Electoral_Module" and
     n :: "'a Electoral_Module"
   assumes
-    m_elect: "non_electing m" and
-    n_elect: "non_electing n"
+    "non_electing m" and
+    "non_electing n"
   shows "non_electing (m \<triangleright> n)"
 proof (unfold non_electing_def, safe)
-  from m_elect n_elect
   have "electoral_module m \<and> electoral_module n"
+    using assms
     unfolding non_electing_def
     by blast
   thus "electoral_module (m \<triangleright> n)"
@@ -707,11 +615,11 @@ next
     "finite A" and
     "profile A p" and
     "x \<in> elect (m \<triangleright> n) A p"
-  with m_elect n_elect
-  show "x \<in> {}"
+  thus "x \<in> {}"
+    using assms
     unfolding non_electing_def
-    using seq_comp_def_then_elect_elec_set def_presv_fin_prof
-          Diff_empty Diff_partition empty_subsetI
+    using seq_comp_def_then_elect_elec_set def_presv_fin_prof Diff_empty Diff_partition
+          empty_subsetI
     by metis
 qed
 
@@ -734,36 +642,31 @@ proof -
     using def_one_m
     unfolding defers_def
     by blast
-  hence def_m1_not_empty:
-    "\<forall> A p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow> defer m A p \<noteq> {}"
+  hence def_m1_not_empty: "\<forall> A p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow> defer m A p \<noteq> {}"
     using One_nat_def Suc_leI card_eq_0_iff
           card_gt_0_iff zero_neq_one
     by metis
   thus ?thesis
   proof -
     obtain
-      f_set ::
-      "('a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) \<Rightarrow> 'a set" and
-      f_prof ::
-      "('a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) \<Rightarrow> 'a Profile" where
+      p :: "('a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) \<Rightarrow> 'a set" and
+      A :: "('a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) \<Rightarrow> 'a Profile" where
       f_mod:
-      "\<forall> f.
-        (\<not> electing f \<or> electoral_module f \<and>
-          (\<forall> A prof. (A \<noteq> {} \<and> finite A \<and> profile A prof) \<longrightarrow> elect f A prof \<noteq> {})) \<and>
-        (electing f \<or> \<not> electoral_module f \<or> f_set f \<noteq> {} \<and> finite (f_set f) \<and>
-          profile (f_set f) (f_prof f) \<and> elect f (f_set f) (f_prof f) = {})"
+      "\<forall> m'.
+        (\<not> electing m' \<or> electoral_module m' \<and>
+          (\<forall> A' p'. (A' \<noteq> {} \<and> finite A' \<and> profile A' p') \<longrightarrow> elect m' A' p' \<noteq> {})) \<and>
+        (electing m' \<or> \<not> electoral_module m' \<or> p m' \<noteq> {} \<and> finite (p m') \<and>
+          profile (p m') (A m') \<and> elect m' (p m') (A m') = {})"
       unfolding electing_def
       by moura
     hence f_elect:
       "electoral_module n \<and>
-        (\<forall> A prof. (A \<noteq> {} \<and> finite A \<and> profile A prof) \<longrightarrow> elect n A prof \<noteq> {})"
+        (\<forall> A p. (A \<noteq> {} \<and> finite A \<and> profile A p) \<longrightarrow> elect n A p \<noteq> {})"
       using electing_n
       by metis
     have def_card_one:
       "electoral_module m \<and>
-        (\<forall> A prof.
-          (1 \<le> card A \<and> finite A \<and> profile A prof) \<longrightarrow>
-            card (defer m A prof) = 1)"
+        (\<forall> A p. (1 \<le> card A \<and> finite A \<and> profile A p) \<longrightarrow> card (defer m A p) = 1)"
       using def_one_m
       unfolding defers_def
       by blast
@@ -797,8 +700,7 @@ proof -
   let ?new_p = "limit_profile ?new_Ap p"
   let ?new_q = "limit_profile ?new_Aq q"
   from monotone_m monotone_n
-  have modules:
-    "electoral_module m \<and> electoral_module n"
+  have modules: "electoral_module m \<and> electoral_module n"
     unfolding defer_lift_invariance_def
     by simp
   hence "finite_profile A p \<longrightarrow> defer (m \<triangleright> n) A p \<subseteq> defer m A p"
@@ -817,13 +719,11 @@ proof -
     by metis
   hence new_A_eq: "?new_Ap = ?new_Aq"
     by presburger
-  have defer_eq:
-    "defer (m \<triangleright> n) A p = defer n ?new_Ap ?new_p"
+  have defer_eq: "defer (m \<triangleright> n) A p = defer n ?new_Ap ?new_p"
     using snd_conv
     unfolding sequential_composition.simps
     by metis
-  hence mono_n:
-    "n ?new_Ap ?new_p = n ?new_Aq ?new_q"
+  have mono_n: "n ?new_Ap ?new_p = n ?new_Aq ?new_q"
   proof (cases)
     assume "lifted ?new_Ap ?new_p ?new_q a"
     thus ?thesis
@@ -831,7 +731,7 @@ proof -
       unfolding defer_lift_invariance_def
       by (metis (no_types, lifting))
   next
-    assume a2: "\<not>lifted ?new_Ap ?new_p ?new_q a"
+    assume unlifted_a: "\<not>lifted ?new_Ap ?new_p ?new_q a"
     from def_and_lifted
     have "finite_profile A q"
       unfolding lifted_def
@@ -848,17 +748,16 @@ proof -
     have "a \<in> ?new_Ap"
       by blast
     moreover from def_and_lifted
-    have eql_lengths:
-      "length ?new_p = length ?new_q"
+    have eql_lengths: "length ?new_p = length ?new_q"
       unfolding lifted_def
       by simp
     ultimately have lifted_stmt:
-      "(\<forall> i::nat. i < length ?new_p \<longrightarrow>
-          \<not> Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a) \<or>
+      "(\<exists> i::nat. i < length ?new_p \<and>
+          Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a) \<longrightarrow>
        (\<exists> i::nat. i < length ?new_p \<and>
           \<not> Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a \<and>
               (?new_p!i) \<noteq> (?new_q!i))"
-      using a2
+      using unlifted_a
       unfolding lifted_def
       by (metis (no_types, lifting))
     from def_and_lifted modules
@@ -895,10 +794,10 @@ theorem seq_comp_presv_def_lift_inv[simp]:
     m :: "'a Electoral_Module" and
     n :: "'a Electoral_Module"
   assumes
-    monotone_m: "defer_lift_invariance m" and
-    monotone_n: "defer_lift_invariance n"
+    "defer_lift_invariance m" and
+    "defer_lift_invariance n"
   shows "defer_lift_invariance (m \<triangleright> n)"
-  using monotone_m monotone_n def_lift_inv_seq_comp_help
+  using assms def_lift_inv_seq_comp_help
         seq_comp_sound defer_lift_invariance_def
   by (metis (full_types))
 
@@ -919,16 +818,15 @@ theorem seq_comp_def_one[simp]:
     def_1_n: "defers 1 n"
   shows "defers 1 (m \<triangleright> n)"
 proof (unfold defers_def, safe)
-  have electoral_mod_m: "electoral_module m"
+  have "electoral_module m"
     using non_electing_m
     unfolding non_electing_def
     by simp
-  have electoral_mod_n: "electoral_module n"
+  moreover have "electoral_module n"
     using def_1_n
     unfolding defers_def
     by simp
-  show "electoral_module (m \<triangleright> n)"
-    using electoral_mod_m electoral_mod_n
+  ultimately show "electoral_module (m \<triangleright> n)"
     by simp
 next
   fix
@@ -938,56 +836,40 @@ next
     pos_card: "1 \<le> card A" and
     fin_A: "finite A" and
     prof_A: "profile A p"
-  from pos_card have
-    "A \<noteq> {}"
+  from pos_card
+  have "A \<noteq> {}"
     by auto
-  with fin_A prof_A have m_non_blocking:
-    "reject m A p \<noteq> A"
+  with fin_A prof_A
+  have "reject m A p \<noteq> A"
     using non_blocking_m
     unfolding non_blocking_def
     by simp
-  hence
-    "\<exists> a. a \<in> A \<and> a \<notin> reject m A p"
-    using pos_card non_electing_m
-          reject_in_alts subset_antisym subset_iff
-          fin_A prof_A subsetI
+  hence "\<exists> a. a \<in> A \<and> a \<notin> reject m A p"
+    using non_electing_m reject_in_alts fin_A prof_A
     unfolding non_electing_def
-    by slow
+    by auto
   hence "defer m A p \<noteq> {}"
-    using electoral_mod_defer_elem empty_iff pos_card
-          non_electing_m fin_A prof_A
+    using electoral_mod_defer_elem empty_iff non_electing_m fin_A prof_A
     unfolding non_electing_def
     by (metis (no_types))
-  hence defer_non_empty:
-    "card (defer m A p) \<ge> 1"
-    using Suc_leI card_gt_0_iff pos_card fin_A prof_A
-          non_blocking_m def_presv_fin_prof
+  hence "card (defer m A p) \<ge> 1"
+    using Suc_leI card_gt_0_iff fin_A prof_A non_blocking_m def_presv_fin_prof
     unfolding One_nat_def non_blocking_def
     by metis
-  have defer_fun:
-    "defer (m \<triangleright> n) A p =
-      defer n (defer m A p) (limit_profile (defer m A p) p)"
-    using def_1_n fin_A non_blocking_m prof_A seq_comp_defers_def_set
-    unfolding defers_def non_blocking_def
-    by (metis (no_types, opaque_lifting))
-  have
-    "\<forall> n f. defers n f =
-      (electoral_module f \<and>
-        (\<forall> A prof.
-          (\<not> n \<le> card (A::'a set) \<or> infinite A \<or>
-            \<not> profile A prof) \<or>
-          card (defer f A prof) = n))"
+  moreover have
+    "\<forall> i m'. defers i m' =
+      (electoral_module m' \<and>
+        (\<forall> A' p'. (i \<le> card A' \<and> finite A' \<and> profile A' p') \<longrightarrow> card (defer m' A' p') = i))"
     unfolding defers_def
-    by blast
-  hence
-    "card (defer n (defer m A p)
-      (limit_profile (defer m A p) p)) = 1"
-    using defer_non_empty def_1_n fin_A prof_A
-          non_blocking_m def_presv_fin_prof
+    by simp
+  ultimately have "card (defer n (defer m A p) (limit_profile (defer m A p) p)) = 1"
+    using def_1_n fin_A prof_A non_blocking_m def_presv_fin_prof
     unfolding non_blocking_def
     by metis
-  thus "card (defer (m \<triangleright> n) A p) = 1"
-    using defer_fun
+  moreover have "defer (m \<triangleright> n) A p = defer n (defer m A p) (limit_profile (defer m A p) p)"
+    using seq_comp_defers_def_set
+    by (metis (no_types, opaque_lifting))
+  ultimately show "card (defer (m \<triangleright> n) A p) = 1"
     by simp
 qed
 
@@ -1019,58 +901,48 @@ next
     by metis
 next
   fix S :: "'a set"
-  assume fin_S: "finite S"
   have modules:
     "electoral_module (m \<triangleright> m') \<and> electoral_module n"
     using compatible module_m' seq_comp_sound
     unfolding disjoint_compatibility_def
     by metis
-  obtain A where A:
+  assume "finite S"
+  then obtain A where rej_A:
     "A \<subseteq> S \<and>
-      (\<forall> a \<in> A. indep_of_alt m S a \<and>
-        (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)) \<and>
-      (\<forall> a \<in> S - A. indep_of_alt n S a \<and>
-        (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p))"
-    using compatible fin_S
+      (\<forall> a \<in> A. indep_of_alt m S a \<and> (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)) \<and>
+      (\<forall> a \<in> S - A. indep_of_alt n S a \<and> (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p))"
+    using compatible
     unfolding disjoint_compatibility_def
     by (metis (no_types, lifting))
   show
     "\<exists> A \<subseteq> S.
       (\<forall> a \<in> A. indep_of_alt (m \<triangleright> m') S a \<and>
         (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject (m \<triangleright> m') S p)) \<and>
-      (\<forall> a \<in> S - A. indep_of_alt n S a \<and>
-        (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p))"
+      (\<forall> a \<in> S - A. indep_of_alt n S a \<and> (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p))"
   proof
-    have
-      "\<forall> a p q.
-        a \<in> A \<and> equiv_prof_except_a S p q a \<longrightarrow>
-          (m \<triangleright> m') S p = (m \<triangleright> m') S q"
+    have "\<forall> a p q. a \<in> A \<and> equiv_prof_except_a S p q a \<longrightarrow> (m \<triangleright> m') S p = (m \<triangleright> m') S q"
     proof (safe)
       fix
         a :: "'a" and
         p :: "'a Profile" and
         q :: "'a Profile"
       assume
-        a: "a \<in> A" and
-        b: "equiv_prof_except_a S p q a"
-      have eq_def:
-        "defer m S p = defer m S q"
-        using A a b
+        a_in_A: "a \<in> A" and
+        lifting_equiv_p_q: "equiv_prof_except_a S p q a"
+      hence eq_def: "defer m S p = defer m S q"
+        using rej_A
         unfolding indep_of_alt_def
         by metis
-      from a b
-      have profiles:
-        "finite_profile S p \<and> finite_profile S q"
+      from lifting_equiv_p_q
+      have profiles: "finite_profile S p \<and> finite_profile S q"
         unfolding equiv_prof_except_a_def
         by simp
       hence "(defer m S p) \<subseteq> S"
         using compatible defer_in_alts
         unfolding disjoint_compatibility_def
         by metis
-      hence
-        "limit_profile (defer m S p) p =
-          limit_profile (defer m S q) q"
-        using A DiffD2 a b compatible defer_not_elec_or_rej
+      hence "limit_profile (defer m S p) p = limit_profile (defer m S q) q"
+        using rej_A DiffD2 a_in_A lifting_equiv_p_q compatible defer_not_elec_or_rej
               profiles negl_diff_imp_eq_limit_prof
         unfolding disjoint_compatibility_def eq_def
         by (metis (no_types, lifting))
@@ -1079,25 +951,24 @@ next
               m' (defer m S q) (limit_profile (defer m S q) q)"
         by simp
       moreover have "m S p = m S q"
-        using A a b
+        using rej_A a_in_A lifting_equiv_p_q
         unfolding indep_of_alt_def
         by metis
       ultimately show "(m \<triangleright> m') S p = (m \<triangleright> m') S q"
         unfolding sequential_composition.simps
         by (metis (full_types))
     qed
-    moreover have
-      "\<forall> a \<in> A. \<forall> p. finite_profile S p \<longrightarrow> a \<in> reject (m \<triangleright> m') S p"
-      using A UnI1 prod.sel
+    moreover have "\<forall> a' \<in> A. \<forall> p'. finite_profile S p' \<longrightarrow> a' \<in> reject (m \<triangleright> m') S p'"
+      using rej_A UnI1 prod.sel
       unfolding sequential_composition.simps
       by metis
     ultimately show
       "A \<subseteq> S \<and>
-        (\<forall> a \<in> A. indep_of_alt (m \<triangleright> m') S a \<and>
-          (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject (m \<triangleright> m') S p)) \<and>
-        (\<forall> a \<in> S - A. indep_of_alt n S a \<and>
-          (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p))"
-      using A indep_of_alt_def modules
+        (\<forall> a' \<in> A. indep_of_alt (m \<triangleright> m') S a' \<and>
+          (\<forall> p'. finite_profile S p' \<longrightarrow> a' \<in> reject (m \<triangleright> m') S p')) \<and>
+        (\<forall> a' \<in> S - A. indep_of_alt n S a' \<and>
+          (\<forall> p'. finite_profile S p' \<longrightarrow> a' \<in> reject n S p'))"
+      using rej_A indep_of_alt_def modules
       by (metis (mono_tags, lifting))
   qed
 qed
@@ -1120,16 +991,15 @@ theorem seq_comp_mono[simp]:
     electing_n: "electing n"
   shows "monotonicity (m \<triangleright> n)"
 proof (unfold monotonicity_def, safe)
-  have electoral_mod_m: "electoral_module m"
+  have "electoral_module m"
     using non_ele_m
     unfolding non_electing_def
     by simp
-  have electoral_mod_n: "electoral_module n"
+  moreover have "electoral_module n"
     using electing_n
     unfolding electing_def
     by simp
-  show "electoral_module (m \<triangleright> n)"
-    using electoral_mod_m electoral_mod_n
+  ultimately show "electoral_module (m \<triangleright> n)"
     by simp
 next
   fix
@@ -1138,16 +1008,11 @@ next
     q :: "'a Profile" and
     w :: "'a"
   assume
-    fin_A: "finite A" and
     elect_w_in_p: "w \<in> elect (m \<triangleright> n) A p" and
     lifted_w: "Profile.lifted A p q w"
-  have "finite_profile A p \<and> finite_profile A q"
-    using lifted_w
-    unfolding lifted_def
-    by metis
   thus "w \<in> elect (m \<triangleright> n) A q"
-    using seq_comp_def_then_elect elect_w_in_p lifted_w
-          def_monotone_m non_ele_m def_one_m electing_n
+    unfolding lifted_def
+    using seq_comp_def_then_elect lifted_w assms
     unfolding defer_lift_invariance_def
     by metis
 qed
@@ -1169,16 +1034,15 @@ theorem def_inv_mono_imp_def_lift_inv[simp]:
     defer_monotone_n: "defer_monotonicity n"
   shows "defer_lift_invariance (m \<triangleright> n)"
 proof (unfold defer_lift_invariance_def, safe)
-  have electoral_mod_m: "electoral_module m"
+  have "electoral_module m"
     using strong_def_mon_m
     unfolding defer_invariant_monotonicity_def
     by metis
-  have electoral_mod_n: "electoral_module n"
+  moreover have "electoral_module n"
     using defers_1
     unfolding defers_def
     by metis
-  show "electoral_module (m \<triangleright> n)"
-    using electoral_mod_m electoral_mod_n
+  ultimately show "electoral_module (m \<triangleright> n)"
     by simp
 next
   fix
@@ -1189,8 +1053,8 @@ next
   assume
     defer_a_p: "a \<in> defer (m \<triangleright> n) A p" and
     lifted_a: "Profile.lifted A p q a"
-  from strong_def_mon_m
   have non_electing_m: "non_electing m"
+    using strong_def_mon_m
     unfolding defer_invariant_monotonicity_def
     by simp
   have electoral_mod_m: "electoral_module m"
@@ -1201,265 +1065,129 @@ next
     using defers_1
     unfolding defers_def
     by metis
+  have finite_profile_p: "finite_profile A p"
+    using lifted_a
+    unfolding Profile.lifted_def
+    by simp
   have finite_profile_q: "finite_profile A q"
     using lifted_a
     unfolding Profile.lifted_def
     by simp
-  have finite_profile_p: "profile A p"
-    using lifted_a
-    unfolding Profile.lifted_def
+  have "1 \<le> card A"
+    using Profile.lifted_def card_eq_0_iff emptyE less_one lifted_a linorder_le_less_linear
+    by metis
+  hence n_defers_exactly_one_p: "card (defer n A p) = 1"
+    using finite_profile_p defers_1
+    unfolding defers_def
+    by (metis (no_types))
+  have fin_prof_def_m_q: "finite_profile (defer m A q) (limit_profile (defer m A q) q)"
+    using def_presv_fin_prof electoral_mod_m finite_profile_q
+    by (metis (no_types))
+  have def_seq_m_n_q: "defer (m \<triangleright> n) A q = defer n (defer m A q) (limit_profile (defer m A q) q)"
+    using seq_comp_defers_def_set
     by simp
+  have fin_prof_def_m: "finite_profile (defer m A p) (limit_profile (defer m A p) p)"
+    using def_presv_fin_prof electoral_mod_m finite_profile_p
+    by (metis (no_types))
+  hence fin_prof_seq_comp_m_n:
+    "finite_profile (defer n (defer m A p) (limit_profile (defer m A p) p))
+          (limit_profile (defer n (defer m A p) (limit_profile (defer m A p) p))
+            (limit_profile (defer m A p) p))"
+    using def_presv_fin_prof electoral_mod_n
+    by (metis (no_types))
+  have a_non_empty: "a \<notin> {}"
+    by simp
+  have def_seq_m_n: "defer (m \<triangleright> n) A p = defer n (defer m A p) (limit_profile (defer m A p) p)"
+    using seq_comp_defers_def_set
+    by simp
+  have "1 \<le> card (defer n (defer m A p) (limit_profile (defer m A p) p))"
+    using a_non_empty card_gt_0_iff def_presv_fin_prof defer_a_p electoral_mod_n
+          fin_prof_def_m seq_comp_defers_def_set One_nat_def Suc_leI
+    by (metis (no_types))
+  hence "card (defer n (defer n (defer m A p) (limit_profile (defer m A p) p))
+          (limit_profile (defer n (defer m A p) (limit_profile (defer m A p) p))
+            (limit_profile (defer m A p) p))) = 1"
+    using n_defers_exactly_one_p fin_prof_seq_comp_m_n defers_1 defers_def
+    by blast
+  hence defer_seq_m_n_eq_one: "card (defer (m \<triangleright> n) A p) = 1"
+    using One_nat_def Suc_leI a_non_empty card_gt_0_iff def_seq_m_n defers_def defer_a_p
+          defers_1 electoral_mod_m fin_prof_def_m finite_profile_p seq_comp_def_set_trans
+    by metis
+  hence def_seq_m_n_eq_a: "defer (m \<triangleright> n) A p = {a}"
+    using defer_a_p is_singleton_altdef is_singleton_the_elem singletonD
+    by (metis (no_types))
   show "(m \<triangleright> n) A p = (m \<triangleright> n) A q"
   proof (cases)
-    assume not_unchanged: "defer m A q \<noteq> defer m A p"
-    from not_unchanged
-    have a_single_defer: "{a} = defer m A q"
-      using strong_def_mon_m electoral_mod_n defer_a_p
-            lifted_a seq_comp_def_set_trans finite_profile_p
-            finite_profile_q
+    assume "defer m A q \<noteq> defer m A p"
+    hence "defer m A q = {a}"
+      using defer_a_p electoral_mod_n finite_profile_p lifted_a seq_comp_def_set_trans
+            strong_def_mon_m
       unfolding defer_invariant_monotonicity_def
-      by metis
-    moreover have
-      "{a} = defer m A q \<longrightarrow> defer (m \<triangleright> n) A q \<subseteq> {a}"
-      using finite_profile_q electoral_mod_m electoral_mod_n
-            seq_comp_def_set_sound
-      by (metis (no_types, opaque_lifting))
-    ultimately have
-      "(a \<in> defer m A p) \<longrightarrow> defer (m \<triangleright> n) A q \<subseteq> {a}"
-      by simp
-    moreover have def_card_one:
-      "(a \<in> defer m A p) \<longrightarrow> card (defer (m \<triangleright> n) A q) = 1"
-      using a_single_defer card_eq_0_iff card_insert_disjoint defers_1
-            electoral_mod_m empty_iff finite.emptyI
-            seq_comp_defers_def_set order_refl
-            def_presv_fin_prof finite_profile_q
+      by (metis (no_types))
+    moreover from this
+    have "(a \<in> defer m A p) \<longrightarrow> card (defer (m \<triangleright> n) A q) = 1"
+      using card_eq_0_iff card_insert_disjoint defers_1 electoral_mod_m empty_iff order_refl
+            finite.emptyI seq_comp_defers_def_set def_presv_fin_prof finite_profile_q
       unfolding One_nat_def defers_def
       by metis
-    moreover have defer_a_in_m_p:
-      "a \<in> defer m A p"
-      using electoral_mod_m electoral_mod_n defer_a_p
-            seq_comp_def_set_bounded finite_profile_p
+    moreover have "a \<in> defer m A p"
+      using electoral_mod_m electoral_mod_n defer_a_p seq_comp_def_set_bounded finite_profile_p
             finite_profile_q
       by blast
-    ultimately have
-      "defer (m \<triangleright> n) A q = {a}"
-      using Collect_mem_eq card_1_singletonE empty_Collect_eq
-            insertCI subset_singletonD
-      by metis
-    moreover have
-      "defer (m \<triangleright> n) A p = {a}"
-    proof (safe)
-      fix x :: "'a"
-      assume
-        defer_x: "x \<in> defer (m \<triangleright> n) A p" and
-        x_exists: "x \<notin> {}"
-      have fin_defer:
-        "\<forall> f (A::'a set) prof.
-          (electoral_module f \<and> finite A \<and> profile A prof) \<longrightarrow>
-            finite_profile (defer f A prof)
-              (limit_profile (defer f A prof) prof)"
-        using def_presv_fin_prof
-        by (metis (no_types))
-      have "finite_profile (defer m A p) (limit_profile (defer m A p) p)"
-        using electoral_mod_m finite_profile_p finite_profile_q fin_defer
-        by blast
-      hence "Suc (card (defer m A p - {a})) = card (defer m A p)"
-        using card_Suc_Diff1 defer_a_in_m_p
-        by metis
-      hence min_card:
-        "Suc 0 \<le> card (defer m A p)"
-        by linarith
-      have emod_n_then_mn:
-        "electoral_module n \<longrightarrow> electoral_module (m \<triangleright> n)"
-        using electoral_mod_m
-        by simp
-      have "defers (Suc 0) n"
-        using defers_1
-        by simp
-      hence defer_card_one:
-        "electoral_module n \<and>
-          (\<forall> A prof.
-            (Suc 0 \<le> card A \<and> finite A \<and> profile A prof) \<longrightarrow>
-              card (defer n A prof) = Suc 0)"
-        unfolding defers_def
-        by simp
-      hence emod_mn: "electoral_module (m \<triangleright> n)"
-        using emod_n_then_mn
-        by blast
-      have nat_diff:
-        "\<forall> (i::nat) j. i \<le> j \<longrightarrow> i - j = 0"
-        by auto
-      have nat_comp:
-        "\<forall> (i::nat) j k.
-          i \<le> j \<and> j \<le> k \<or>
-            j \<le> i \<and> i \<le> k \<or>
-            i \<le> k \<and> k \<le> j \<or>
-            k \<le> j \<and> j \<le> i \<or>
-            j \<le> k \<and> k \<le> i \<or>
-            k \<le> i \<and> i \<le> j"
-        using le_cases3
-        by linarith
-      have fin_diff_card:
-        "\<forall> A a.
-          (finite A \<and> (a::'a) \<in> A) \<longrightarrow>
-            card (A - {a}) = card A - 1"
-        using card_Diff_singleton
-        by metis
-      with fin_defer defer_card_one min_card
-      have "card (defer (m \<triangleright> n) A p) = Suc 0"
-        using electoral_mod_m seq_comp_defers_def_set
-          finite_profile_p finite_profile_q
-        by metis
-      with fin_diff_card nat_comp nat_diff emod_mn fin_defer
-      have "{a} = {x}"
-        using One_nat_def card_1_singletonE singletonD
-              defer_a_p defer_x
-        by metis
-      thus "x = a"
-        by force
-    next
-      show "a \<in> defer (m \<triangleright> n) A p"
-        using defer_a_p
-        by linarith
-    qed
-    ultimately have "defer (m \<triangleright> n) A p = defer (m \<triangleright> n) A q"
-      by blast
+    ultimately have "defer (m \<triangleright> n) A q = {a}"
+      using Collect_mem_eq card_1_singletonE empty_Collect_eq insertCI subset_singletonD
+            def_seq_m_n_q defer_in_alts electoral_mod_n fin_prof_def_m_q
+      by (metis (no_types, lifting))
+    hence "defer (m \<triangleright> n) A p = defer (m \<triangleright> n) A q"
+      using def_seq_m_n_eq_a
+      by presburger
     moreover have "elect (m \<triangleright> n) A p = elect (m \<triangleright> n) A q"
-      using finite_profile_p finite_profile_q
-            non_electing_m non_electing_n
-            seq_comp_presv_non_electing
-            non_electing_def
+      using fin_prof_def_m fin_prof_def_m_q finite_profile_p finite_profile_q non_electing_def
+            non_electing_m non_electing_n seq_comp_def_then_elect_elec_set
       by metis
-    thus ?thesis
-      using calculation eq_def_and_elect_imp_eq
-            electoral_mod_m electoral_mod_n
-            finite_profile_p seq_comp_sound
-            finite_profile_q
-      by metis
+    ultimately show ?thesis
+      using electoral_mod_m electoral_mod_n eq_def_and_elect_imp_eq
+            finite_profile_p finite_profile_q seq_comp_sound
+      by (metis (no_types))
   next
-    assume not_different_alternatives:
-      "\<not>(defer m A q \<noteq> defer m A p)"
+    assume "\<not> (defer m A q \<noteq> defer m A p)"
+    hence def_eq: "defer m A q = defer m A p"
+      by presburger
     have "elect m A p = {}"
-      using non_electing_m finite_profile_p finite_profile_q
-      by (simp add: non_electing_def)
+      using finite_profile_p non_electing_m
+      unfolding non_electing_def
+      by simp
     moreover have "elect m A q = {}"
-      using non_electing_m finite_profile_q
-      by (simp add: non_electing_def)
+      using finite_profile_q non_electing_m
+      unfolding non_electing_def
+      by simp
     ultimately have elect_m_equal: "elect m A p = elect m A q"
       by simp
-    from not_different_alternatives
-    have same_alternatives: "defer m A q = defer m A p"
-      by simp
-    hence
-      "(limit_profile (defer m A p) p) =
-        (limit_profile (defer m A p) q) \<or>
-          lifted (defer m A q)
-            (limit_profile (defer m A p) p)
-              (limit_profile (defer m A p) q) a"
-      using defer_in_alts electoral_mod_m
-            lifted_a finite_profile_q
-            limit_prof_eq_or_lifted
+    have "(limit_profile (defer m A p) p) = (limit_profile (defer m A p) q) \<or>
+            lifted (defer m A q) (limit_profile (defer m A p) p) (limit_profile (defer m A p) q) a"
+      using def_eq defer_in_alts electoral_mod_m lifted_a finite_profile_q limit_prof_eq_or_lifted
       by metis
-    thus ?thesis
-    proof
-      assume
-        "limit_profile (defer m A p) p =
-          limit_profile (defer m A p) q"
-      hence same_profile:
-        "limit_profile (defer m A p) p =
-          limit_profile (defer m A q) q"
-        using same_alternatives
-        by simp
-      hence results_equal_n:
-        "n (defer m A q) (limit_profile (defer m A q) q) =
-          n (defer m A p) (limit_profile (defer m A p) p)"
-        by (simp add: same_alternatives)
-      moreover have results_equal_m: "m A p = m A q"
-        using elect_m_equal same_alternatives
-              finite_profile_p finite_profile_q
-        by (simp add: electoral_mod_m eq_def_and_elect_imp_eq)
-      hence "(m \<triangleright> n) A p = (m \<triangleright> n) A q"
-        using same_profile
-        by auto
-      thus ?thesis
-        by blast
-    next
-      assume still_lifted:
-        "lifted (defer m A q) (limit_profile (defer m A p) p)
-          (limit_profile (defer m A p) q) a"
-      hence a_in_def_p:
-        "a \<in> defer n (defer m A p)
-          (limit_profile (defer m A p) p)"
-        using electoral_mod_m electoral_mod_n
-              finite_profile_p defer_a_p
-              seq_comp_def_set_trans
-              finite_profile_q
-        by metis
-      hence a_still_deferred_p:
-        "{a} \<subseteq> defer n (defer m A p)
-          (limit_profile (defer m A p) p)"
-        by simp
-      have card_le_1_p: "card (defer m A p) \<ge> 1"
-        using One_nat_def Suc_leI card_gt_0_iff
-              electoral_mod_m electoral_mod_n
-              equals0D finite_profile_p defer_a_p
-              seq_comp_def_set_trans def_presv_fin_prof
-              finite_profile_q
-        by metis
-      hence
-        "card (defer n (defer m A p)
-          (limit_profile (defer m A p) p)) = 1"
-        using defers_1 electoral_mod_m
-              finite_profile_p def_presv_fin_prof
-              finite_profile_q
-        unfolding defers_def
-        by metis
-      hence def_set_is_a_p:
-        "{a} = defer n (defer m A p) (limit_profile (defer m A p) p)"
-        using a_still_deferred_p card_1_singletonE
-              insert_subset singletonD
-        by metis
-      have a_still_deferred_q:
-        "a \<in> defer n (defer m A q)
-          (limit_profile (defer m A p) q)"
-        using still_lifted a_in_def_p
-              defer_monotone_n electoral_mod_m
-              same_alternatives
-              def_presv_fin_prof finite_profile_q
-        unfolding defer_monotonicity_def
-        by metis
-      have "card (defer m A q) \<ge> 1"
-        using card_le_1_p same_alternatives
-        by simp
-      hence
-        "card (defer n (defer m A q)
-          (limit_profile (defer m A q) q)) = 1"
-        using defers_1 electoral_mod_m
-              finite_profile_q def_presv_fin_prof
-        unfolding defers_def
-        by metis
-      hence def_set_is_a_q:
-        "{a} =
-          defer n (defer m A q)
-            (limit_profile (defer m A q) q)"
-        using a_still_deferred_q card_1_singletonE
-              same_alternatives singletonD
-        by metis
-      have
-        "defer n (defer m A p)
-          (limit_profile (defer m A p) p) =
-            defer n (defer m A q)
-              (limit_profile (defer m A q) q)"
-        using def_set_is_a_q def_set_is_a_p
-        by auto
-      thus ?thesis
-        using seq_comp_presv_non_electing
-              eq_def_and_elect_imp_eq non_electing_def
-              finite_profile_p finite_profile_q
-              non_electing_m non_electing_n
-              seq_comp_defers_def_set
-        by metis
-    qed
+    hence "defer (m \<triangleright> n) A p = defer (m \<triangleright> n) A q"
+      using a_non_empty card_1_singletonE def_eq def_seq_m_n def_seq_m_n_q defer_a_p
+            defer_monotone_n defer_monotonicity_def defer_seq_m_n_eq_one defers_1 defers_def
+            electoral_mod_m fin_prof_def_m_q finite_profile_p insertE seq_comp_def_card_bounded
+      by (metis (no_types, lifting))
+    moreover from this
+    have "reject (m \<triangleright> n) A p = reject (m \<triangleright> n) A q"
+      using electoral_mod_m electoral_mod_n finite_profile_p finite_profile_q non_electing_def
+            non_electing_m non_electing_n eq_def_and_elect_imp_eq seq_comp_presv_non_electing
+      by (metis (no_types))
+    ultimately have "snd ((m \<triangleright> n) A p) = snd ((m \<triangleright> n) A q)"
+      using prod_eqI
+      by metis
+    moreover have "elect (m \<triangleright> n) A p = elect (m \<triangleright> n) A q"
+      using fin_prof_def_m fin_prof_def_m_q non_electing_n finite_profile_p finite_profile_q
+            non_electing_def def_eq elect_m_equal prod.sel(1)
+      unfolding sequential_composition.simps
+      by (metis (no_types))
+    ultimately show "(m \<triangleright> n) A p = (m \<triangleright> n) A q"
+      using prod_eqI
+      by metis
   qed
 qed
 
