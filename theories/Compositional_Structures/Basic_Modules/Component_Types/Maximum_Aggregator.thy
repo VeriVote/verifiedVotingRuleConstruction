@@ -38,20 +38,21 @@ lemma max_agg_rej_set:
     r' :: "'a set" and
     a :: "'a"
   assumes
-    wf_1: "well_formed A (e, r, d)" and
-    wf_2: "well_formed A (e', r', d')"
+    wf_first_mod: "well_formed A (e, r, d)" and
+    wf_second_mod: "well_formed A (e', r', d')"
   shows "reject_r (max_aggregator A (e, r, d) (e', r', d')) = r \<inter> r'"
 proof -
   have "A - (e \<union> d) = r"
-    using wf_1
+    using wf_first_mod
     by (simp add: result_imp_rej)
   moreover have "A - (e' \<union> d') = r'"
-    using wf_2
+    using wf_second_mod
     by (simp add: result_imp_rej)
   ultimately have "A - (e \<union> e' \<union> d \<union> d') = r \<inter> r'"
     by blast
   moreover have "{l \<in> A. l \<notin> e \<union> e' \<union> d \<union> d'} = A - (e \<union> e' \<union> d \<union> d')"
-    by (simp add: set_diff_eq)
+    unfolding set_diff_eq
+    by simp
   ultimately show "reject_r (max_aggregator A (e, r, d) (e', r', d')) = r \<inter> r'"
     by simp
 qed
@@ -122,8 +123,6 @@ next
   have "a \<in> e \<union> e'"
     using elect_a
     by simp
-  hence "a \<in> e \<union> e'"
-    by metis
   thus "a \<in> e"
     using a_not_in_e'
     by simp
@@ -138,14 +137,12 @@ next
     r' :: "'a set" and
     a :: "'a"
   assume
-    wf_2: "well_formed A (e', r', d')" and
+    wf_result: "well_formed A (e', r', d')" and
     reject_a: "a \<in> reject_r (max_aggregator A (e, r, d) (e', r', d'))" and
     a_not_in_r': "a \<notin> r'"
   have "a \<in> r \<union> r'"
-    using wf_2 reject_a
+    using wf_result reject_a
     by force
-  hence "a \<in> r \<union> r'"
-    by metis
   thus "a \<in> r"
     using a_not_in_r'
     by simp
@@ -160,14 +157,11 @@ next
     r' :: "'a set" and
     a :: "'a"
   assume
-    wf_2: "well_formed A (e', r', d')" and
     defer_a: "a \<in> defer_r (max_aggregator A (e, r, d) (e', r', d'))" and
     a_not_in_d': "a \<notin> d'"
   have "a \<in> d \<union> d'"
-    using wf_2 defer_a
+    using defer_a
     by force
-  hence "a \<in> d \<union> d'"
-    by metis
   thus "a \<in> d"
     using a_not_in_d'
     by simp

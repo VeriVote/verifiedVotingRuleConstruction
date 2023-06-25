@@ -36,7 +36,7 @@ subsection \<open>Theorems\<close>
 
 text \<open>
   If e is Condorcet-rating, the following holds:
-  If a Condorcet Winner w exists, w has the maximum evaluation value.
+  If a Condorcet winner w exists, w has the maximum evaluation value.
 \<close>
 
 theorem cond_winner_imp_max_eval_val:
@@ -54,32 +54,30 @@ proof -
   let ?set = "{e b A p | b. b \<in> A}" and
       ?eMax = "Max {e b A p | b. b \<in> A}" and
       ?eW = "e a A p"
-  from f_prof
-  have fin_eval_set: "finite ?set"
-    by simp
-  have eval_set_non_empty: "?set \<noteq> {}"
-    using condorcet_winner.simps winner
-    by fastforce
-  have eval_func_in_eval_set: "?eW \<in> ?set"
+  have "?eW \<in> ?set"
     using CollectI condorcet_winner.simps winner
     by (metis (mono_tags, lifting))
-  have all_eval_elems_lte_eval_func: "\<forall> e \<in> ?set. e \<le> ?eW"
+  moreover have "\<forall> e \<in> ?set. e \<le> ?eW"
   proof (safe)
     fix b :: "'a"
-    assume b_in_A: "b \<in> A"
-    have "\<forall> n n'. (n::nat) = n' \<longrightarrow> n \<le> n'"
+    assume "b \<in> A"
+    moreover have "\<forall> n n'. (n::nat) = n' \<longrightarrow> n \<le> n'"
       by simp
-    with b_in_A
-    show "e b A p \<le> e a A p"
+    ultimately show "e b A p \<le> e a A p"
       using less_imp_le rating winner
       unfolding condorcet_rating_def
       by (metis (no_types))
   qed
-  from eval_func_in_eval_set all_eval_elems_lte_eval_func
-  have "?eW \<in> ?set \<and> (\<forall> e \<in> ?set. e \<le> ?eW)"
+  ultimately have "?eW \<in> ?set \<and> (\<forall> e \<in> ?set. e \<le> ?eW)"
     by blast
-  with fin_eval_set eval_set_non_empty Max_eq_iff
-  show ?thesis
+  moreover have "finite ?set"
+    using f_prof
+    by simp
+  moreover have "?set \<noteq> {}"
+    using condorcet_winner.simps winner
+    by fastforce
+  ultimately show ?thesis
+    using Max_eq_iff
     by (metis (no_types, lifting))
 qed
 

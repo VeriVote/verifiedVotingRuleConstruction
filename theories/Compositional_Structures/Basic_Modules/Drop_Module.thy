@@ -41,27 +41,19 @@ proof (intro electoral_modI)
     A :: "'a set" and
     p :: "'a Profile"
   let ?mod = "drop_module n r"
-  have
-    "\<forall> a \<in> A. a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<or>
-        a \<in> {x \<in> A. card(above (limit A r) x) > n}"
+  have "\<forall> a \<in> A. a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<or> a \<in> {x \<in> A. rank (limit A r) x > n}"
     by auto
-  hence
-    "{a \<in> A. card(above (limit A r) a) \<le> n} \<union>
-        {a \<in> A. card(above (limit A r) a) > n} = A"
+  hence "{a \<in> A. rank (limit A r) a \<le> n} \<union> {a \<in> A. rank (limit A r) a > n} = A"
     by blast
-  hence 0: "set_equals_partition A (drop_module n r A p)"
+  hence set_partition: "set_equals_partition A (drop_module n r A p)"
     by simp
-  have
-    "\<forall> a \<in> A. \<not>(a \<in> {x \<in> A. card(above (limit A r) x) \<le> n} \<and>
-        a \<in> {x \<in> A. card(above (limit A r) x) > n})"
-    by auto
-  hence
-    "{a \<in> A. card(above (limit A r) a) \<le> n} \<inter>
-        {a \<in> A. card(above (limit A r) a) > n} = {}"
+  have "\<forall> a \<in> A.
+          \<not> (a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<and> a \<in> {x \<in> A. rank (limit A r) x > n})"
+    by simp
+  hence "{a \<in> A. rank (limit A r) a \<le> n} \<inter> {a \<in> A. rank (limit A r) a > n} = {}"
     by blast
-  hence 1: "disjoint3 (?mod A p)"
-    by simp
-  from 0 1 show "well_formed A (?mod A p)"
+  thus "well_formed A (?mod A p)"
+    using set_partition
     by simp
 qed
 
@@ -75,10 +67,8 @@ theorem drop_mod_non_electing[simp]:
   fixes
     r :: "'a Preference_Relation" and
     n :: nat
-  assumes "linear_order r"
   shows "non_electing (drop_module n r)"
   unfolding non_electing_def
-  using assms
   by simp
 
 subsection \<open>Properties\<close>
@@ -91,10 +81,8 @@ theorem drop_mod_def_lift_inv[simp]:
   fixes
     r :: "'a Preference_Relation" and
     n :: nat
-  assumes "linear_order r"
   shows "defer_lift_invariance (drop_module n r)"
   unfolding defer_lift_invariance_def
-  using assms
   by simp
 
 end
