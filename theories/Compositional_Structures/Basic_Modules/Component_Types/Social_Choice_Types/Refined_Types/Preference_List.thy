@@ -19,7 +19,7 @@ subsection \<open>Well-Formedness\<close>
 
 type_synonym 'a Preference_List = "'a list"
 
-definition well_formed_l :: "'a Preference_List \<Rightarrow> bool" where
+abbreviation well_formed_l :: "'a Preference_List \<Rightarrow> bool" where
   "well_formed_l p \<equiv> distinct p"
 
 subsection \<open>Ranking\<close>
@@ -140,6 +140,12 @@ definition partial_order_on_l :: "'a set \<Rightarrow> 'a Preference_List \<Righ
 definition linear_order_on_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> bool" where
   "linear_order_on_l A pl \<equiv> partial_order_on_l A pl \<and> total_on_l A pl"
 
+lemma lin_order_equiv_A:
+  shows "linear_order_on_l A bal \<longleftrightarrow> (A = set bal)"
+  unfolding linear_order_on_l_def total_on_l_def partial_order_on_l_def preorder_on_l_def
+  refl_on_l_def
+  by auto
+
 definition connex_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> bool" where
   "connex_l A r \<equiv> limited A r \<and> (\<forall> x \<in> A. \<forall> y \<in> A. x \<lesssim>\<^sub>r y \<or> y \<lesssim>\<^sub>r x)"
 abbreviation ballot_on :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> bool" where
@@ -191,10 +197,11 @@ lemma less_preferred_l_rel_eq:
   unfolding pl_\<alpha>_def
   by simp
 
+(* TODO: formulate understandable ISAR Proof*)
 lemma limit_eq:
   assumes wf: "well_formed_l bal"
   shows "pl_\<alpha> (limit_l A bal) = limit A (pl_\<alpha> bal)"
-using assms unfolding well_formed_l_def proof (induction bal)
+using assms proof (induction bal)
   case Nil
   then show ?case unfolding pl_\<alpha>_def by auto
 next
@@ -209,7 +216,7 @@ qed
 (*lemma limit_eq:
   assumes wf: "well_formed_l bal"
   shows "pl_\<alpha> (limit_l A bal) = limit A (pl_\<alpha> bal)"
-using assms unfolding  well_formed_l_def proof (induction bal)
+using assms    proof (induction bal)
   case Nil
   then show ?case unfolding pl_\<alpha>_def by auto
 next
@@ -289,7 +296,7 @@ proof (simp, safe)
     by simp
   moreover have "distinct (above_l l a)"
     unfolding above_l_def 
-    using assms distinct_take unfolding well_formed_l_def
+    using assms distinct_take
     by blast
   moreover from this
   have "card (set (above_l l a)) = length (above_l l a)"
