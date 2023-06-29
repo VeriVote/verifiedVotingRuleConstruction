@@ -27,27 +27,33 @@ fun max_aggregator :: "'a Aggregator" where
 
 subsection \<open>Auxiliary Lemma\<close>
 
-lemma max_agg_rej_set: "(well_formed A (e1, r1, d1) \<and>
-                          well_formed A (e2, r2, d2)) \<longrightarrow>
-           reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) = r1 \<inter> r2"
-proof (clarify)
-  assume
-    wf1: "well_formed A (e1, r1, d1)" and
-    wf2: "well_formed A (e2, r2, d2)"
-  have "A - (e1 \<union> d1) = r1"
-    using wf1
+lemma max_agg_rej_set:
+  fixes
+    A :: "'a set" and
+    e :: "'a set" and
+    e' :: "'a set" and
+    d :: "'a set" and
+    d' :: "'a set" and
+    r :: "'a set" and
+    r' :: "'a set" and
+    a :: "'a"
+  assumes
+    wf_first_mod: "well_formed A (e, r, d)" and
+    wf_second_mod: "well_formed A (e', r', d')"
+  shows "reject_r (max_aggregator A (e, r, d) (e', r', d')) = r \<inter> r'"
+proof -
+  have "A - (e \<union> d) = r"
+    using wf_first_mod
     by (simp add: result_imp_rej)
-  moreover have
-    "A - (e2 \<union> d2) = r2"
-    using wf2
+  moreover have "A - (e' \<union> d') = r'"
+    using wf_second_mod
     by (simp add: result_imp_rej)
-  ultimately have
-    "A - (e1 \<union> e2 \<union> d1 \<union> d2) = r1 \<inter> r2"
+  ultimately have "A - (e \<union> e' \<union> d \<union> d') = r \<inter> r'"
     by blast
-  moreover have
-    "{l \<in> A. l \<notin> e1 \<union> e2 \<union> d1 \<union> d2} = A - (e1 \<union> e2 \<union> d1 \<union> d2)"
-    by (simp add: set_diff_eq)
-  ultimately show "reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2)) = r1 \<inter> r2"
+  moreover have "{l \<in> A. l \<notin> e \<union> e' \<union> d \<union> d'} = A - (e \<union> e' \<union> d \<union> d')"
+    unfolding set_diff_eq
+    by simp
+  ultimately show "reject_r (max_aggregator A (e, r, d) (e', r', d')) = r \<inter> r'"
     by simp
 qed
 
@@ -57,36 +63,36 @@ theorem max_agg_sound[simp]: "aggregator max_aggregator"
 proof (unfold aggregator_def, simp, safe)
   fix
     A :: "'a set" and
-    e1 :: "'a set" and
-    e2 :: "'a set" and
-    d1 :: "'a set" and
-    d2 :: "'a set" and
-    r1 :: "'a set" and
-    r2 :: "'a set" and
-    x :: "'a"
+    e :: "'a set" and
+    e' :: "'a set" and
+    d :: "'a set" and
+    d' :: "'a set" and
+    r :: "'a set" and
+    r' :: "'a set" and
+    a :: "'a"
   assume
-    "e2 \<union> r2 \<union> d2 = e1 \<union> r1 \<union> d1" and
-    "x \<notin> d1" and
-    "x \<notin> r1" and
-    "x \<in> e2"
-  thus "x \<in> e1"
+    "e' \<union> r' \<union> d' = e \<union> r \<union> d" and
+    "a \<notin> d" and
+    "a \<notin> r" and
+    "a \<in> e'"
+  thus "a \<in> e"
     by auto
 next
   fix
     A :: "'a set" and
-    e1 :: "'a set" and
-    e2 :: "'a set" and
-    d1 :: "'a set" and
-    d2 :: "'a set" and
-    r1 :: "'a set" and
-    r2 :: "'a set" and
-    x :: "'a"
+    e :: "'a set" and
+    e' :: "'a set" and
+    d :: "'a set" and
+    d' :: "'a set" and
+    r :: "'a set" and
+    r' :: "'a set" and
+    a :: "'a"
   assume
-    "e2 \<union> r2 \<union> d2 = e1 \<union> r1 \<union> d1" and
-    "x \<notin> d1" and
-    "x \<notin> r1" and
-    "x \<in> d2"
-  thus "x \<in> e1"
+    "e' \<union> r' \<union> d' = e \<union> r \<union> d" and
+    "a \<notin> d" and
+    "a \<notin> r" and
+    "a \<in> d'"
+  thus "a \<in> e"
     by auto
 qed
 
@@ -104,67 +110,60 @@ proof (unfold agg_conservative_def, safe)
 next
   fix
     A :: "'a set" and
-    e1 :: "'a set" and
-    e2 :: "'a set" and
-    d1 :: "'a set" and
-    d2 :: "'a set" and
-    r1 :: "'a set" and
-    r2 :: "'a set" and
-    x :: "'a"
+    e :: "'a set" and
+    e' :: "'a set" and
+    d :: "'a set" and
+    d' :: "'a set" and
+    r :: "'a set" and
+    r' :: "'a set" and
+    a :: "'a"
   assume
-    elect_x: "x \<in> elect_r (max_aggregator A (e1, r1, d1) (e2, r2, d2))" and
-    x_not_in_e2: "x \<notin> e2"
-  have "x \<in> e1 \<union> e2"
-    using elect_x
+    elect_a: "a \<in> elect_r (max_aggregator A (e, r, d) (e', r', d'))" and
+    a_not_in_e': "a \<notin> e'"
+  have "a \<in> e \<union> e'"
+    using elect_a
     by simp
-  hence "x \<in> e1 \<union> e2"
-    by metis
-  thus "x \<in> e1"
-    using x_not_in_e2
+  thus "a \<in> e"
+    using a_not_in_e'
     by simp
 next
   fix
     A :: "'a set" and
-    e1 :: "'a set" and
-    e2 :: "'a set" and
-    d1 :: "'a set" and
-    d2 :: "'a set" and
-    r1 :: "'a set" and
-    r2 :: "'a set" and
-    x :: "'a"
+    e :: "'a set" and
+    e' :: "'a set" and
+    d :: "'a set" and
+    d' :: "'a set" and
+    r :: "'a set" and
+    r' :: "'a set" and
+    a :: "'a"
   assume
-    wf2: "well_formed A (e2, r2, d2)" and
-    reject_x: "x \<in> reject_r (max_aggregator A (e1, r1, d1) (e2, r2, d2))" and
-    x_not_in_r2: "x \<notin> r2"
-  have "x \<in> r1 \<union> r2"
-    using wf2 reject_x
+    wf_result: "well_formed A (e', r', d')" and
+    reject_a: "a \<in> reject_r (max_aggregator A (e, r, d) (e', r', d'))" and
+    a_not_in_r': "a \<notin> r'"
+  have "a \<in> r \<union> r'"
+    using wf_result reject_a
     by force
-  hence "x \<in> r1 \<union> r2"
-    by metis
-  thus "x \<in> r1"
-    using x_not_in_r2
+  thus "a \<in> r"
+    using a_not_in_r'
     by simp
 next
   fix
     A :: "'a set" and
-    e1 :: "'a set" and
-    e2 :: "'a set" and
-    d1 :: "'a set" and
-    d2 :: "'a set" and
-    r1 :: "'a set" and
-    r2 :: "'a set" and
-    x :: "'a"
+    e :: "'a set" and
+    e' :: "'a set" and
+    d :: "'a set" and
+    d' :: "'a set" and
+    r :: "'a set" and
+    r' :: "'a set" and
+    a :: "'a"
   assume
-    wf2: "well_formed A (e2, r2, d2)" and
-    defer_x: "x \<in> defer_r (max_aggregator A (e1, r1, d1) (e2, r2, d2))" and
-    x_not_in_d2: "x \<notin> d2"
-  have "x \<in> d1 \<union> d2"
-    using wf2 defer_x
+    defer_a: "a \<in> defer_r (max_aggregator A (e, r, d) (e', r', d'))" and
+    a_not_in_d': "a \<notin> d'"
+  have "a \<in> d \<union> d'"
+    using defer_a
     by force
-  hence "x \<in> d1 \<union> d2"
-    by metis
-  thus "x \<in> d1"
-    using x_not_in_d2
+  thus "a \<in> d"
+    using a_not_in_d'
     by simp
 qed
 
@@ -173,19 +172,7 @@ text \<open>
 \<close>
 
 theorem max_agg_comm[simp]: "agg_commutative max_aggregator"
-proof (unfold agg_commutative_def, safe, simp)
-  fix
-    A :: "'a set" and
-    e1 :: "'a set" and
-    e2 :: "'a set" and
-    d1 :: "'a set" and
-    d2 :: "'a set" and
-    r1 :: "'a set" and
-    r2 :: "'a set"
-  show
-    "max_aggregator A (e1, r1, d1) (e2, r2, d2) =
-      max_aggregator A (e2, r2, d2) (e1, r1, d1)"
+  unfolding agg_commutative_def
   by auto
-qed
 
 end

@@ -29,6 +29,7 @@ abbreviation rev ::
 subsection \<open>Soundness\<close>
 
 theorem rev_comp_sound[simp]:
+  fixes m :: "'a Electoral_Module"
   assumes "electoral_module m"
   shows "electoral_module (revision_composition m)"
 proof -
@@ -59,6 +60,7 @@ text \<open>
 \<close>
 
 theorem rev_comp_non_electing[simp]:
+  fixes m :: "'a Electoral_Module"
   assumes "electoral_module m"
   shows "non_electing (m\<down>)"
   using assms
@@ -71,6 +73,7 @@ text \<open>
 \<close>
 
 theorem rev_comp_non_blocking[simp]:
+  fixes m :: "'a Electoral_Module"
   assumes "electing m"
   shows "non_blocking (m\<down>)"
 proof (unfold non_blocking_def, safe, simp_all)
@@ -106,6 +109,7 @@ text \<open>
 \<close>
 
 theorem rev_comp_def_inv_mono[simp]:
+  fixes m :: "'a Electoral_Module"
   assumes "invariant_monotonicity m"
   shows "defer_invariant_monotonicity (m\<down>)"
 proof (unfold defer_invariant_monotonicity_def, safe)
@@ -125,13 +129,13 @@ next
     q :: "'a Profile" and
     a :: "'a" and
     x :: "'a" and
-    xa :: "'a"
+    x' :: "'a"
   assume
     rev_p_defer_a: "a \<in> defer (m\<down>) A p" and
     a_lifted: "lifted A p q a" and
     rev_q_defer_x: "x \<in> defer (m\<down>) A q" and
     x_non_eq_a: "x \<noteq> a" and
-    rev_q_defer_xa: "xa \<in> defer (m\<down>) A q"
+    rev_q_defer_x': "x' \<in> defer (m\<down>) A q"
   from rev_p_defer_a
   have elect_a_in_p: "a \<in> elect m A p"
     by simp
@@ -143,8 +147,8 @@ next
     using a_lifted elect_a_in_p elect_no_unique_a_in_q
     unfolding invariant_monotonicity_def
     by (metis (no_types))
-  thus "xa \<in> defer (m\<down>) A p"
-    using rev_q_defer_xa
+  thus "x' \<in> defer (m\<down>) A p"
+    using rev_q_defer_x'
     by simp
 next
   fix
@@ -153,13 +157,13 @@ next
     q :: "'a Profile" and
     a :: "'a" and
     x :: "'a" and
-    xa :: "'a"
+    x' :: "'a"
   assume
     rev_p_defer_a: "a \<in> defer (m\<down>) A p" and
     a_lifted: "lifted A p q a" and
     rev_q_defer_x: "x \<in> defer (m\<down>) A q" and
     x_non_eq_a: "x \<noteq> a" and
-    rev_p_defer_xa: "xa \<in> defer (m\<down>) A p"
+    rev_p_defer_x': "x' \<in> defer (m\<down>) A p"
   have reject_and_defer:
     "(A - elect m A q, elect m A q) = snd ((m\<down>) A q)"
     by force
@@ -172,8 +176,8 @@ next
     using rev_q_defer_x x_non_eq_a
     by force
   with assms
-  show "xa \<in> defer (m\<down>) A q"
-    using a_lifted rev_p_defer_xa snd_conv elect_a_in_p
+  show "x' \<in> defer (m\<down>) A q"
+    using a_lifted rev_p_defer_x' snd_conv elect_a_in_p
           elect_p_eq_defer_rev_p reject_and_defer
     unfolding invariant_monotonicity_def
     by (metis (no_types))
@@ -184,15 +188,14 @@ next
     q :: "'a Profile" and
     a :: "'a" and
     x :: "'a" and
-    xa :: "'a"
+    x' :: "'a"
   assume
-    rev_p_defer_a: "a \<in> defer (m\<down>) A p" and
-    a_lifted: "lifted A p q a" and
-    rev_q_defer_xa: "xa \<in> defer (m\<down>) A q"
-  from assms
-  show "xa \<in> defer (m\<down>) A p"
-    using a_lifted empty_iff insertE rev_p_defer_a rev_q_defer_xa
-          snd_conv revision_composition.elims
+    "a \<in> defer (m\<down>) A p" and
+    "lifted A p q a" and
+    "x' \<in> defer (m\<down>) A q"
+  with assms
+  show "x' \<in> defer (m\<down>) A p"
+    using empty_iff insertE snd_conv revision_composition.elims
     unfolding invariant_monotonicity_def
     by metis
 next
@@ -202,7 +205,7 @@ next
     q :: "'a Profile" and
     a :: "'a" and
     x :: "'a" and
-    xa :: "'a"
+    x' :: "'a"
   assume
     rev_p_defer_a: "a \<in> defer (m\<down>) A p" and
     a_lifted: "lifted A p q a" and
@@ -217,7 +220,7 @@ next
     by simp
   have q_defer_rev_eq_elect: "defer (m\<down>) A q = elect m A q"
     by simp
-  thus "xa \<in> defer (m\<down>) A q"
+  thus "x' \<in> defer (m\<down>) A q"
     using p_defer_rev_eq_elect lifted_inv a_lifted rev_p_defer_a rev_q_not_defer_a
     by blast
 qed

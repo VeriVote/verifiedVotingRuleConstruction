@@ -34,20 +34,7 @@ fun plurality :: "'a Electoral_Module" where
 fun plurality_mod :: "'a Electoral_Module" where
   "plurality_mod A p = max_eliminator plur_score A p"
 
-
-(* Thos proof could be done in Isar but I think it would not be as compact *)
 lemma plurality_elim_eq:
-  assumes "A \<noteq> {}" and "finite A"
-  shows "plurality_mod A p = (plurality\<down>) A p"
-  unfolding plurality_mod.simps plur_score.simps
-  apply (auto simp del: win_count.simps)
-  using assms(2) score_bounded[where A= A and f = "(\<lambda> x. win_count p x)"]
-  apply fastforce+
-  using assms nless_le max_score_in[where A= A and f = "(\<lambda> x. win_count p x)"]
-    apply auto
-  done
-
-lemma plurality_elim_eq2:
   assumes "A \<noteq> {}" and fin_prof_A: "finite_profile A p"
   shows "plurality_mod A p = (plurality\<down>) A p"
   unfolding plurality_mod.simps plur_score.simps
@@ -63,13 +50,13 @@ next
     assume xa_in_A: "xa \<in> A" and xb_in_A: "xb \<in> A"
     assume "\<not> win_count p xb \<le> win_count p xa"
     from this xa_in_A xb_in_A show "win_count p xa < Max {win_count p x |x. x \<in> A}"
-      using score_bounded[where A= A and f = "(\<lambda> x. win_count p x)"] assms(2)
+      using score_bounded[where A= A and e = "(\<lambda> x. win_count p x)"] assms(2)
       by force
   next
     fix xa x
     assume "{a \<in> A. win_count p a < Max {win_count p x |x. x \<in> A}} = A"
     then have "A = {}" 
-     using max_score_in[where A= A and f = "(\<lambda> x. win_count p x)"] assms
+     using max_score_contained[where A= A and e = "(\<lambda> x. win_count p x)"] assms
      nat_less_le by auto
    from assms(1) this have "False" by simp
    thus "win_count p xa \<le> win_count p x" by simp
@@ -80,16 +67,16 @@ next
     assume xa_in_A: "xa \<in> A" and xb_in_A: "xb \<in> A"
     assume "\<not> win_count p xa < Max {win_count p x |x. x \<in> A}"
     then have "win_count p xa = Max {win_count p x |x. x \<in> A}"
-       using score_bounded[where A= A and f = "(\<lambda> x. win_count p x)"] assms(2)
+       using score_bounded[where A= A and e = "(\<lambda> x. win_count p x)"] assms(2)
        order_le_imp_less_or_eq xa_in_A by blast
     from this xb_in_A show "win_count p xb \<le> win_count p xa" 
-      using score_bounded[where A= A and f = "(\<lambda> x. win_count p x)"] assms(2)
+      using score_bounded[where A= A and e = "(\<lambda> x. win_count p x)"] assms(2)
       by presburger
   next
     fix x xa
     assume "{a \<in> A. win_count p a < Max {win_count p x |x. x \<in> A}} = A"
     then have "A = {}" 
-      using max_score_in[where A= A and f = "(\<lambda> x. win_count p x)"] assms
+      using max_score_contained[where A= A and e = "(\<lambda> x. win_count p x)"] assms
       nat_less_le by auto
     from this assms(1) have "False" by simp
     thus "win_count p xa \<le> win_count p x" by simp
@@ -242,7 +229,7 @@ proof (intro allI impI)
     "\<forall> x \<in> A - {a}.
       \<forall> i::nat. i < length p \<longrightarrow>
         (above (q!i) a = {a} \<longrightarrow> above (q!i) x \<noteq> {x})"
-    using DiffE above_one2 elect_and_lift_a insertCI insert_absorb insert_not_empty sizes
+    using DiffE above_one_2 elect_and_lift_a insertCI insert_absorb insert_not_empty sizes
     unfolding Profile.lifted_def profile_def
     by metis
   with lifted_winner
@@ -250,7 +237,7 @@ proof (intro allI impI)
     "\<forall> x \<in> A - {a}.
       \<forall> i::nat. i < length p \<longrightarrow>
         (above (q!i) x = {x} \<longrightarrow> above (p!i) x = {x})"
-    using lifted_above_winner3 elect_and_lift_a
+    using lifted_above_winner_3 elect_and_lift_a
     unfolding Profile.lifted_def
     by metis
   hence
@@ -315,7 +302,7 @@ proof (intro allI impI)
         unfolding Profile.lifted_def profile_def
         by simp
       thus "x = a"
-        using not_empty abv_a abv_x fin_A above_one2
+        using not_empty abv_a abv_x fin_A above_one_2
         by metis
     qed
     ultimately have above_PtoQ:

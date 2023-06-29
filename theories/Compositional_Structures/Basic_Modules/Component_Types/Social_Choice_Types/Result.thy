@@ -64,141 +64,142 @@ abbreviation reject_r :: "'a Result \<Rightarrow> 'a set" where
 abbreviation defer_r :: "'a Result \<Rightarrow> 'a set" where
   "defer_r r \<equiv> snd (snd r)"
 
-subsection \<open>Auxiliary Lemmata\<close>
+subsection \<open>Auxiliary Lemmas\<close>
 
 lemma result_imp_rej:
+  fixes
+    A :: "'a set" and
+    e :: "'a set" and
+    r :: "'a set" and
+    d :: "'a set"
   assumes "well_formed A (e, r, d)"
   shows "A - (e \<union> d) = r"
 proof (safe)
-  fix x :: "'a"
+  fix a :: "'a"
   assume
-    x_in_A: "x \<in> A" and
-    x_not_rej: "x \<notin> r" and
-    x_not_def: "x \<notin> d"
-  from assms have
-    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
-    (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+    "a \<in> A" and
+    "a \<notin> r" and
+    "a \<notin> d"
+  moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+    using assms
     by simp
-  thus "x \<in> e"
-    using x_in_A x_not_rej x_not_def
+  ultimately show "a \<in> e"
     by auto
 next
-  fix x :: "'a"
-  assume x_rej: "x \<in> r"
-  from assms have
-    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
-    (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+  fix a :: "'a"
+  assume "a \<in> r"
+  moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+    using assms
     by simp
-  thus "x \<in> A"
-    using x_rej
+  ultimately show "a \<in> A"
     by auto
 next
-  fix x :: "'a"
+  fix a :: "'a"
   assume
-    x_rej:  "x \<in> r" and
-    x_elec: "x \<in> e"
-  from assms have
-    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
-    (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+    "a \<in> r" and
+    "a \<in> e"
+  moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+    using assms
     by simp
-  thus False
-    using x_rej x_elec
+  ultimately show False
     by auto
 next
-  fix x :: "'a"
+  fix a :: "'a"
   assume
-    x_rej: "x \<in> r" and
-    x_def: "x \<in> d"
-  from assms have
-    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and>
-    (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+    "a \<in> r" and
+    "a \<in> d"
+  moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+    using assms
     by simp
-  thus False
-    using x_rej x_def
+  ultimately show False
     by auto
 qed
 
 lemma result_count:
+  fixes
+    A :: "'a set" and
+    e :: "'a set" and
+    r :: "'a set" and
+    d :: "'a set"
   assumes
-    wf: "well_formed A (e, r, d)" and
+    wf_result: "well_formed A (e, r, d)" and
     fin_A: "finite A"
   shows "card A = card e + card r + card d"
 proof -
-  from wf have disj:
-    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {})"
+  have "e \<union> r \<union> d = A"
+    using wf_result
     by simp
-  from wf have set_partit:
-    "e \<union> r \<union> d = A"
+  moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {})"
+    using wf_result
     by simp
-  show ?thesis
-    using fin_A disj set_partit Int_Un_distrib2 finite_Un
-          card_Un_disjoint sup_bot.right_neutral
+  ultimately show ?thesis
+    using fin_A Int_Un_distrib2 finite_Un card_Un_disjoint sup_bot.right_neutral
     by metis
 qed
 
 lemma defer_subset:
-  assumes "well_formed A result"
-  shows "defer_r result \<subseteq> A"
+  fixes
+    A :: "'a set" and
+    r :: "'a Result"
+  assumes "well_formed A r"
+  shows "defer_r r \<subseteq> A"
 proof (safe)
-  fix x :: "'a"
-  assume def_x: "x \<in> defer_r result"
-  obtain
-    alts :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
-    res :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
-    wf: "A = alts result A \<and> result = res result A \<and> disjoint3 (res result A) \<and>
-            set_equals_partition (alts result A) (res result A)"
+  fix a :: "'a"
+  assume "a \<in> defer_r r"
+  moreover obtain
+    f :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
+    g :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
+    "A = f r A \<and> r = g r A \<and> disjoint3 (g r A) \<and> set_equals_partition (f r A) (g r A)"
     using assms
     by simp
-  hence
-    "\<forall> p A. \<exists> elec rej def.
-      set_equals_partition (A::'a set) p \<longrightarrow> (elec, rej, def) = p \<and> elec \<union> rej \<union> def = A"
+  moreover have "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
     by simp
-  thus "x \<in> A"
-    using UnCI def_x wf snd_conv
+  ultimately show "a \<in> A"
+    using UnCI snd_conv
     by metis
 qed
 
 lemma elect_subset:
-  assumes "well_formed A result"
-  shows "elect_r result \<subseteq> A"
+  fixes
+    A :: "'a set" and
+    r :: "'a Result"
+  assumes "well_formed A r"
+  shows "elect_r r \<subseteq> A"
 proof (safe)
-  fix x :: "'a"
-  assume elec_res: "x \<in> elect_r result"
-  obtain
-    alts :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
-    res :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
-    wf: "A = alts result A \<and> result = res result A \<and> disjoint3 (res result A) \<and>
-            set_equals_partition (alts result A) (res result A)"
+  fix a :: "'a"
+  assume "a \<in> elect_r r"
+  moreover obtain
+    f :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
+    g :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
+    "A = f r A \<and> r = g r A \<and> disjoint3 (g r A) \<and> set_equals_partition (f r A) (g r A)"
     using assms
     by simp
-  hence
-    "\<forall> p A. \<exists> elec rej def.
-      set_equals_partition (A::'a set) p \<longrightarrow> (elec, rej, def) = p \<and> elec \<union> rej \<union> def = A"
+  moreover have "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
     by simp
-  thus "x \<in> A"
-    using UnCI elec_res wf assms fst_conv
+  ultimately show "a \<in> A"
+    using UnCI assms fst_conv
     by metis
 qed
 
 lemma reject_subset:
-  assumes "well_formed A result"
-  shows "reject_r result \<subseteq> A"
+  fixes
+    A :: "'a set" and
+    r :: "'a Result"
+  assumes "well_formed A r"
+  shows "reject_r r \<subseteq> A"
 proof (safe)
   fix a :: "'a"
-  assume rej_a: "a \<in> reject_r result"
-  obtain
-    alts :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
-    res :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
-    wf: "A = alts result A \<and> result = res result A \<and> disjoint3 (res result A) \<and>
-            set_equals_partition (alts result A) (res result A)"
+  assume "a \<in> reject_r r"
+  moreover obtain
+    f :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
+    g :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
+    "A = f r A \<and> r = g r A \<and> disjoint3 (g r A) \<and> set_equals_partition (f r A) (g r A)"
     using assms
     by simp
-  hence
-    "\<forall> p A. \<exists> elec rej def.
-      set_equals_partition (A::'a set) p \<longrightarrow> (elec, rej, def) = p \<and> elec \<union> rej \<union> def = A"
+  moreover have "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
     by simp
-  thus "a \<in> A"
-    using UnCI assms rej_a wf fst_conv snd_conv disjoint3.cases
+  ultimately show "a \<in> A"
+    using UnCI assms fst_conv snd_conv disjoint3.cases
     by metis
 qed
 
