@@ -24,8 +24,8 @@ lemma plureq:
   assumes "A \<noteq> {}" and "finite A"
   shows "plurality_rule A p = plurality A p"
 proof (standard)
-  note maxge = score_bounded[where A= A and f = "(\<lambda> x. win_count p x)"]
-  note maxex = max_score_in[where A= A and f = "(\<lambda> x. win_count p x)"]
+  note maxge = score_bounded[where A= A and e= "(\<lambda> x. win_count p x)"]
+  note maxex = max_score_contained[where A= A and e= "(\<lambda> x. win_count p x)"]
   have "elect plurality A p = {a \<in> A. \<forall>x \<in> A. win_count p x \<le> win_count p a}" by simp
   from assms(2) maxge maxex have elecem: "elect plurality_rule A p = 
     {a \<in> A. win_count p a = Max {win_count p a | a. a\<in> A}}"
@@ -39,8 +39,8 @@ next
   proof (standard)
     have recem: "reject plurality_rule A p = 
       {a \<in> A. \<exists>x \<in> A. win_count p x > win_count p a}"
-      using max_score_in[where A= A and f = "(\<lambda> x. win_count p x)"] assms
-            score_bounded[where A= A and f = "(\<lambda> x. win_count p x)"]
+      using max_score_contained[where A= A and e= "(\<lambda> x. win_count p x)"] assms
+            score_bounded[where A= A and e= "(\<lambda> x. win_count p x)"]
       by force
     from this recem show "reject plurality_rule A p = reject plurality A p" by simp
   next
