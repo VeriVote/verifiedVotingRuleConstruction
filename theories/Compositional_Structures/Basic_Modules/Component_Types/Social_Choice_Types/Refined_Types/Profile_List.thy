@@ -58,7 +58,7 @@ proof (unfold profile_def, intro allI impI)
     unfolding profile_l_def
     by simp
   ultimately show "linear_order_on A ((pl_to_pr_\<alpha> p)!i)"
-    using lin_ord_l_imp_rel length_map nth_map pl_to_pr_\<alpha>.simps
+    using lin_ord_eq length_map nth_map pl_to_pr_\<alpha>.simps
     by metis
 qed
 

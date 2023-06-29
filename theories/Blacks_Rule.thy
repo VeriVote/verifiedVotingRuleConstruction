@@ -26,7 +26,6 @@ declare seq_comp_alt_eq[simp]
 fun blacks_rule :: "'a Electoral_Module" where
     "blacks_rule A p = elector (condorcet \<triangleright> borda) A p"
 
-
 fun blacks_rule' :: "'a Electoral_Module" where
   "blacks_rule' A p = sequential_composition' 
   condorcet (sequential_composition' borda elect_module)  A p"
