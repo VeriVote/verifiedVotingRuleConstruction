@@ -21,9 +21,10 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
+declare seq_comp_alt_eq[simp]
+
 fun blacks_rule :: "'a Electoral_Module" where
-  "blacks_rule A p = sequential_composition' (sequential_composition' condorcet borda) 
-  elect_module A p"
+    "blacks_rule A p = elector (condorcet \<triangleright> borda) A p"
 
 
 fun blacks_rule' :: "'a Electoral_Module" where
@@ -39,21 +40,22 @@ theorem elector_seqcomp:
 
 lemma blackdef_eq:
   shows "blacks_rule' = blacks_rule"
-  unfolding blacks_rule'.simps blacks_rule.simps seqcomp_alt_eq elector.simps[symmetric]
+  unfolding blacks_rule'.simps blacks_rule.simps seq_comp_alt_eq[symmetric] elector.simps[symmetric]
   using elector_seqcomp[of condorcet borda] .
-  
+
+declare seq_comp_alt_eq[simp del]
 
 subsection \<open>Soundness\<close>
 
 theorem blacks_rule_sound: "electoral_module blacks_rule"
-  unfolding blacks_rule.simps seqcomp_alt_eq
-  using condorcet_sound borda_sound elect_mod_sound seq_comp_sound
-  by (metis)
+  unfolding blacks_rule.simps
+  using elector_sound seq_comp_sound condorcet_sound borda_sound
+  by metis
 
 subsection \<open>Condorcet Consistency Property\<close>
 
 theorem black_condorcet: "condorcet_consistency blacks_rule"
-proof (unfold blackdef_eq[symmetric] blacks_rule'.simps seqcomp_alt_eq elector.simps[symmetric])
+proof (unfold blackdef_eq[symmetric] blacks_rule'.simps seq_comp_alt_eq[symmetric] elector.simps[symmetric])
   have emin: "electoral_module (elector borda)"
     unfolding borda_rule.simps[symmetric]
     using borda_rule_sound .
@@ -74,7 +76,7 @@ proof (unfold blackdef_eq[symmetric] blacks_rule'.simps seqcomp_alt_eq elector.s
     assume condw: "condorcet_winner A p w"     
     from this have dw: "defer condorcet A p = {w}"
     unfolding  condorcet_winner.simps
-    by (metis (no_types, lifting) condw cond_winner_unique3 condorcet_is_dcc 
+    by (metis (no_types, lifting) condw cond_winner_unique_3 condorcet_is_dcc 
           defer_condorcet_consistency_def snd_conv)
     then have cc1: "card (defer condorcet A p) = 1" by simp
     from condw have fprof: "finite_profile A p" by simp

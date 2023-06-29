@@ -1,49 +1,65 @@
 (*  File:       Profile_List.thy
-    Copyright   2022  Karlsruhe Institute of Technology (KIT)
+    Copyright   2023  Karlsruhe Institute of Technology (KIT)
 *)
 \<^marker>\<open>creator "Valentin Springsklee, Karlsruhe Institute of Technology (KIT)"\<close>
 
-section \<open>Profile of List-based Ballots\<close>
+section \<open>Preference (List) Profile\<close>
 
 theory Profile_List
-  imports "../Profile" 
-    Preference_List
-
+  imports "../Profile"
+          Preference_List
 begin
 
-type_synonym 'a Profile_List = "('a Preference_List) list"
+subsection \<open>Definition\<close>
 
-text \<open> Abstraction from Profile List to Profile \<close>
-definition pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> 'a Profile" where
+text \<open>
+  A profile (list) contains one ballot for each voter.
+\<close>
+
+type_synonym 'a Profile_List = "'a Preference_List list"
+
+type_synonym 'a Election_List = "'a set \<times> 'a Profile_List"
+
+text \<open>
+  Abstraction from profile list to profile.
+\<close>
+
+fun pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> 'a Profile" where
   "pl_to_pr_\<alpha> pl = map (Preference_List.pl_\<alpha>) pl"
 
-lemma length_preserving:
-  fixes pr:: "'a Profile_List"
-  shows "length pl = length (pl_to_pr_\<alpha> pl)" unfolding pl_to_pr_\<alpha>_def
+lemma prof_abstr_presv_size:
+  fixes p :: "'a Profile_List"
+  shows "length p = length (pl_to_pr_\<alpha> p)"
   by simp
 
-text \<open>Valid (list-based) profile predicate. \<close>
+text \<open>
+  A profile on a finite set of alternatives A contains only ballots that are
+  lists of linear orders on A.
+\<close>
 
 definition profile_l :: "'a set \<Rightarrow> 'a Profile_List \<Rightarrow> bool" where
-  "profile_l A pl \<equiv> (\<forall> i < length pl. ballot_on A (pl!i))"
+  "profile_l A p \<equiv> (\<forall> i < length p. ballot_on A (p!i))"
 
-lemma profile_prop_refine:
-  (* Refinement Framework syntax*)
-  (*assumes "(pl,pr)\<in>br pl_to_pr_\<alpha> (profile_l A)"*)
-  fixes A :: "'a set" and pl :: "'a Profile_List"
-  assumes "profile_l A pl"
-  shows "profile A (pl_to_pr_\<alpha> pl)"
-  unfolding profile_def
-  apply(intro allI impI)
-proof (-)
-  fix i
-  assume ir: "i < length (pl_to_pr_\<alpha> pl)"
-  from ir assms have wf: "well_formed_pl (pl ! i)" unfolding profile_l_def  pl_to_pr_\<alpha>_def
-    by (simp)
-  from ir assms have "linear_order_on_l A (pl ! i)" unfolding profile_l_def pl_to_pr_\<alpha>_def
-    by (simp) 
-  from wf assms this show "linear_order_on A ((pl_to_pr_\<alpha> pl) ! i)"
-    by (metis linorder_l_imp_rel ir length_map nth_map pl_to_pr_\<alpha>_def)
+lemma refinement:
+  fixes
+    A :: "'a set" and
+    p :: "'a Profile_List"
+  assumes "profile_l A p"
+  shows "profile A (pl_to_pr_\<alpha> p)"
+proof (unfold profile_def, intro allI impI)
+  fix i :: nat
+  assume in_range: "i < length (pl_to_pr_\<alpha> p)"
+  moreover have "well_formed_l (p!i)"
+    using assms in_range
+    unfolding profile_l_def
+    by simp
+  moreover have "linear_order_on_l A (p!i)"
+    using assms in_range
+    unfolding profile_l_def
+    by simp
+  ultimately show "linear_order_on A ((pl_to_pr_\<alpha> p)!i)"
+    using lin_ord_l_imp_rel length_map nth_map pl_to_pr_\<alpha>.simps
+    by metis
 qed
 
 end

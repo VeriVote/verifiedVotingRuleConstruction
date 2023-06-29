@@ -18,7 +18,7 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-type_synonym 'a Evaluation_Function = "'a  \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow> nat"
+type_synonym 'a Evaluation_Function = "'a \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow> nat"
 
 subsection \<open>Property\<close>
 
@@ -36,44 +36,48 @@ subsection \<open>Theorems\<close>
 
 text \<open>
   If e is Condorcet-rating, the following holds:
-  If a Condorcet Winner w exists, w has the maximum evaluation value.
+  If a Condorcet winner w exists, w has the maximum evaluation value.
 \<close>
 
 theorem cond_winner_imp_max_eval_val:
+  fixes
+    e :: "'a Evaluation_Function" and
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a"
   assumes
     rating: "condorcet_rating e" and
     f_prof: "finite_profile A p" and
-    winner: "condorcet_winner A p w"
-  shows "e w A p = Max {e a A p | a. a \<in> A}"
+    winner: "condorcet_winner A p a"
+  shows "e a A p = Max {e b A p | b. b \<in> A}"
 proof -
-  let ?set = "{e a A p | a. a \<in> A}" and
-      ?eMax = "Max {e a A p | a. a \<in> A}" and
-      ?eW = "e w A p"
-  from f_prof
-  have 0: "finite ?set"
-    by simp
-  have 1: "?set \<noteq> {}"
-    using condorcet_winner.simps winner
-    by fastforce
-  have 2: "?eW \<in> ?set"
+  let ?set = "{e b A p | b. b \<in> A}" and
+      ?eMax = "Max {e b A p | b. b \<in> A}" and
+      ?eW = "e a A p"
+  have "?eW \<in> ?set"
     using CollectI condorcet_winner.simps winner
     by (metis (mono_tags, lifting))
-  have 3: "\<forall> e \<in> ?set . e \<le> ?eW"
+  moreover have "\<forall> e \<in> ?set. e \<le> ?eW"
   proof (safe)
-    fix a :: "'a"
-    assume aInA: "a \<in> A"
-    have "\<forall>n na. (n::nat) \<noteq> na \<or> n \<le> na"
+    fix b :: "'a"
+    assume "b \<in> A"
+    moreover have "\<forall> n n'. (n::nat) = n' \<longrightarrow> n \<le> n'"
       by simp
-    with aInA show "e a A p \<le> e w A p"
+    ultimately show "e b A p \<le> e a A p"
       using less_imp_le rating winner
       unfolding condorcet_rating_def
       by (metis (no_types))
   qed
-  from 2 3 have 4:
-    "?eW \<in> ?set \<and> (\<forall>a \<in> ?set. a \<le> ?eW)"
+  ultimately have "?eW \<in> ?set \<and> (\<forall> e \<in> ?set. e \<le> ?eW)"
     by blast
-  from 0 1 4 Max_eq_iff
-  show ?thesis
+  moreover have "finite ?set"
+    using f_prof
+    by simp
+  moreover have "?set \<noteq> {}"
+    using condorcet_winner.simps winner
+    by fastforce
+  ultimately show ?thesis
+    using Max_eq_iff
     by (metis (no_types, lifting))
 qed
 
@@ -85,19 +89,25 @@ text \<open>
 \<close>
 
 theorem non_cond_winner_not_max_eval:
+  fixes
+    e :: "'a Evaluation_Function" and
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a" and
+    b :: "'a"
   assumes
     rating: "condorcet_rating e" and
     f_prof: "finite_profile A p" and
-    winner: "condorcet_winner A p w" and
-    linA: "l \<in> A" and
-    loser: "w \<noteq> l"
-  shows "e l A p < Max {e a A p | a. a \<in> A}"
+    winner: "condorcet_winner A p a" and
+    lin_A: "b \<in> A" and
+    loser: "a \<noteq> b"
+  shows "e b A p < Max {e c A p | c. c \<in> A}"
 proof -
-  have "e l A p < e w A p"
-    using linA loser rating winner
+  have "e b A p < e a A p"
+    using lin_A loser rating winner
     unfolding condorcet_rating_def
     by metis
-  also have "e w A p = Max {e a A p |a. a \<in> A}"
+  also have "e a A p = Max {e c A p | c. c \<in> A}"
     using cond_winner_imp_max_eval_val f_prof rating winner
     by fastforce
   finally show ?thesis
