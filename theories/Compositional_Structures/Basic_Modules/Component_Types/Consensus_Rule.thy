@@ -173,7 +173,7 @@ proof (unfold determined_if_def, safe)
         by simp
       hence "(above (p!0) a = {a} \<and> above (p ! 0) a' = {a'} \<longrightarrow> a = a') \<and>
              (above (p'!0) a = {a} \<and> above (p' ! 0) a' = {a'} \<longrightarrow> a = a')"
-        using a'_neq_a fin_A above_one2[of A]
+        using a'_neq_a fin_A above_one_2[of A]
         by metis
       thus ?thesis
         using a'_neq_a eq_top_p' eq_top_p lens_p_and_p'_ok
