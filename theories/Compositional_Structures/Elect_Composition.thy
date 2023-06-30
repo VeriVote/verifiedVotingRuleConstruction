@@ -25,6 +25,17 @@ subsection \<open>Definition\<close>
 fun elector :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module" where
   "elector m = (m \<triangleright> elect_module)"
 
+subsection \<open>Auxiliary Lemmas\<close>
+
+lemma elector_seqcomp_assoc:
+  fixes
+    a :: "'a Electoral_Module" and
+    b :: "'a Electoral_Module"
+  shows "(a \<triangleright> (elector b)) = (elector (a \<triangleright> b))"
+  unfolding elector.simps elect_module.simps sequential_composition.simps
+  using boolean_algebra_cancel.sup2 fst_eqD snd_eqD sup_commute
+  by (metis (no_types, opaque_lifting))
+
 subsection \<open>Soundness\<close>
 
 theorem elector_sound[simp]:
