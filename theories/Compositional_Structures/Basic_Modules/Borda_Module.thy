@@ -35,4 +35,27 @@ theorem borda_sound: "electoral_module borda"
   using max_elim_sound
   by metis
 
+
+subsection \<open>Non-Blocking\<close>
+
+text \<open>
+  The Borda module is non-blocking.
+\<close>
+
+theorem borda_mod_non_blocking[simp]: "non_blocking borda"
+  unfolding borda.simps
+  using max_elim_non_blocking
+  by metis
+
+subsection \<open>Non-Electing\<close>
+
+text \<open>
+  The Borda module is non-electing.
+\<close>
+
+theorem borda_mod_non_electing[simp]: "non_electing borda"
+  using max_elim_non_electing
+  unfolding borda.simps non_electing_def
+  by metis
+
 end
