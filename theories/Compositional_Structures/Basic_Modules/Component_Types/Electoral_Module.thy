@@ -870,7 +870,7 @@ definition condorcet_compatibility :: "'a Electoral_Module \<Rightarrow> bool" w
       (a \<notin> reject m A p \<and>
         (\<forall> b. \<not> condorcet_winner A p b \<longrightarrow> b \<notin> elect m A p) \<and>
           (a \<in> elect m A p \<longrightarrow>
-            (\<forall> b. \<not> condorcet_winner A p b \<longrightarrow> b \<in> reject m A p))))"
+            (\<forall> b \<in> A. \<not> condorcet_winner A p b \<longrightarrow> b \<in> reject m A p))))"
 
 text \<open>
   An electoral module is defer-monotone iff,

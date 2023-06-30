@@ -35,7 +35,7 @@ fun elimination_module :: "'a Evaluation_Function \<Rightarrow> Threshold_Value 
   "elimination_module e t r A p =
       (if (elimination_set e t r A p) \<noteq> A
         then ({}, (elimination_set e t r A p), A - (elimination_set e t r A p))
-        else ({},{},A))"
+        else ({}, {}, A))"
 
 subsection \<open>Common Eliminators\<close>
 
@@ -119,74 +119,97 @@ lemma less_elim_sound[simp]:
     e :: "'a Evaluation_Function" and
     t :: "Threshold_Value"
   shows "electoral_module (less_eliminator e t)"
-proof (unfold electoral_module_def, safe, simp)
-  fix
-    A :: "'a set" and
-    p :: "'a Profile"
-  show "{a \<in> A. e a A p < t} \<noteq> A \<longrightarrow> {a \<in> A. e a A p < t} \<union> A = A"
-    by safe
-qed
+  unfolding electoral_module_def
+  by auto
 
 lemma leq_elim_sound[simp]:
   fixes
     e :: "'a Evaluation_Function" and
     t :: "Threshold_Value"
   shows "electoral_module (leq_eliminator e t)"
-proof (unfold electoral_module_def, safe, simp)
-  fix
-    A :: "'a set" and
-    p :: "'a Profile"
-  show "{a \<in> A. e a A p \<le> t} \<noteq> A \<longrightarrow> {a \<in> A. e a A p \<le> t} \<union> A = A"
-    by safe
-qed
+  unfolding electoral_module_def
+  by auto
 
 lemma max_elim_sound[simp]:
   fixes e :: "'a Evaluation_Function"
   shows "electoral_module (max_eliminator e)"
-proof (unfold electoral_module_def, safe, simp)
-  fix
-    A :: "'a set" and
-    p :: "'a Profile"
-  show "{a \<in> A. e a A p < Max {e x A p |x. x \<in> A}} \<noteq> A \<longrightarrow>
-          {a \<in> A. e a A p < Max {e x A p |x. x \<in> A}} \<union> A = A"
-    by safe
-qed
+  unfolding electoral_module_def
+  by auto
 
 lemma min_elim_sound[simp]:
   fixes e :: "'a Evaluation_Function"
   shows "electoral_module (min_eliminator e)"
-proof (unfold electoral_module_def, safe, simp)
-  fix
-    A :: "'a set" and
-    p :: "'a Profile"
-  show "{a \<in> A. e a A p \<le> Min {e x A p | x. x \<in> A}} \<noteq> A \<longrightarrow>
-          {a \<in> A. e a A p \<le> Min {e x A p | x. x \<in> A}} \<union> A = A"
-    by safe
-qed
+  unfolding electoral_module_def
+  by auto
 
 lemma less_avg_elim_sound[simp]:
   fixes e :: "'a Evaluation_Function"
   shows "electoral_module (less_average_eliminator e)"
-proof (unfold electoral_module_def, safe, simp)
-  fix
-    A :: "'a set" and
-    p :: "'a Profile"
-  show "{a \<in> A. e a A p < (\<Sum> x \<in> A. e x A p) div card A} \<noteq> A \<longrightarrow>
-          {a \<in> A. e a A p < (\<Sum> x \<in> A. e x A p) div card A} \<union> A = A"
-    by safe
-qed
+  unfolding electoral_module_def
+  by auto
 
 lemma leq_avg_elim_sound[simp]:
   fixes e :: "'a Evaluation_Function"
   shows "electoral_module (leq_average_eliminator e)"
-proof (unfold electoral_module_def, safe, simp)
-  fix
-    A :: "'a set" and
-    p :: "'a Profile"
-  show "{a \<in> A. e a A p \<le> (\<Sum> x \<in> A. e x A p) div card A} \<noteq> A \<longrightarrow>
-          {a \<in> A. e a A p \<le> (\<Sum> x \<in> A. e x A p) div card A} \<union> A = A"
-    by safe
-qed
+  unfolding electoral_module_def
+  by auto
+
+subsection \<open>Non-Blocking\<close>
+
+lemma elim_mod_non_blocking:
+  fixes
+    e :: "'a Evaluation_Function" and
+    t :: "Threshold_Value" and
+    r :: "Threshold_Relation"
+  shows "non_blocking (elimination_module e t r)"
+  unfolding non_blocking_def
+  by auto
+
+lemma less_elim_non_blocking:
+  fixes
+    e :: "'a Evaluation_Function" and
+    t :: "Threshold_Value"
+  shows "non_blocking (less_eliminator e t)"
+  unfolding less_eliminator.simps
+  using elim_mod_non_blocking
+  by auto
+
+lemma leq_elim_non_blocking:
+  fixes
+    e :: "'a Evaluation_Function" and
+    t :: "Threshold_Value"
+  shows "non_blocking (leq_eliminator e t)"
+  unfolding leq_eliminator.simps
+  using elim_mod_non_blocking
+  by auto
+
+lemma max_elim_non_blocking:
+  fixes e :: "'a Evaluation_Function"
+  shows "non_blocking (max_eliminator e)"
+  unfolding non_blocking_def
+  using electoral_module_def
+  by auto
+
+lemma min_elim_non_blocking:
+  fixes e :: "'a Evaluation_Function"
+  shows "non_blocking (min_eliminator e)"
+  unfolding non_blocking_def
+  using electoral_module_def
+  by auto
+
+lemma less_avg_elim_non_blocking:
+  fixes e :: "'a Evaluation_Function"
+  shows "non_blocking (less_average_eliminator e)"
+  unfolding non_blocking_def
+  using electoral_module_def
+  by auto
+
+lemma leq_avg_elim_non_blocking:
+  fixes e :: "'a Evaluation_Function"
+  shows "non_blocking (leq_average_eliminator e)"
+  unfolding non_blocking_def
+  using electoral_module_def
+  by auto
 
 subsection \<open>Non-Electing\<close>
 
@@ -231,58 +254,14 @@ lemma min_elim_non_electing:
 lemma less_avg_elim_non_electing:
   fixes e :: "'a Evaluation_Function"
   shows "non_electing (less_average_eliminator e)"
-proof (unfold non_electing_def, safe)
-  show "electoral_module (less_average_eliminator e)"
-    by simp
-next
-  fix
-    A :: "'a set" and
-    p :: "'a Profile" and
-    a :: "'a"
-  assume
-    fin_A: "finite A" and
-    prof_p: "profile A p" and
-    elect_a: "a \<in> elect (less_average_eliminator e) A p"
-  hence fin_prof: "finite_profile A p"
-    by metis
-  have "non_electing (less_average_eliminator e)"
-    unfolding non_electing_def
-    by simp
-  hence "elect (less_average_eliminator e) A p = {}"
-    using fin_prof
-    unfolding non_electing_def
-    by metis
-  thus "a \<in> {}"
-    using elect_a
-    by metis
-qed
+  unfolding non_electing_def
+  by auto
 
 lemma leq_avg_elim_non_electing:
   fixes e :: "'a Evaluation_Function"
   shows "non_electing (leq_average_eliminator e)"
-proof (unfold non_electing_def, safe)
-  show "electoral_module (leq_average_eliminator e)"
-    by simp
-next
-  fix
-    A :: "'a set" and
-    p :: "'a Profile" and
-    a :: "'a"
-  assume
-    fin_A: "finite A" and
-    prof_p: "profile A p" and
-    elect_a: "a \<in> elect (leq_average_eliminator e) A p"
-  have "non_electing (leq_average_eliminator e)"
-    unfolding non_electing_def
-    by simp
-  hence "elect (leq_average_eliminator e) A p = {}"
-    using fin_A prof_p
-    unfolding non_electing_def
-    by metis
-  thus "a \<in> {}"
-    using elect_a
-    by metis
-qed
+  unfolding non_electing_def
+  by simp
 
 subsection \<open>Inference Rules\<close>
 

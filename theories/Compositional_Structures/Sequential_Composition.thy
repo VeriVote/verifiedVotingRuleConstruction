@@ -973,6 +973,341 @@ next
   qed
 qed
 
+theorem seq_comp_cond_compat[simp]:
+  fixes
+    m :: "'a Electoral_Module" and
+    n :: "'a Electoral_Module"
+  assumes
+    dcc_m: "defer_condorcet_consistency m" and
+    nb_n: "non_blocking n" and
+    ne_n: "non_electing n"
+  shows "condorcet_compatibility (m \<triangleright> n)"
+proof (unfold condorcet_compatibility_def, safe)
+  have "electoral_module m"
+    using dcc_m
+    unfolding defer_condorcet_consistency_def
+    by presburger
+  moreover have "electoral_module n"
+    using nb_n
+    unfolding non_blocking_def
+    by presburger
+  ultimately have "electoral_module (m \<triangleright> n)"
+    by simp
+  thus "electoral_module (m \<triangleright> n)"
+    by presburger
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a"
+  assume
+    cw_a: "condorcet_winner A p a" and
+    fin_A: "finite A" and
+    a_in_rej_seq_m_n: "a \<in> reject (m \<triangleright> n) A p"
+  hence "\<exists> a'. defer_condorcet_consistency m \<and> condorcet_winner A p a'"
+    using dcc_m
+    by blast
+  hence "m A p = ({}, A - (defer m A p), {a})"
+    using defer_condorcet_consistency_def cw_a cond_winner_unique_3 condorcet_winner.simps
+    by (metis (no_types, lifting))
+  have sound_m: "electoral_module m"
+    using dcc_m
+    unfolding defer_condorcet_consistency_def
+    by presburger
+  moreover have "electoral_module n"
+    using nb_n
+    unfolding non_blocking_def
+    by presburger
+  ultimately have sound_seq_m_n: "electoral_module (m \<triangleright> n)"
+    by simp
+  have def_m: "defer m A p = {a}"
+    using cw_a fin_A cond_winner_unique_3 dcc_m defer_condorcet_consistency_def snd_conv
+    by (metis (mono_tags, lifting))
+  have rej_m: "reject m A p = A - {a}"
+    using cw_a fin_A cond_winner_unique_3 dcc_m defer_condorcet_consistency_def prod.sel(1) snd_conv
+    by (metis (mono_tags, lifting))
+  have "elect m A p = {}"
+    using cw_a fin_A dcc_m defer_condorcet_consistency_def prod.sel(1)
+    by (metis (mono_tags, lifting))
+  hence diff_elect_m: "A - elect m A p = A"
+    using Diff_empty
+    by (metis (full_types))
+  have cond_win: "finite A \<and> profile A p \<and> a \<in> A \<and> (\<forall> a'. a' \<in> A - {a'} \<longrightarrow> wins a p a')"
+    using cw_a condorcet_winner.simps DiffD2 singletonI
+    by (metis (no_types))
+  have "\<forall> a' A'. (a'::'a) \<in> A' \<longrightarrow> insert a' (A' - {a'}) = A'"
+    by blast
+  have nb_n_full:
+    "electoral_module n \<and> (\<forall> A' p'. A' \<noteq> {} \<and> finite A' \<and> profile A' p' \<longrightarrow> reject n A' p' \<noteq> A')"
+    using nb_n non_blocking_def
+    by metis
+  have def_seq_diff: "defer (m \<triangleright> n) A p = A - elect (m \<triangleright> n) A p - reject (m \<triangleright> n) A p"
+    using defer_not_elec_or_rej cond_win sound_seq_m_n
+    by metis
+  have set_ins: "\<forall> a' A'. (a'::'a) \<in> A' \<longrightarrow> insert a' (A' - {a'}) = A'"
+    by fastforce
+  have "\<forall> p' A' p''. p' = (A'::'a set, p''::'a set \<times> 'a set) \<longrightarrow> snd p' = p''"
+    by simp
+  hence "snd (elect m A p \<union> elect n (defer m A p) (limit_profile (defer m A p) p),
+          reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p),
+          defer n (defer m A p) (limit_profile (defer m A p) p)) =
+            (reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p),
+            defer n (defer m A p) (limit_profile (defer m A p) p))"
+    by blast
+  hence seq_snd_simplified:
+    "snd ((m \<triangleright> n) A p) =
+      (reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p),
+        defer n (defer m A p) (limit_profile (defer m A p) p))"
+    using sequential_composition.simps
+    by metis
+  hence seq_rej_union_eq_rej:
+    "reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p) = reject (m \<triangleright> n) A p"
+    by simp
+  hence seq_rej_union_subset_A:
+    "reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p) \<subseteq> A"
+    using sound_seq_m_n cond_win reject_in_alts
+    by (metis (no_types))
+  hence "A - {a} = reject (m \<triangleright> n) A p - {a}"
+    using seq_rej_union_eq_rej defer_not_elec_or_rej cond_win def_m diff_elect_m double_diff rej_m
+          sound_m sup_ge1
+    by (metis (no_types))
+  hence "reject (m \<triangleright> n) A p \<subseteq> A - {a}"
+    using seq_rej_union_subset_A seq_snd_simplified set_ins def_seq_diff nb_n_full cond_win fst_conv
+          Diff_empty Diff_eq_empty_iff a_in_rej_seq_m_n def_m def_presv_fin_prof sound_m ne_n
+          diff_elect_m insert_not_empty non_electing_def reject_not_elec_or_def
+          seq_comp_def_then_elect_elec_set seq_comp_defers_def_set sup_bot.left_neutral
+    by (metis (no_types))
+  thus "False"
+    using a_in_rej_seq_m_n
+    by blast
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a" and
+    a' :: "'a"
+  assume
+    cw_a: "condorcet_winner A p a" and
+    fin_A: "finite A" and
+    not_cw_a': "\<not> condorcet_winner A p a'" and
+    a'_in_elect_seq_m_n: "a' \<in> elect (m \<triangleright> n) A p"
+  hence "\<exists> a''. defer_condorcet_consistency m \<and> condorcet_winner A p a''"
+    using dcc_m
+    by blast
+  hence result_m: "m A p = ({}, A - (defer m A p), {a})"
+    using defer_condorcet_consistency_def cw_a cond_winner_unique_3 condorcet_winner.simps
+    by (metis (no_types, lifting))
+  have sound_m: "electoral_module m"
+    using dcc_m
+    unfolding defer_condorcet_consistency_def
+    by presburger
+  moreover have "electoral_module n"
+    using nb_n
+    unfolding non_blocking_def
+    by presburger
+  ultimately have sound_seq_m_n: "electoral_module (m \<triangleright> n)"
+    by simp
+  have "reject m A p = A - {a}"
+    using cw_a fin_A dcc_m prod.sel(1) snd_conv result_m
+    unfolding defer_condorcet_consistency_def
+    by (metis (mono_tags, lifting))
+  hence a'_in_rej: "a' \<in> reject m A p"
+    using Diff_iff cw_a not_cw_a' a'_in_elect_seq_m_n condorcet_winner.elims(1) elect_in_alts
+          singleton_iff sound_seq_m_n subset_iff
+    by (metis (no_types))
+  have "\<forall> p' A' p''. p' = (A'::'a set, p''::'a set \<times> 'a set) \<longrightarrow> snd p' = p''"
+    by simp
+  hence m_seq_n:
+    "snd (elect m A p \<union> elect n (defer m A p) (limit_profile (defer m A p) p),
+      reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p),
+        defer n (defer m A p) (limit_profile (defer m A p) p)) =
+          (reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p),
+            defer n (defer m A p) (limit_profile (defer m A p) p))"
+    by blast
+  have "a' \<in> elect m A p"
+    using a'_in_elect_seq_m_n condorcet_winner.simps cw_a def_presv_fin_prof ne_n non_electing_def
+          seq_comp_def_then_elect_elec_set sound_m sup_bot.left_neutral
+    by (metis (no_types))
+  hence a_in_rej_union:
+    "a \<in> reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p)"
+      using Diff_iff a'_in_rej condorcet_winner.simps cw_a reject_not_elec_or_def sound_m
+      by (metis (no_types))
+  have m_seq_n_full:
+    "(m \<triangleright> n) A p =
+      (elect m A p \<union> elect n (defer m A p) (limit_profile (defer m A p) p),
+      reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p),
+      defer n (defer m A p) (limit_profile (defer m A p) p))"
+    unfolding sequential_composition.simps
+    by metis
+  have "\<forall> A' A''. (A'::'a set) = fst (A', A''::'a set)"
+    by simp
+  hence "a \<in> reject (m \<triangleright> n) A p"
+    using a_in_rej_union m_seq_n m_seq_n_full
+    by presburger
+  moreover have "finite A \<and> profile A p \<and> a \<in> A \<and> (\<forall> a''. a'' \<in> A - {a} \<longrightarrow> wins a p a'')"
+    using cw_a condorcet_winner.simps m_seq_n_full a'_in_elect_seq_m_n a'_in_rej ne_n sound_m
+    by metis
+  ultimately show "False"
+    using a'_in_elect_seq_m_n IntI empty_iff result_disj sound_seq_m_n a'_in_rej def_presv_fin_prof
+          fst_conv m_seq_n_full ne_n non_electing_def sound_m sup_bot.right_neutral
+    by metis
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a" and
+    a' :: "'a"
+  assume
+    cw_a: "condorcet_winner A p a" and
+    fin_A: "finite A" and
+    a'_in_A: "a' \<in> A" and
+    not_cw_a': "\<not> condorcet_winner A p a'"
+  have "reject m A p = A - {a}"
+    using cw_a fin_A cond_winner_unique_3 dcc_m defer_condorcet_consistency_def prod.sel(1) snd_conv
+    by (metis (mono_tags, lifting))
+  moreover have "a \<noteq> a'"
+    using cw_a not_cw_a'
+    by safe
+  ultimately have "a' \<in> reject m A p"
+    using DiffI a'_in_A singletonD
+    by (metis (no_types))
+  hence "a' \<in> reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p)"
+    by blast
+  moreover have
+    "(m \<triangleright> n) A p =
+      (elect m A p \<union> elect n (defer m A p) (limit_profile (defer m A p) p),
+        reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p),
+        defer n (defer m A p) (limit_profile (defer m A p) p))"
+    unfolding sequential_composition.simps
+    by metis
+  moreover have
+    "snd (elect m A p \<union> elect n (defer m A p) (limit_profile (defer m A p) p),
+      reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p),
+      defer n (defer m A p) (limit_profile (defer m A p) p)) =
+        (reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p),
+        defer n (defer m A p) (limit_profile (defer m A p) p))"
+    using snd_conv
+    by metis
+  ultimately show "a' \<in> reject (m \<triangleright> n) A p"
+    using fst_eqD
+    by (metis (no_types))
+qed
+
+text \<open>
+  Composing a defer-condorcet-consistent electoral module
+  in sequence with a non-blocking and non-electing electoral
+  module results in a defer-condorcet-consistent module.
+\<close>
+
+theorem seq_comp_dcc[simp]:
+  fixes
+    m :: "'a Electoral_Module" and
+    n :: "'a Electoral_Module"
+  assumes
+    dcc_m: "defer_condorcet_consistency m" and
+    nb_n: "non_blocking n" and
+    ne_n: "non_electing n"
+  shows "defer_condorcet_consistency (m \<triangleright> n)"
+proof (unfold defer_condorcet_consistency_def, safe)
+  have "electoral_module m"
+    using dcc_m
+    unfolding defer_condorcet_consistency_def
+    by metis
+  thus "electoral_module (m \<triangleright> n)"
+    using ne_n
+    by (simp add: non_electing_def)
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a"
+  assume
+    cw_a: "condorcet_winner A p a" and
+    fin_A: "finite A"
+  hence "\<exists> a'. defer_condorcet_consistency m \<and> condorcet_winner A p a'"
+    using dcc_m
+    by blast
+  hence result_m: "m A p = ({}, A - (defer m A p), {a})"
+    using defer_condorcet_consistency_def cw_a cond_winner_unique_3 condorcet_winner.simps
+    by (metis (no_types, lifting))
+  hence elect_m_empty: "elect m A p = {}"
+    using eq_fst_iff
+    by metis
+  have sound_m: "electoral_module m"
+    using dcc_m
+    unfolding defer_condorcet_consistency_def
+    by metis
+  hence sound_seq_m_n: "electoral_module (m \<triangleright> n)"
+    using ne_n
+    by (simp add: non_electing_def)
+  have defer_eq_a: "defer (m \<triangleright> n) A p = {a}"
+  proof (safe)
+    fix a' :: "'a"
+    assume a'_in_def_seq_m_n: "a' \<in> defer (m \<triangleright> n) A p"
+    moreover have "defer m A p = {a}"
+      using cond_winner_unique_3 dcc_m condorcet_winner.elims(2) cw_a snd_conv
+            defer_condorcet_consistency_def
+      by (metis (mono_tags, lifting))
+    hence "defer (m \<triangleright> n) A p = {a}"
+      using cw_a a'_in_def_seq_m_n condorcet_winner.elims(2) empty_iff seq_comp_def_set_bounded
+            sound_m subset_singletonD nb_n non_blocking_def
+      by metis
+    ultimately show "a' = a"
+      by blast
+  next
+    have "\<exists> a'. defer_condorcet_consistency m \<and> condorcet_winner A p a'"
+      using cw_a dcc_m
+      by blast
+    hence "m A p = ({}, A - (defer m A p), {a})"
+      using defer_condorcet_consistency_def cw_a cond_winner_unique_3 condorcet_winner.simps
+      by (metis (no_types, lifting))
+    hence elect_m_empty: "elect m A p = {}"
+      using eq_fst_iff
+      by metis
+    have "finite_profile (defer m A p) (limit_profile (defer m A p) p)"
+      using condorcet_winner.simps cw_a def_presv_fin_prof sound_m
+      by (metis (no_types))
+    hence "elect n (defer m A p) (limit_profile (defer m A p) p) = {}"
+      using ne_n non_electing_def
+      by metis
+    hence "elect (m \<triangleright> n) A p = {}"
+      using elect_m_empty seq_comp_def_then_elect_elec_set sup_bot.right_neutral
+      by (metis (no_types))
+    moreover have "condorcet_compatibility (m \<triangleright> n)"
+      using dcc_m nb_n ne_n
+      by simp
+    hence "a \<notin> reject (m \<triangleright> n) A p"
+      unfolding condorcet_compatibility_def
+      using cw_a fin_A
+      by metis
+    ultimately show "a \<in> defer (m \<triangleright> n) A p"
+      using condorcet_winner.elims(2) cw_a electoral_mod_defer_elem empty_iff sound_seq_m_n
+      by metis
+  qed
+  have "finite_profile (defer m A p) (limit_profile (defer m A p) p)"
+    using condorcet_winner.simps cw_a def_presv_fin_prof sound_m
+    by (metis (no_types))
+  hence "elect n (defer m A p) (limit_profile (defer m A p) p) = {}"
+    using ne_n non_electing_def
+    by metis
+  hence "elect (m \<triangleright> n) A p = {}"
+    using elect_m_empty seq_comp_def_then_elect_elec_set sup_bot.right_neutral
+    by (metis (no_types))
+  moreover have def_seq_m_n_eq_a: "defer (m \<triangleright> n) A p = {a}"
+    using cw_a defer_eq_a
+    by (metis (no_types))
+  ultimately have "(m \<triangleright> n) A p = ({}, A - {a}, {a})"
+    using Diff_empty cw_a combine_ele_rej_def condorcet_winner.elims(2)
+          reject_not_elec_or_def sound_seq_m_n
+    by (metis (no_types))
+  moreover have "{a' \<in> A. condorcet_winner A p a'} = {a}"
+    using cw_a cond_winner_unique_3
+    by metis
+  ultimately show "(m \<triangleright> n) A p = ({}, A - defer (m \<triangleright> n) A p, {a' \<in> A. condorcet_winner A p a'})"
+    using def_seq_m_n_eq_a
+    by metis
+qed
+
 text \<open>
   Composing a defer-lift invariant and a non-electing
   electoral module that defers exactly one alternative
@@ -1030,7 +1365,7 @@ theorem def_inv_mono_imp_def_lift_inv[simp]:
   assumes
     strong_def_mon_m: "defer_invariant_monotonicity m" and
     non_electing_n: "non_electing n" and
-    defers_1: "defers 1 n" and
+    defers_one: "defers 1 n" and
     defer_monotone_n: "defer_monotonicity n"
   shows "defer_lift_invariance (m \<triangleright> n)"
 proof (unfold defer_lift_invariance_def, safe)
@@ -1039,7 +1374,7 @@ proof (unfold defer_lift_invariance_def, safe)
     unfolding defer_invariant_monotonicity_def
     by metis
   moreover have "electoral_module n"
-    using defers_1
+    using defers_one
     unfolding defers_def
     by metis
   ultimately show "electoral_module (m \<triangleright> n)"
@@ -1062,7 +1397,7 @@ next
     unfolding defer_invariant_monotonicity_def
     by metis
   have electoral_mod_n: "electoral_module n"
-    using defers_1
+    using defers_one
     unfolding defers_def
     by metis
   have finite_profile_p: "finite_profile A p"
@@ -1077,7 +1412,7 @@ next
     using Profile.lifted_def card_eq_0_iff emptyE less_one lifted_a linorder_le_less_linear
     by metis
   hence n_defers_exactly_one_p: "card (defer n A p) = 1"
-    using finite_profile_p defers_1
+    using finite_profile_p defers_one
     unfolding defers_def
     by (metis (no_types))
   have fin_prof_def_m_q: "finite_profile (defer m A q) (limit_profile (defer m A q) q)"
@@ -1107,11 +1442,11 @@ next
   hence "card (defer n (defer n (defer m A p) (limit_profile (defer m A p) p))
           (limit_profile (defer n (defer m A p) (limit_profile (defer m A p) p))
             (limit_profile (defer m A p) p))) = 1"
-    using n_defers_exactly_one_p fin_prof_seq_comp_m_n defers_1 defers_def
+    using n_defers_exactly_one_p fin_prof_seq_comp_m_n defers_one defers_def
     by blast
   hence defer_seq_m_n_eq_one: "card (defer (m \<triangleright> n) A p) = 1"
     using One_nat_def Suc_leI a_non_empty card_gt_0_iff def_seq_m_n defers_def defer_a_p
-          defers_1 electoral_mod_m fin_prof_def_m finite_profile_p seq_comp_def_set_trans
+          defers_one electoral_mod_m fin_prof_def_m finite_profile_p seq_comp_def_set_trans
     by metis
   hence def_seq_m_n_eq_a: "defer (m \<triangleright> n) A p = {a}"
     using defer_a_p is_singleton_altdef is_singleton_the_elem singletonD
@@ -1126,7 +1461,7 @@ next
       by (metis (no_types))
     moreover from this
     have "(a \<in> defer m A p) \<longrightarrow> card (defer (m \<triangleright> n) A q) = 1"
-      using card_eq_0_iff card_insert_disjoint defers_1 electoral_mod_m empty_iff order_refl
+      using card_eq_0_iff card_insert_disjoint defers_one electoral_mod_m empty_iff order_refl
             finite.emptyI seq_comp_defers_def_set def_presv_fin_prof finite_profile_q
       unfolding One_nat_def defers_def
       by metis
@@ -1169,7 +1504,7 @@ next
       by metis
     hence "defer (m \<triangleright> n) A p = defer (m \<triangleright> n) A q"
       using a_non_empty card_1_singletonE def_eq def_seq_m_n def_seq_m_n_q defer_a_p
-            defer_monotone_n defer_monotonicity_def defer_seq_m_n_eq_one defers_1 defers_def
+            defer_monotone_n defer_monotonicity_def defer_seq_m_n_eq_one defers_one defers_def
             electoral_mod_m fin_prof_def_m_q finite_profile_p insertE seq_comp_def_card_bounded
       by (metis (no_types, lifting))
     moreover from this

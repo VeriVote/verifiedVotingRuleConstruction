@@ -439,7 +439,6 @@ proof -
                       (List.member x a \<longrightarrow> index x b \<le> index x a) \<and> List.member x a) \<and>
                     List.member x b}) `
                 {l. set l = A \<and> well_formed_l l}))"
-
             sorry
           thus "x \<in> listset (replicate (length p) (pl_\<alpha> ` permutations_of_set A))"
             unfolding pl_\<alpha>_def permutations_of_set_def
