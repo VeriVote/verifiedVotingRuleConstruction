@@ -64,6 +64,7 @@ theories
   "Compositional_Structures/Elect_Composition"
   "Compositional_Structures/Defer_One_Loop_Composition"
 (* "Voting Rules" *)
+  "Plurality_Rule"
   "Borda_Rule"
   "Pairwise_Majority_Rule"
   "Copeland_Rule"
