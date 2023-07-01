@@ -103,6 +103,17 @@ proof -
     by auto
 qed
 
+lemma elimset_in_alts:
+  fixes
+    e :: "'a Evaluation_Function" and
+    t :: "Threshold_Value" and
+    r :: "Threshold_Relation" and
+    A :: "'a set" and
+    p :: "'a Profile"
+  shows "elimination_set e t r A p \<subseteq> A"
+  unfolding elimination_set.simps
+  by safe
+
 subsection \<open>Soundness\<close>
 
 lemma elim_mod_sound[simp]:
