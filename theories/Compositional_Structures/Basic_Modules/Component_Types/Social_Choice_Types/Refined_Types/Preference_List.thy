@@ -107,6 +107,227 @@ lemma limited_dest:
   unfolding limited_def
   by simp
 
+lemma limit_equiv:
+  fixes
+    A :: "'a set" and
+    l :: "'a list"
+  assumes "well_formed_l l"
+  shows "pl_\<alpha> (limit_l A l) = limit A (pl_\<alpha> l)"
+  using assms
+proof (induction l)
+  case Nil
+  thus "pl_\<alpha> (limit_l A []) = limit A (pl_\<alpha> [])"
+    unfolding pl_\<alpha>_def
+    by simp
+next
+  case (Cons a l)
+  fix
+    a :: "'a" and
+    l :: "'a list"
+  assume
+    wf_imp_limit: "well_formed_l l \<Longrightarrow> pl_\<alpha> (limit_l A l) = limit A (pl_\<alpha> l)" and
+    wf_a_l: "well_formed_l (a#l)"
+  show "pl_\<alpha> (limit_l A (a#l)) = limit A (pl_\<alpha> (a#l))"
+    using wf_imp_limit wf_a_l
+  proof (clarsimp, safe)
+    fix
+      b :: "'a" and
+      c :: "'a"
+    assume b_less_c: "(b, c) \<in> pl_\<alpha> (a#(filter (\<lambda> a. a \<in> A) l))"
+    have limit_preference_list_assoc: "pl_\<alpha> (limit_l A l) = limit A (pl_\<alpha> l)"
+      using wf_a_l wf_imp_limit
+      by simp
+    thus "(b, c) \<in> pl_\<alpha> (a#l)"
+    proof (unfold pl_\<alpha>_def is_less_preferred_than_l.simps, safe)
+      show "b \<in> set (a#l)"
+        using b_less_c
+        unfolding pl_\<alpha>_def
+        by fastforce
+    next
+      show "c \<in> set (a#l)"
+        using b_less_c
+        unfolding pl_\<alpha>_def
+        by fastforce
+    next
+      have "\<forall> a' l' a''. ((a'::'a) \<lesssim>\<^sub>l' a'') =
+            (a' \<in> set l' \<and> a'' \<in> set l' \<and> index l' a'' \<le> index l' a')"
+        using is_less_preferred_than_l.simps
+        by blast
+      moreover from this
+      have "{(a', b'). a' \<lesssim>\<^sub>(limit_l A l) b'} =
+        {(a', a''). a' \<in> set (limit_l A l) \<and> a'' \<in> set (limit_l A l) \<and>
+            index (limit_l A l) a'' \<le> index (limit_l A l) a'}"
+        by presburger
+      moreover from this have
+        "{(a', b'). a' \<lesssim>\<^sub>l b'} = {(a', a''). a' \<in> set l \<and> a'' \<in> set l \<and> index l a'' \<le> index l a'}"
+        using is_less_preferred_than_l.simps
+        by auto
+      ultimately have "{(a', b').
+              a' \<in> set (limit_l A l) \<and> b' \<in> set (limit_l A l) \<and>
+                index (limit_l A l) b' \<le> index (limit_l A l) a'} =
+                    limit A {(a', b'). a' \<in> set l \<and> b' \<in> set l \<and> index l b' \<le> index l a'}"
+        using pl_\<alpha>_def limit_preference_list_assoc
+        by (metis (no_types))
+      hence idx_imp:
+        "b \<in> set (limit_l A l) \<and> c \<in> set (limit_l A l) \<and>
+          index (limit_l A l) c \<le> index (limit_l A l) b \<longrightarrow>
+            b \<in> set l \<and> c \<in> set l \<and> index l c \<le> index l b"
+        by auto
+      have "b \<lesssim>\<^sub>(a#(filter (\<lambda> a. a \<in> A) l)) c"
+        using b_less_c case_prodD mem_Collect_eq
+        unfolding pl_\<alpha>_def
+        by metis
+      moreover obtain
+        f :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> 'a" and
+        g :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> 'a list" and
+        h :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> 'a" where
+        "\<forall> d s e. d \<lesssim>\<^sub>s e \<longrightarrow>
+          d = f e s d \<and> s = g e s d \<and> e = h e s d \<and> f e s d \<in> set (g e s d) \<and>
+            h e s d \<in> set (g e s d) \<and> index (g e s d) (h e s d) \<le> index (g e s d) (f e s d)"
+        by fastforce
+      ultimately have
+        "b = f c (a#(filter (\<lambda> a. a \<in> A) l)) b \<and>
+          a#(filter (\<lambda> a. a \<in> A) l) = g c (a#(filter (\<lambda> a. a \<in> A) l)) b \<and>
+          c = h c (a#(filter (\<lambda> a. a \<in> A) l)) b \<and>
+          f c (a#(filter (\<lambda> a. a \<in> A) l)) b \<in> set (g c (a#(filter (\<lambda> a. a \<in> A) l)) b) \<and>
+          h c (a#(filter (\<lambda> a. a \<in> A) l)) b \<in> set (g c (a#(filter (\<lambda> a. a \<in> A) l)) b) \<and>
+          index (g c (a#(filter (\<lambda> a. a \<in> A) l)) b) (h c (a#(filter (\<lambda> a. a \<in> A) l)) b) \<le>
+            index (g c (a#(filter (\<lambda> a. a \<in> A) l)) b) (f c (a#(filter (\<lambda> a. a \<in> A) l)) b)"
+        by blast
+      moreover have "filter (\<lambda> a. a \<in> A) l = limit_l A l"
+        by simp
+      ultimately have "a \<noteq> c \<longrightarrow> index (a#l) c \<le> index (a#l) b"
+        using idx_imp
+        by force
+      thus "index (a#l) c \<le> index (a#l) b"
+        by force
+    qed
+  next
+    fix
+      b :: "'a" and
+      c :: "'a"
+    assume
+       "a \<in> A" and
+      "(b, c) \<in> pl_\<alpha> (a#(filter (\<lambda> a. a \<in> A) l))"
+    thus "c \<in> A"
+      unfolding pl_\<alpha>_def
+      by fastforce
+  next
+    fix
+      b :: "'a" and
+      c :: "'a"
+    assume
+      "a \<in> A" and
+      "(b, c) \<in> pl_\<alpha> (a#(filter (\<lambda> a. a \<in> A) l))"
+    thus "b \<in> A"
+      using case_prodD insert_iff is_less_preferred_than_l.elims(2) list.set(2) mem_Collect_eq
+            set_filter
+      unfolding pl_\<alpha>_def
+      by (metis (lifting))
+  next
+    fix
+      b :: "'a" and
+      c :: "'a"
+    assume
+      b_less_c: "(b, c) \<in> pl_\<alpha> (a#l)" and
+      b_in_A: "b \<in> A" and
+      c_in_A: "c \<in> A"
+    show "(b, c) \<in> pl_\<alpha> (a#(filter (\<lambda> a. a \<in> A) l))"
+    proof (unfold pl_\<alpha>_def is_less_preferred_than.simps, safe)
+      show "b \<lesssim>\<^sub>(a#(filter (\<lambda> a. a \<in> A) l)) c"
+      proof (unfold is_less_preferred_than_l.simps, safe)
+        show "b \<in> set (a#(filter (\<lambda> a. a \<in> A) l))"
+        using b_less_c b_in_A
+        unfolding pl_\<alpha>_def
+        by fastforce
+      next
+        show "c \<in> set (a#(filter (\<lambda> a. a \<in> A) l))"
+        using b_less_c c_in_A
+        unfolding pl_\<alpha>_def
+        by fastforce
+    next
+      have "(b, c) \<in> pl_\<alpha> (a#l)"
+        by (simp add: b_less_c)
+      hence "b \<lesssim>\<^sub>(a#l) c"
+        using case_prodD mem_Collect_eq
+        unfolding pl_\<alpha>_def
+        by metis
+      moreover have "pl_\<alpha> (filter (\<lambda> a. a \<in> A) l) = {(a, b). (a, b) \<in> pl_\<alpha> l \<and> a \<in> A \<and> b \<in> A}"
+        using wf_a_l wf_imp_limit
+        by simp
+      ultimately show "index (a#(filter (\<lambda> a. a \<in> A) l)) c \<le> index (a#(filter (\<lambda> a. a \<in> A) l)) b"
+        using add_leE add_le_cancel_right case_prodI in_rel_Collect_case_prod_eq index_Cons b_in_A
+              c_in_A set_ConsD is_less_preferred_than_l.elims(1) linorder_le_cases mem_Collect_eq
+              not_one_le_zero
+        unfolding pl_\<alpha>_def
+        by fastforce
+    qed
+  qed
+  next
+    fix
+      b :: "'a" and
+      c :: "'a"
+    assume
+      a_not_in_A: "a \<notin> A" and
+      b_less_c: "(b, c) \<in> pl_\<alpha> l"
+    show "(b, c) \<in> pl_\<alpha> (a#l)"
+    proof (unfold pl_\<alpha>_def is_less_preferred_than_l.simps, safe)
+      show "b \<in> set (a#l)"
+        using b_less_c
+        unfolding pl_\<alpha>_def
+        by fastforce
+    next
+      show "c \<in> set (a#l)"
+        using b_less_c
+        unfolding pl_\<alpha>_def
+        by fastforce
+    next
+      show "index (a#l) c \<le> index (a#l) b"
+      proof (unfold index_def, simp, safe)
+        assume "a = b"
+        thus "False"
+          using a_not_in_A b_less_c case_prod_conv is_less_preferred_than_l.elims(2) mem_Collect_eq
+                set_filter wf_a_l
+          unfolding pl_\<alpha>_def
+          by simp
+      next
+        show "find_index (\<lambda> x. x = c) l \<le> find_index (\<lambda> x. x = b) l"
+          using b_less_c case_prodD index_def is_less_preferred_than_l.elims(2) mem_Collect_eq
+          unfolding pl_\<alpha>_def
+          by metis
+      qed
+    qed
+  next
+    fix
+      b :: "'a" and
+      c :: "'a"
+    assume
+      a_not_in_l: "a \<notin> set l" and
+      a_not_in_A: "a \<notin> A" and
+      b_in_A: "b \<in> A" and
+      c_in_A: "c \<in> A" and
+      b_less_c: "(b, c) \<in> pl_\<alpha> (a#l)"
+    thus "(b, c) \<in> pl_\<alpha> l"
+    proof (unfold pl_\<alpha>_def is_less_preferred_than_l.simps, safe)
+      assume "b \<in> set (a#l)"
+      thus "b \<in> set l"
+        using a_not_in_A b_in_A
+        by fastforce
+    next
+      assume "c \<in> set (a#l)"
+      thus "c \<in> set l"
+        using a_not_in_A c_in_A
+        by fastforce
+    next
+      assume "index (a#l) c \<le> index (a#l) b"
+      thus "index l c \<le> index l b"
+        using a_not_in_l a_not_in_A c_in_A add_le_cancel_right index_Cons index_le_size
+              size_index_conv
+        by (metis (no_types, lifting))
+    qed
+  qed
+qed
+
 subsection \<open>Auxiliary Definitions\<close>
 
 definition total_on_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> bool" where
