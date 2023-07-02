@@ -275,14 +275,14 @@ proof -
                 a :: "'a" and
                 b :: "'a"
               assume
-                idx_b_lte_idx_a: "(if List.member l b then index l b + 1 else 0) \<le>
-                                    (if List.member l a then index l a + 1 else 0)" and
+                idx_b_lte_idx_a: "(if b \<in> set l then index l b + 1 else 0) \<le>
+                                    (if a \<in> set l then index l a + 1 else 0)" and
                 a_in_l: "a \<in> set l" and
                 b_in_l : "b \<in> set l"
               have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
                 using rel_of_set_l_eq_l_list
                 by (simp add: relation_of_def)
-              have "List.member l a"
+              have "a \<in> set l"
                 unfolding member_def
                 using a_in_l
                 by simp
@@ -296,7 +296,8 @@ proof -
               assume "(a, b) \<in> pl_\<alpha> l"
               thus "a \<in> set l"
                 using Collect_mem_eq case_prod_eta in_rel_Collect_case_prod_eq
-                      is_less_preferred_than_l.elims(2) member_def pl_\<alpha>_def
+                      is_less_preferred_than_l.elims(2)
+                unfolding pl_\<alpha>_def
                 by (metis (no_types))
             next
               fix
@@ -320,8 +321,8 @@ proof -
                 hence "a \<lesssim>\<^sub>l b"
                   using a_b_in_rel_of_l case_prodE mem_Collect_eq prod.inject
                   by blast
-                thus "(if List.member l b then index l b + 1 else 0) \<le>
-                        (if List.member l a then index l a + 1 else 0)"
+                thus "(if b \<in> set l then index l b + 1 else 0) \<le>
+                        (if a \<in> set l then index l a + 1 else 0)"
                   by force
               qed
             show "\<exists> l'. x!i = relation_of (\<lambda> y z. rank_l l' z \<le> rank_l l' y) (set l') \<and>
@@ -333,14 +334,14 @@ proof -
                   a :: "'a" and
                   b :: "'a"
                 assume
-                  idx_b_lte_idx_a: "(if List.member l b then index l b + 1 else 0) \<le>
-                          (if List.member l a then index l a + 1 else 0)" and
+                  idx_b_lte_idx_a: "(if b \<in> set l then index l b + 1 else 0) \<le>
+                          (if a \<in> set l then index l a + 1 else 0)" and
                   a_in_l: "a \<in> set l" and
                   b_in_l : "b \<in> set l"
                 have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
                   using rel_of_set_l_eq_l_list
                   by (simp add: relation_of_def)
-                have  "List.member l a"
+                have  "a \<in> set l"
                   unfolding member_def
                   using a_in_l
                   by simp
@@ -354,7 +355,8 @@ proof -
                 assume "(a, b) \<in> pl_\<alpha> l"
                 thus "a \<in> set l"
                   using Collect_mem_eq case_prod_eta in_rel_Collect_case_prod_eq
-                        is_less_preferred_than_l.elims(2) member_def pl_\<alpha>_def
+                        is_less_preferred_than_l.elims(2)
+                  unfolding pl_\<alpha>_def
                   by (metis (no_types))
               next
                 fix
@@ -378,8 +380,8 @@ proof -
                 hence "a \<lesssim>\<^sub>l b"
                   using a_b_in_rel_of_l case_prodE mem_Collect_eq prod.inject
                   by blast
-                thus "(if List.member l b then index l b + 1 else 0) \<le>
-                        (if List.member l a then index l a + 1 else 0)"
+                thus "(if b \<in> set l then index l b + 1 else 0) \<le>
+                        (if a \<in> set l then index l a + 1 else 0)"
                   by force
               qed
               thus "x!i = relation_of (\<lambda> y z. rank_l l z \<le> rank_l l y) (set l) \<and>
@@ -434,14 +436,11 @@ proof -
              of length l where each item is in S. *)
           have "x \<in> listset
                 (replicate (length p)
-                  ((\<lambda> x. {(a, b).
-                    (List.member x b \<longrightarrow>
-                      (List.member x a \<longrightarrow> index x b \<le> index x a) \<and> List.member x a) \<and>
-                    List.member x b}) `
-                {l. set l = A \<and> well_formed_l l}))"
+                  ((\<lambda> x. {(a, b). a \<in> A \<and> b \<in> A \<and> index x b \<le> index x a}) `
+                    {l. set l = A \<and> well_formed_l l}))"
             sorry
           thus "x \<in> listset (replicate (length p) (pl_\<alpha> ` permutations_of_set A))"
-            unfolding pl_\<alpha>_def permutations_of_set_def
+            unfolding pl_\<alpha>_def permutations_of_set_def is_less_preferred_than_l.simps
             by clarsimp
         qed
       qed
