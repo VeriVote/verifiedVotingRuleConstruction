@@ -62,8 +62,7 @@ proof -
     electing_mod:
     "\<forall> m'.
       (\<not> electing m' \<and> electoral_module m' \<longrightarrow>
-        profile (A m') (p m') \<and> finite (A m') \<and>
-          elect m' (A m') (p m') = {} \<and> A m' \<noteq> {}) \<and>
+        profile (A m') (p m') \<and> finite (A m') \<and> elect m' (A m') (p m') = {} \<and> A m' \<noteq> {}) \<and>
       (electing m' \<and> electoral_module m' \<longrightarrow>
         (\<forall> A p. (A \<noteq> {} \<and> profile A p \<and> finite A) \<longrightarrow> elect m' A p \<noteq> {}))"
     using electing_def
@@ -86,16 +85,14 @@ proof -
     using elector_sound module_m
     by simp
   moreover from electing_mod result
-  have "finite (A (elector m)) \<and>
-          profile (A (elector m)) (p (elector m)) \<and>
+  have "finite (A (elector m)) \<and> profile (A (elector m)) (p (elector m)) \<and>
           elect (elector m) (A (elector m)) (p (elector m)) = {} \<and>
           d (elector m (A (elector m)) (p (elector m))) = {} \<and>
           reject (elector m) (A (elector m)) (p (elector m)) =
             r (elector m (A (elector m)) (p (elector m))) \<longrightarrow>
               electing (elector m)"
-    using Diff_empty elector.simps non_block_m snd_conv
-          non_blocking_def reject_not_elec_or_def non_block
-          seq_comp_presv_non_blocking
+    using Diff_empty elector.simps non_block_m snd_conv non_blocking_def reject_not_elec_or_def
+          non_block seq_comp_presv_non_blocking
     by (metis (mono_tags, opaque_lifting))
   ultimately show ?thesis
     using fst_conv snd_conv
