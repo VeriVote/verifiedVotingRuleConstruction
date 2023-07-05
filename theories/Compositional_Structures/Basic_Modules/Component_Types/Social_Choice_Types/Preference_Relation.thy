@@ -785,8 +785,7 @@ proof (unfold rank.simps above_def, clarify)
     by metis
   have sets_eq: "{a'. (a, a') \<in> r} = {a'. (b, a') \<in> r}"
     using card_subset_eq connex_imp_refl lin_ord lin_ord_imp_connex mem_Collect_eq refl_on_domain
-          rev_finite_subset subset_eq transE
-    using card_eq fin_A r_trans r_total
+          rev_finite_subset subset_eq transE card_eq fin_A r_trans r_total
     by (smt (verit, best))
   hence "(b, a) \<in> r"
     using a_in_A above_connex lin_ord lin_ord_imp_connex

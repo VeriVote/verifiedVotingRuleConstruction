@@ -444,7 +444,7 @@ proof (induct n arbitrary: acc rule: less_induct)
             loop_comp_helper acc m t A p = loop_comp_helper (acc \<triangleright> m) m t A p"
       proof (safe)
         assume emod_acc: "electoral_module acc"
-        have emod_implies_defer_subset:
+        have sound_imp_defer_subset:
           "electoral_module m \<longrightarrow> defer (acc \<triangleright> m) A p \<subseteq> defer acc A p"
           using emod_acc f_prof seq_comp_def_set_bounded
           by blast
@@ -456,7 +456,7 @@ proof (induct n arbitrary: acc rule: less_induct)
           using def_presv_fin_prof emod_acc f_prof
           by metis
         have "defer (acc \<triangleright> m) A p \<subseteq> defer acc A p"
-          using emod_implies_defer_subset defer_lift_invariance_def monotone_m
+          using sound_imp_defer_subset defer_lift_invariance_def monotone_m
           by blast
         hence "defer (acc \<triangleright> m) A p \<subset> defer acc A p"
           using fin_def_limited_acc card_ineq card_psubset
