@@ -29,122 +29,43 @@ definition consensus_rule :: "'a Consensus_Rule \<Rightarrow> bool" where
 subsection \<open>TODO\<close>
 
 definition determined_if :: "'a Consensus_Condition \<Rightarrow> 'a Electoral_Module \<Rightarrow> bool" where
-  "determined_if K m \<equiv>
-    \<forall> A p p'. finite A \<and> profile A p \<and> profile A p' \<and> K (A, p) \<and> K (A, p')
-    \<longrightarrow> m A p = m A p'"
+  "determined_if c m \<equiv>
+    \<forall> A p p'. finite A \<and> profile A p \<and> profile A p' \<and> c (A, p) \<and> c (A, p') \<longrightarrow> m A p = m A p'"
 
-definition non_empty_set :: "'a Consensus_Rule \<Rightarrow> bool" where
-  "non_empty_set K \<equiv> \<exists> E. fst K E"
-
-definition consensus_rule_anonymity :: "'a Consensus_Rule \<Rightarrow> bool" where
-  "consensus_rule_anonymity K \<equiv>
-    (\<forall> A p q. finite_profile A p \<longrightarrow> finite_profile A q \<longrightarrow> p <~~> q \<longrightarrow> fst K (A, p) \<longrightarrow>
-      (fst K (A, q) \<and> (snd K A p = snd K A q)))"
-
-fun condition_to_consensus_rule :: "'a Consensus_Condition \<Rightarrow> 'a Electoral_Module \<Rightarrow>
-                                    'a Consensus_Rule" where
-  "condition_to_consensus_rule cond m =
+fun consensus_condition_\<K> :: "'a Consensus_Condition \<Rightarrow> 'a Electoral_Module \<Rightarrow>
+                                'a Consensus_Rule" where
+  "consensus_condition_\<K> c m =
     (let
-      w = (\<lambda> A p.
-        if cond (A, p)
-        then m A p
-        else defer_module A p)
-      in (cond, w)
+      w = (\<lambda> A p. if c (A, p) then m A p else defer_module A p)
+      in (c, w)
      )"
 
-lemma cons_rule_anon:
-  fixes
-    \<beta>' :: "'b \<Rightarrow> 'a Consensus_Condition" and
-    \<beta> :: "'a Consensus_Condition" and
-    \<alpha> :: "'a Consensus_Condition" and
-    m :: "'a Electoral_Module"
-  assumes
-    beta_sat: "\<beta> = (\<lambda> E. \<exists> a. \<beta>' a E)" and
-    beta'_anon: "\<forall> x. consensus_condition_anonymity (\<beta>' x)" and
-    anon_cons_cond: "consensus_condition_anonymity \<alpha>" and
-    conditions_univ: "\<forall> x. determined_if (\<lambda> E. \<alpha> E \<and> \<beta>' x E) m"
-  shows "consensus_rule_anonymity (condition_to_consensus_rule (\<lambda> E. \<alpha> E \<and> \<beta> E) m)"
-proof (unfold consensus_rule_anonymity_def, safe)
-  fix
-    A :: "'a set" and
-    p :: "'a Profile" and
-    q :: "'a Profile"
-  assume
-    fin_A: "finite A" and
-    prof_p: "profile A p" and
-    prof_q: "profile A q" and
-    perm: "p <~~> q" and
-    consensus_cond: "fst (condition_to_consensus_rule (\<lambda> E. \<alpha> E \<and> \<beta> E) m) (A, p)"
-  hence "(\<lambda> E. \<alpha> E \<and> \<beta> E) (A, p)"
-    by simp
-  hence
-    alpha_Ap: "\<alpha> (A, p)" and
-    beta_Ap: "\<beta> (A, p)"
-    by simp_all
-  from alpha_Ap anon_cons_cond
-  have alpha_A_perm_p: "\<alpha> (A, q)"
-    using perm fin_A prof_p prof_q
-    unfolding consensus_condition_anonymity_def
-    by metis
-  moreover from beta_Ap beta_sat beta'_anon
-  have "\<beta> (A, q)"
-    using cond_anon_if_ex_cond_anon perm fin_A prof_p prof_q
-    unfolding consensus_condition_anonymity_def
-    by blast
-  ultimately show em_cond_perm: "fst (condition_to_consensus_rule (\<lambda> E. \<alpha> E \<and> \<beta> E) m) (A, q)"
-    by simp
-  from beta_Ap beta_sat
-  have "\<exists> x. \<beta>' x (A, p)"
-    by simp
-  then obtain x where
-    beta'_x_Ap: "\<beta>' x (A, p)"
-    by metis
-  with beta'_anon
-  have beta'_x_A_perm_p: "\<beta>' x (A, q)"
-    using perm fin_A prof_p prof_q
-    unfolding consensus_condition_anonymity_def
-    by metis
-  from alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p
-  have "m A p = m A q"
-    using conditions_univ fin_A prof_p prof_q
-    unfolding determined_if_def
-    by metis
-  thus "snd (condition_to_consensus_rule (\<lambda> E. \<alpha> E \<and> \<beta> E) m) A p =
-             snd (condition_to_consensus_rule (\<lambda> E. \<alpha> E \<and> \<beta> E) m) A q"
-    using consensus_cond em_cond_perm
-    by simp
-qed
-
-subsection \<open>Consensus Rules\<close>
-
-text \<open>
-  Unanimity condition.
-\<close>
-
-definition unanimity :: "'a Consensus_Rule" where
-  "unanimity = condition_to_consensus_rule unanimity_condition elect_first_module"
+subsection \<open>Auxiliary Lemmas\<close>
 
 lemma elect_fst_mod_determined_if_unanimity_cond:
   fixes a :: "'a"
-  shows "determined_if (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_top_cond' a E)
-                     elect_first_module"
+  shows
+    "determined_if
+      (\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c \<and> equal_top_condition' a c)
+        elect_first_module"
 proof (unfold determined_if_def, safe)
   fix
     a :: 'a and
     A :: "'a set" and
     p :: "'a Profile" and
     p' :: "'a Profile"
-  let ?cond = "\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_top_cond' a E"
+  let ?cond =
+    "\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c \<and> equal_top_condition' a c"
   assume
     fin_A: "finite A" and
     prof_p: "profile A p" and
     prof_p': "profile A p'" and
-    eq_top_p: "eq_top_cond' a (A, p)" and
-    eq_top_p': "eq_top_cond' a (A, p')" and
-    not_empty_A: "ne_set_cond (A, p)" and
-    not_empty_A': "ne_set_cond (A, p')" and
-    not_empty_p: "ne_profile_cond (A, p)" and
-    not_empty_p': "ne_profile_cond (A, p')"
+    eq_top_p: "equal_top_condition' a (A, p)" and
+    eq_top_p': "equal_top_condition' a (A, p')" and
+    not_empty_A: "nonempty_set_condition (A, p)" and
+    not_empty_A': "nonempty_set_condition (A, p')" and
+    not_empty_p: "nonempty_profile_condition (A, p)" and
+    not_empty_p': "nonempty_profile_condition (A, p')"
   hence
     cond_Ap: "?cond (A, p)" and
     cond_Ap': "?cond (A, p')"
@@ -161,8 +82,8 @@ proof (unfold determined_if_def, safe)
         by simp
     next
       assume a'_neq_a: "a' \<noteq> a"
-      from not_empty_p not_empty_p'
       have lens_p_and_p'_ok: "0 < length p \<and> 0 < length p'"
+        using not_empty_p not_empty_p'
         by simp
       hence "A \<noteq> {} \<and> linear_order_on A (p!0) \<and> linear_order_on A (p'!0)"
         using not_empty_A not_empty_A' prof_p prof_p'
@@ -181,94 +102,166 @@ proof (unfold determined_if_def, safe)
     by auto
 qed
 
-lemma unanimity_is_anon: "consensus_rule_anonymity unanimity"
-proof (unfold unanimity_def)
-  let ?ne_cond = "(\<lambda> E. ne_set_cond E \<and> ne_profile_cond E)"
-  have "consensus_condition_anonymity ?ne_cond"
-    using ne_set_cond_anon ne_profile_cond_anon
-    unfolding consensus_condition_anonymity_def
-    by metis
-  moreover have "eq_top_cond = (\<lambda> e. \<exists> a. eq_top_cond' a e)"
-    by fastforce
-  ultimately have "consensus_rule_anonymity
-     (condition_to_consensus_rule (\<lambda> e. ne_set_cond e \<and> ne_profile_cond e \<and> eq_top_cond e)
-                        elect_first_module)"
-    using cons_rule_anon[of eq_top_cond eq_top_cond' ?ne_cond] eq_top_cond'_anon
-          elect_fst_mod_determined_if_unanimity_cond
-    by fastforce
-  moreover have
-    "unanimity_condition = (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_top_cond E)"
-    by force
-  hence "condition_to_consensus_rule (\<lambda> e. ne_set_cond e \<and> ne_profile_cond e \<and> eq_top_cond e)
-                           elect_first_module
-          = condition_to_consensus_rule unanimity_condition elect_first_module"
-    by metis
-  ultimately show
-    "consensus_rule_anonymity (condition_to_consensus_rule unanimity_condition elect_first_module)"
-    by metis
-qed
+lemma elect_fst_mod_determined_if_strong_unanimity_cond:
+  fixes r :: "'a Preference_Relation"
+  shows
+    "determined_if
+      (\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c \<and> equal_vote_condition' r c)
+        elect_first_module"
+  unfolding determined_if_def
+  by simp
+
+subsection \<open>Consensus Rules\<close>
+
+definition non_empty_set :: "'a Consensus_Rule \<Rightarrow> bool" where
+  "non_empty_set K \<equiv> \<exists> E. fst K E"
+
+text \<open>
+  Unanimity condition.
+\<close>
+
+definition unanimity :: "'a Consensus_Rule" where
+  "unanimity = consensus_condition_\<K> unanimity_condition elect_first_module"
 
 text \<open>
   Strong unanimity condition.
 \<close>
 
 definition strong_unanimity :: "'a Consensus_Rule" where
-  "strong_unanimity = condition_to_consensus_rule strong_unanimity_condition elect_first_module"
+  "strong_unanimity = consensus_condition_\<K> strong_unanimity_condition elect_first_module"
 
-lemma elect_fst_mod_determined_if_strong_unanimity_cond:
-  fixes v :: "'a Preference_Relation"
-  shows "determined_if (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_vote_cond' v E)
-                     elect_first_module"
-proof (unfold determined_if_def, safe)
+subsection \<open>Properties\<close>
+
+definition consensus_rule_anonymity :: "'a Consensus_Rule \<Rightarrow> bool" where
+  "consensus_rule_anonymity K \<equiv>
+    \<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<and> fst K (A, p) \<longrightarrow>
+      fst K (A, q) \<and> (snd K A p = snd K A q)"
+
+subsection \<open>Inference Rules\<close>
+
+lemma consensus_rule_anonymous:
+  fixes
+    \<beta>' :: "'b \<Rightarrow> 'a Consensus_Condition" and
+    \<beta> :: "'a Consensus_Condition" and
+    \<alpha> :: "'a Consensus_Condition" and
+    m :: "'a Electoral_Module"
+  assumes
+    beta_sat: "\<beta> = (\<lambda> E. \<exists> a. \<beta>' a E)" and
+    beta'_anon: "\<forall> x. consensus_anonymity (\<beta>' x)" and
+    anon_cons_cond: "consensus_anonymity \<alpha>" and
+    conditions_univ: "\<forall> x. determined_if (\<lambda> E. \<alpha> E \<and> \<beta>' x E) m"
+  shows "consensus_rule_anonymity (consensus_condition_\<K> (\<lambda> E. \<alpha> E \<and> \<beta> E) m)"
+proof (unfold consensus_rule_anonymity_def, safe)
   fix
-    v :: "'a Preference_Relation" and
     A :: "'a set" and
     p :: "'a Profile" and
-    p' :: "'a Profile"
+    q :: "'a Profile"
   assume
-    eq_votes_v_in_p: "eq_vote_cond' v (A, p)" and
-    eq_votes_v_in_p': "eq_vote_cond' v (A, p')" and
-    not_empty_p: "ne_profile_cond (A, p)" and
-    not_empty_p': "ne_profile_cond (A, p')"
-  from not_empty_p not_empty_p'
-  have "p \<noteq> [] \<and> p' \<noteq> []"
+    fin_A: "finite A" and
+    prof_p: "profile A p" and
+    prof_q: "profile A q" and
+    perm: "p <~~> q" and
+    consensus_cond: "fst (consensus_condition_\<K> (\<lambda> E. \<alpha> E \<and> \<beta> E) m) (A, p)"
+  hence "(\<lambda> E. \<alpha> E \<and> \<beta> E) (A, p)"
     by simp
-  with eq_votes_v_in_p eq_votes_v_in_p'
-  have "p!0 = p'!0"
+  hence
+    alpha_Ap: "\<alpha> (A, p)" and
+    beta_Ap: "\<beta> (A, p)"
+    by simp_all
+  have alpha_A_perm_p: "\<alpha> (A, q)"
+    using anon_cons_cond alpha_Ap perm fin_A prof_p prof_q
+    unfolding consensus_anonymity_def
+    by metis
+  moreover have "\<beta> (A, q)"
+    using beta'_anon
+    unfolding consensus_anonymity_def
+    using beta_Ap beta_sat cons_anon_if_ex_cons_anon perm fin_A prof_p prof_q
+    by blast
+  ultimately show em_cond_perm: "fst (consensus_condition_\<K> (\<lambda> E. \<alpha> E \<and> \<beta> E) m) (A, q)"
     by simp
-  thus "elect_first_module A p = elect_first_module A p'"
+  have "\<exists> x. \<beta>' x (A, p)"
+    using beta_Ap beta_sat
+    by simp
+  then obtain x where
+    beta'_x_Ap: "\<beta>' x (A, p)"
+    by metis
+  hence beta'_x_A_perm_p: "\<beta>' x (A, q)"
+    using beta'_anon perm fin_A prof_p prof_q
+    unfolding consensus_anonymity_def
+    by metis
+  have "m A p = m A q"
+    using alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p conditions_univ fin_A prof_p prof_q
+    unfolding determined_if_def
+    by metis
+  thus "snd (consensus_condition_\<K> (\<lambda> E. \<alpha> E \<and> \<beta> E) m) A p =
+             snd (consensus_condition_\<K> (\<lambda> E. \<alpha> E \<and> \<beta> E) m) A q"
+    using consensus_cond em_cond_perm
     by simp
 qed
 
-lemma strong_unanimity_is_anon: "consensus_rule_anonymity strong_unanimity"
-proof (unfold strong_unanimity_def)
-  have "consensus_condition_anonymity (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E)"
-    using ne_set_cond_anon ne_profile_cond_anon
-    unfolding consensus_condition_anonymity_def
+subsection \<open>Theorems\<close>
+
+lemma unanimity_anonymous: "consensus_rule_anonymity unanimity"
+proof (unfold unanimity_def)
+  let ?ne_cond = "(\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c)"
+  have "consensus_anonymity ?ne_cond"
+    using nonempty_set_cond_anonymous nonempty_profile_cond_anonymous
+    unfolding consensus_anonymity_def
     by metis
-  moreover have "eq_vote_cond = (\<lambda> e. \<exists> v. eq_vote_cond' v e)"
+  moreover have "equal_top_condition = (\<lambda> c. \<exists> a. equal_top_condition' a c)"
+    by fastforce
+  ultimately have "consensus_rule_anonymity
+     (consensus_condition_\<K>
+        (\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c \<and> equal_top_condition c)
+          elect_first_module)"
+    using consensus_rule_anonymous[of equal_top_condition equal_top_condition' ?ne_cond]
+          equal_top_cond'_anonymous elect_fst_mod_determined_if_unanimity_cond
+    by fastforce
+  moreover have
+    "unanimity_condition =
+      (\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c \<and> equal_top_condition c)"
+    by force
+  hence "consensus_condition_\<K>
+    (\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c \<and> equal_top_condition c)
+      elect_first_module =
+        consensus_condition_\<K> unanimity_condition elect_first_module"
+    by metis
+  ultimately show
+    "consensus_rule_anonymity (consensus_condition_\<K> unanimity_condition elect_first_module)"
+    by metis
+qed
+
+lemma strong_unanimity_anonymous: "consensus_rule_anonymity strong_unanimity"
+proof (unfold strong_unanimity_def)
+  have "consensus_anonymity (\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c)"
+    using nonempty_set_cond_anonymous nonempty_profile_cond_anonymous
+    unfolding consensus_anonymity_def
+    by metis
+  moreover have "equal_vote_condition = (\<lambda> c. \<exists> v. equal_vote_condition' v c)"
     by fastforce
   ultimately have
     "consensus_rule_anonymity
-      (condition_to_consensus_rule
-        (\<lambda> e. ne_set_cond e \<and> ne_profile_cond e \<and> eq_vote_cond e)
+      (consensus_condition_\<K>
+        (\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c \<and> equal_vote_condition c)
         elect_first_module)"
-    using cons_rule_anon[of eq_vote_cond eq_vote_cond' "\<lambda> E. ne_set_cond E \<and> ne_profile_cond E"]
-          ne_set_cond_anon ne_profile_cond_anon eq_vote_cond'_anon
+    using consensus_rule_anonymous[of equal_vote_condition equal_vote_condition'
+            "\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c"]
+          nonempty_set_cond_anonymous nonempty_profile_cond_anonymous eq_vote_cond'_anon
           elect_fst_mod_determined_if_strong_unanimity_cond
     by fastforce
   moreover have
     "strong_unanimity_condition =
-      (\<lambda> E. ne_set_cond E \<and> ne_profile_cond E \<and> eq_vote_cond E)"
+      (\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c \<and> equal_vote_condition c)"
     by force
   hence
-    "condition_to_consensus_rule (\<lambda> e. ne_set_cond e \<and> ne_profile_cond e \<and> eq_vote_cond e)
-                       elect_first_module =
-     condition_to_consensus_rule strong_unanimity_condition elect_first_module"
+    "consensus_condition_\<K>
+      (\<lambda> c. nonempty_set_condition c \<and> nonempty_profile_condition c \<and> equal_vote_condition c)
+        elect_first_module =
+          consensus_condition_\<K> strong_unanimity_condition elect_first_module"
     by metis
   ultimately show
     "consensus_rule_anonymity
-      (condition_to_consensus_rule strong_unanimity_condition elect_first_module)"
+      (consensus_condition_\<K> strong_unanimity_condition elect_first_module)"
     by metis
 qed
 

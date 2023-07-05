@@ -6,11 +6,10 @@
 section \<open>Distance Rationalization\<close>
 
 theory Distance_Rationalization
-  imports "Distance"
+  imports "HOL-Combinatorics.Multiset_Permutations"
           "Consensus_Rule"
-          "HOL-Combinatorics.Multiset_Permutations"
+          "Distance"
           "Social_Choice_Types/Refined_Types/Preference_List"
-          "Votewise_Distance"
 begin
 
 text \<open>
@@ -22,7 +21,7 @@ text \<open>
   class.
 \<close>
 
-subsection \<open>Definition\<close>
+subsection \<open>Definitions\<close>
 
 fun consensus_elections :: "'a Consensus_Rule \<Rightarrow> 'a \<Rightarrow> 'a Election set" where
   "consensus_elections K a =
@@ -37,12 +36,14 @@ fun arg_min_set :: "('b \<Rightarrow> 'a :: ord) \<Rightarrow> 'b set \<Rightarr
 (* fun arg_min_set' :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
    "arg_min_set_' f A = Set.filter (is_arg_min f (\<lambda> a. a \<in> A)) A" *)
 
-fun dr_winners :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a set \<Rightarrow>
-                   'a Profile \<Rightarrow> 'a set" where
+fun dr_winners :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow>
+                  'a set" where
   "dr_winners d K A p = arg_min_set (score d K (A, p)) A"
 
-fun dr_rule :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Electoral_Module" where
-  "dr_rule d K A p = (dr_winners d K A p, A - dr_winners d K A p, {})"
+fun distance_\<R> :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Electoral_Module" where
+  "distance_\<R> d K A p = (dr_winners d K A p, A - dr_winners d K A p, {})"
+
+subsection \<open>Standard Definitions\<close>
 
 (*
   We want "all_profiles l A = {}" for infinite A.
@@ -74,6 +75,8 @@ fun dr_winners_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Ri
 
 fun dr_rule_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Rule \<Rightarrow> 'a Electoral_Module" where
   "dr_rule_std d K A p = (dr_winners_std d K A p, A - dr_winners_std d K A p, {})"
+
+subsection \<open>Auxiliary Lemmas\<close>
 
 lemma list_cons_presv_finiteness:
   fixes
@@ -207,7 +210,69 @@ proof (induct l, simp, safe)
     by metis
 qed
 
-lemma standard_implies_equal_score:
+subsection \<open>Soundness\<close>
+
+lemma \<R>_sound:
+  fixes
+    K :: "'a Consensus_Rule" and
+    d :: "'a Election Distance"
+  shows "electoral_module (distance_\<R> d K)"
+  unfolding electoral_module_def
+  by (auto simp add: is_arg_min_def)
+
+subsection \<open>Inference Rules\<close>
+
+lemma is_arg_min_equal:
+  fixes
+    f :: "'a \<Rightarrow> 'b::ord" and
+    g :: "'a \<Rightarrow> 'b" and
+    S :: "'a set" and
+    x :: 'a
+  assumes "\<forall> x \<in> S. f x = g x"
+  shows "is_arg_min f (\<lambda> s. s \<in> S) x = is_arg_min g (\<lambda> s. s \<in> S) x"
+proof (unfold is_arg_min_def, cases "x \<in> S")
+  case False
+  thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
+    by simp
+next
+  case x_in_S: True
+  thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
+  proof (cases "\<exists> y. (\<lambda> s. s \<in> S) y \<and> f y < f x")
+    case y: True
+    then obtain y :: 'a where
+      "(\<lambda> s. s \<in> S) y \<and> f y < f x"
+      by metis
+    hence "(\<lambda> s. s \<in> S) y \<and> g y < g x"
+      using x_in_S assms
+      by metis
+    thus ?thesis
+      using y
+      by metis
+  next
+    case not_y: False
+    have "\<not> (\<exists> y. (\<lambda> s. s \<in> S) y \<and> g y < g x)"
+    proof (safe)
+      fix  y :: "'a"
+      assume
+        y_in_S: "y \<in> S" and
+        g_y_lt_g_x: "g y < g x"
+      have f_eq_g_for_elems_in_S: "\<forall> a. a \<in> S \<longrightarrow> f a = g a"
+        using assms
+        by simp
+      hence "g x = f x"
+        using x_in_S
+        by presburger
+      thus "False"
+        using f_eq_g_for_elems_in_S g_y_lt_g_x not_y y_in_S
+        by (metis (no_types))
+    qed
+    with x_in_S not_y
+    show ?thesis
+      by simp
+  qed
+qed
+
+lemma standard_distance_imp_equal_score:
   fixes
     d :: "'a Election Distance" and
     K :: "'a Consensus_Rule" and
@@ -542,140 +607,14 @@ proof -
     by simp
 qed
 
-lemma swap_standard: "standard (votewise_distance swap l_one)"
-proof (unfold standard_def, clarify)
-  fix
-    C :: "'a set" and
-    B :: "'a set" and
-    p :: "'a Profile" and
-    q :: "'a Profile"
-  assume len_p_neq_len_q_or_C_neq_B: "length p \<noteq> length q \<or> C \<noteq> B"
-  thus "votewise_distance swap l_one (C, p) (B, q) = \<infinity>"
-  proof (cases "length p \<noteq> length q \<or> length p = 0", simp)
-    case False
-    hence C_neq_B: "C \<noteq> B"
-      using len_p_neq_len_q_or_C_neq_B
-      by simp
-    from False
-    have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = swap (C, (p!0)) (B, (q!0))"
-      using case_prod_conv length_zip min.idem nth_map nth_zip zero_less_iff_neq_zero
-      by (metis (no_types, lifting))
-    also have "\<dots> = \<infinity>"
-      using C_neq_B
-      by simp
-    finally have "(map2 (\<lambda> x y. swap (C, x) (B, y)) p q)!0 = \<infinity>"
-      by simp
-    have len_gt_zero: "0 < length (map2 (\<lambda> x y. swap (C, x) (B, y)) p q)"
-      using False
-      by force
-    moreover have "(\<Sum> i::nat < min (length p) (length q). ereal_of_enat (\<infinity>)) = \<infinity>"
-      using finite_lessThan sum_Pinfty ereal_of_enat_simps(2) lessThan_iff min.idem
-            False not_gr_zero of_nat_eq_enat
-      by metis
-    ultimately have "l_one (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) = \<infinity>"
-      using C_neq_B
-      by simp
-    thus ?thesis
-      using False
-      by simp
-  qed
-qed
-
-lemma equal_score_swap: "score (votewise_distance swap l_one)
-                          = score_std (votewise_distance swap l_one)"
-  using standard_implies_equal_score swap_standard
-  by fast
-
-definition drswap :: "('a Election \<Rightarrow> bool) \<times> 'a Electoral_Module \<Rightarrow> 'a Electoral_Module" where
-  "drswap A p = dr_rule (votewise_distance swap l_one) A p"
-
-lemma drswap_code[code]: "drswap = dr_rule_std (votewise_distance swap l_one)"
-proof -
-  from equal_score_swap
-  have "\<forall> K E a. score (votewise_distance swap l_one) K E a
-        = score_std (votewise_distance swap l_one) K E a"
-    by metis
-  hence "\<forall> K A p. dr_winners (votewise_distance swap l_one) K A p
-          = dr_winners_std (votewise_distance swap l_one) K A p"
-    by (simp add: equal_score_swap)
-  hence "\<forall> K A p. dr_rule (votewise_distance swap l_one) K A p
-          = dr_rule_std (votewise_distance swap l_one) K A p"
-    by fastforce
-  thus ?thesis
-    unfolding drswap_def
-    by blast
-qed
-
-subsection \<open>Soundness\<close>
-
-lemma dr_sound:
-  fixes
-    K :: "'a Consensus_Rule" and
-    d :: "'a Election Distance"
-  shows "electoral_module (dr_rule d K)"
-  unfolding electoral_module_def
-  by (auto simp add: is_arg_min_def)
-
-subsection \<open>TODO\<close>
-
-lemma is_arg_min_equal:
-  fixes
-    f :: "'a \<Rightarrow> 'b::ord" and
-    g :: "'a \<Rightarrow> 'b" and
-    S :: "'a set" and
-    x :: 'a
-  assumes "\<forall> x \<in> S. f x = g x"
-  shows "is_arg_min f (\<lambda> s. s \<in> S) x = is_arg_min g (\<lambda> s. s \<in> S) x"
-proof (unfold is_arg_min_def, cases "x \<in> S")
-  case False
-  thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
-    by simp
-next
-  case x_in_S: True
-  thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
-  proof (cases "\<exists> y. (\<lambda> s. s \<in> S) y \<and> f y < f x")
-    case y: True
-    then obtain y :: 'a where
-      "(\<lambda> s. s \<in> S) y \<and> f y < f x"
-      by metis
-    hence "(\<lambda> s. s \<in> S) y \<and> g y < g x"
-      using x_in_S assms
-      by metis
-    thus ?thesis
-      using y
-      by metis
-  next
-    case not_y: False
-    have "\<not> (\<exists> y. (\<lambda> s. s \<in> S) y \<and> g y < g x)"
-    proof (safe)
-      fix  y :: "'a"
-      assume
-        y_in_S: "y \<in> S" and
-        g_y_lt_g_x: "g y < g x"
-      have f_eq_g_for_elems_in_S: "\<forall> a. a \<in> S \<longrightarrow> f a = g a"
-        using assms
-        by simp
-      hence "g x = f x"
-        using x_in_S
-        by presburger
-      thus "False"
-        using f_eq_g_for_elems_in_S g_y_lt_g_x not_y y_in_S
-        by (metis (no_types))
-    qed
-    with x_in_S not_y
-    show ?thesis
-      by simp
-  qed
-qed
-
-lemma rule_anon_if_el_dist_and_cons_class_anon:
+lemma anonymous_distance_and_consensus_imp_rule_anonymity:
   fixes
     d :: "'a Election Distance" and
     K :: "'a Consensus_Rule"
   assumes
-    d_anon: "el_distance_anonymity d" and
+    d_anon: "distance_anonymity d" and
     K_anon: "consensus_rule_anonymity K"
-  shows "anonymity (dr_rule d K)"
+  shows "anonymity (distance_\<R> d K)"
 proof (unfold anonymity_def, clarify)
   fix
     A :: "'a set" and
@@ -698,7 +637,7 @@ proof (unfold anonymity_def, clarify)
     using pi_perm
     by simp
   let ?listpi' = "\<lambda> xs. permute_list (?pi' (length xs)) xs"
-  let ?m = "dr_rule d K"
+  let ?m = "distance_\<R> d K"
   let ?P = "\<lambda> a A' p'. (A', p') \<in> consensus_elections K a"
   have "\<forall> a. {(A', p') | A' p'. ?P a A' p'} = {(A', ?listpi' p') | A' p'. ?P a A' p'}"
   proof (clarify)
@@ -828,12 +767,12 @@ proof (unfold anonymity_def, clarify)
       "\<And> A' p' A p pi. (\<forall> n. (pi n) permutes {..< n})
           \<longrightarrow> d (A, p) (A', p')
                 = d (A, permute_list (pi (length p)) p) (A', permute_list (pi (length p')) p')"
-      unfolding el_distance_anonymity_def
+      unfolding distance_anonymity_def
       by blast
     show "{d (A, p) (A', p') | A' p'. ?P a A' p'} =
             {d (A, ?listpi' p) (A', ?listpi' p') | A' p'. ?P a A' p'}"
       using perm anon[of ?pi' A p]
-      unfolding el_distance_anonymity_def
+      unfolding distance_anonymity_def
       by simp
   qed
   hence "\<forall> a \<in> A. {d (A, p) (A', p') | A' p'. ?P a A' p'} =
@@ -848,7 +787,7 @@ proof (unfold anonymity_def, clarify)
     by fast
   hence "\<forall> a \<in> A. score d K (A, p) a = score d K (A, q) a"
     by simp
-  thus "dr_rule d K A p = dr_rule d K A q"
+  thus "distance_\<R> d K A p = distance_\<R> d K A q"
     using is_arg_min_equal[of A "score d K (A, p)" "score d K (A, q)"]
     by auto
 qed

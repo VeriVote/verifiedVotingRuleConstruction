@@ -6,8 +6,8 @@
 section \<open>Votewise Distance\<close>
 
 theory Votewise_Distance
-  imports "Distance"
-          "Norm"
+  imports "Norm"
+          "Distance"
 begin
 
 text \<open>
@@ -20,58 +20,56 @@ text \<open>
 subsection \<open>Definition\<close>
 
 fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm \<Rightarrow> 'a Election Distance" where
-  "votewise_distance d n (A, xs) (A', ys) =
-    (if length xs = length ys \<and> (0 < length xs \<or> A = A')
-    then n (map2 (\<lambda> x y. d (A, x) (A', y)) xs ys)
+  "votewise_distance d n (A, p) (A', p') =
+    (if length p = length p' \<and> (0 < length p \<or> A = A')
+    then n (map2 (\<lambda> q q'. d (A, q) (A', q')) p p')
     else \<infinity>)"
 
-subsection \<open>TODO\<close>
+subsection \<open>Inference Rules\<close>
 
-lemma el_dist_anon_if_norm_symm:
+lemma symmetric_norm_imp_distance_anonymous:
   fixes
     d :: "'a Vote Distance" and
     n :: "Norm"
   assumes "symmetry n"
-  shows "el_distance_anonymity (votewise_distance d n)"
-proof (unfold el_distance_anonymity_def, safe)
+  shows "distance_anonymity (votewise_distance d n)"
+proof (unfold distance_anonymity_def, safe)
   fix
     A  :: "'a set" and
     A' :: "'a set" and
     pi :: "nat \<Rightarrow> nat \<Rightarrow> nat" and
     p  :: "'a Profile" and
     p' :: "'a Profile"
-  let ?listpi = "\<lambda> xs. permute_list (pi (length xs)) xs"
+  let ?z = "zip p p'" and
+      ?lt_len = "\<lambda> i. {..< length i}" and
+      ?pi_len = "\<lambda> i. pi (length i)" and
+      ?c_prod = "case_prod (\<lambda> q q'. d (A, q) (A', q'))"
+  let ?listpi = "\<lambda> q. permute_list (?pi_len q) q"
   let ?q = "?listpi p" and
       ?q' = "?listpi p'"
   assume perm: "\<forall> n. pi n permutes {..< n}"
-  hence "\<forall> zs. pi (length zs) permutes {..< length zs}"
-    by metis
-  hence listpi_sym: "\<forall> zs. ?listpi zs <~~> zs"
+  hence listpi_sym: "\<forall> l. ?listpi l <~~> l"
     using mset_permute_list
     by metis
-  show "votewise_distance d n (A, p) (A', p')
-        = votewise_distance d n (A, ?q) (A', ?q')"
+  show "votewise_distance d n (A, p) (A', p') = votewise_distance d n (A, ?q) (A', ?q')"
   proof (cases "length p = length p' \<and> (0 < length p \<or> A = A')")
     case False
-    with perm
-    show ?thesis
+    thus ?thesis
+      using perm
       by auto
   next
     case True
-    hence "votewise_distance d n (A, p) (A', p')
-           = n (map2 (\<lambda> x y. d (A, x) (A', y)) p p')"
+    hence "votewise_distance d n (A, p) (A', p') = n (map2 (\<lambda> x y. d (A, x) (A', y)) p p')"
       by auto
-    also from assms listpi_sym
-    have
-      "\<dots> = n (?listpi (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
+    also have "\<dots> = n (?listpi (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
+      using assms listpi_sym
       unfolding symmetry_def
       by (metis (no_types, lifting))
     also have "\<dots> = n (map (case_prod (\<lambda> x y. d (A, x) (A', y))) (?listpi (zip p p')))"
-      using permute_list_map[of \<open>pi (length p)\<close> \<open>zip p p'\<close> \<open>case_prod (\<lambda> x y. d (A, x) (A', y))\<close>]
-            perm True
+      using permute_list_map[of \<open>?pi_len p\<close> ?z ?c_prod] perm True
       by simp
     also have "\<dots> = n (map2 (\<lambda> x y. d (A, x) (A', y)) (?listpi p) (?listpi p'))"
-      using permute_list_zip[of \<open>pi (length p)\<close> \<open>{..< length p}\<close> p p'] perm True
+      using permute_list_zip[of \<open>?pi_len p\<close> \<open>?lt_len p\<close> p p'] perm True
       by simp
     also have "\<dots> = votewise_distance d n (A, ?listpi p) (A', ?listpi p')"
       using True

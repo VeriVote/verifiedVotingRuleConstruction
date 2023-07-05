@@ -23,7 +23,7 @@ fun elect_first_module :: "'a Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-theorem first_mod_sound: "electoral_module elect_first_module"
+theorem elect_first_mod_sound: "electoral_module elect_first_module"
 proof (intro electoral_modI)
   fix
     A :: "'a set" and

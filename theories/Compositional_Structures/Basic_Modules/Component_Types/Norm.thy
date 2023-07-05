@@ -20,18 +20,12 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-type_synonym Norm = "ereal list  \<Rightarrow> ereal"
+type_synonym Norm = "ereal list \<Rightarrow> ereal"
 
 definition norm :: "Norm \<Rightarrow> bool" where
   "norm n \<equiv> \<forall> (x::ereal list). n x \<ge> 0 \<and> (\<forall> i < length x. (x!i = 0) \<longrightarrow> n x = 0)"
 
-subsection \<open>TODO\<close>
-
-definition symmetry :: "Norm \<Rightarrow> bool" where
-  "symmetry n \<equiv> \<forall> xs ys. xs <~~> ys \<longrightarrow> n xs = n ys"
-
-fun l_one :: "Norm" where
-  "l_one xs = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
+subsection \<open>Auxiliary Lemmas\<close>
 
 lemma sum_over_image_of_bijection:
   fixes
@@ -46,7 +40,6 @@ proof (induction "card A" arbitrary: A A')
   case 0
   hence "card A' = 0"
     using bij_betw_same_card assms
-    using assms
     by metis
   hence "(\<Sum> a \<in> A. g a) = 0 \<and> (\<Sum> a' \<in> A'. g (the_inv_into A f a')) = 0"
     using 0 card_0_eq sum.empty sum.infinite
@@ -64,18 +57,15 @@ next
             bij_betw f A A' \<Longrightarrow> sum g A = (\<Sum> a \<in> A'. g (the_inv_into A f a))" and
     suc: "Suc x = card A" and
     bij_A_A': "bij_betw f A A'"
-  from suc
-  have "\<exists> a. a \<in> A"
-    using card_eq_SucD insertI1
-    by metis
-  then obtain a where
+  obtain a where
     a_in_A: "a \<in> A"
-    by blast
+    using suc card_eq_SucD insertI1
+    by metis
   have a_compl_A: "insert a (A - {a}) = A"
     using a_in_A
-    by fastforce
-  from bij_A_A'
+    by blast
   have inj_on_A_A': "inj_on f A \<and> A' = f ` A"
+    using bij_A_A'
     unfolding bij_betw_def
     by simp
   hence inj_on_A: "inj_on f A"
@@ -106,9 +96,8 @@ next
     using suc bij_A_A' bij_without_a
     by (simp add: bij_betw_same_card)
   hence "(\<Sum> a \<in> A. g a) = (\<Sum> a \<in> (A - {a}). g a) + g a"
-    using suc add.commute card_Diff1_less_iff insert_Diff
-          insert_Diff_single lessI sum.insert_remove
-          card_without_a
+    using suc add.commute card_Diff1_less_iff insert_Diff insert_Diff_single lessI
+          sum.insert_remove card_without_a
     by metis
   also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into (A - {a}) f a')) + g a"
     using IH bij_without_a card_without_a
@@ -120,17 +109,26 @@ next
     using a_in_A bij_A_A'
     by (simp add: bij_betw_imp_inj_on the_inv_into_f_f)
   also have "\<dots> = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"
-    using add.commute card_Diff1_less_iff insert_Diff
-          insert_Diff_single lessI sum.insert_remove
-          card_A'_from_x
+    using add.commute card_Diff1_less_iff insert_Diff insert_Diff_single lessI
+          sum.insert_remove card_A'_from_x
     by metis
   finally show "(\<Sum> a \<in> A. g a) = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"
     by simp
 qed
 
-subsection \<open>Property\<close>
+subsection \<open>Common Norms\<close>
 
-lemma l_one_is_symm: "symmetry l_one"
+fun l_one :: "Norm" where
+  "l_one x = (\<Sum> i < length x. \<bar>x!i\<bar>)"
+
+subsection \<open>Properties\<close>
+
+definition symmetry :: "Norm \<Rightarrow> bool" where
+  "symmetry n \<equiv> \<forall> x y. x <~~> y \<longrightarrow> n x = n y"
+
+subsection \<open>Theorems\<close>
+
+theorem l_one_is_symm: "symmetry l_one"
 proof (unfold symmetry_def, safe)
   fix
     xs :: "ereal list" and
@@ -142,23 +140,19 @@ proof (unfold symmetry_def, safe)
       pi_xs_ys: "permute_list pi xs = ys"
     using mset_eq_permutation
     by metis
-  from pi_xs_ys pi_perm
-  have "(\<Sum> i < length xs. \<bar>ys!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!(pi i)\<bar>)"
+  hence "(\<Sum> i < length xs. \<bar>ys!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!(pi i)\<bar>)"
     using permute_list_nth 
     by fastforce
-  also from pi_perm
-  have "\<dots> = (\<Sum> i < length xs. \<bar>xs!(pi (inv pi i))\<bar>)"
-    using permutes_imp_bij sum_over_image_of_bijection bijection_def sum.cong
-          bijection.inv_left f_the_inv_into_f_bij_betw permutes_bij
-    by (smt (verit, best))
-  also from pi_perm
-  have "\<dots> = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
-    using permutes_inv_eq
+  also have "\<dots> = (\<Sum> i < length xs. \<bar>xs!(pi (inv pi i))\<bar>)"
+    using pi_perm permutes_inv_eq f_the_inv_into_f_bij_betw permutes_imp_bij sum.cong
+          sum_over_image_of_bijection
+    by (smt (verit, ccfv_SIG))
+  also have "\<dots> = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
+    using pi_perm permutes_inv_eq
     by metis
   finally have "(\<Sum> i < length xs. \<bar>ys!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
     by simp
-  moreover from pi_perm pi_xs_ys
-  have "length xs = length ys"
+  moreover have "length xs = length ys"
     using perm perm_length
     by metis
   ultimately show "l_one xs = l_one ys"

@@ -21,27 +21,25 @@ text \<open>
 subsection \<open>Definition\<close>
 
 fun kemeny_rule :: "'a Electoral_Module" where
-  "kemeny_rule A p = (dr_rule (votewise_distance swap l_one) strong_unanimity) A p"
+  "kemeny_rule A p = (distance_\<R> (votewise_distance swap l_one) strong_unanimity) A p"
 
 subsection \<open>Soundness\<close>
 
 theorem kemeny_rule_sound: "electoral_module kemeny_rule"
   unfolding kemeny_rule.simps
-  using dr_sound
+  using \<R>_sound
   by metis
 
 subsection \<open>Anonymity Property\<close>
 
-theorem kemeny_anonymous: "anonymity kemeny_rule"
+theorem kemeny_rule_anonymous: "anonymity kemeny_rule"
 proof (unfold kemeny_rule.simps)
   let ?swap_dist = "votewise_distance swap l_one"
-  from l_one_is_symm
-  have "el_distance_anonymity ?swap_dist"
-    using el_dist_anon_if_norm_symm[of l_one]
+  have "distance_anonymity ?swap_dist"
+    using l_one_is_symm symmetric_norm_imp_distance_anonymous[of l_one]
     by simp
-  with strong_unanimity_is_anon
-  show "anonymity (dr_rule ?swap_dist strong_unanimity)"
-    using rule_anon_if_el_dist_and_cons_class_anon
+  thus "anonymity (distance_\<R> ?swap_dist strong_unanimity)"
+    using strong_unanimity_anonymous anonymous_distance_and_consensus_imp_rule_anonymity
     by metis
 qed
 
