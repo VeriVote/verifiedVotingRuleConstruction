@@ -1154,6 +1154,37 @@ next
     by presburger
 qed
 
+lemma condorcet_consistency_3:
+  fixes m :: "'a Electoral_Module"
+  shows "condorcet_consistency m =
+           (electoral_module m \<and>
+              (\<forall> A p a. condorcet_winner A p a \<longrightarrow> (m A p = ({a}, A - {a}, {}))))"
+proof (simp only: condorcet_consistency_2, safe)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a"
+  assume
+    e_mod: "electoral_module m" and
+    cc: "\<forall> A p a'. condorcet_winner A p a' \<longrightarrow> m A p = ({a'}, A - elect m A p, {})" and
+    c_win: "condorcet_winner A p a"
+  show "m A p = ({a}, A - {a}, {})"
+    using cc c_win fst_conv
+    by (metis (mono_tags, lifting))
+next
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a"
+  assume
+    e_mod: "electoral_module m" and
+    cc: "\<forall> A p a'. condorcet_winner A p a' \<longrightarrow> m A p = ({a'}, A -  {a'}, {})" and
+    c_win: "condorcet_winner A p a"
+  show "m A p = ({a}, A -  elect m A p, {})"
+    using cc c_win fst_conv
+    by (metis (mono_tags, lifting))
+qed
+
 subsubsection \<open>(Weak) Monotonicity\<close>
 
 text \<open>
