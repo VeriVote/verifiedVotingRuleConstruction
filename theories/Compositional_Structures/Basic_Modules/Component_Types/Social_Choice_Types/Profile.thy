@@ -32,6 +32,10 @@ type_synonym 'a Profile = "('a Preference_Relation) list"
 
 type_synonym 'a Election = "'a set \<times> 'a Profile"
 
+fun alts_\<E> :: "'a Election \<Rightarrow> 'a set" where "alts_\<E> E = fst E"
+
+fun prof_\<E> :: "'a Election \<Rightarrow> 'a Profile" where "prof_\<E> E = snd E"
+
 text \<open>
   A profile on a finite set of alternatives A contains only ballots that are
   linear orders on A.

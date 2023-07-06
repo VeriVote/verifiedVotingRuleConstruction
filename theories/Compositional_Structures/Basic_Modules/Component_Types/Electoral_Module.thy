@@ -1154,52 +1154,34 @@ next
 qed
 
 lemma condorcet_consistency_3:
-  "condorcet_consistency m \<longleftrightarrow>
-      electoral_module m \<and>
-        (\<forall> A p w. condorcet_winner A p w \<longrightarrow>
-            (m A p =
-              ({w}, A - {w}, {})))"
-proof (safe)
-  assume "condorcet_consistency m"
-  thus "electoral_module m"
-    unfolding condorcet_consistency_def
-    by simp
+  fixes m :: "'a Electoral_Module"
+  shows "condorcet_consistency m =
+           (electoral_module m \<and>
+              (\<forall> A p a. condorcet_winner A p a \<longrightarrow> (m A p = ({a}, A - {a}, {}))))"
+proof (simp only: condorcet_consistency_2, safe)
+  fix
+    A :: "'a set" and
+    p :: "'a Profile" and
+    a :: "'a"
+  assume
+    e_mod: "electoral_module m" and
+    cc: "\<forall> A p a'. condorcet_winner A p a' \<longrightarrow> m A p = ({a'}, A - elect m A p, {})" and
+    c_win: "condorcet_winner A p a"
+  show "m A p = ({a}, A - {a}, {})"
+    using cc c_win fst_conv
+    by (metis (mono_tags, lifting))
 next
   fix
     A :: "'a set" and
     p :: "'a Profile" and
-    w :: "'a"
-  assume
-    cc: "condorcet_consistency m" and
-    cwin: "condorcet_winner A p w"
-  show
-    "m A p = ({w}, A - {w}, {})"
-    using cond_winner_unique_3 cc cwin
-    unfolding condorcet_consistency_def
-    by (metis (mono_tags, lifting) fst_conv)
-next
+    a :: "'a"
   assume
     e_mod: "electoral_module m" and
-    cwin:
-    "\<forall> A p w. condorcet_winner A p w \<longrightarrow>
-      m A p = ({w}, A -  {w}, {})"
-  have
-    "\<forall> f. condorcet_consistency f =
-      (electoral_module f \<and>
-        (\<forall> A rs a. \<not> condorcet_winner A rs (a::'a) \<or>
-          f A rs = ({a \<in> A. condorcet_winner A rs a},
-                    A - elect f A rs, {})))"
-    unfolding condorcet_consistency_def
-    by blast
-  moreover have
-    "\<forall> A rs a. \<not> condorcet_winner A rs (a::'a) \<or>
-        {a \<in> A. condorcet_winner A rs a} = {a}"
-    using cond_winner_unique_3
-    by (metis (full_types))
-  ultimately show "condorcet_consistency m"
-    unfolding condorcet_consistency_def
-    using cond_winner_unique_3 e_mod cwin
-    by (metis (mono_tags, lifting) fst_conv)   
+    cc: "\<forall> A p a'. condorcet_winner A p a' \<longrightarrow> m A p = ({a'}, A -  {a'}, {})" and
+    c_win: "condorcet_winner A p a"
+  show "m A p = ({a}, A -  elect m A p, {})"
+    using cc c_win fst_conv
+    by (metis (mono_tags, lifting))
 qed
 
 subsubsection \<open>(Weak) Monotonicity\<close>
