@@ -7,9 +7,9 @@ section \<open>Distance Rationalization\<close>
 
 theory Distance_Rationalization
   imports "HOL-Combinatorics.Multiset_Permutations"
+          "Social_Choice_Types/Refined_Types/Preference_List"
           "Consensus_Class"
           "Distance"
-          "Social_Choice_Types/Refined_Types/Preference_List"
 begin
 
 text \<open>
@@ -45,7 +45,7 @@ fun distance_\<R> :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Ri
 subsection \<open>Standard Definitions\<close>
 
 definition standard :: "'a Election Distance \<Rightarrow> bool" where
- "standard d \<equiv> \<forall> A A' p p'. length p \<noteq> length p' \<or> A \<noteq> A' \<longrightarrow> d (A, p) (A', p') = \<infinity>"
+ "standard d \<equiv> \<forall> A A' p p'. (length p \<noteq> length p' \<or> A \<noteq> A') \<longrightarrow> d (A, p) (A', p') = \<infinity>"
 
 (*
   We want "profiles n A = {}" for infinite A.
@@ -615,7 +615,10 @@ lemma anonymous_distance_and_consensus_imp_rule_anonymity:
     d_anon: "distance_anonymity d" and
     K_anon: "consensus_rule_anonymity K"
   shows "anonymity (distance_\<R> d K)"
-proof (unfold anonymity_def, clarify)
+proof (unfold anonymity_def, safe)
+  show "electoral_module (distance_\<R> d K)"
+    by (simp add: \<R>_sound)
+next
   fix
     A :: "'a set" and
     p :: "'a Profile" and

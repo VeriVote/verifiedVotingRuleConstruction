@@ -1210,6 +1210,8 @@ definition homogeneity :: "'a Electoral_Module \<Rightarrow> bool" where
 subsubsection \<open>Anonymity\<close>
 
 definition anonymity :: "'a Electoral_Module \<Rightarrow> bool" where
-  "anonymity m \<equiv> (\<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<longrightarrow> m A p = m A q)"
+  "anonymity m \<equiv>
+    electoral_module m \<and>
+      (\<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<longrightarrow> m A p = m A q)"
 
 end
