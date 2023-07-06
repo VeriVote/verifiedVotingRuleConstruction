@@ -48,7 +48,7 @@ definition standard :: "'a Election Distance \<Rightarrow> bool" where
  "standard d \<equiv> \<forall> A A' p p'. length p \<noteq> length p' \<or> A \<noteq> A' \<longrightarrow> d (A, p) (A', p') = \<infinity>"
 
 (*
-  We want "profiles l A = {}" for infinite A.
+  We want "profiles n A = {}" for infinite A.
   We have "permutations_of_set A = {} \<longleftrightarrow> \<not>finite A"
     (Multiset_Permutations.permutations_of_set_empty_iff).
     "listset (replicate 0 (list_to_rel ` {})" is "{[]}", not "{}".
@@ -61,9 +61,9 @@ fun profiles :: "nat \<Rightarrow> 'a set \<Rightarrow> ('a Profile) set" where
                    else listset (replicate n (pl_\<alpha> ` permutations_of_set A)))"
 
 fun \<K>\<^sub>\<E>_std :: "'a Consensus_Class \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> nat \<Rightarrow> 'a Election set" where
-  "\<K>\<^sub>\<E>_std K a A l =
+  "\<K>\<^sub>\<E>_std K a A n =
     (\<lambda> p. (A, p)) ` (Set.filter (\<lambda> p. (consensus_\<K> K) (A, p) \<and> elect (rule_\<K> K) A p = {a})
-                                (profiles l A))"
+                                (profiles n A))"
 
 fun score_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a Election \<Rightarrow> 'a \<Rightarrow> ereal" where
   "score_std d K E a =
@@ -565,7 +565,7 @@ proof -
         by simp
       hence "finite (pl_\<alpha> ` permutations_of_set A)"
         by simp
-      moreover have fin_A_imp_fin_all: "\<forall> l A. finite A \<longrightarrow> finite (profiles l A)"
+      moreover have fin_A_imp_fin_all: "\<forall> n A. finite A \<longrightarrow> finite (profiles n A)"
         using listset_finiteness
         by force
       hence "finite (profiles (length p) A)"
