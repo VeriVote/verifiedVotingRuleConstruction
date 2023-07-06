@@ -33,6 +33,10 @@ fun is_less_preferred_than ::
   "'a \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> bool" ("_ \<preceq>\<^sub>_ _" [50, 1000, 51] 50) where
     "a \<preceq>\<^sub>r b = ((a, b) \<in> r)"
 
+fun alts_\<V> :: "'a Vote \<Rightarrow> 'a set" where "alts_\<V> V = fst V"
+
+fun pref_\<V> :: "'a Vote \<Rightarrow> 'a Preference_Relation" where "pref_\<V> V = snd V"
+
 lemma lin_imp_antisym:
   fixes
     A :: "'a set" and

@@ -6,8 +6,7 @@
 section \<open>Kemeny Rule\<close>
 
 theory Kemeny_Rule
-  imports "Compositional_Structures/Basic_Modules/Component_Types/Distance_Rationalization"
-          "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance"
+  imports "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance_Rationalization"
 begin
 
 text \<open>
@@ -21,19 +20,19 @@ text \<open>
 subsection \<open>Definition\<close>
 
 fun kemeny_rule :: "'a Electoral_Module" where
-  "kemeny_rule A p = (distance_\<R> (votewise_distance swap l_one) strong_unanimity) A p"
+  "kemeny_rule A p = swap_\<R> strong_unanimity A p"
 
 subsection \<open>Soundness\<close>
 
 theorem kemeny_rule_sound: "electoral_module kemeny_rule"
-  unfolding kemeny_rule.simps
+  unfolding kemeny_rule.simps swap_\<R>.simps
   using \<R>_sound
   by metis
 
 subsection \<open>Anonymity Property\<close>
 
 theorem kemeny_rule_anonymous: "anonymity kemeny_rule"
-proof (unfold kemeny_rule.simps)
+proof (unfold kemeny_rule.simps swap_\<R>.simps)
   let ?swap_dist = "votewise_distance swap l_one"
   have "distance_anonymity ?swap_dist"
     using l_one_is_symm symmetric_norm_imp_distance_anonymous[of l_one]
@@ -65,7 +64,7 @@ instance proof
 end
 
 (*
-value "drswap strong_unanimity {a, b, c :: alternative}
+value "swap_\<R> strong_unanimity {a, b, c :: alternative}
          [{(a, c), (b, c), (c, c), (a, b), (b, b), (a, a)},
           {(c, b), (a, b), (b, b), (c, a), (a, a), (c, c)}]"
 *)

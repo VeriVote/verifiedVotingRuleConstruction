@@ -134,14 +134,14 @@ proof (unfold symmetry_def, safe)
     xs :: "ereal list" and
     ys :: "ereal list"
   assume perm: "xs <~~> ys"
-  from perm obtain pi 
+  from perm obtain pi
     where
       pi_perm: "pi permutes {..< length xs}" and
       pi_xs_ys: "permute_list pi xs = ys"
     using mset_eq_permutation
     by metis
   hence "(\<Sum> i < length xs. \<bar>ys!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!(pi i)\<bar>)"
-    using permute_list_nth 
+    using permute_list_nth
     by fastforce
   also have "\<dots> = (\<Sum> i < length xs. \<bar>xs!(pi (inv pi i))\<bar>)"
     using pi_perm permutes_inv_eq f_the_inv_into_f_bij_betw permutes_imp_bij sum.cong

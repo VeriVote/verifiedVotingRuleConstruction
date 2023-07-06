@@ -6,7 +6,7 @@
 section \<open>Votewise Distance\<close>
 
 theory Votewise_Distance
-  imports "Norm"
+  imports "Social_Choice_Types/Norm"
           "Distance"
 begin
 

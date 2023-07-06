@@ -41,13 +41,18 @@ definition triangle_ineq :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool
 definition eq_if_zero :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
   "eq_if_zero S d \<equiv> \<forall> x y. (x \<in> S \<and> y \<in> S) \<longrightarrow> d x y = 0 \<longrightarrow> x = y"
 
-abbreviation vote_distance_property :: "('a Vote set \<Rightarrow> 'a Vote Distance \<Rightarrow> bool) \<Rightarrow>
+definition vote_distance :: "('a Vote set \<Rightarrow> 'a Vote Distance \<Rightarrow> bool) \<Rightarrow>
                                           'a Vote Distance \<Rightarrow> bool" where
-  "vote_distance_property \<pi> d \<equiv> \<pi> {(A, p). linear_order_on A p \<and> finite A} d"
+  "vote_distance \<pi> d \<equiv> \<pi> {(A, p). linear_order_on A p \<and> finite A} d"
 
-abbreviation election_distance_property :: "('a Election set \<Rightarrow> 'a Election Distance \<Rightarrow> bool) \<Rightarrow>
+definition election_distance :: "('a Election set \<Rightarrow> 'a Election Distance \<Rightarrow> bool) \<Rightarrow>
                                               'a Election Distance \<Rightarrow> bool" where
-  "election_distance_property \<pi> d \<equiv> \<pi> {(A, p). finite_profile A p} d"
+  "election_distance \<pi> d \<equiv> \<pi> {(A, p). finite_profile A p} d"
+
+subsection \<open>Standard Distance Property\<close>
+
+definition standard :: "'a Election Distance \<Rightarrow> bool" where
+ "standard d \<equiv> \<forall> A A' p p'. length p \<noteq> length p' \<or> A \<noteq> A' \<longrightarrow> d (A, p) (A', p') = \<infinity>"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -123,7 +128,7 @@ lemma swap_case_infinity:
   fixes
     x :: "'a Vote" and
     y :: "'a Vote"
-  assumes "(fst x) \<noteq> (fst y)"
+  assumes "alts_\<V> x \<noteq> alts_\<V> y"
   shows "swap x y = \<infinity>"
   using assms
   by (induction rule: swap.induct, simp)
@@ -132,8 +137,8 @@ lemma swap_case_fin:
   fixes
     x :: "'a Vote" and
     y :: "'a Vote"
-  assumes "(fst x) = (fst y)"
-  shows "swap x y = card (pairwise_disagreements (fst x) (snd x) (snd y))"
+  assumes "alts_\<V> x = alts_\<V> y"
+  shows "swap x y = card (pairwise_disagreements (alts_\<V> x) (pref_\<V> x) (pref_\<V> y))"
   using assms
   by (induction rule: swap.induct, simp)
 
@@ -149,7 +154,7 @@ lemma spearman_case_inf:
   fixes
     x :: "'a Vote" and
     y :: "'a Vote"
-  assumes "(fst x) \<noteq> (fst y)"
+  assumes "alts_\<V> x \<noteq> alts_\<V> y"
   shows "spearman x y = \<infinity>"
   using assms
   by (induction rule: spearman.induct, simp)
@@ -158,8 +163,8 @@ lemma spearman_case_fin:
   fixes
     x :: "'a Vote" and
     y :: "'a Vote"
-  assumes "(fst x) = (fst y)"
-  shows "spearman x y = (\<Sum> a \<in> (fst x). abs (int (rank (snd x) a) - int (rank (snd y) a)))"
+  assumes "alts_\<V> x = alts_\<V> y"
+  shows "spearman x y = (\<Sum> a \<in> alts_\<V> x. abs (int (rank (pref_\<V> x) a) - int (rank (pref_\<V> y) a)))"
   using assms
   by (induction rule: spearman.induct, simp)
 
@@ -171,8 +176,5 @@ definition distance_anonymity :: "'a Election Distance \<Rightarrow> bool" where
       (\<forall> n. (pi n) permutes {..< n}) \<longrightarrow>
         d (A, p) (A', p') =
           d (A, permute_list (pi (length p)) p) (A', permute_list (pi (length p')) p')"
-
-definition standard :: "'a Election Distance \<Rightarrow> bool" where
- "standard d \<equiv> \<forall> A A' p p'. length p \<noteq> length p' \<or> A \<noteq> A' \<longrightarrow> d (A, p) (A', p') = \<infinity>"
 
 end

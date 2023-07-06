@@ -67,13 +67,13 @@ lemma equal_score_swap: "score (votewise_distance swap l_one)
   using standard_distance_imp_equal_score swap_standard
   by fast
 
-lemma drswap_code[code]: "swap_\<R> = dr_rule_std (votewise_distance swap l_one)"
+lemma swap_\<R>_code[code]: "swap_\<R> = dr_rule_std (votewise_distance swap l_one)"
 proof -
   from equal_score_swap
   have "\<forall> K E a. score (votewise_distance swap l_one) K E a
         = score_std (votewise_distance swap l_one) K E a"
     by metis
-  hence "\<forall> K A p. dr_winners (votewise_distance swap l_one) K A p
+  hence "\<forall> K A p. \<R>\<^sub>\<W> (votewise_distance swap l_one) K A p
           = dr_winners_std (votewise_distance swap l_one) K A p"
     by (simp add: equal_score_swap)
   hence "\<forall> K A p. distance_\<R> (votewise_distance swap l_one) K A p

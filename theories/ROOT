@@ -32,16 +32,16 @@ directories
 theories
 (* "Social-Choice Types" *)
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Preference_Relation"
+  "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Norm"
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Result"
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Profile"
 (* "Refined Data Types" *)
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Refined_Types/Preference_List"
   "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Refined_Types/Profile_List"
 (* "Component Types" *)
-  "Compositional_Structures/Basic_Modules/Component_Types/Norm"
   "Compositional_Structures/Basic_Modules/Component_Types/Distance"
   "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance"
-  "Compositional_Structures/Basic_Modules/Component_Types/Consensus_Condition"
+  "Compositional_Structures/Basic_Modules/Component_Types/Consensus"
   "Compositional_Structures/Basic_Modules/Component_Types/Electoral_Module"
   "Compositional_Structures/Basic_Modules/Component_Types/Evaluation_Function"
   "Compositional_Structures/Basic_Modules/Component_Types/Elimination_Module"
@@ -49,7 +49,7 @@ theories
   "Compositional_Structures/Basic_Modules/Component_Types/Maximum_Aggregator"
   "Compositional_Structures/Basic_Modules/Component_Types/Termination_Condition"
   "Compositional_Structures/Basic_Modules/Component_Types/Defer_Equal_Condition"
-  "Compositional_Structures/Basic_Modules/Component_Types/Consensus_Rule"
+  "Compositional_Structures/Basic_Modules/Component_Types/Consensus_Class"
   "Compositional_Structures/Basic_Modules/Component_Types/Distance_Rationalization"
   "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance_Rationalization"
 (* "Basic Modules" *)

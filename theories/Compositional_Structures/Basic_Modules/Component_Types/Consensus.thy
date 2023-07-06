@@ -1,11 +1,11 @@
-(*  File:       Consensus_Condition.thy
+(*  File:       Consensus.thy
     Copyright   2022  Karlsruhe Institute of Technology (KIT)
 *)
 \<^marker>\<open>creator "Marion Steinriede, Karlsruhe Institute of Technology (KIT)"\<close>
 
-section \<open>Consensus Condition\<close>
+section \<open>Consensus\<close>
 
-theory Consensus_Condition
+theory Consensus
   imports "HOL-Combinatorics.List_Permutation"
           "Social_Choice_Types/Profile"
 begin
@@ -16,7 +16,7 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-type_synonym 'a Consensus_Condition = "'a Election \<Rightarrow> bool"
+type_synonym 'a Consensus = "'a Election \<Rightarrow> bool"
 
 subsection \<open>Consensus Conditions\<close>
 
@@ -24,65 +24,63 @@ text \<open>
   Nonempty set.
 \<close>
 
-fun nonempty_set_condition :: "'a Consensus_Condition" where
-  "nonempty_set_condition (A, p) = (A \<noteq> {})"
+fun nonempty_set\<^sub>\<C> :: "'a Consensus" where
+  "nonempty_set\<^sub>\<C> (A, p) = (A \<noteq> {})"
 
 text \<open>
   Nonempty profile.
 \<close>
 
-fun nonempty_profile_condition :: "'a Consensus_Condition" where
-  "nonempty_profile_condition (A, p) = (p \<noteq> [])"
+fun nonempty_profile\<^sub>\<C> :: "'a Consensus" where
+  "nonempty_profile\<^sub>\<C> (A, p) = (p \<noteq> [])"
 
 text \<open>
   Equal top ranked alternatives.
 \<close>
 
-fun equal_top_condition' :: "'a \<Rightarrow> 'a Consensus_Condition" where
-  "equal_top_condition' a (A, p) = ((a \<in> A) \<and> (\<forall> i < length p. above (p!i) a = {a}))"
+fun equal_top\<^sub>\<C>' :: "'a \<Rightarrow> 'a Consensus" where
+  "equal_top\<^sub>\<C>' a (A, p) = (a \<in> A \<and> (\<forall> i < length p. above (p!i) a = {a}))"
 
-fun equal_top_condition :: "'a Consensus_Condition" where
-  "equal_top_condition E = (\<exists> a. equal_top_condition' a E)"
+fun equal_top\<^sub>\<C> :: "'a Consensus" where
+  "equal_top\<^sub>\<C> c = (\<exists> a. equal_top\<^sub>\<C>' a c)"
 
 text \<open>
   Equal votes.
 \<close>
 
-fun equal_vote_condition' :: "'a Preference_Relation \<Rightarrow> 'a Consensus_Condition" where
-  "equal_vote_condition' r (A, p) = (\<forall> i < length p. (p!i) = r)"
+fun equal_vote\<^sub>\<C>' :: "'a Preference_Relation \<Rightarrow> 'a Consensus" where
+  "equal_vote\<^sub>\<C>' r (A, p) = (\<forall> i < length p. (p!i) = r)"
 
-fun equal_vote_condition :: "'a Consensus_Condition" where
-  "equal_vote_condition E = (\<exists> r. equal_vote_condition' r E)"
+fun equal_vote\<^sub>\<C> :: "'a Consensus" where
+  "equal_vote\<^sub>\<C> c = (\<exists> r. equal_vote\<^sub>\<C>' r c)"
 
 text \<open>
   Unanimity condition.
 \<close>
 
-fun unanimity_condition :: "'a Consensus_Condition" where
-  "unanimity_condition c =
-    (nonempty_set_condition c \<and> nonempty_profile_condition c \<and> equal_top_condition c)"
+fun unanimity\<^sub>\<C> :: "'a Consensus" where
+  "unanimity\<^sub>\<C> c = (nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C> c)"
 
 text \<open>
   Strong unanimity condition.
 \<close>
 
-fun strong_unanimity_condition :: "'a Consensus_Condition" where
-  "strong_unanimity_condition c =
-    (nonempty_set_condition c \<and> nonempty_profile_condition c \<and> equal_vote_condition c)"
+fun strong_unanimity\<^sub>\<C> :: "'a Consensus" where
+  "strong_unanimity\<^sub>\<C> c = (nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C> c)"
 
 
 subsection \<open>Properties\<close>
 
-definition consensus_anonymity :: "'a Consensus_Condition \<Rightarrow> bool" where
+definition consensus_anonymity :: "'a Consensus \<Rightarrow> bool" where
   "consensus_anonymity c \<equiv>
     \<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<longrightarrow> c (A, p) \<longrightarrow> c (A, q)"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
-lemma cons_anon_if_ex_cons_anon:
+lemma ex_anon_cons_imp_cons_anonymous:
   fixes
-    b :: "'a Consensus_Condition" and
-    b':: "'b \<Rightarrow> 'a Consensus_Condition"
+    b :: "'a Consensus" and
+    b':: "'b \<Rightarrow> 'a Consensus"
   assumes
     general_cond_b: "b = (\<lambda> E. \<exists> x. b' x E)" and
     all_cond_anon: "\<forall> x. consensus_anonymity (b' x)"
@@ -117,11 +115,11 @@ qed
 
 subsection \<open>Theorems\<close>
 
-lemma nonempty_set_cond_anonymous: "consensus_anonymity nonempty_set_condition"
+lemma nonempty_set_cons_anonymous: "consensus_anonymity nonempty_set\<^sub>\<C>"
   unfolding consensus_anonymity_def
   by simp
 
-lemma nonempty_profile_cond_anonymous: "consensus_anonymity nonempty_profile_condition"
+lemma nonempty_profile_cons_anonymous: "consensus_anonymity nonempty_profile\<^sub>\<C>"
 proof (unfold consensus_anonymity_def, clarify)
   fix
     A :: "'a set" and
@@ -129,19 +127,19 @@ proof (unfold consensus_anonymity_def, clarify)
     q :: "'a Profile"
   assume
     perm: "p <~~> q" and
-    not_empty_p: "nonempty_profile_condition (A, p)"
+    not_empty_p: "nonempty_profile\<^sub>\<C> (A, p)"
   have "length q = length p"
     using perm perm_length
     by force
-  thus "nonempty_profile_condition (A, q)"
+  thus "nonempty_profile\<^sub>\<C> (A, q)"
     using not_empty_p length_0_conv
-    unfolding nonempty_profile_condition.simps
+    unfolding nonempty_profile\<^sub>\<C>.simps
     by metis
 qed
 
-lemma equal_top_cond'_anonymous:
+lemma equal_top_cons'_anonymous:
   fixes a :: "'a"
-  shows "consensus_anonymity (equal_top_condition' a)"
+  shows "consensus_anonymity (equal_top\<^sub>\<C>' a)"
 proof (unfold consensus_anonymity_def, clarify)
   fix
     A :: "'a set" and
@@ -149,7 +147,7 @@ proof (unfold consensus_anonymity_def, clarify)
     q :: "'a Profile"
   assume
     perm: "p <~~> q" and
-    top_cons_a: "equal_top_condition' a (A, p)"
+    top_cons_a: "equal_top\<^sub>\<C>' a (A, p)"
   from perm obtain pi where
     perm_pi: "pi permutes {..< length p}" and
     perm_list_q: "permute_list pi p = q"
@@ -174,20 +172,20 @@ proof (unfold consensus_anonymity_def, clarify)
   moreover have "a \<in> A"
     using top_cons_a
     by simp
-  ultimately show "equal_top_condition' a (A, q)"
+  ultimately show "equal_top\<^sub>\<C>' a (A, q)"
     using l
-    unfolding equal_top_condition'.simps
+    unfolding equal_top\<^sub>\<C>'.simps
     by metis
 qed
 
-lemma eq_top_cond_anon: "consensus_anonymity equal_top_condition"
-  using equal_top_cond'_anonymous
-        cons_anon_if_ex_cons_anon[of equal_top_condition equal_top_condition']
+lemma eq_top_cons_anon: "consensus_anonymity equal_top\<^sub>\<C>"
+  using equal_top_cons'_anonymous
+        ex_anon_cons_imp_cons_anonymous[of equal_top\<^sub>\<C> equal_top\<^sub>\<C>']
   by fastforce
 
-lemma eq_vote_cond'_anon:
+lemma eq_vote_cons'_anonymous:
   fixes r :: "'a Preference_Relation"
-  shows "consensus_anonymity (equal_vote_condition' r)"
+  shows "consensus_anonymity (equal_vote\<^sub>\<C>' r)"
 proof (unfold consensus_anonymity_def, clarify)
   fix
     A :: "'a set" and
@@ -195,7 +193,7 @@ proof (unfold consensus_anonymity_def, clarify)
     q :: "'a Profile"
   assume
     perm: "p <~~> q" and
-    equal_votes_pref: "equal_vote_condition' r (A, p)" 
+    equal_votes_pref: "equal_vote\<^sub>\<C>' r (A, p)"
   from perm obtain pi where
     perm_pi: "pi permutes {..< length p}" and
     perm_list_q: "permute_list pi p = q"
@@ -217,15 +215,15 @@ proof (unfold consensus_anonymity_def, clarify)
   ultimately have "\<forall> i < length p. q!i = r"
     using l
     by metis
-  thus "equal_vote_condition' r (A, q)"
+  thus "equal_vote\<^sub>\<C>' r (A, q)"
     using l
-    unfolding equal_vote_condition'.simps
+    unfolding equal_vote\<^sub>\<C>'.simps
     by metis
 qed
 
-lemma eq_vote_cond_anon: "consensus_anonymity equal_vote_condition"
-  unfolding equal_vote_condition.simps
-  using eq_vote_cond'_anon cons_anon_if_ex_cons_anon
+lemma eq_vote_cons_anonymous: "consensus_anonymity equal_vote\<^sub>\<C>"
+  unfolding equal_vote\<^sub>\<C>.simps
+  using eq_vote_cons'_anonymous ex_anon_cons_imp_cons_anonymous
   by blast
 
 end
