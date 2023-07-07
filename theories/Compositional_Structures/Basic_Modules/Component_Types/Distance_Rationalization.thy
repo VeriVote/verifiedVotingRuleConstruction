@@ -83,13 +83,13 @@ subsection \<open>Auxiliary Lemmas\<close>
 lemma list_cons_presv_finiteness:
   fixes
     A :: "'a set" and
-    B :: "'a list set"
+    S :: "'a list set"
   assumes
     fin_A: "finite A" and
-    fin_B: "finite B"
-  shows "finite {a#b | a b. a \<in> A \<and> b \<in> B}"
+    fin_B: "finite S"
+  shows "finite {a#l | a l. a \<in> A \<and> l \<in> S}"
 proof -
-  let ?P = "\<lambda> A. finite {a#b | a b. a \<in> A \<and> b \<in> B}"
+  let ?P = "\<lambda> A. finite {a#l | a l. a \<in> A \<and> l \<in> S}"
   have "\<And> a A'. finite A' \<Longrightarrow> a \<notin> A' \<Longrightarrow> ?P A' \<Longrightarrow> ?P (insert a A')"
   proof -
     fix
@@ -98,14 +98,14 @@ proof -
     assume
       fin: "finite A'" and
       not_in: "a \<notin> A'" and
-      fin_set: "finite {a#b | a b. a \<in> A' \<and> b \<in> B}"
-    have "{a'#b | a' b. a' \<in> insert a A' \<and> b \<in> B}
-            = {a#b | a b. a \<in> A' \<and> b \<in> B} \<union> {a#b | b. b \<in> B}"
+      fin_set: "finite {a#l | a l. a \<in> A' \<and> l \<in> S}"
+    have "{a'#l | a' l. a' \<in> insert a A' \<and> l \<in> S}
+            = {a#l | a l. a \<in> A' \<and> l \<in> S} \<union> {a#l | l. l \<in> S}"
       by auto
-    moreover have "finite {a#b | b. b \<in> B}"
+    moreover have "finite {a#l | l. l \<in> S}"
       using fin_B
       by simp
-    ultimately have "finite {a'#b | a' b. a' \<in> insert a A' \<and> b \<in> B}"
+    ultimately have "finite {a'#l | a' l. a' \<in> insert a A' \<and> l \<in> S}"
       using fin_set
       by simp
     thus "?P (insert a A')"
@@ -172,21 +172,24 @@ qed
 
 lemma all_ls_elems_same_len:
   fixes l :: "'a set list"
-  shows "\<forall> m::('a list). m \<in> listset l \<longrightarrow> length m = length l"
+  shows "\<forall> l'::('a list). l' \<in> listset l \<longrightarrow> length l' = length l"
 proof (induct l, simp)
   case (Cons a l)
-  assume "\<forall> l'::('a list). l' \<in> listset l \<longrightarrow> length l' = length l"
-  hence "\<forall> m \<in> {x#l' | x l'. x \<in> a \<and> l' \<in> listset l}. length m = 1 + length l"
-    by auto
-  hence "\<forall> m \<in> {x#l' | x l'. x \<in> a \<and> l' \<in> listset l}. length m = length (a#l)"
-    by simp
-  thus ?case
+  fix
+    a :: "'a set" and
+    l :: "'a set list"
+  assume "\<forall> l'. l' \<in> listset l \<longrightarrow> length l' = length l"
+  moreover have
+    "\<forall> a' l'::('a set list). listset (a'#l') = {b#m | b m. b \<in> a' \<and> m \<in> listset l'}"
     by (simp add: set_Cons_def)
+  ultimately show "\<forall> l'. l' \<in> listset (a#l) \<longrightarrow> length l' = length (a#l)"
+    using local.Cons
+    by force
 qed
 
 lemma all_ls_elems_in_ls_set:
   fixes l :: "'a set list"
-  shows "\<forall> l'::('a list). \<forall> i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i"
+  shows "\<forall> l' i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i"
 proof (induct l, simp, safe)
   case (Cons a l)
   fix
@@ -195,13 +198,13 @@ proof (induct l, simp, safe)
     l' :: "'a list" and
     i :: nat
   assume elems_in_set_then_elems_pos:
-    "\<forall> l'::('a list). \<forall> i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i" and
+    "\<forall> l' i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i" and
     l_prime_in_set_a_l: "l' \<in> listset (a#l)" and
     i_lt_len_l_prime: "i < length l'"
   have "l' \<in> set_Cons a (listset l)"
     using l_prime_in_set_a_l
     by simp
-  hence "l' \<in> {ys. \<exists> b m. ys = b#m \<and> b \<in> a \<and> m \<in> (listset l)}"
+  hence "l' \<in> {m. \<exists> b m'. m = b#m' \<and> b \<in> a \<and> m' \<in> (listset l)}"
     unfolding set_Cons_def
     by simp
   hence "\<exists> b m. l' = b#m \<and> b \<in> a \<and> m \<in> (listset l)"
@@ -230,7 +233,7 @@ proof (cases "\<not> finite A", simp)
     moreover have "length [] = length p"
       using not_zero_lt_len_p
       by simp
-    moreover have "{x. finite_profile A x \<and> length x = length p} \<subseteq> {[]}"
+    moreover have "{q. finite_profile A q \<and> length q = length p} \<subseteq> {[]}"
       using not_zero_lt_len_p
       by auto
     moreover have "profile_permutations (length p) A = {[]}"
@@ -248,50 +251,51 @@ proof (cases "\<not> finite A", simp)
       len_n: "Suc n = length p"
     show ?thesis
     proof (safe)
-      fix x :: "'a Profile"
-      assume xprof: "x \<in> profile_permutations (length p) A"
+      fix p' :: "'a Profile"
+      assume p'_in_prof: "p' \<in> profile_permutations (length p) A"
       from fin_A
       show "finite A"
         by simp
-      from xprof
+      from p'_in_prof
       have "profile_permutations (length p) A \<noteq> {}"
         by blast
-      hence ne: "pl_\<alpha> ` permutations_of_set A \<noteq> {}"
+      hence perms_nonempty: "pl_\<alpha> ` permutations_of_set A \<noteq> {}"
         by auto
       moreover have "length (replicate (length p) (pl_\<alpha> ` permutations_of_set A)) = length p"
         by simp
-      hence "\<forall> xs \<in> listset (replicate (length p) (pl_\<alpha> ` permutations_of_set A)).
-              length xs = length p"
+      hence "\<forall> q \<in> listset (replicate (length p) (pl_\<alpha> ` permutations_of_set A)).
+              length q = length p"
         using all_ls_elems_same_len
         by metis
-      ultimately show len_eq: "length x = length p"
-        using xprof
+      ultimately show len_eq: "length p' = length p"
+        using p'_in_prof
         by simp
-      show "profile A x"
+      show "profile A p'"
       proof (unfold profile_def, safe)
         fix i :: nat
-        assume lt_len_x: "i < length x"
-        with len_eq
-        have i_lt_len_p: "i < length p"
+        assume lt_len_x: "i < length p'"
+        hence i_lt_len_p: "i < length p"
+          using len_eq
           by simp
-        hence "x!i \<in> replicate (length p) (pl_\<alpha> ` permutations_of_set A)!i"
-          using xprof ne all_ls_elems_in_ls_set lt_len_x profile_permutations.simps image_is_empty
+        hence "p'!i \<in> replicate (length p) (pl_\<alpha> ` permutations_of_set A)!i"
+          using p'_in_prof perms_nonempty all_ls_elems_in_ls_set lt_len_x image_is_empty
+          unfolding profile_permutations.simps
           by metis
-        hence "x!i \<in> pl_\<alpha> ` permutations_of_set A"
+        hence "p'!i \<in> pl_\<alpha> ` permutations_of_set A"
           using i_lt_len_p
           by simp
         hence relation_of:
-          "x!i \<in> {relation_of (\<lambda> y z. rank_l l z \<le> rank_l l y) (set l) |
+          "p'!i \<in> {relation_of (\<lambda> a a'. rank_l l a' \<le> rank_l l a) (set l) |
             l. l \<in> permutations_of_set A}"
         proof (safe)
           fix l :: "'a Preference_List"
           assume
-            i_th_rel: "x!i = pl_\<alpha> l" and
+            i_th_rel: "p'!i = pl_\<alpha> l" and
             perm_l: "l \<in> permutations_of_set A"
-          have rel_of_set_l_eq_l_list: "relation_of (\<lambda> y z. y \<lesssim>\<^sub>l z) (set l) = pl_\<alpha> l"
+          have rel_of_set_l_eq_l_list: "relation_of (\<lambda> a a'. a \<lesssim>\<^sub>l a') (set l) = pl_\<alpha> l"
             using rel_of_pref_pred_for_set_eq_list_to_rel
             by blast
-          have "relation_of (\<lambda> y z. rank_l l z \<le> rank_l l y) (set l) = pl_\<alpha> l"
+          have "relation_of (\<lambda> a a'. rank_l l a' \<le> rank_l l a) (set l) = pl_\<alpha> l"
           proof (unfold relation_of_def rank_l.simps, safe)
             fix
               a :: "'a" and
@@ -301,16 +305,14 @@ proof (cases "\<not> finite A", simp)
                                   (if a \<in> set l then index l a + 1 else 0)" and
               a_in_l: "a \<in> set l" and
               b_in_l : "b \<in> set l"
-            have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+            moreover have "{(a', b'). (a', b') \<in> set l \<times> set l \<and> a' \<lesssim>\<^sub>l b'} = pl_\<alpha> l"
               using rel_of_set_l_eq_l_list
               unfolding relation_of_def
               by simp
-            have "a \<in> set l"
-              unfolding member_def
+            moreover have "a \<in> set l"
               using a_in_l
               by simp
-            thus "(a, b) \<in> pl_\<alpha> l"
-              using l_set_eq_l_list idx_b_lte_idx_a b_in_l member_def
+            ultimately show "(a, b) \<in> pl_\<alpha> l"
               by fastforce
           next
             fix
@@ -326,34 +328,34 @@ proof (cases "\<not> finite A", simp)
             fix
               a :: "'a" and
               b :: "'a"
-            assume a_b_in_rel_of_l: "(a, b) \<in> pl_\<alpha> l"
-            have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+            assume "(a, b) \<in> pl_\<alpha> l"
+            moreover have "{(a', b'). (a', b') \<in> set l \<times> set l \<and> a' \<lesssim>\<^sub>l b'} = pl_\<alpha> l"
               using rel_of_set_l_eq_l_list
               unfolding relation_of_def
               by simp
-            thus "b \<in> set l"
-              using a_b_in_rel_of_l is_less_preferred_than_l.elims(2)
+            ultimately show "b \<in> set l"
+              using is_less_preferred_than_l.elims(2)
               by blast
           next
             fix
               a :: "'a" and
               b :: "'a"
-            assume a_b_in_rel_of_l: "(a, b) \<in> pl_\<alpha> l"
-            have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+            assume "(a, b) \<in> pl_\<alpha> l"
+            moreover have "{(a', b'). (a', b') \<in> set l \<times> set l \<and> a' \<lesssim>\<^sub>l b'} = pl_\<alpha> l"
               using rel_of_set_l_eq_l_list
               unfolding relation_of_def
               by simp
-            hence "a \<lesssim>\<^sub>l b"
-              using a_b_in_rel_of_l case_prodE mem_Collect_eq prod.inject
+            ultimately have "a \<lesssim>\<^sub>l b"
+              using case_prodE mem_Collect_eq prod.inject
               by blast
             thus "(if b \<in> set l then index l b + 1 else 0) \<le>
                     (if a \<in> set l then index l a + 1 else 0)"
               by simp
           qed
-          show "\<exists> l'. x!i = relation_of (\<lambda> y z. rank_l l' z \<le> rank_l l' y) (set l') \<and>
+          show "\<exists> l'. p'!i = relation_of (\<lambda> a b. rank_l l' b \<le> rank_l l' a) (set l') \<and>
                   l' \<in> permutations_of_set A"
           proof
-            have "relation_of (\<lambda> y z. rank_l l z \<le> rank_l l y) (set l) = pl_\<alpha> l"
+            have "relation_of (\<lambda> a b. rank_l l b \<le> rank_l l a) (set l) = pl_\<alpha> l"
             proof (unfold relation_of_def rank_l.simps, safe)
               fix
                 a :: "'a" and
@@ -363,17 +365,14 @@ proof (cases "\<not> finite A", simp)
                                     (if a \<in> set l then index l a + 1 else 0)" and
                 a_in_l: "a \<in> set l" and
                 b_in_l : "b \<in> set l"
-              have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+              moreover have "{(a', b'). (a', b') \<in> set l \<times> set l \<and> a' \<lesssim>\<^sub>l b'} = pl_\<alpha> l"
                 using rel_of_set_l_eq_l_list
                 unfolding relation_of_def
                 by simp
-              have "a \<in> set l"
-                unfolding member_def
+              moreover have "a \<in> set l"
                 using a_in_l
                 by simp
-              thus "(a, b) \<in> pl_\<alpha> l"
-                using l_set_eq_l_list idx_b_lte_idx_a b_in_l
-                unfolding member_def
+              ultimately show "(a, b) \<in> pl_\<alpha> l"
                 by fastforce
             next
               fix
@@ -390,7 +389,7 @@ proof (cases "\<not> finite A", simp)
                 a :: "'a" and
                 b :: "'a"
               assume "(a, b) \<in> pl_\<alpha> l"
-              moreover have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+              moreover have "{(a', b'). (a', b') \<in> set l \<times> set l \<and> a' \<lesssim>\<^sub>l b'} = pl_\<alpha> l"
                 using rel_of_set_l_eq_l_list
                 unfolding relation_of_def
                 by simp
@@ -402,7 +401,7 @@ proof (cases "\<not> finite A", simp)
                 a :: "'a" and
                 b :: "'a"
               assume "(a, b) \<in> pl_\<alpha> l"
-              moreover have l_set_eq_l_list: "{(a, b). (a, b) \<in> set l \<times> set l \<and> a \<lesssim>\<^sub>l b} = pl_\<alpha> l"
+              moreover have "{(a', b'). (a', b') \<in> set l \<times> set l \<and> a' \<lesssim>\<^sub>l b'} = pl_\<alpha> l"
                 using rel_of_set_l_eq_l_list
                 unfolding relation_of_def
                 by simp
@@ -413,62 +412,62 @@ proof (cases "\<not> finite A", simp)
                       (if a \<in> set l then index l a + 1 else 0)"
                 by force
             qed
-            thus "x!i = relation_of (\<lambda> y z. rank_l l z \<le> rank_l l y) (set l) \<and>
+            thus "p'!i = relation_of (\<lambda> a b. rank_l l b \<le> rank_l l a) (set l) \<and>
                           l \<in> permutations_of_set A"
               using perm_l i_th_rel
               by presburger
           qed
         qed
-        let ?P = "\<lambda> xs y z. rank_l xs z \<le> rank_l xs y"
-        have "\<And> xs a. a \<in> (set xs) \<Longrightarrow> ?P xs a a"
+        let ?P = "\<lambda> l a b. rank_l l b \<le> rank_l l a"
+        have "\<And> l a. a \<in> (set l) \<Longrightarrow> ?P l a a"
           by simp
         moreover have
-          "\<And> xs a b c. \<lbrakk> a \<in> (set xs); b \<in> (set xs); c \<in> (set xs) \<rbrakk> \<Longrightarrow>
-              ?P xs a b \<Longrightarrow> ?P xs b c \<Longrightarrow> ?P xs a c"
+          "\<And> l a b c. \<lbrakk> a \<in> (set l); b \<in> (set l); c \<in> (set l) \<rbrakk> \<Longrightarrow> ?P l a b \<Longrightarrow> ?P l b c \<Longrightarrow>
+              ?P l a c"
           by simp
         moreover have
-          "\<And> xs a b. \<lbrakk> a \<in> (set xs); b \<in> (set xs) \<rbrakk> \<Longrightarrow> ?P xs a b \<Longrightarrow> ?P xs b a \<Longrightarrow> a = b"
+          "\<And> l a b. \<lbrakk> a \<in> (set l); b \<in> (set l) \<rbrakk> \<Longrightarrow> ?P l a b \<Longrightarrow> ?P l b a \<Longrightarrow> a = b"
           using pos_in_list_yields_pos le_antisym
           by metis
-        ultimately have "\<And> xs. partial_order_on (set xs) (relation_of (?P xs) (set xs))"
+        ultimately have "\<And> l. partial_order_on (set l) (relation_of (?P l) (set l))"
           using partial_order_on_relation_ofI
           by (smt (verit, best))
-        moreover have set: "\<And> xs. xs \<in> permutations_of_set A \<Longrightarrow> set xs = A"
+        moreover have set: "\<And> l. l \<in> permutations_of_set A \<Longrightarrow> set l = A"
           unfolding permutations_of_setD
           by simp
-        ultimately have "partial_order_on A (x!i)"
+        ultimately have "partial_order_on A (p'!i)"
           using relation_of
           by fastforce
-        moreover have "\<And> xs. total_on (set xs) (relation_of (?P xs) (set xs))"
+        moreover have "\<And> l. total_on (set l) (relation_of (?P l) (set l))"
           using relation_of
           unfolding total_on_def relation_of_def
           by auto
-        hence "total_on A (x!i)"
+        hence "total_on A (p'!i)"
           using relation_of set
           by fastforce
-        ultimately show "linear_order_on A (x!i)"
+        ultimately show "linear_order_on A (p'!i)"
           unfolding linear_order_on_def
           by simp
       qed
     next
-      fix x :: "'a Profile"
+      fix p' :: "'a Profile"
       assume
-        len_eq: "length x = length p" and
+        len_eq: "length p' = length p" and
         fin_A: "finite A" and
-        prof_A_x: "profile A x"
-      show "x \<in> profile_permutations (length p) A"
+        prof_A_x: "profile A p'"
+      show "p' \<in> profile_permutations (length p) A"
         using fin_A
       proof (unfold profile_permutations.simps, clarsimp)
         (* Intermediate step: Show that all linear orders over A are in
             "pl_\<alpha> ' (permutations_of_set A)".
           Then, use the argument that "listset (replicate l S))" for a set S is the set of lists
           of length l where each item is in S. *)
-        have "x \<in> listset
+        have "p' \<in> listset
               (replicate (length p)
-                ((\<lambda> x. {(a, b). a \<in> A \<and> b \<in> A \<and> index x b \<le> index x a}) `
+                ((\<lambda> l. {(a, a'). a \<in> A \<and> a' \<in> A \<and> index l a' \<le> index l a}) `
                   {l. set l = A \<and> well_formed_l l}))"
           sorry
-        thus "x \<in> listset (replicate (length p) (pl_\<alpha> ` permutations_of_set A))"
+        thus "p' \<in> listset (replicate (length p) (pl_\<alpha> ` permutations_of_set A))"
           unfolding pl_\<alpha>_def permutations_of_set_def is_less_preferred_than_l.simps
           by clarsimp
       qed
@@ -532,8 +531,8 @@ next
         using f_eq_g_for_elems_in_S g_y_lt_g_x not_y y_in_S
         by (metis (no_types))
     qed
-    with x_in_S not_y
-    show ?thesis
+    thus ?thesis
+      using x_in_S not_y
       by simp
   qed
 qed
@@ -585,9 +584,7 @@ proof -
       by simp
     moreover have "finite (\<K>\<^sub>\<E>_std K a A (length p))"
     proof -
-      have "\<forall> l A. finite A \<longrightarrow> finite (permutations_of_set A)"
-        by simp
-      hence "finite (pl_\<alpha> ` permutations_of_set A)"
+      have "finite (pl_\<alpha> ` permutations_of_set A)"
         by simp
       moreover have fin_A_imp_fin_all: "\<forall> n A. finite A \<longrightarrow> finite (profile_permutations n A)"
         using listset_finiteness
@@ -685,13 +682,13 @@ next
         unfolding profile_def
         using fin_S_x nth_mem perm_set_eq profile_set
         by metis
-      moreover from perm fav_cons
-      have fst_x_and_elect_snd_x_a: "(consensus_\<K> K) (S, x) \<and> elect (rule_\<K> K) S x = {a}"
+      moreover have "(consensus_\<K> K) (S, x) \<and> elect (rule_\<K> K) S x = {a}"
+        using perm fav_cons
         by simp
-      with K_anon perm fin_S_x fin_S_y
-      have "(consensus_\<K> K) (S, y) \<and> elect (rule_\<K> K) S y = {a}"
+      hence "(consensus_\<K> K) (S, y) \<and> elect (rule_\<K> K) S y = {a}"
+        using K_anon
         unfolding consensus_rule_anonymity_def anonymity_def
-        using fin_S_x fst_x_and_elect_snd_x_a calculation perm
+        using perm fin_S_x fin_S_y calculation
         by (metis (no_types))
       ultimately show "(S, y) \<in> \<K>\<^sub>\<E> K a"
         by simp
@@ -713,26 +710,25 @@ next
           hence "permute_list (inv pi) ?p <~~> ?p"
             using pi_perm
             by (simp add: permutes_inv)
-          with apply_perm consens_elect_E_inst
-          have "?P a ?A (permute_list (inv pi) ?p)"
+          hence "?P a ?A (permute_list (inv pi) ?p)"
+            using consens_elect_E_inst apply_perm
             by presburger
           moreover have "length (permute_list (inv pi) ?p) = length p"
             using True
             by simp
-          ultimately have perm_elem:
+          ultimately have
             "(?A, ?listpi (permute_list (inv pi) ?p)) \<in>
                 {(A', ?listpi p') | A' p'. length p' = length p \<and> ?P a A' p'}"
             by auto
-          have "permute_list pi (permute_list (inv pi) ?p) = ?p"
+          also have "permute_list pi (permute_list (inv pi) ?p) = ?p"
             using permute_list_compose True pi_perm permute_list_id permutes_inv_o(2) pi_perm(1)
             by metis
-          thus ?thesis
-            using perm_elem
+          finally show ?thesis
             by auto
         next
           case False
-          with consensus_election_E
-          show ?thesis
+          thus ?thesis
+            using consensus_election_E
             by fastforce (* because ?listpi ?p = ?p *)
         qed
       qed
@@ -756,8 +752,9 @@ next
           have "?r <~~> p'"
             using pi_perm rp'
             by simp
-          with consens_elect_inst apply_perm rp'
-          have "?P a ?A ?r"
+          hence "?P a ?A ?r"
+            unfolding rp'
+            using consens_elect_inst apply_perm
             by presburger
           moreover have "length ?r = length p"
             using rp' True
