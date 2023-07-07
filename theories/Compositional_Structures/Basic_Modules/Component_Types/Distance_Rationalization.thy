@@ -136,8 +136,8 @@ proof (induct l, simp)
   moreover from fin_all_elems
   have "\<forall> i < length l. finite (l!i)"
     by auto
-  with elems_fin_then_set_fin
-  have "finite (listset l)"
+  hence "finite (listset l)"
+    using elems_fin_then_set_fin
     by simp
   ultimately have "finite {a'#l' | a' l'. a' \<in> a \<and> l' \<in> (listset l)}"
     using list_cons_presv_finiteness
