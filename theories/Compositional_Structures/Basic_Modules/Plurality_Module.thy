@@ -79,7 +79,8 @@ next
   next
     assume "{a \<in> A. win_count p a < Max {win_count p b | b. b \<in> A}} = A"
     hence "A = {}"
-      using max_score_contained[where A=A and e="(\<lambda> a. win_count p a)"] fin_prof_A nat_less_le
+      using max_score_contained[where A=A and e="(\<lambda> a. win_count p a)"]
+            fin_prof_A nat_less_le
       by blast
     thus "False"
       using non_empty_A
@@ -109,7 +110,8 @@ next
       b :: "'a"
     assume "{a' \<in> A. win_count p a' < Max {win_count p b' | b'. b' \<in> A}} = A"
     hence "A = {}"
-      using max_score_contained[where A= A and e = "(\<lambda> x. win_count p x)"] fin_prof_A nat_less_le
+      using max_score_contained[where A= A and e = "(\<lambda> x. win_count p x)"]
+            fin_prof_A nat_less_le
       by auto
     thus "win_count p a \<le> win_count p b"
       using non_empty_A
@@ -201,7 +203,8 @@ proof -
     unfolding Profile.lifted_def
     by metis
   hence a_win_subset:
-    "{i::nat. i < length p \<and> above (p!i) a = {a}} \<subseteq> {i::nat. i < length p \<and> above (q!i) a = {a}}"
+    "{i::nat. i < length p \<and> above (p!i) a = {a}} \<subseteq>
+        {i::nat. i < length p \<and> above (q!i) a = {a}}"
     by blast
   moreover have sizes: "length p = length q"
     using lift_a
@@ -246,7 +249,8 @@ proof -
         {i::nat. i < length p \<and> above (q!i) a = {a}}"
       using a_win_subset
       by (simp add: card_subset_eq)
-    hence above_pq: "\<forall> i::nat. i < length p \<longrightarrow> (above (p!i) a = {a}) = (above (q!i) a = {a})"
+    hence above_pq:
+      "\<forall> i::nat. i < length p \<longrightarrow> (above (p!i) a = {a}) = (above (q!i) a = {a})"
       by blast
     moreover have
       "\<forall> b \<in> A - {a}.
@@ -279,7 +283,8 @@ proof -
         by metis
     qed
     ultimately have above_PtoQ:
-      "\<forall> b \<in> A - {a}. \<forall> i::nat. i < length p \<longrightarrow> (above (p!i) b = {b} \<longrightarrow> above (q!i) b = {b})"
+      "\<forall> b \<in> A - {a}. \<forall> i::nat.
+        i < length p \<longrightarrow> (above (p!i) b = {b} \<longrightarrow> above (q!i) b = {b})"
       by simp
     hence "\<forall> b \<in> A.
             card {i::nat. i < length p \<and> above (p!i) b = {b}} =
@@ -288,7 +293,8 @@ proof -
       fix b :: "'a"
       assume
         above_c:
-          "\<forall> c \<in> A - {a}. \<forall> i < length p. above (p!i) c = {c} \<longrightarrow> above (q!i) c = {c}" and
+          "\<forall> c \<in> A - {a}. \<forall> i < length p.
+            above (p!i) c = {c} \<longrightarrow> above (q!i) c = {c}" and
         b_in_A: "b \<in> A"
       show "card {i. i < length p \<and> above (p!i) b = {b}} =
               card {i. i < length q \<and> above (q!i) b = {b}}"
@@ -300,8 +306,9 @@ proof -
       by auto
     hence "defer plurality' A q = defer plurality' A p \<or> defer plurality' A q = {a}"
       by simp
-    hence "defer ( plurality) A q = defer ( plurality) A p \<or> defer ( plurality) A q = {a}"
-      using plurality_mod_elim_equiv Profile.lifted_def empty_not_insert insert_absorb lift_a
+    hence "defer plurality A q = defer plurality A p \<or> defer plurality A q = {a}"
+      using plurality_mod_elim_equiv empty_not_insert insert_absorb lift_a
+      unfolding Profile.lifted_def
       by (metis (no_types, opaque_lifting))
     thus ?thesis
       by simp
@@ -328,7 +335,8 @@ proof -
     hence "\<forall> b \<in> A. win_count p b \<le> win_count p a"
       by simp
     hence less: "\<forall> b \<in> A - {a}. win_count q b < win_count q a"
-      using DiffD1 antisym dual_order.trans not_le_imp_less win_count_a strict_less win_count_other
+      using DiffD1 antisym dual_order.trans not_le_imp_less win_count_a strict_less
+            win_count_other
       by metis
     hence "\<forall> b \<in> A - {a}. \<not> (\<forall> c \<in> A. win_count q c \<le> win_count q b)"
       using lift_a not_le

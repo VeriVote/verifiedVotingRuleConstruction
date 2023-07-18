@@ -41,14 +41,16 @@ proof (intro electoral_modI)
     A :: "'a set" and
     p :: "'a Profile"
   let ?mod = "drop_module n r"
-  have "\<forall> a \<in> A. a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<or> a \<in> {x \<in> A. rank (limit A r) x > n}"
+  have "\<forall> a \<in> A. a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<or>
+                  a \<in> {x \<in> A. rank (limit A r) x > n}"
     by auto
   hence "{a \<in> A. rank (limit A r) a \<le> n} \<union> {a \<in> A. rank (limit A r) a > n} = A"
     by blast
   hence set_partition: "set_equals_partition A (drop_module n r A p)"
     by simp
   have "\<forall> a \<in> A.
-          \<not> (a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<and> a \<in> {x \<in> A. rank (limit A r) x > n})"
+          \<not> (a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<and>
+              a \<in> {x \<in> A. rank (limit A r) x > n})"
     by simp
   hence "{a \<in> A. rank (limit A r) a \<le> n} \<inter> {a \<in> A. rank (limit A r) a > n} = {}"
     by blast

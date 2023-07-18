@@ -85,7 +85,8 @@ proof -
           card {a \<in> A - {w}. wins w p a} + card {a \<in> {w}. wins w p a}"
     using finite_defeated card_Un_disjoint
     by blast
-  hence "card {a \<in> A. wins w p a} = card {a \<in> A - {w}. wins w p a} + card {a \<in> {w}. wins w p a}"
+  hence "card {a \<in> A. wins w p a} =
+          card {a \<in> A - {w}. wins w p a} + card {a \<in> {w}. wins w p a}"
     using union
     by simp
   thus ?thesis
@@ -126,7 +127,8 @@ proof (unfold copeland_score.simps)
   moreover have "card {a \<in> A. wins a p w} = 0"
     using cond_winner_imp_loss_count assms
     by (metis (no_types))
-  ultimately show "card {a \<in> A. wins w p a} - card {a \<in> A. wins a p w} = card A - 1"
+  ultimately show
+    "card {a \<in> A. wins w p a} - card {a \<in> A. wins a p w} = card A - 1"
     by simp
 qed
 
@@ -196,11 +198,13 @@ proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
     using diff_le_self order.trans
     by blast
   moreover have "card A - 2 < card A - 1"
-    using card_0_eq card_Diff_singleton diff_less_mono2 empty_iff finite_Diff insertE insert_Diff
-          l_in_A l_neq_w neq0_conv one_less_numeral_iff semiring_norm(76) winner zero_less_diff
+    using card_0_eq card_Diff_singleton diff_less_mono2 empty_iff finite_Diff insertE
+          insert_Diff l_in_A l_neq_w neq0_conv one_less_numeral_iff semiring_norm(76)
+          winner zero_less_diff
     unfolding condorcet_winner.simps
     by metis
-  ultimately have "card {y \<in> A. wins l p y} - card {y \<in> A. wins y p l} < card A - 1"
+  ultimately have
+    "card {y \<in> A. wins l p y} - card {y \<in> A. wins y p l} < card A - 1"
     using order_le_less_trans
     by blast
   moreover have "card {a \<in> A. wins a p w} = 0"

@@ -397,7 +397,10 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
     also have "... = ({},A - defer (max_eliminator e) A p, {a})"
       using calculation
       by simp
-    also have "... = ({}, A - defer (max_eliminator e) A p, {b \<in> A. condorcet_winner A p b})"
+    also have
+      "... = ({},
+              A - defer (max_eliminator e) A p,
+              {b \<in> A. condorcet_winner A p b})"
       using cond_winner_unique_3 winner Collect_cong
       by (metis (no_types, lifting))
     finally show ?thesis

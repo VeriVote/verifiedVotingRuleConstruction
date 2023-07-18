@@ -61,7 +61,8 @@ lemma max_agg_eq_result:
     module_n: "electoral_module n" and
     f_prof: "finite_profile A p" and
     a_in_A: "a \<in> A"
-  shows "mod_contains_result (m \<parallel>\<^sub>\<up> n) m A p a \<or> mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p a"
+  shows "mod_contains_result (m \<parallel>\<^sub>\<up> n) m A p a \<or>
+          mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p a"
 proof (cases)
   assume a_elect: "a \<in> elect (m \<parallel>\<^sub>\<up> n) A p"
   hence "let (e, r, d) = m A p;
@@ -73,7 +74,8 @@ proof (cases)
   moreover have
     "\<forall> m' n' A' p' a'.
       mod_contains_result m' n' A' p' (a'::'a) =
-        (electoral_module m' \<and> electoral_module n' \<and> finite A' \<and> profile A' p' \<and> a' \<in> A' \<and>
+        (electoral_module m' \<and> electoral_module n' \<and> finite A' \<and>
+          profile A' p' \<and> a' \<in> A' \<and>
           (a' \<notin> elect m' A' p' \<or> a' \<in> elect n' A' p') \<and>
           (a' \<notin> reject m' A' p' \<or> a' \<in> reject n' A' p') \<and>
           (a' \<notin> defer m' A' p' \<or> a' \<in> defer n' A' p'))"
@@ -100,7 +102,8 @@ next
     proof (safe)
       assume not_mod_cont_mn: "\<not> mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p a"
       have par_emod:
-        "\<forall> m' n'. (electoral_module m' \<and> electoral_module n') \<longrightarrow> electoral_module (m' \<parallel>\<^sub>\<up> n')"
+        "\<forall> m' n'. (electoral_module m' \<and> electoral_module n') \<longrightarrow>
+          electoral_module (m' \<parallel>\<^sub>\<up> n')"
         using max_par_comp_sound
         by blast
       have set_intersect: "\<forall> a' A' A''. (a' \<in> A' \<inter> A'') = (a' \<in> A' \<and> a' \<in> A'')"
@@ -119,9 +122,12 @@ next
       hence "electoral_module (m \<parallel>\<^sub>max_aggregator n)"
         by simp
       hence result_disj_max:
-        "elect (m \<parallel>\<^sub>max_aggregator n) A p \<inter> reject (m \<parallel>\<^sub>max_aggregator n) A p = {} \<and>
-          elect (m \<parallel>\<^sub>max_aggregator n) A p \<inter> defer (m \<parallel>\<^sub>max_aggregator n) A p = {} \<and>
-          reject (m \<parallel>\<^sub>max_aggregator n) A p \<inter> defer (m \<parallel>\<^sub>max_aggregator n) A p = {}"
+        "elect (m \<parallel>\<^sub>max_aggregator n) A p \<inter>
+            reject (m \<parallel>\<^sub>max_aggregator n) A p = {} \<and>
+          elect (m \<parallel>\<^sub>max_aggregator n) A p \<inter>
+            defer (m \<parallel>\<^sub>max_aggregator n) A p = {} \<and>
+          reject (m \<parallel>\<^sub>max_aggregator n) A p \<inter>
+            defer (m \<parallel>\<^sub>max_aggregator n) A p = {}"
         using f_prof result_disj
         by metis
       have a_not_elect: "a \<notin> elect (m \<parallel>\<^sub>max_aggregator n) A p"
@@ -132,7 +138,8 @@ next
       have result_n: "(elect n A p, reject n A p, defer n A p) = n A p"
         by auto
       have max_pq:
-        "\<forall> (A'::'a set) m' n'. elect_r (max_aggregator A' m' n') = elect_r m' \<union> elect_r n'"
+        "\<forall> (A'::'a set) m' n'.
+          elect_r (max_aggregator A' m' n') = elect_r m' \<union> elect_r n'"
         by force
       have "a \<notin> elect (m \<parallel>\<^sub>max_aggregator n) A p"
         using a_not_elect
@@ -148,10 +155,11 @@ next
       have mod_cont_res_fg:
         "\<forall> m' n' A' p' (a'::'a).
           mod_contains_result m' n' A' p' a' =
-            (electoral_module m' \<and> electoral_module n' \<and> finite A' \<and> profile A' p' \<and> a' \<in> A' \<and>
-                (a' \<in> elect m' A' p' \<longrightarrow> a' \<in> elect n' A' p') \<and>
-                (a' \<in> reject m' A' p' \<longrightarrow> a' \<in> reject n' A' p') \<and>
-                (a' \<in> defer m' A' p' \<longrightarrow> a' \<in> defer n' A' p'))"
+            (electoral_module m' \<and> electoral_module n' \<and> finite A' \<and>
+              profile A' p' \<and> a' \<in> A' \<and>
+              (a' \<in> elect m' A' p' \<longrightarrow> a' \<in> elect n' A' p') \<and>
+              (a' \<in> reject m' A' p' \<longrightarrow> a' \<in> reject n' A' p') \<and>
+              (a' \<in> defer m' A' p' \<longrightarrow> a' \<in> defer n' A' p'))"
         by (simp add: mod_contains_result_def)
       have max_agg_res:
         "max_aggregator A (elect m A p, reject m A p, defer m A p)
@@ -174,24 +182,27 @@ next
         by metis
       have "\<forall> m' n' A' p' (b::'a).
               mod_contains_result m' n' A' p' b =
-                (electoral_module m' \<and> electoral_module n' \<and> finite A' \<and> profile A' p' \<and> b \<in> A' \<and>
-                    (b \<in> elect m' A' p' \<longrightarrow> b \<in> elect n' A' p') \<and>
-                    (b \<in> reject m' A' p' \<longrightarrow> b \<in> reject n' A' p') \<and>
-                    (b \<in> defer m' A' p' \<longrightarrow> b \<in> defer n' A' p'))"
+                (electoral_module m' \<and> electoral_module n' \<and> finite A' \<and>
+                  profile A' p' \<and> b \<in> A' \<and>
+                  (b \<in> elect m' A' p' \<longrightarrow> b \<in> elect n' A' p') \<and>
+                  (b \<in> reject m' A' p' \<longrightarrow> b \<in> reject n' A' p') \<and>
+                  (b \<in> defer m' A' p' \<longrightarrow> b \<in> defer n' A' p'))"
         unfolding mod_contains_result_def
         by simp
       hence "a \<in> reject n A p"
-        using e_mod_disj_n e_mod_par f_prof a_in_A module_n not_mod_cont_mn a_not_elect
-              b_not_elect_mn b_not_mpar_rej
+        using e_mod_disj_n e_mod_par f_prof a_in_A module_n not_mod_cont_mn
+              a_not_elect b_not_elect_mn b_not_mpar_rej
         by auto
       hence "a \<notin> reject m A p"
-        using well_f_max max_agg_res result_m result_n set_intersect wf_m wf_n b_not_mpar_rej
+        using well_f_max max_agg_res result_m result_n set_intersect
+              wf_m wf_n b_not_mpar_rej
         by (metis (no_types))
       hence "a \<notin> defer (m \<parallel>\<^sub>\<up> n) A p \<or> a \<in> defer m A p"
           using e_mod_disj f_prof a_in_A module_m b_not_elect_mn
           by blast
       thus "mod_contains_result (m \<parallel>\<^sub>\<up> n) m A p a"
-        using b_not_mpar_rej mod_cont_res_fg e_mod_par f_prof a_in_A module_m a_not_elect
+        using b_not_mpar_rej mod_cont_res_fg e_mod_par f_prof a_in_A
+              module_m a_not_elect
         by auto
     qed
   next
@@ -239,7 +250,8 @@ lemma max_agg_rej_iff_both_reject:
 proof
   assume rej_a: "a \<in> reject (m \<parallel>\<^sub>\<up> n) A p"
   hence "case n A p of (e, r, d) \<Rightarrow>
-          a \<in> reject_r (max_aggregator A (elect m A p, reject m A p, defer m A p) (e, r, d))"
+          a \<in> reject_r (max_aggregator A
+                (elect m A p, reject m A p, defer m A p) (e, r, d))"
     by auto
   hence "case snd (m A p) of (r, d) \<Rightarrow>
           case n A p of (e', r', d') \<Rightarrow>
@@ -421,9 +433,9 @@ next
     using f_prof max_agg_rej_1 mod_contains_result_def module_m rejected
     by metis
   ultimately show "a \<in> defer (m \<parallel>\<^sub>\<up> n) A p"
-    using disjoint_iff_not_equal f_prof max_agg_eq_result max_agg_rej_iff_both_reject
-          mod_contains_result_comm mod_contains_result_def module_m module_n rejected
-          result_disj
+    using disjoint_iff_not_equal max_agg_eq_result max_agg_rej_iff_both_reject
+          f_prof mod_contains_result_comm mod_contains_result_def
+          module_m module_n rejected result_disj
       by metis
 qed
 
@@ -548,8 +560,10 @@ next
   from compatible
   obtain B :: "'a set" where
     alts: "B \<subseteq> A \<and>
-            (\<forall> b \<in> B. indep_of_alt m A b \<and> (\<forall> p'. finite_profile A p' \<longrightarrow> b \<in> reject m A p')) \<and>
-            (\<forall> b \<in> A - B. indep_of_alt n A b \<and> (\<forall> p'. finite_profile A p' \<longrightarrow> b \<in> reject n A p'))"
+            (\<forall> b \<in> B. indep_of_alt m A b \<and>
+                (\<forall> p'. finite_profile A p' \<longrightarrow> b \<in> reject m A p')) \<and>
+            (\<forall> b \<in> A - B. indep_of_alt n A b \<and>
+                (\<forall> p'. finite_profile A p' \<longrightarrow> b \<in> reject n A p'))"
     using f_profs
     unfolding disjoint_compatibility_def
     by (metis (no_types, lifting))
@@ -866,12 +880,15 @@ lemma par_comp_rej_card:
 proof -
   obtain B where
     alt_set: "B \<subseteq> A \<and>
-         (\<forall> a \<in> B. indep_of_alt m A a \<and> (\<forall> q. finite_profile A q \<longrightarrow> a \<in> reject m A q)) \<and>
-         (\<forall> a \<in> A - B. indep_of_alt n A a \<and> (\<forall> q. finite_profile A q \<longrightarrow> a \<in> reject n A q))"
+         (\<forall> a \<in> B. indep_of_alt m A a \<and>
+            (\<forall> q. finite_profile A q \<longrightarrow> a \<in> reject m A q)) \<and>
+         (\<forall> a \<in> A - B. indep_of_alt n A a \<and>
+            (\<forall> q. finite_profile A q \<longrightarrow> a \<in> reject n A q))"
     using compatible f_prof
     unfolding disjoint_compatibility_def
     by metis
-  have reject_representation: "reject (m \<parallel>\<^sub>\<up> n) A p = (reject m A p) \<inter> (reject n A p)"
+  have reject_representation:
+    "reject (m \<parallel>\<^sub>\<up> n) A p = (reject m A p) \<inter> (reject n A p)"
     using f_prof compatible max_agg_rej_intersect
     unfolding disjoint_compatibility_def
     by metis
@@ -885,7 +902,8 @@ proof -
     using rev_finite_subset f_prof
     by metis
   hence card_difference:
-    "card (reject (m \<parallel>\<^sub>\<up> n) A p) = card A + c - card ((reject m A p) \<union> (reject n A p))"
+    "card (reject (m \<parallel>\<^sub>\<up> n) A p) =
+      card A + c - card ((reject m A p) \<union> (reject n A p))"
     using card_Un_Int reject_representation reject_sum
     by fastforce
   have "\<forall> a \<in> A. a \<in> (reject m A p) \<or> a \<in> (reject n A p)"
@@ -960,7 +978,8 @@ next
       using fin_A prof_A module
       unfolding electoral_module_def
       by simp
-    ultimately have "card A = card (elect m A p) + card (reject m A p) + card (defer m A p)"
+    ultimately have
+      "card A = card (elect m A p) + card (reject m A p) + card (defer m A p)"
       using result_count
       by blast
     thus ?thesis

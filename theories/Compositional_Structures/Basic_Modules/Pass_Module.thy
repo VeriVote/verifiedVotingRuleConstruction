@@ -49,7 +49,8 @@ proof (intro electoral_modI)
     by simp
   moreover have
     "\<forall> a \<in> A.
-      \<not> (a \<in> {x \<in> A. rank (limit A r) x > n} \<and> a \<in> {x \<in> A. rank (limit A r) x \<le> n})"
+      \<not> (a \<in> {x \<in> A. rank (limit A r) x > n} \<and>
+          a \<in> {x \<in> A. rank (limit A r) x \<le> n})"
     by simp
   hence "{a \<in> A. rank (limit A r) a > n} \<inter> {a \<in> A. rank (limit A r) a \<le> n} = {}"
     by blast
@@ -159,8 +160,10 @@ next
     by simp
   have "\<forall> n. (n::nat) \<le> 0 \<longrightarrow> n = 0"
     by blast
-  hence "\<forall> a A'. a \<in> A' \<and> a \<in> A \<longrightarrow> connex A' (limit A r) \<longrightarrow> \<not> rank (limit A r) a \<le> 0"
-    using above_connex above_presv_limit card_eq_0_iff equals0D finite_A assms rev_finite_subset
+  hence "\<forall> a A'. a \<in> A' \<and> a \<in> A \<longrightarrow> connex A' (limit A r) \<longrightarrow>
+          \<not> rank (limit A r) a \<le> 0"
+    using above_connex above_presv_limit card_eq_0_iff equals0D finite_A
+          assms rev_finite_subset
     unfolding rank.simps
     by (metis (no_types))
   hence "{a \<in> A. rank (limit A r) a \<le> 0} = {}"
@@ -205,11 +208,13 @@ next
       using assms limit_presv_lin_ord
       by blast
     ultimately have winner_exists:
-      "\<exists> a \<in> A. above (limit A r) a = {a} \<and> (\<forall> b \<in> A. above (limit A r) b = {b} \<longrightarrow> b = a)"
+      "\<exists> a \<in> A. above (limit A r) a = {a} \<and>
+          (\<forall> b \<in> A. above (limit A r) b = {b} \<longrightarrow> b = a)"
       using finite_A
       by (simp add: above_one)
     then obtain w where w_unique_top:
-      "above (limit A r) w = {w} \<and> (\<forall> a \<in> A. above (limit A r) a = {a} \<longrightarrow> a = w)"
+      "above (limit A r) w = {w} \<and>
+        (\<forall> a \<in> A. above (limit A r) a = {a} \<longrightarrow> a = w)"
       using above_one
       by auto
     hence "{a \<in> A. rank (limit A r) a \<le> 1} = {w}"
@@ -250,8 +255,8 @@ next
           using a_in_winner_set
           by simp
         moreover have "rank (limit A r) a \<ge> 1"
-          using One_nat_def Suc_leI above_finite card_eq_0_iff equals0D neq0_conv a_above_a
-          unfolding rank.simps
+          using Suc_leI above_finite card_eq_0_iff equals0D neq0_conv a_above_a
+          unfolding rank.simps One_nat_def
           by metis
         ultimately have "rank (limit A r) a = 1"
           by simp
@@ -312,8 +317,8 @@ next
   from a_above
   have "a \<in> {a \<in> A. rank (limit A r) a \<le> 2}"
     using CollectI Suc_leI not_empty_A a_above card_UNIV_bool card_eq_0_iff card_insert_disjoint
-          empty_iff fin_A finite.emptyI insert_iff limit_A_order above_one UNIV_bool nat.simps(3)
-          zero_less_Suc One_nat_def above_rank
+          empty_iff fin_A finite.emptyI insert_iff limit_A_order above_one UNIV_bool
+          nat.simps(3) zero_less_Suc One_nat_def above_rank
     by (metis (no_types, lifting))
   hence a_in_defer: "a \<in> defer (pass_module 2 r) A p"
     by simp
@@ -321,8 +326,9 @@ next
     using fin_A
     by simp
   moreover have A_not_only_a: "A - {a} \<noteq> {}"
-    using min_2_card Diff_empty Diff_idemp Diff_insert0 One_nat_def not_empty_A card.insert_remove
-          card_eq_0_iff finite.emptyI insert_Diff numeral_le_one_iff semiring_norm(69) card.empty
+    using min_2_card Diff_empty Diff_idemp Diff_insert0 One_nat_def not_empty_A
+          card.insert_remove card_eq_0_iff finite.emptyI insert_Diff numeral_le_one_iff
+          semiring_norm(69) card.empty
     by metis
   moreover have limit_A_without_a_order:
     "linear_order_on (A - {a}) (limit (A - {a}) r)"

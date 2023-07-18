@@ -58,7 +58,8 @@ proof (unfold electoral_module_def, safe)
     by blast
   moreover have
     "\<forall> m' A' p'.
-      (electoral_module m' \<and> finite (A'::'a set) \<and> profile A' p') \<longrightarrow> well_formed A' (m' A' p')"
+      (electoral_module m' \<and> finite (A'::'a set) \<and> profile A' p') \<longrightarrow>
+          well_formed A' (m' A' p')"
     using par_comp_result_sound
     by (metis (no_types))
   ultimately have "well_formed A (a A (m A p) (n A p))"

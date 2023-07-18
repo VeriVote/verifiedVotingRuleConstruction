@@ -58,8 +58,9 @@ proof (unfold electoral_module_def, simp, safe, simp_all)
     "x' \<in> reject (?smc) A p" and
     "x' \<in> elect (?smc) A p"
   thus False
-    using IntI drop_mod_sound emptyE loop_comp_sound max_agg_sound assms par_comp_sound
-          pass_mod_sound plurality_rule_sound rev_comp_sound result_disj seq_comp_sound
+    using IntI drop_mod_sound emptyE loop_comp_sound max_agg_sound assms
+          par_comp_sound pass_mod_sound plurality_rule_sound rev_comp_sound
+          result_disj seq_comp_sound
     by metis
 next
   fix
@@ -78,8 +79,9 @@ next
     "x' \<in> reject (?smc) A p" and
     "x' \<in> defer (?smc) A p"
   thus False
-    using IntI assms result_disj emptyE drop_mod_sound loop_comp_sound max_agg_sound
-          par_comp_sound pass_mod_sound plurality_rule_sound rev_comp_sound seq_comp_sound
+    using IntI assms result_disj emptyE drop_mod_sound loop_comp_sound
+          max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
+          rev_comp_sound seq_comp_sound
     by metis
 next
   fix
@@ -97,8 +99,9 @@ next
     "profile A p" and
       "x' \<in> elect (?smc) A p"
   thus "x' \<in> A"
-    using drop_mod_sound elect_in_alts in_mono assms loop_comp_sound max_agg_sound
-          par_comp_sound pass_mod_sound plurality_rule_sound rev_comp_sound seq_comp_sound
+    using drop_mod_sound elect_in_alts in_mono assms loop_comp_sound
+          max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
+          rev_comp_sound seq_comp_sound
     by metis
 next
   fix
@@ -116,8 +119,9 @@ next
     "profile A p" and
     "x' \<in> defer (?smc) A p"
   thus "x' \<in> A"
-    using drop_mod_sound defer_in_alts in_mono assms loop_comp_sound max_agg_sound
-          par_comp_sound pass_mod_sound plurality_rule_sound rev_comp_sound seq_comp_sound
+    using drop_mod_sound defer_in_alts in_mono assms loop_comp_sound
+          max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
+          rev_comp_sound seq_comp_sound
     by (metis (no_types, lifting))
 next
   fix
@@ -160,8 +164,9 @@ next
     "x' \<notin> defer (?smc) A p" and
     "x' \<notin> reject (?smc) A p"
   thus "x' \<in> elect (?smc) A p"
-    using assms electoral_mod_defer_elem drop_mod_sound loop_comp_sound max_agg_sound
-          par_comp_sound pass_mod_sound plurality_rule_sound rev_comp_sound seq_comp_sound
+    using assms electoral_mod_defer_elem drop_mod_sound loop_comp_sound
+          max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
+          rev_comp_sound seq_comp_sound
     by metis
 qed
 
