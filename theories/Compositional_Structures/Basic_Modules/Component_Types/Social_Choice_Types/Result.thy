@@ -80,7 +80,8 @@ proof (safe)
     "a \<in> A" and
     "a \<notin> r" and
     "a \<notin> d"
-  moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+  moreover have
+    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
     using assms
     by simp
   ultimately show "a \<in> e"
@@ -88,7 +89,8 @@ proof (safe)
 next
   fix a :: "'a"
   assume "a \<in> r"
-  moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+  moreover have
+    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
     using assms
     by simp
   ultimately show "a \<in> A"
@@ -98,7 +100,8 @@ next
   assume
     "a \<in> r" and
     "a \<in> e"
-  moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+  moreover have
+    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
     using assms
     by simp
   ultimately show False
@@ -108,7 +111,8 @@ next
   assume
     "a \<in> r" and
     "a \<in> d"
-  moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
+  moreover have
+    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
     using assms
     by simp
   ultimately show False
@@ -152,7 +156,8 @@ proof (safe)
     "A = f r A \<and> r = g r A \<and> disjoint3 (g r A) \<and> set_equals_partition (f r A) (g r A)"
     using assms
     by simp
-  moreover have "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
+  moreover have
+    "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
     by simp
   ultimately show "a \<in> A"
     using UnCI snd_conv
@@ -174,7 +179,8 @@ proof (safe)
     "A = f r A \<and> r = g r A \<and> disjoint3 (g r A) \<and> set_equals_partition (f r A) (g r A)"
     using assms
     by simp
-  moreover have "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
+  moreover have
+    "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
     by simp
   ultimately show "a \<in> A"
     using UnCI assms fst_conv
@@ -196,7 +202,8 @@ proof (safe)
     "A = f r A \<and> r = g r A \<and> disjoint3 (g r A) \<and> set_equals_partition (f r A) (g r A)"
     using assms
     by simp
-  moreover have "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
+  moreover have
+    "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
     by simp
   ultimately show "a \<in> A"
     using UnCI assms fst_conv snd_conv disjoint3.cases

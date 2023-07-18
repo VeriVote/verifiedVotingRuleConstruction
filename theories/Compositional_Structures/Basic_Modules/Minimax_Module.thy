@@ -92,7 +92,8 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe,
     "Min {prefer_count p l y | y. y \<in> A - {l}} \<ge>
         Min {prefer_count p w y | y. y \<in> A - {w}}"
     by simp
-  have pref_count_gte_min: "prefer_count p l w  \<ge> Min {prefer_count p l y | y . y \<in> A - {l}}"
+  have pref_count_gte_min:
+    "prefer_count p l w  \<ge> Min {prefer_count p l y | y . y \<in> A - {l}}"
     using l_in_A l_neq_w condorcet_winner.simps winner non_cond_winner_minimax_score
           minimax_score.simps
     by metis
@@ -131,11 +132,13 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe,
     using pref_count_gte_min min_count_ineq pref_count_eq_min
     by linarith
   hence "prefer_count p n w \<ge> prefer_count p w l"
-    using n_in_A w_in_A l_in_A n_neq_w l_neq_w pref_count_sym condorcet_winner.simps winner
+    using n_in_A w_in_A l_in_A n_neq_w l_neq_w pref_count_sym winner
+    unfolding condorcet_winner.simps
     by metis
   hence "prefer_count p l w > prefer_count p w l"
-    using n_in_A w_in_A l_in_A n_neq_w l_neq_w pref_count_sym condorcet_winner.simps winner
-    using pref_count_n_w_ineq pref_count_l_w_n_ineq
+    using n_in_A w_in_A l_in_A n_neq_w l_neq_w pref_count_sym winner
+          pref_count_n_w_ineq pref_count_l_w_n_ineq
+    unfolding condorcet_winner.simps
     by linarith
   hence "wins l p w"
     by simp

@@ -62,7 +62,8 @@ proof -
     electing_mod:
     "\<forall> m'.
       (\<not> electing m' \<and> electoral_module m' \<longrightarrow>
-        profile (A m') (p m') \<and> finite (A m') \<and> elect m' (A m') (p m') = {} \<and> A m' \<noteq> {}) \<and>
+        profile (A m') (p m') \<and> finite (A m') \<and>
+          elect m' (A m') (p m') = {} \<and> A m' \<noteq> {}) \<and>
       (electing m' \<and> electoral_module m' \<longrightarrow>
         (\<forall> A p. (A \<noteq> {} \<and> profile A p \<and> finite A) \<longrightarrow> elect m' A p \<noteq> {}))"
     using electing_def
@@ -142,28 +143,33 @@ next
     fix x :: "'a"
     assume x_in_elect_or_defer: "x \<in> elect m A p \<union> defer m A p"
     hence x_eq_w: "x = w"
-      using Diff_empty Diff_iff assms cond_winner_unique_3 c_win defer_condorcet_consistency_def
-            fin_A insert_iff snd_conv prod.sel(1) sup_bot.left_neutral
+      using Diff_empty Diff_iff assms cond_winner_unique_3 c_win fin_A insert_iff
+            snd_conv prod.sel(1) sup_bot.left_neutral
+      unfolding defer_condorcet_consistency_def
       by (metis (mono_tags, lifting))
     have "\<And> x. x \<in> elect m A p \<Longrightarrow> x \<in> A"
-      using fin_A prof_A assms defer_condorcet_consistency_def elect_in_alts in_mono
+      using fin_A prof_A assms elect_in_alts in_mono
+      unfolding defer_condorcet_consistency_def
       by metis
     moreover have "\<And> x. x \<in> defer m A p \<Longrightarrow> x \<in> A"
-      using fin_A prof_A assms defer_condorcet_consistency_def defer_in_alts in_mono
+      using fin_A prof_A assms defer_in_alts in_mono
+      unfolding defer_condorcet_consistency_def
       by metis
     ultimately have "x \<in> A"
       using x_in_elect_or_defer
       by auto
     thus "x \<in> {e \<in> A. e \<in> A \<and>
             (\<forall> x \<in> A - {e}.
-              card {i. i < length p \<and> (e, x) \<in> p!i} < card {i. i < length p \<and> (x, e) \<in> p!i})}"
+              card {i. i < length p \<and> (e, x) \<in> p!i} <
+                card {i. i < length p \<and> (x, e) \<in> p!i})}"
       using x_eq_w max_card_w
       by auto
   qed
   moreover have
     "{e \<in> A. e \<in> A \<and>
         (\<forall> x \<in> A - {e}.
-            card {i. i < length p \<and> (e, x) \<in> p!i} < card {i. i < length p \<and> (x, e) \<in> p!i})}
+            card {i. i < length p \<and> (e, x) \<in> p!i} <
+              card {i. i < length p \<and> (x, e) \<in> p!i})}
           \<subseteq> elect m A p \<union> defer m A p"
   proof (safe)
     fix x :: "'a"
@@ -172,7 +178,8 @@ next
       x_in_A: "x \<in> A" and
       more_wins_for_x:
         "\<forall> x' \<in> A - {x}.
-          card {i. i < length p \<and> (x, x') \<in> p!i} < card {i. i < length p \<and> (x', x) \<in> p!i}"
+          card {i. i < length p \<and> (x, x') \<in> p!i} <
+            card {i. i < length p \<and> (x', x) \<in> p!i}"
     hence "condorcet_winner A p x"
       using fin_A prof_A
       by simp
@@ -185,9 +192,11 @@ next
     "elect m A p \<union> defer m A p =
       {e \<in> A. e \<in> A \<and>
         (\<forall> x \<in> A - {e}.
-          card {i. i < length p \<and> (e, x) \<in> p!i} < card {i. i < length p \<and> (x, e) \<in> p!i})}"
+          card {i. i < length p \<and> (e, x) \<in> p!i} <
+            card {i. i < length p \<and> (x, e) \<in> p!i})}"
     by blast
-  thus "elector m A p = ({e \<in> A. condorcet_winner A p e}, A - elect (elector m) A p, {})"
+  thus "elector m A p =
+          ({e \<in> A. condorcet_winner A p e}, A - elect (elector m) A p, {})"
     using fin_A prof_A rej_is_complement
     by simp
 qed

@@ -159,7 +159,8 @@ next
             index (limit_l A l) a'' \<le> index (limit_l A l) a'}"
         by presburger
       moreover from this have
-        "{(a', b'). a' \<lesssim>\<^sub>l b'} = {(a', a''). a' \<in> set l \<and> a'' \<in> set l \<and> index l a'' \<le> index l a'}"
+        "{(a', b'). a' \<lesssim>\<^sub>l b'} =
+            {(a', a''). a' \<in> set l \<and> a'' \<in> set l \<and> index l a'' \<le> index l a'}"
         using is_less_preferred_than_l.simps
         by auto
       ultimately have "{(a', b').
@@ -183,7 +184,8 @@ next
         h :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> 'a" where
         "\<forall> d s e. d \<lesssim>\<^sub>s e \<longrightarrow>
           d = f e s d \<and> s = g e s d \<and> e = h e s d \<and> f e s d \<in> set (g e s d) \<and>
-            h e s d \<in> set (g e s d) \<and> index (g e s d) (h e s d) \<le> index (g e s d) (f e s d)"
+            index (g e s d) (h e s d) \<le> index (g e s d) (f e s d) \<and>
+              h e s d \<in> set (g e s d)"
         by fastforce
       ultimately have
         "b = f c (a#(filter (\<lambda> a. a \<in> A) l)) b \<and>
@@ -191,8 +193,10 @@ next
           c = h c (a#(filter (\<lambda> a. a \<in> A) l)) b \<and>
           f c (a#(filter (\<lambda> a. a \<in> A) l)) b \<in> set (g c (a#(filter (\<lambda> a. a \<in> A) l)) b) \<and>
           h c (a#(filter (\<lambda> a. a \<in> A) l)) b \<in> set (g c (a#(filter (\<lambda> a. a \<in> A) l)) b) \<and>
-          index (g c (a#(filter (\<lambda> a. a \<in> A) l)) b) (h c (a#(filter (\<lambda> a. a \<in> A) l)) b) \<le>
-            index (g c (a#(filter (\<lambda> a. a \<in> A) l)) b) (f c (a#(filter (\<lambda> a. a \<in> A) l)) b)"
+          index (g c (a#(filter (\<lambda> a. a \<in> A) l)) b)
+              (h c (a#(filter (\<lambda> a. a \<in> A) l)) b) \<le>
+            index (g c (a#(filter (\<lambda> a. a \<in> A) l)) b)
+              (f c (a#(filter (\<lambda> a. a \<in> A) l)) b)"
         by blast
       moreover have "filter (\<lambda> a. a \<in> A) l = limit_l A l"
         by simp
@@ -252,13 +256,15 @@ next
         using case_prodD mem_Collect_eq
         unfolding pl_\<alpha>_def
         by metis
-      moreover have "pl_\<alpha> (filter (\<lambda> a. a \<in> A) l) = {(a, b). (a, b) \<in> pl_\<alpha> l \<and> a \<in> A \<and> b \<in> A}"
+      moreover have
+        "pl_\<alpha> (filter (\<lambda> a. a \<in> A) l) = {(a, b). (a, b) \<in> pl_\<alpha> l \<and> a \<in> A \<and> b \<in> A}"
         using wf_a_l wf_imp_limit
         by simp
-      ultimately show "index (a#(filter (\<lambda> a. a \<in> A) l)) c \<le> index (a#(filter (\<lambda> a. a \<in> A) l)) b"
-        using add_leE add_le_cancel_right case_prodI in_rel_Collect_case_prod_eq index_Cons b_in_A
-              c_in_A set_ConsD is_less_preferred_than_l.elims(1) linorder_le_cases mem_Collect_eq
-              not_one_le_zero
+      ultimately show
+        "index (a#(filter (\<lambda> a. a \<in> A) l)) c \<le> index (a#(filter (\<lambda> a. a \<in> A) l)) b"
+        using add_leE add_le_cancel_right case_prodI in_rel_Collect_case_prod_eq
+              index_Cons b_in_A c_in_A set_ConsD is_less_preferred_than_l.elims(1)
+              linorder_le_cases mem_Collect_eq not_one_le_zero
         unfolding pl_\<alpha>_def
         by fastforce
     qed
@@ -286,8 +292,8 @@ next
       proof (unfold index_def, simp, safe)
         assume "a = b"
         thus "False"
-          using a_not_in_A b_less_c case_prod_conv is_less_preferred_than_l.elims(2) mem_Collect_eq
-                set_filter wf_a_l
+          using a_not_in_A b_less_c case_prod_conv is_less_preferred_than_l.elims(2)
+                mem_Collect_eq set_filter wf_a_l
           unfolding pl_\<alpha>_def
           by simp
       next
@@ -437,9 +443,9 @@ proof (safe)
           bot_nat_0.extremum_strict linorder_not_less
     by metis
   hence "a \<lesssim>\<^sub>l b"
-    using above_l_def is_less_preferred_than_l.elims(3) rank_l.simps One_nat_def Suc_le_mono
-          add_Suc empty_iff find_index_le_size in_set_member index_def le_antisym list.set(1)
-          size_index_conv take_0 b_member
+    using is_less_preferred_than_l.elims(3) rank_l.simps Suc_le_mono add_Suc empty_iff
+          find_index_le_size le_antisym list.set(1) size_index_conv take_0 b_member
+    unfolding One_nat_def index_def above_l_def
     by metis
   thus "b \<in> Order_Relation.above (pl_\<alpha> l) a"
     using less_preferred_l_rel_equiv pref_imp_in_above
