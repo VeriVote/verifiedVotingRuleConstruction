@@ -209,7 +209,9 @@ lemma result_presv_alts:
 proof (safe)
   fix a :: "'a"
   assume "a \<in> elect m A p"
-  moreover have "\<forall> p'. set_equals_partition A p' \<longrightarrow> (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
+  moreover have
+    "\<forall> p'. set_equals_partition A p' \<longrightarrow>
+        (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
     by simp
   moreover have "set_equals_partition A (m A p)"
     using assms
@@ -221,7 +223,9 @@ proof (safe)
 next
   fix a :: "'a"
   assume "a \<in> reject m A p"
-  moreover have "\<forall> p'. set_equals_partition A p' \<longrightarrow> (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
+  moreover have
+    "\<forall> p'. set_equals_partition A p' \<longrightarrow>
+        (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
     by simp
   moreover have "set_equals_partition A (m A p)"
     using assms
@@ -233,7 +237,9 @@ next
 next
   fix a :: "'a"
   assume "a \<in> defer m A p"
-  moreover have "\<forall> p'. set_equals_partition A p' \<longrightarrow> (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
+  moreover have
+    "\<forall> p'. set_equals_partition A p' \<longrightarrow>
+        (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
     by simp
   moreover have "set_equals_partition A (m A p)"
     using assms
@@ -248,7 +254,9 @@ next
     "a \<in> A" and
     "a \<notin> defer m A p" and
     "a \<notin> reject m A p"
-  moreover have "\<forall> p'. set_equals_partition A p' \<longrightarrow> (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
+  moreover have
+    "\<forall> p'. set_equals_partition A p' \<longrightarrow>
+        (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
     by simp
   moreover have "set_equals_partition A (m A p)"
     using assms
@@ -289,7 +297,8 @@ next
     elect_a: "a \<in> elect m A p" and
     defer_a: "a \<in> defer m A p"
   have disj:
-    "\<forall> p'. disjoint3 p' \<longrightarrow> (\<exists> B C D. p' = (B, C, D) \<and> B \<inter> C = {} \<and> B \<inter> D = {} \<and> C \<inter> D = {})"
+    "\<forall> p'. disjoint3 p' \<longrightarrow>
+      (\<exists> B C D. p' = (B, C, D) \<and> B \<inter> C = {} \<and> B \<inter> D = {} \<and> C \<inter> D = {})"
     by simp
   have "well_formed A (m A p)"
     using assms
@@ -416,7 +425,8 @@ proof -
   hence "(elect m A p) \<union> (reject m A p) \<union> (defer m A p) = A"
     using assms result_presv_alts
     by simp
-  moreover have "(elect m A p) \<inter> (reject m A p) = {} \<and> (reject m A p) \<inter> (defer m A p) = {}"
+  moreover have
+    "(elect m A p) \<inter> (reject m A p) = {} \<and> (reject m A p) \<inter> (defer m A p) = {}"
     using assms result_disj
     by blast
   ultimately show ?thesis
@@ -436,7 +446,8 @@ proof -
   have "(elect m A p) \<union> (reject m A p) \<union> (defer m A p) = A"
     using assms result_presv_alts
     by blast
-  moreover have "(elect m A p) \<inter> (reject m A p) = {} \<and> (reject m A p) \<inter> (defer m A p) = {}"
+  moreover have
+    "(elect m A p) \<inter> (reject m A p) = {} \<and> (reject m A p) \<inter> (defer m A p) = {}"
     using assms result_disj
     by blast
   ultimately show ?thesis
@@ -460,7 +471,8 @@ proof -
   hence "(elect m A p) \<union> (reject m A p) \<union> (defer m A p) = A"
     using assms result_presv_alts
     by simp
-  moreover have "(elect m A p) \<inter> (defer m A p) = {} \<and> (reject m A p) \<inter> (defer m A p) = {}"
+  moreover have
+    "(elect m A p) \<inter> (defer m A p) = {} \<and> (reject m A p) \<inter> (defer m A p) = {}"
     using assms result_disj
     by blast
   ultimately show ?thesis
@@ -759,7 +771,8 @@ next
     "reject m A p = A" and
     "a \<in> A"
   moreover have
-    "electoral_module m \<and> (\<forall> A q. A \<noteq> {} \<and> finite A \<and> profile A q \<longrightarrow> elect m A q \<noteq> {})"
+    "electoral_module m \<and>
+      (\<forall> A q. A \<noteq> {} \<and> finite A \<and> profile A q \<longrightarrow> elect m A q \<noteq> {})"
     using assms
     unfolding electing_def
     by metis
@@ -791,7 +804,8 @@ lemma single_elim_decr_def_card:
     f_prof: "finite_profile A p"
   shows "card (defer m A p) = card A - 1"
 proof -
-  have no_elect: "electoral_module m \<and> (\<forall> A q. finite A \<and> profile A q \<longrightarrow> elect m A q = {})"
+  have no_elect:
+    "electoral_module m \<and> (\<forall> A q. finite A \<and> profile A q \<longrightarrow> elect m A q = {})"
     using non_electing
     unfolding non_electing_def
     by (metis (no_types))
@@ -803,9 +817,9 @@ proof -
     by blast
   ultimately show ?thesis
     using f_prof rejecting not_empty
-    by (simp add: Suc_leI card_Diff_subset card_gt_0_iff
-                  defer_not_elec_or_rej finite_subset
-                  rejects_def)
+    unfolding rejects_def
+    by (simp add: Suc_leI card_Diff_subset card_gt_0_iff finite_subset
+                  defer_not_elec_or_rej)
 qed
 
 lemma single_elim_decr_def_card_2:
@@ -820,7 +834,8 @@ lemma single_elim_decr_def_card_2:
     f_prof: "finite_profile A p"
   shows "card (defer m A p) = card A - 1"
 proof -
-  have no_elect: "electoral_module m \<and> (\<forall> A q. finite A \<and> profile A q \<longrightarrow> elect m A q = {})"
+  have no_elect:
+    "electoral_module m \<and> (\<forall> A q. finite A \<and> profile A q \<longrightarrow> elect m A q = {})"
     using non_electing
     unfolding non_electing_def
     by (metis (no_types))
@@ -880,7 +895,8 @@ text \<open>
 definition defer_monotonicity :: "'a Electoral_Module \<Rightarrow> bool" where
   "defer_monotonicity m \<equiv>
     electoral_module m \<and>
-      (\<forall> A p q a. (finite A \<and> a \<in> defer m A p \<and> lifted A p q a) \<longrightarrow> a \<in> defer m A q)"
+      (\<forall> A p q a.
+        (finite A \<and> a \<in> defer m A p \<and> lifted A p q a) \<longrightarrow> a \<in> defer m A q)"
 
 text \<open>
   An electoral module is defer-lift-invariant iff
@@ -1068,24 +1084,32 @@ next
   assume "finite A"
   then obtain B where
     "B \<subseteq> A \<and>
-      (\<forall> a \<in> B. indep_of_alt m A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p)) \<and>
-      (\<forall> a \<in> A - B. indep_of_alt n A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p))"
+      (\<forall> a \<in> B.
+        indep_of_alt m A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p)) \<and>
+      (\<forall> a \<in> A - B.
+        indep_of_alt n A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p))"
     using assms
     unfolding disjoint_compatibility_def
     by metis
   hence
     "\<exists> B \<subseteq> A.
-      (\<forall> a \<in> A - B. indep_of_alt n A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p)) \<and>
-      (\<forall> a \<in> B. indep_of_alt m A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p))"
+      (\<forall> a \<in> A - B.
+        indep_of_alt n A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p)) \<and>
+      (\<forall> a \<in> B.
+        indep_of_alt m A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p))"
     by auto
   hence "\<exists> B \<subseteq> A.
-          (\<forall> a \<in> A - B. indep_of_alt n A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p)) \<and>
-          (\<forall> a \<in> A - (A - B). indep_of_alt m A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p))"
+          (\<forall> a \<in> A - B.
+            indep_of_alt n A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p)) \<and>
+          (\<forall> a \<in> A - (A - B).
+            indep_of_alt m A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p))"
     using double_diff order_refl
     by metis
   thus "\<exists> B \<subseteq> A.
-          (\<forall> a \<in> B. indep_of_alt n A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p)) \<and>
-          (\<forall> a \<in> A - B. indep_of_alt m A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p))"
+          (\<forall> a \<in> B.
+            indep_of_alt n A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject n A p)) \<and>
+          (\<forall> a \<in> A - B.
+            indep_of_alt m A a \<and> (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject m A p))"
     by fastforce
 qed
 
@@ -1116,7 +1140,8 @@ lemma condorcet_consistency_2:
   fixes m :: "'a Electoral_Module"
   shows "condorcet_consistency m =
            (electoral_module m \<and>
-              (\<forall> A p a. condorcet_winner A p a \<longrightarrow> (m A p = ({a}, A - (elect m A p), {}))))"
+              (\<forall> A p a. condorcet_winner A p a \<longrightarrow>
+                (m A p = ({a}, A - (elect m A p), {}))))"
 proof (safe)
   assume "condorcet_consistency m"
   thus "electoral_module m"
@@ -1145,7 +1170,9 @@ next
           m' A p = ({a \<in> A. condorcet_winner A p a}, A - elect m' A p, {})))"
     unfolding condorcet_consistency_def
     by blast
-  moreover have "\<forall> A p a. condorcet_winner A p (a::'a) \<longrightarrow> {b \<in> A. condorcet_winner A p b} = {a}"
+  moreover have
+    "\<forall> A p a. condorcet_winner A p (a::'a) \<longrightarrow>
+        {b \<in> A. condorcet_winner A p b} = {a}"
     using cond_winner_unique_3
     by (metis (full_types))
   ultimately show "condorcet_consistency m"
@@ -1158,7 +1185,8 @@ lemma condorcet_consistency_3:
   fixes m :: "'a Electoral_Module"
   shows "condorcet_consistency m =
            (electoral_module m \<and>
-              (\<forall> A p a. condorcet_winner A p a \<longrightarrow> (m A p = ({a}, A - {a}, {}))))"
+              (\<forall> A p a.
+                condorcet_winner A p a \<longrightarrow> (m A p = ({a}, A - {a}, {}))))"
 proof (simp only: condorcet_consistency_2, safe)
   fix
     A :: "'a set" and
@@ -1166,7 +1194,8 @@ proof (simp only: condorcet_consistency_2, safe)
     a :: "'a"
   assume
     e_mod: "electoral_module m" and
-    cc: "\<forall> A p a'. condorcet_winner A p a' \<longrightarrow> m A p = ({a'}, A - elect m A p, {})" and
+    cc: "\<forall> A p a'. condorcet_winner A p a' \<longrightarrow>
+      m A p = ({a'}, A - elect m A p, {})" and
     c_win: "condorcet_winner A p a"
   show "m A p = ({a}, A - {a}, {})"
     using cc c_win fst_conv

@@ -63,7 +63,9 @@ proof -
     by metis
   have defer_in_A:
     "\<forall> A' p' m' a.
-      (profile A' p' \<and> finite A' \<and> electoral_module m' \<and> (a::'a) \<in> defer m' A' p') \<longrightarrow> a \<in> A'"
+      (profile A' p' \<and> finite A' \<and> electoral_module m' \<and>
+        (a::'a) \<in> defer m' A' p') \<longrightarrow>
+      a \<in> A'"
     using UnCI result_presv_alts
     by (metis (mono_tags))
   from module_m f_prof
@@ -88,7 +90,8 @@ proof -
     using disj_n
     by (simp add: disjoint_iff_not_equal subset_eq)
   from f_prof module_m module_n
-  have elec_n_in_def_m: "elect n (defer m A p) (limit_profile (defer m A p) p) \<subseteq> defer m A p"
+  have elec_n_in_def_m:
+    "elect n (defer m A p) (limit_profile (defer m A p) p) \<subseteq> defer m A p"
     using def_presv_fin_prof elect_in_alts
     by metis
   have elect_defer_diff: "elect m A p \<inter> defer n ?new_A ?new_p = {}"
@@ -111,7 +114,8 @@ proof -
     using disj_n disjoint_m disjoint_n def_presv_fin_prof f_prof
           module_m module_n elec_n_in_def_m
     by blast
-  have "(elect m A p \<union> elect n ?new_A ?new_p) \<inter> (reject m A p \<union> reject n ?new_A ?new_p) = {}"
+  have "(elect m A p \<union> elect n ?new_A ?new_p) \<inter>
+          (reject m A p \<union> reject n ?new_A ?new_p) = {}"
   proof (safe)
     fix x :: "'a"
     assume
@@ -148,10 +152,13 @@ proof -
       using disjoint_iff_not_equal fin_def module_n prof_def_lim result_disj
       by metis
   qed
-  moreover have "(elect m A p \<union> elect n ?new_A ?new_p) \<inter> (defer n ?new_A ?new_p) = {}"
-    using Int_Un_distrib2 Un_empty elect_defer_diff fin_def module_n prof_def_lim result_disj
+  moreover have
+    "(elect m A p \<union> elect n ?new_A ?new_p) \<inter> (defer n ?new_A ?new_p) = {}"
+    using Int_Un_distrib2 Un_empty elect_defer_diff fin_def module_n
+          prof_def_lim result_disj
     by (metis (no_types))
-  moreover have "(reject m A p \<union> reject n ?new_A ?new_p) \<inter> (defer n ?new_A ?new_p) = {}"
+  moreover have
+    "(reject m A p \<union> reject n ?new_A ?new_p) \<inter> (defer n ?new_A ?new_p) = {}"
   proof (safe)
     fix x :: "'a"
     assume
@@ -238,7 +245,8 @@ proof (unfold sequential_composition'.simps sequential_composition.simps)
         let A' = defer m A p; p' = limit_profile A' p in
       (elect m A p \<union> elect n A' p', reject m A p \<union> reject n A' p', defer n A' p')) =
       (\<lambda> m n A pr.
-        let (e, r, d) = m A pr; A' = d; p' = limit_profile A' pr; (e', r', d') = n A' p' in
+        let (e, r, d) = m A pr; A' = d; p' = limit_profile A' pr;
+          (e', r', d') = n A' p' in
       (e \<union> e', r \<union> r', d'))"
     by metis
 qed
@@ -294,7 +302,9 @@ proof
   hence "profile {} (limit_profile (defer m A p) p)"
     using empty_defer f_prof module_m
     by metis
-  hence "(elect m A p) \<union> (elect n (defer m A p) (limit_profile (defer m A p) p)) = elect m A p"
+  hence
+    "(elect m A p) \<union> (elect n (defer m A p) (limit_profile (defer m A p) p)) =
+        elect m A p"
     using elect_in_alts empty_defer module_n
     by auto
   thus "elect (m \<triangleright> n) A p = elect m A p"
@@ -427,7 +437,8 @@ lemma seq_comp_def_then_elect_elec_set:
     n :: "'a Electoral_Module" and
     A :: "'a set" and
     p :: "'a Profile"
-  shows "elect (m \<triangleright> n) A p = elect n (defer m A p) (limit_profile (defer m A p) p) \<union> (elect m A p)"
+  shows "elect (m \<triangleright> n) A p =
+            elect n (defer m A p) (limit_profile (defer m A p) p) \<union> (elect m A p)"
   using Un_commute fst_conv
   unfolding sequential_composition.simps
   by metis
@@ -474,7 +485,8 @@ lemma seq_comp_def_set_trans:
     "a \<in> (defer (m \<triangleright> n) A p)" and
     "electoral_module m \<and> electoral_module n" and
     "finite_profile A p"
-  shows "a \<in> defer n (defer m A p) (limit_profile (defer m A p) p) \<and> a \<in> defer m A p"
+  shows "a \<in> defer n (defer m A p) (limit_profile (defer m A p) p) \<and>
+          a \<in> defer m A p"
   using seq_comp_def_set_bounded assms in_mono seq_comp_defers_def_set
   by (metis (no_types, opaque_lifting))
 
@@ -524,11 +536,14 @@ proof -
   proof (unfold non_blocking_def)
     assume
       emod_reject_m:
-      "electoral_module m \<and> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> reject m A p \<noteq> A)" and
+      "electoral_module m \<and>
+        (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> reject m A p \<noteq> A)" and
       emod_reject_n:
-      "electoral_module n \<and> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> reject n A p \<noteq> A)"
+      "electoral_module n \<and>
+        (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> reject n A p \<noteq> A)"
     show
-      "electoral_module (m \<triangleright> n) \<and> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> reject (m \<triangleright> n) A p \<noteq> A)"
+      "electoral_module (m \<triangleright> n) \<and>
+        (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> reject (m \<triangleright> n) A p \<noteq> A)"
     proof (safe)
       show "electoral_module (m \<triangleright> n)"
         using emod_reject_m emod_reject_n
@@ -549,11 +564,13 @@ proof -
         by (metis (no_types))
       from emod_reject_m emod_reject_n fin_A prof_A
       have seq_elect:
-        "elect (m \<triangleright> n) A p = elect n (defer m A p) (limit_profile (defer m A p) p) \<union> elect m A p"
+        "elect (m \<triangleright> n) A p =
+          elect n (defer m A p) (limit_profile (defer m A p) p) \<union> elect m A p"
         using seq_comp_def_then_elect_elec_set
         by metis
       from emod_reject_n emod_reject_m fin_A prof_A
-      have def_limit: "defer (m \<triangleright> n) A p = defer n (defer m A p) (limit_profile (defer m A p) p)"
+      have def_limit:
+        "defer (m \<triangleright> n) A p = defer n (defer m A p) (limit_profile (defer m A p) p)"
         using seq_comp_defers_def_set
         by metis
       from emod_reject_n emod_reject_m fin_A prof_A
@@ -580,8 +597,8 @@ proof -
         using elect_def_disj
         by blast
       thus "x \<in> {}"
-        using rej_def_eq_set result_disj fin_defer Diff_cancel Diff_empty
-              emod_reject_m emod_reject_n fin_A prof_A reject_not_elec_or_def x_in_A
+        using rej_def_eq_set result_disj fin_defer Diff_cancel Diff_empty fin_A prof_A
+              emod_reject_m emod_reject_n reject_not_elec_or_def x_in_A
         by metis
     qed
   qed
@@ -642,9 +659,9 @@ proof -
     using def_one_m
     unfolding defers_def
     by blast
-  hence def_m1_not_empty: "\<forall> A p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow> defer m A p \<noteq> {}"
-    using One_nat_def Suc_leI card_eq_0_iff
-          card_gt_0_iff zero_neq_one
+  hence def_m1_not_empty:
+    "\<forall> A p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow> defer m A p \<noteq> {}"
+    using One_nat_def Suc_leI card_eq_0_iff card_gt_0_iff zero_neq_one
     by metis
   thus ?thesis
   proof -
@@ -859,14 +876,17 @@ next
   moreover have
     "\<forall> i m'. defers i m' =
       (electoral_module m' \<and>
-        (\<forall> A' p'. (i \<le> card A' \<and> finite A' \<and> profile A' p') \<longrightarrow> card (defer m' A' p') = i))"
+        (\<forall> A' p'. (i \<le> card A' \<and> finite A' \<and> profile A' p') \<longrightarrow>
+            card (defer m' A' p') = i))"
     unfolding defers_def
     by simp
-  ultimately have "card (defer n (defer m A p) (limit_profile (defer m A p) p)) = 1"
+  ultimately have
+    "card (defer n (defer m A p) (limit_profile (defer m A p) p)) = 1"
     using def_1_n fin_A prof_A non_blocking_m def_presv_fin_prof
     unfolding non_blocking_def
     by metis
-  moreover have "defer (m \<triangleright> n) A p = defer n (defer m A p) (limit_profile (defer m A p) p)"
+  moreover have
+    "defer (m \<triangleright> n) A p = defer n (defer m A p) (limit_profile (defer m A p) p)"
     using seq_comp_defers_def_set
     by (metis (no_types, opaque_lifting))
   ultimately show "card (defer (m \<triangleright> n) A p) = 1"
@@ -909,8 +929,10 @@ next
   assume "finite S"
   then obtain A where rej_A:
     "A \<subseteq> S \<and>
-      (\<forall> a \<in> A. indep_of_alt m S a \<and> (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)) \<and>
-      (\<forall> a \<in> S - A. indep_of_alt n S a \<and> (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p))"
+      (\<forall> a \<in> A.
+        indep_of_alt m S a \<and> (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject m S p)) \<and>
+      (\<forall> a \<in> S - A.
+        indep_of_alt n S a \<and> (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p))"
     using compatible
     unfolding disjoint_compatibility_def
     by (metis (no_types, lifting))
@@ -918,9 +940,11 @@ next
     "\<exists> A \<subseteq> S.
       (\<forall> a \<in> A. indep_of_alt (m \<triangleright> m') S a \<and>
         (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject (m \<triangleright> m') S p)) \<and>
-      (\<forall> a \<in> S - A. indep_of_alt n S a \<and> (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p))"
+      (\<forall> a \<in> S - A.
+        indep_of_alt n S a \<and> (\<forall> p. finite_profile S p \<longrightarrow> a \<in> reject n S p))"
   proof
-    have "\<forall> a p q. a \<in> A \<and> equiv_prof_except_a S p q a \<longrightarrow> (m \<triangleright> m') S p = (m \<triangleright> m') S q"
+    have "\<forall> a p q. a \<in> A \<and> equiv_prof_except_a S p q a \<longrightarrow>
+            (m \<triangleright> m') S p = (m \<triangleright> m') S q"
     proof (safe)
       fix
         a :: "'a" and
@@ -958,7 +982,8 @@ next
         unfolding sequential_composition.simps
         by (metis (full_types))
     qed
-    moreover have "\<forall> a' \<in> A. \<forall> p'. finite_profile S p' \<longrightarrow> a' \<in> reject (m \<triangleright> m') S p'"
+    moreover have
+      "\<forall> a' \<in> A. \<forall> p'. finite_profile S p' \<longrightarrow> a' \<in> reject (m \<triangleright> m') S p'"
       using rej_A UnI1 prod.sel
       unfolding sequential_composition.simps
       by metis
@@ -1021,10 +1046,12 @@ next
   ultimately have sound_seq_m_n: "electoral_module (m \<triangleright> n)"
     by simp
   have def_m: "defer m A p = {a}"
-    using cw_a fin_A cond_winner_unique_3 dcc_m defer_condorcet_consistency_def snd_conv
+    using cw_a fin_A cond_winner_unique_3 dcc_m snd_conv
+    unfolding defer_condorcet_consistency_def
     by (metis (mono_tags, lifting))
   have rej_m: "reject m A p = A - {a}"
-    using cw_a fin_A cond_winner_unique_3 dcc_m defer_condorcet_consistency_def prod.sel(1) snd_conv
+    using cw_a fin_A cond_winner_unique_3 dcc_m prod.sel(1) snd_conv
+    unfolding defer_condorcet_consistency_def
     by (metis (mono_tags, lifting))
   have "elect m A p = {}"
     using cw_a fin_A dcc_m defer_condorcet_consistency_def prod.sel(1)
@@ -1032,16 +1059,19 @@ next
   hence diff_elect_m: "A - elect m A p = A"
     using Diff_empty
     by (metis (full_types))
-  have cond_win: "finite A \<and> profile A p \<and> a \<in> A \<and> (\<forall> a'. a' \<in> A - {a'} \<longrightarrow> wins a p a')"
+  have cond_win:
+    "finite A \<and> profile A p \<and> a \<in> A \<and> (\<forall> a'. a' \<in> A - {a'} \<longrightarrow> wins a p a')"
     using cw_a condorcet_winner.simps DiffD2 singletonI
     by (metis (no_types))
   have "\<forall> a' A'. (a'::'a) \<in> A' \<longrightarrow> insert a' (A' - {a'}) = A'"
     by blast
   have nb_n_full:
-    "electoral_module n \<and> (\<forall> A' p'. A' \<noteq> {} \<and> finite A' \<and> profile A' p' \<longrightarrow> reject n A' p' \<noteq> A')"
+    "electoral_module n \<and>
+      (\<forall> A' p'. A' \<noteq> {} \<and> finite A' \<and> profile A' p' \<longrightarrow> reject n A' p' \<noteq> A')"
     using nb_n non_blocking_def
     by metis
-  have def_seq_diff: "defer (m \<triangleright> n) A p = A - elect (m \<triangleright> n) A p - reject (m \<triangleright> n) A p"
+  have def_seq_diff:
+    "defer (m \<triangleright> n) A p = A - elect (m \<triangleright> n) A p - reject (m \<triangleright> n) A p"
     using defer_not_elec_or_rej cond_win sound_seq_m_n
     by metis
   have set_ins: "\<forall> a' A'. (a'::'a) \<in> A' \<longrightarrow> insert a' (A' - {a'}) = A'"
@@ -1061,21 +1091,24 @@ next
     using sequential_composition.simps
     by metis
   hence seq_rej_union_eq_rej:
-    "reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p) = reject (m \<triangleright> n) A p"
+    "reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p) =
+        reject (m \<triangleright> n) A p"
     by simp
   hence seq_rej_union_subset_A:
     "reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p) \<subseteq> A"
     using sound_seq_m_n cond_win reject_in_alts
     by (metis (no_types))
   hence "A - {a} = reject (m \<triangleright> n) A p - {a}"
-    using seq_rej_union_eq_rej defer_not_elec_or_rej cond_win def_m diff_elect_m double_diff rej_m
-          sound_m sup_ge1
+    using seq_rej_union_eq_rej defer_not_elec_or_rej cond_win def_m diff_elect_m
+          double_diff rej_m sound_m sup_ge1
     by (metis (no_types))
   hence "reject (m \<triangleright> n) A p \<subseteq> A - {a}"
-    using seq_rej_union_subset_A seq_snd_simplified set_ins def_seq_diff nb_n_full cond_win fst_conv
-          Diff_empty Diff_eq_empty_iff a_in_rej_seq_m_n def_m def_presv_fin_prof sound_m ne_n
-          diff_elect_m insert_not_empty non_electing_def reject_not_elec_or_def
-          seq_comp_def_then_elect_elec_set seq_comp_defers_def_set sup_bot.left_neutral
+    using seq_rej_union_subset_A seq_snd_simplified set_ins def_seq_diff nb_n_full
+          cond_win fst_conv Diff_empty Diff_eq_empty_iff a_in_rej_seq_m_n def_m
+          def_presv_fin_prof sound_m ne_n diff_elect_m insert_not_empty
+          reject_not_elec_or_def seq_comp_def_then_elect_elec_set
+          seq_comp_defers_def_set sup_bot.left_neutral
+    unfolding non_electing_def
     by (metis (no_types))
   thus "False"
     using a_in_rej_seq_m_n
@@ -1112,8 +1145,8 @@ next
     unfolding defer_condorcet_consistency_def
     by (metis (mono_tags, lifting))
   hence a'_in_rej: "a' \<in> reject m A p"
-    using Diff_iff cw_a not_cw_a' a'_in_elect_seq_m_n condorcet_winner.elims(1) elect_in_alts
-          singleton_iff sound_seq_m_n subset_iff
+    using Diff_iff cw_a not_cw_a' a'_in_elect_seq_m_n condorcet_winner.elims(1)
+          elect_in_alts singleton_iff sound_seq_m_n subset_iff
     by (metis (no_types))
   have "\<forall> p' A' p''. p' = (A'::'a set, p''::'a set \<times> 'a set) \<longrightarrow> snd p' = p''"
     by simp
@@ -1125,13 +1158,15 @@ next
             defer n (defer m A p) (limit_profile (defer m A p) p))"
     by blast
   have "a' \<in> elect m A p"
-    using a'_in_elect_seq_m_n condorcet_winner.simps cw_a def_presv_fin_prof ne_n non_electing_def
+    using a'_in_elect_seq_m_n condorcet_winner.simps cw_a def_presv_fin_prof ne_n
           seq_comp_def_then_elect_elec_set sound_m sup_bot.left_neutral
+    unfolding non_electing_def
     by (metis (no_types))
   hence a_in_rej_union:
     "a \<in> reject m A p \<union> reject n (defer m A p) (limit_profile (defer m A p) p)"
-      using Diff_iff a'_in_rej condorcet_winner.simps cw_a reject_not_elec_or_def sound_m
-      by (metis (no_types))
+    using Diff_iff a'_in_rej condorcet_winner.simps cw_a
+          reject_not_elec_or_def sound_m
+    by (metis (no_types))
   have m_seq_n_full:
     "(m \<triangleright> n) A p =
       (elect m A p \<union> elect n (defer m A p) (limit_profile (defer m A p) p),
@@ -1144,8 +1179,10 @@ next
   hence "a \<in> reject (m \<triangleright> n) A p"
     using a_in_rej_union m_seq_n m_seq_n_full
     by presburger
-  moreover have "finite A \<and> profile A p \<and> a \<in> A \<and> (\<forall> a''. a'' \<in> A - {a} \<longrightarrow> wins a p a'')"
-    using cw_a condorcet_winner.simps m_seq_n_full a'_in_elect_seq_m_n a'_in_rej ne_n sound_m
+  moreover have
+    "finite A \<and> profile A p \<and> a \<in> A \<and> (\<forall> a''. a'' \<in> A - {a} \<longrightarrow> wins a p a'')"
+    using cw_a m_seq_n_full a'_in_elect_seq_m_n a'_in_rej ne_n sound_m
+    unfolding condorcet_winner.simps
     by metis
   ultimately show "False"
     using a'_in_elect_seq_m_n IntI empty_iff result_disj sound_seq_m_n a'_in_rej def_presv_fin_prof
@@ -1163,7 +1200,8 @@ next
     a'_in_A: "a' \<in> A" and
     not_cw_a': "\<not> condorcet_winner A p a'"
   have "reject m A p = A - {a}"
-    using cw_a fin_A cond_winner_unique_3 dcc_m defer_condorcet_consistency_def prod.sel(1) snd_conv
+    using cw_a fin_A cond_winner_unique_3 dcc_m prod.sel(1) snd_conv
+    unfolding defer_condorcet_consistency_def
     by (metis (mono_tags, lifting))
   moreover have "a \<noteq> a'"
     using cw_a not_cw_a'
@@ -1281,7 +1319,8 @@ next
       using cw_a fin_A
       by metis
     ultimately show "a \<in> defer (m \<triangleright> n) A p"
-      using condorcet_winner.elims(2) cw_a electoral_mod_defer_elem empty_iff sound_seq_m_n
+      using condorcet_winner.elims(2) cw_a electoral_mod_defer_elem empty_iff
+            sound_seq_m_n
       by metis
   qed
   have "finite_profile (defer m A p) (limit_profile (defer m A p) p)"
@@ -1303,7 +1342,9 @@ next
   moreover have "{a' \<in> A. condorcet_winner A p a'} = {a}"
     using cw_a cond_winner_unique_3
     by metis
-  ultimately show "(m \<triangleright> n) A p = ({}, A - defer (m \<triangleright> n) A p, {a' \<in> A. condorcet_winner A p a'})"
+  ultimately show
+    "(m \<triangleright> n) A p =
+      ({}, A - defer (m \<triangleright> n) A p, {a' \<in> A. condorcet_winner A p a'})"
     using def_seq_m_n_eq_a
     by metis
 qed
@@ -1418,7 +1459,8 @@ next
   have fin_prof_def_m_q: "finite_profile (defer m A q) (limit_profile (defer m A q) q)"
     using def_presv_fin_prof electoral_mod_m finite_profile_q
     by (metis (no_types))
-  have def_seq_m_n_q: "defer (m \<triangleright> n) A q = defer n (defer m A q) (limit_profile (defer m A q) q)"
+  have def_seq_m_n_q:
+    "defer (m \<triangleright> n) A q = defer n (defer m A q) (limit_profile (defer m A q) q)"
     using seq_comp_defers_def_set
     by simp
   have fin_prof_def_m: "finite_profile (defer m A p) (limit_profile (defer m A p) p)"
@@ -1432,7 +1474,8 @@ next
     by (metis (no_types))
   have a_non_empty: "a \<notin> {}"
     by simp
-  have def_seq_m_n: "defer (m \<triangleright> n) A p = defer n (defer m A p) (limit_profile (defer m A p) p)"
+  have def_seq_m_n:
+    "defer (m \<triangleright> n) A p = defer n (defer m A p) (limit_profile (defer m A p) p)"
     using seq_comp_defers_def_set
     by simp
   have "1 \<le> card (defer n (defer m A p) (limit_profile (defer m A p) p))"
@@ -1445,8 +1488,10 @@ next
     using n_defers_exactly_one_p fin_prof_seq_comp_m_n defers_one defers_def
     by blast
   hence defer_seq_m_n_eq_one: "card (defer (m \<triangleright> n) A p) = 1"
-    using One_nat_def Suc_leI a_non_empty card_gt_0_iff def_seq_m_n defers_def defer_a_p
-          defers_one electoral_mod_m fin_prof_def_m finite_profile_p seq_comp_def_set_trans
+    using One_nat_def Suc_leI a_non_empty card_gt_0_iff def_seq_m_n defer_a_p
+          defers_one electoral_mod_m fin_prof_def_m finite_profile_p
+          seq_comp_def_set_trans
+    unfolding defers_def
     by metis
   hence def_seq_m_n_eq_a: "defer (m \<triangleright> n) A p = {a}"
     using defer_a_p is_singleton_altdef is_singleton_the_elem singletonD
@@ -1461,13 +1506,14 @@ next
       by (metis (no_types))
     moreover from this
     have "(a \<in> defer m A p) \<longrightarrow> card (defer (m \<triangleright> n) A q) = 1"
-      using card_eq_0_iff card_insert_disjoint defers_one electoral_mod_m empty_iff order_refl
-            finite.emptyI seq_comp_defers_def_set def_presv_fin_prof finite_profile_q
+      using card_eq_0_iff card_insert_disjoint defers_one electoral_mod_m empty_iff
+            order_refl finite.emptyI seq_comp_defers_def_set def_presv_fin_prof
+            finite_profile_q
       unfolding One_nat_def defers_def
       by metis
     moreover have "a \<in> defer m A p"
-      using electoral_mod_m electoral_mod_n defer_a_p seq_comp_def_set_bounded finite_profile_p
-            finite_profile_q
+      using electoral_mod_m electoral_mod_n defer_a_p seq_comp_def_set_bounded
+            finite_profile_p finite_profile_q
       by blast
     ultimately have "defer (m \<triangleright> n) A q = {a}"
       using Collect_mem_eq card_1_singletonE empty_Collect_eq insertCI subset_singletonD
@@ -1499,13 +1545,15 @@ next
     ultimately have elect_m_equal: "elect m A p = elect m A q"
       by simp
     have "(limit_profile (defer m A p) p) = (limit_profile (defer m A p) q) \<or>
-            lifted (defer m A q) (limit_profile (defer m A p) p) (limit_profile (defer m A p) q) a"
+            lifted (defer m A q) (limit_profile (defer m A p) p)
+              (limit_profile (defer m A p) q) a"
       using def_eq defer_in_alts electoral_mod_m lifted_a finite_profile_q limit_prof_eq_or_lifted
       by metis
     hence "defer (m \<triangleright> n) A p = defer (m \<triangleright> n) A q"
       using a_non_empty card_1_singletonE def_eq def_seq_m_n def_seq_m_n_q defer_a_p
-            defer_monotone_n defer_monotonicity_def defer_seq_m_n_eq_one defers_one defers_def
+            defer_monotone_n defer_monotonicity_def defer_seq_m_n_eq_one defers_one
             electoral_mod_m fin_prof_def_m_q finite_profile_p insertE seq_comp_def_card_bounded
+      unfolding defers_def
       by (metis (no_types, lifting))
     moreover from this
     have "reject (m \<triangleright> n) A p = reject (m \<triangleright> n) A q"

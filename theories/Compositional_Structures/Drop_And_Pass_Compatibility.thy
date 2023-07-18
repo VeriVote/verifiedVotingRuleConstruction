@@ -44,7 +44,8 @@ next
     by metis
   have "\<forall> B a. B \<noteq> {} \<or> (a::'a) \<notin> B"
     by simp
-  hence "\<forall> a B. a \<in> A \<and> a \<in> B \<longrightarrow> connex B (limit A r) \<longrightarrow> \<not> card (above (limit A r) a) \<le> 0"
+  hence "\<forall> a B. a \<in> A \<and> a \<in> B \<longrightarrow> connex B (limit A r) \<longrightarrow>
+            \<not> card (above (limit A r) a) \<le> 0"
     using above_connex above_presv_limit card_eq_0_iff
           finite_A finite_subset le_0_eq assms
     by (metis (no_types))
@@ -87,7 +88,8 @@ proof -
   have
     "2 \<le> card (m (drop_module 2 r) 2) \<and> finite (m (drop_module 2 r) 2) \<and>
       profile (m (drop_module 2 r) 2) (m' (drop_module 2 r) 2) \<longrightarrow>
-        card (reject (drop_module 2 r) (m (drop_module 2 r) 2) (m' (drop_module 2 r) 2)) = 2"
+        card (reject (drop_module 2 r) (m (drop_module 2 r) 2)
+          (m' (drop_module 2 r) 2)) = 2"
     using rej_drop_eq_def_pass assms pass_two_mod_def_two
     unfolding defers_def
     by (metis (no_types))
@@ -139,13 +141,15 @@ next
       using assms
       unfolding indep_of_alt_def
       by simp
-    moreover have "\<forall> a \<in> ?A. \<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (drop_module n r) A p"
+    moreover have
+      "\<forall> a \<in> ?A. \<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (drop_module n r) A p"
       by auto
     moreover have "\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) A a"
       using assms
       unfolding indep_of_alt_def
       by simp
-    moreover have "\<forall> a \<in> A - ?A. \<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (pass_module n r) A p"
+    moreover have
+      "\<forall> a \<in> A - ?A. \<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (pass_module n r) A p"
       by auto
     ultimately show
       "?A \<subseteq> A \<and>

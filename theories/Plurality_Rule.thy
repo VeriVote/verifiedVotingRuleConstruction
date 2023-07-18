@@ -35,8 +35,8 @@ lemma plurality_revision_equiv:
     A :: "'a set" and
     p :: "'a Profile"
   shows "plurality' A p = (plurality_rule'\<down>) A p"
-proof (unfold plurality_rule'.simps plurality'.simps revision_composition.simps, standard,
-       clarsimp, standard, safe)
+proof (unfold plurality_rule'.simps plurality'.simps revision_composition.simps,
+        standard, clarsimp, standard, safe)
   fix
     a :: "'a" and
     b :: "'a"
@@ -176,7 +176,8 @@ lemma plurality_rule_inv_mono_2:
   assumes
     elect_a: "a \<in> elect plurality_rule A p" and
     lift_a: "lifted A p q a"
-  shows "elect plurality_rule A q = elect plurality_rule A p \<or> elect plurality_rule A q = {a}"
+  shows "elect plurality_rule A q = elect plurality_rule A p \<or>
+          elect plurality_rule A q = {a}"
 proof -
   have "a \<in> elect (elector plurality) A p"
     using elect_a
@@ -191,7 +192,8 @@ proof -
   moreover have "elect (elector plurality) A q = defer plurality A q"
     by simp
   ultimately show
-    "elect plurality_rule A q = elect plurality_rule A p \<or> elect plurality_rule A q = {a}"
+    "elect plurality_rule A q = elect plurality_rule A p \<or>
+      elect plurality_rule A q = {a}"
     using eq_p
     by simp
 qed
@@ -211,7 +213,8 @@ next
     q :: "'a Profile" and
     a :: "'a"
   assume "a \<in> elect plurality_rule A p \<and> Profile.lifted A p q a"
-  thus "elect plurality_rule A q = elect plurality_rule A p \<or> elect plurality_rule A q = {a}"
+  thus "elect plurality_rule A q = elect plurality_rule A p \<or>
+          elect plurality_rule A q = {a}"
     using plurality_rule_inv_mono_2
     by metis
 qed

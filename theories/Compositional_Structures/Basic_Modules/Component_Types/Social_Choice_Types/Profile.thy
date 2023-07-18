@@ -96,7 +96,8 @@ proof (induction p rule: rev_induct, simp)
     by (simp add: nth_Cons')
   have pref_count_induct: "win_count (p@[r]) a = win_count p a + win_count [r] a"
   proof (simp)
-    have "{i. i = 0 \<and> (above ([r]!i) a = {a})} = (if (above r a = {a}) then {0} else {})"
+    have "{i. i = 0 \<and> (above ([r]!i) a = {a})} =
+            (if (above r a = {a}) then {0} else {})"
       by (simp add: Collect_conv_if)
     hence shift_idx_a:
       "card {i. i = length p \<and> (above ([r]!0) a = {a})} =
@@ -104,7 +105,8 @@ proof (induction p rule: rev_induct, simp)
       by simp
     have set_prof_eq:
       "{i. i < Suc (length p) \<and> (above ((p@[r])!i) a = {a})} =
-        {i. i < length p \<and> (above (p!i) a = {a})} \<union> {i. i = length p \<and> (above ([r]!0) a = {a})}"
+        {i. i < length p \<and> (above (p!i) a = {a})} \<union>
+          {i. i = length p \<and> (above ([r]!0) a = {a})}"
     proof (safe, simp_all)
       fix
         n :: nat and
@@ -225,7 +227,8 @@ proof (induction p rule: rev_induct, simp)
       by blast
     thus
       "card {i. i < Suc (length p) \<and> (above ((p@[r])!i) a = {a})} =
-        card {i. i < length p \<and> (above (p!i) a = {a})} + card {i. i = 0 \<and> (above ([r]!i) a = {a})}"
+        card {i. i < length p \<and> (above (p!i) a = {a})} +
+          card {i. i = 0 \<and> (above ([r]!i) a = {a})}"
       using set_prof_eq shift_idx_a
       by auto
   qed
@@ -236,8 +239,10 @@ proof (induction p rule: rev_induct, simp)
       r :: "'a Preference_Relation" and
       r' :: "'a Preference_Relation" and
       q :: "'a Profile"
-    assume "win_count_code (q@[r']) a = win_count_code q a + win_count_code [r'] a"
-    thus "win_count_code ((r#q)@[r']) a = win_count_code (r#q) a + win_count_code [r'] a"
+    assume "win_count_code (q@[r']) a =
+              win_count_code q a + win_count_code [r'] a"
+    thus "win_count_code ((r#q)@[r']) a =
+            win_count_code (r#q) a + win_count_code [r'] a"
       by simp
   qed
   thus "win_count (p@[r]) a = win_count_code (p@[r]) a"
@@ -277,11 +282,13 @@ proof (induction p rule: rev_induct, simp)
   hence one_ballot_equiv: "prefer_count [r] a b = prefer_count_code [r] a b"
     using size_one
     by (simp add: nth_Cons')
-  have pref_count_induct: "prefer_count (p@[r]) a b = prefer_count p a b + prefer_count [r] a b"
+  have pref_count_induct:
+    "prefer_count (p@[r]) a b = prefer_count p a b + prefer_count [r] a b"
   proof (simp)
     have "{i. i = 0 \<and> (b, a) \<in> [r]!i} = (if ((b, a) \<in> r) then {0} else {})"
       by (simp add: Collect_conv_if)
-    hence shift_idx_a: "card {i. i = length p \<and> (b, a) \<in> [r]!0} = card {i. i = 0 \<and> (b, a) \<in> [r]!i}"
+    hence shift_idx_a:
+      "card {i. i = length p \<and> (b, a) \<in> [r]!0} = card {i. i = 0 \<and> (b, a) \<in> [r]!i}"
       by simp
     have set_prof_eq:
       "{i. i < Suc (length p) \<and> (b, a) \<in> (p@[r])!i} =
@@ -328,7 +335,8 @@ proof (induction p rule: rev_induct, simp)
       by simp
     hence
       "card ({i. i < length p \<and> (b, a) \<in> p!i} \<union> {i. i = length p \<and> (b, a) \<in> [r]!0}) =
-          card {i. i < length p \<and> (b, a) \<in> p!i} + card {i. i = length p \<and> (b, a) \<in> [r]!0}"
+          card {i. i < length p \<and> (b, a) \<in> p!i} +
+            card {i. i = length p \<and> (b, a) \<in> [r]!0}"
       using fin_len_p card_Un_disjoint
       by blast
     thus
@@ -338,7 +346,8 @@ proof (induction p rule: rev_induct, simp)
       by simp
   qed
   have pref_count_code_induct:
-    "prefer_count_code (p@[r]) a b = prefer_count_code p a b + prefer_count_code [r] a b"
+    "prefer_count_code (p@[r]) a b =
+      prefer_count_code p a b + prefer_count_code [r] a b"
   proof (simp, safe)
     assume y_pref_x: "(b, a) \<in> r"
     show "prefer_count_code (p@[r]) a b = Suc (prefer_count_code p a b)"
@@ -404,7 +413,8 @@ proof -
     unfolding profile_def
     by metis
   hence "{i::nat. i < length p \<and> (let r = (p!i) in (b \<preceq>\<^sub>r a))} =
-            {i::nat. i < length p} - {i::nat. i < length p \<and> (let r = (p!i) in (a \<preceq>\<^sub>r b))}"
+            {i::nat. i < length p} -
+              {i::nat. i < length p \<and> (let r = (p!i) in (a \<preceq>\<^sub>r b))}"
     using asym
     by auto
   thus ?thesis
@@ -430,7 +440,8 @@ proof -
   have "prefer_count p a c = (length p) - (prefer_count p c a)"
     using pref_count prof a_in_A c_in_A a_neq_c
     by metis
-  moreover have pref_count_b_eq: "prefer_count p c b = (length p) - (prefer_count p b c)"
+  moreover have pref_count_b_eq:
+    "prefer_count p c b = (length p) - (prefer_count p b c)"
     using pref_count prof c_in_A b_in_A c_neq_b
     by (metis (mono_tags, lifting))
   hence "(length p) - (prefer_count p b c) \<le> (length p) - (prefer_count p c a)"
@@ -676,7 +687,8 @@ definition lifted :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Profile \
   "lifted A p p' a \<equiv>
     finite_profile A p \<and> finite_profile A p' \<and>
       a \<in> A \<and> length p = length p' \<and>
-      (\<forall> i::nat. i < length p \<and> \<not>Preference_Relation.lifted A (p!i) (p'!i) a \<longrightarrow> (p!i) = (p'!i)) \<and>
+      (\<forall> i::nat. i < length p \<and> \<not> Preference_Relation.lifted A (p!i) (p'!i) a \<longrightarrow>
+          (p!i) = (p'!i)) \<and>
       (\<exists> i::nat. i < length p \<and> Preference_Relation.lifted A (p!i) (p'!i) a)"
 
 lemma lifted_imp_equiv_prof_except_a:
@@ -747,8 +759,7 @@ proof (simp)
     using not_in_A negl_diff_imp_eq_limit subset
     by metis
   thus "map (limit A) p = map (limit A) q"
-    using change equiv_prof_except_a_def
-          length_map nth_equalityI nth_map
+    using change equiv_prof_except_a_def length_map nth_equalityI nth_map
     by (metis (mono_tags, lifting))
 qed
 
@@ -762,11 +773,12 @@ lemma limit_prof_eq_or_lifted:
   assumes
     lifted_a: "lifted A' p p' a" and
     subset: "A \<subseteq> A'"
-  shows
-    "limit_profile A p = limit_profile A p' \<or> lifted A (limit_profile A p) (limit_profile A p') a"
+  shows "limit_profile A p = limit_profile A p' \<or>
+            lifted A (limit_profile A p) (limit_profile A p') a"
 proof (cases)
   assume a_in_A: "a \<in> A"
-  have "\<forall> i::nat. i < length p \<longrightarrow> (Preference_Relation.lifted A' (p!i) (p'!i) a \<or> (p!i) = (p'!i))"
+  have "\<forall> i::nat. i < length p \<longrightarrow>
+          (Preference_Relation.lifted A' (p!i) (p'!i) a \<or> (p!i) = (p'!i))"
     using lifted_a
     unfolding lifted_def
     by metis
@@ -784,7 +796,8 @@ proof (cases)
       unfolding lifted_def
       by (metis (mono_tags, lifting))
   next
-    assume forall_limit_p_q: "\<not> (\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (p'!i)))"
+    assume forall_limit_p_q:
+      "\<not> (\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (p'!i)))"
     let ?p = "limit_profile A p"
     let ?q = "limit_profile A p'"
     have "profile A ?p \<and> profile A ?q"
@@ -795,13 +808,15 @@ proof (cases)
       using lifted_a
       unfolding lifted_def
       by fastforce
-    moreover have "\<exists> i::nat. i < length ?p \<and> Preference_Relation.lifted A (?p!i) (?q!i) a"
+    moreover have
+      "\<exists> i::nat. i < length ?p \<and> Preference_Relation.lifted A (?p!i) (?q!i) a"
       using forall_limit_p_q length_map lifted_a limit_profile.simps nth_map one
       unfolding lifted_def
       by (metis (no_types, lifting))
     moreover have
       "\<forall> i::nat.
-        (i < length ?p \<and> \<not>Preference_Relation.lifted A (?p!i) (?q!i) a) \<longrightarrow> (?p!i) = (?q!i)"
+        (i < length ?p \<and> \<not>Preference_Relation.lifted A (?p!i) (?q!i) a) \<longrightarrow>
+          (?p!i) = (?q!i)"
       using length_map lifted_a limit_profile.simps nth_map one
       unfolding lifted_def
       by metis
@@ -815,8 +830,7 @@ proof (cases)
 next
   assume "a \<notin> A"
   thus ?thesis
-    using lifted_a negl_diff_imp_eq_limit_prof subset
-          lifted_imp_equiv_prof_except_a
+    using lifted_a negl_diff_imp_eq_limit_prof subset lifted_imp_equiv_prof_except_a
     by metis
 qed
 
