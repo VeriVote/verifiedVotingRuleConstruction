@@ -9,16 +9,20 @@
 section \<open>Preference Profile\<close>
 
 theory Profile
-  imports Preference_Relation
+  imports Preference_Relation 
+          "HOL.Finite_Set"
+          "HOL-Library.Extended_Nat"
 begin
 
 text \<open>
   Preference profiles denote the decisions made by the individual voters on
   the eligible alternatives. They are represented in the form of one preference
   relation (e.g., selected on a ballot) per voter, collectively captured in a
-  list of such preference relations.
-  Unlike a the common preference profiles in the social-choice sense, the
-  profiles described here considers only the (sub-)set of alternatives that are
+  mapping of voters onto their respective preference relations.
+  If there are finitely many voters, they can be enumerated and the mapping can
+  be interpreted as a list of preference relations.
+  Unlike the common preference profiles in the social-choice sense, the
+  profiles described here consider only the (sub-)set of alternatives that are
   received.
 \<close>
 
@@ -26,24 +30,88 @@ subsection \<open>Definition\<close>
 
 text \<open>
   A profile contains one ballot for each voter.
+  An election consists of a set of participating voters,
+  a set of eligible alternatives and a corresponding profile.
 \<close>
 
-type_synonym 'a Profile = "('a Preference_Relation) list"
+type_synonym ('a, 'v) Profile = "'v \<Rightarrow> ('a Preference_Relation)"
 
-type_synonym 'a Election = "'a set \<times> 'a Profile"
+type_synonym ('a, 'v) Election = "'a set \<times> 'v set \<times> ('a, 'v) Profile"
 
-fun alts_\<E> :: "'a Election \<Rightarrow> 'a set" where "alts_\<E> E = fst E"
+fun alts_\<E> :: "('a, 'v) Election \<Rightarrow> 'a set" where "alts_\<E> E = fst E"
 
-fun prof_\<E> :: "'a Election \<Rightarrow> 'a Profile" where "prof_\<E> E = snd E"
+fun votrs_\<E> :: "('a, 'v) Election \<Rightarrow> 'v set" where "votrs_\<E> E = fst (snd E)"
+
+fun prof_\<E> :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Profile" where "prof_\<E> E = snd (snd E)"
 
 text \<open>
-  A profile on a finite set of alternatives A contains only ballots that are
-  linear orders on A.
+  A profile on a set of alternatives A and a voter set V, per voter from V,
+  only ballots that are linear orders on A.
+  A finite profile is one where V and A are finite.
+  A profile where the voters are the first n from a globally fixed, 
+  enumerable ground set of voters can analogously be interpreted as a list of 
+  length n of ballots.
 \<close>
 
-definition profile :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> bool" where
-  "profile A p \<equiv> \<forall> i::nat. i < length p \<longrightarrow> linear_order_on A (p!i)"
+definition profile :: "'a set \<Rightarrow> 'v set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> bool" where
+  "profile A V p \<equiv> \<forall> v \<in> V. linear_order_on A (p v)"
 
+type_synonym 'a Fixed_Voter_Profile = "('a Preference_Relation) list"
+
+function fixed_voter_profile_to_profile :: "'a Fixed_Voter_Profile \<Rightarrow> ('a, nat) Profile" where
+  "fixed_voter_profile_to_profile p v = p!v" if "v < length p" |
+  "fixed_voter_profile_to_profile p v = {}" if "v \<ge> length p"
+  apply atomize_elim
+  apply auto
+  done
+termination by lexicographic_order
+
+(*
+fun profile_to_fixed_aggregator :: 
+"('a, nat) Profile \<Rightarrow> nat \<Rightarrow> (('a Preference_Relation) list) \<Rightarrow> 'a Fixed_Voter_Profile" where
+  "profile_to_fixed_aggregator p 0 xs = rev xs" |
+  "profile_to_fixed_aggregator p n xs = profile_to_fixed_aggregator p (n-1) ((p (n-1))#xs)"
+*)
+
+fun profile_to_fixed_voter_profile :: "('a, nat) Profile \<Rightarrow> nat \<Rightarrow> 'a Fixed_Voter_Profile" where
+  "profile_to_fixed_voter_profile p 0 = []" |
+  "profile_to_fixed_voter_profile p n = (profile_to_fixed_voter_profile p (n-1)) @ [p (n-1)]"
+
+(*
+lemma fixed_profile_aggregator_length [simp]: 
+"length (profile_to_fixed_aggregator p n xs) = n + length xs"
+  apply (induction n arbitrary: xs)
+  apply (auto)
+  done
+
+lemma fixed_profile_aggregator_values [simp]: 
+  fixes
+    xs::"('a Preference_Relation) list" and
+    n::nat and
+    v::nat
+  assumes "length xs \<le> v \<and> v < n + length xs"
+  shows "(profile_to_fixed_aggregator p n xs)!v = p v"
+proof
+*)
+
+lemma fixed_profile_length [simp]: "n = length (profile_to_fixed_voter_profile p n)"
+  apply (induction n)
+   apply (auto)
+  done
+  
+theorem profile_fixed_profile_equiv [simp]:
+  fixes
+    n::nat and
+    v::nat and
+    p::"('a, nat) Profile"
+  assumes 0: "v < n"
+  shows "(profile_to_fixed_voter_profile p n)!v = p v"
+  sorry (*TODO*)
+
+abbreviation finite_profile :: "'a set \<Rightarrow> 'v set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> bool" where
+  "finite_profile A V p \<equiv> finite A \<and> finite V \<and> profile A V p"
+
+(*
 lemma profile_set :
   fixes
     A :: "'a set" and
@@ -51,36 +119,43 @@ lemma profile_set :
   shows "profile A p \<equiv> (\<forall> b \<in> (set p). linear_order_on A b)"
   unfolding profile_def all_set_conv_all_nth
   by simp
-
-abbreviation finite_profile :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> bool" where
-  "finite_profile A p \<equiv> finite A \<and> profile A p"
+*)
 
 subsection \<open>Preference Counts and Comparisons\<close>
 
 text \<open>
-  The win count for an alternative a in a profile p is
-  the amount of ballots in p that rank alternative a in first position.
+  The win count for an alternative a with respect to a finite voter set V in a profile p is
+  the amount of ballots from V in p that rank alternative a in first position.
+  If the voter set is infinite, counting is not generally possible.
 \<close>
 
-fun win_count :: "'a Profile \<Rightarrow> 'a \<Rightarrow> nat" where
-  "win_count p a =
-    card {i::nat. i < length p \<and> above (p!i) a = {a}}"
+definition win_count :: "'a Fixed_Voter_Profile \<Rightarrow> 'a \<Rightarrow> nat" where
+  "win_count p a = card {n \<in> \<nat>. (n < length p) \<longrightarrow> above (p!n) a = {a}}"
 
-fun win_count_code :: "'a Profile \<Rightarrow> 'a \<Rightarrow> nat" where
+(*function win_count1 :: "('a, 'v) Profile \<Rightarrow> 'v set \<Rightarrow> 'a \<Rightarrow> enat"
+  where
+    "win_count p V a = card {v\<in>V. above (p v) a = {a}}" if "finite V" |
+    "win_count p V a = infinity" if "\<not>(finite V)"
+  apply atomize_elim
+  apply auto
+  done
+termination by lexicographic_order*)
+
+fun win_count_code :: "'a Fixed_Voter_Profile \<Rightarrow> 'a \<Rightarrow> nat" where
   "win_count_code Nil a = 0" |
   "win_count_code (r#p) a =
       (if (above r a = {a}) then 1 else 0) + win_count_code p a"
 
 lemma win_count_equiv[code]:
   fixes
-    p :: "'a Profile" and
+    p :: "'a Fixed_Voter_Profile" and
     a :: "'a"
   shows "win_count p a = win_count_code p a"
 proof (induction p rule: rev_induct, simp)
   case (snoc r p)
   fix
     r :: "'a Preference_Relation" and
-    p :: "'a Profile"
+    p :: "'a Fixed_Voter_Profile"
   assume base_case: "win_count p a = win_count_code p a"
   have size_one: "length [r] = 1"
     by simp
