@@ -73,7 +73,8 @@ qed
 subsection \<open>Property\<close>
 
 theorem minimax_score_cond_rating: "condorcet_rating minimax_score"
-proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps, safe, rule ccontr)
+proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
+       safe, rule ccontr)
   fix
     A :: "'a set" and
     p :: "'a Profile" and
