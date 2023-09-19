@@ -784,32 +784,50 @@ lemma rank_unique:
   shows "rank r a \<noteq> rank r b"
 proof (unfold rank.simps above_def, clarify)
   assume card_eq: "card {a'. (a, a') \<in> r} = card {a'. (b, a') \<in> r}"
-  have r_trans: "trans r"
+  have refl_r: "refl_on A r"
+    using lin_ord
+    by (simp add: lin_ord_imp_connex connex_imp_refl)
+  hence rel_refl_b: "(b, b) \<in> r"
+    using b_in_A
+    unfolding refl_on_def
+    by (metis (no_types))
+  have rel_refl_a: "(a, a) \<in> r"
+    using a_in_A refl_r refl_onD
+    by (metis (full_types))
+  obtain p :: "'a \<Rightarrow> bool" where
+    rel_b: "\<forall> y. p y = ((b, y) \<in> r)"
+    by moura
+  hence "finite (Collect p)"
+    using refl_r refl_on_domain fin_A rev_finite_subset mem_Collect_eq subsetI
+    by metis
+  hence "finite {a'. (b, a') \<in> r}"
+    using rel_b
+    by (simp add: Collect_mono rev_finite_subset)
+  moreover with this
+  have "finite {a'. (a, a') \<in> r}"
+    using card_eq card_gt_0_iff rel_refl_b
+    by force
+  moreover have "trans r"
     using lin_ord lin_imp_trans
     by metis
-  have r_total: "\<forall> a' \<in> A. \<forall> b' \<in> A. a' \<noteq> b' \<longrightarrow> (a', b') \<in> r \<or> (b', a') \<in> r"
-    using lin_ord
+  moreover have "(a, b) \<in> r \<or> (b, a) \<in> r"
+    using lin_ord a_in_A b_in_A a_neq_b
     unfolding linear_order_on_def total_on_def
     by metis
-  have sets_eq: "{a'. (a, a') \<in> r} = {a'. (b, a') \<in> r}"
-    using card_subset_eq connex_imp_refl lin_ord lin_ord_imp_connex mem_Collect_eq
-          refl_on_domain rev_finite_subset subset_eq transE
-    using card_eq fin_A r_trans r_total
-    by (smt (verit, best))
-  hence "(b, a) \<in> r"
-    using a_in_A above_connex lin_ord lin_ord_imp_connex
+  ultimately have sets_eq: "{a'. (a, a') \<in> r} = {a'. (b, a') \<in> r}"
+    using card_eq above_trans card_seteq order_refl
     unfolding above_def
-    by fastforce
+    by metis
+  hence "(b, a) \<in> r"
+    using rel_refl_a sets_eq
+    by blast
   hence "(a, b) \<notin> r"
     using lin_ord lin_imp_antisym a_neq_b antisymD
     by metis
-  hence "b \<notin> A"
-    using lin_ord partial_order_onD(1) sets_eq
+  thus "False"
+    using lin_ord partial_order_onD(1) sets_eq b_in_A
     unfolding linear_order_on_def refl_on_def
     by blast
-  thus "False"
-    using b_in_A
-    by presburger
 qed
 
 lemma above_presv_limit:

@@ -175,18 +175,28 @@ next
     fix x :: "'a"
     assume
       x_not_in_defer: "x \<notin> defer m A p" and
-      x_in_A: "x \<in> A" and
-      more_wins_for_x:
-        "\<forall> x' \<in> A - {x}.
-          card {i. i < length p \<and> (x, x') \<in> p!i} <
-            card {i. i < length p \<and> (x', x) \<in> p!i}"
-    hence "condorcet_winner A p x"
+      "x \<in> A" and
+      "\<forall> x' \<in> A - {x}.
+        card {i. i < length p \<and> (x, x') \<in> p!i} <
+          card {i. i < length p \<and> (x', x) \<in> p!i}"
+    hence c_win_x: "condorcet_winner A p x"
       using fin_A prof_A
       by simp
+    have "(electoral_module m \<and> \<not> defer_condorcet_consistency m \<longrightarrow>
+          (\<exists> A rs a. condorcet_winner A rs a \<and>
+            m A rs \<noteq> ({}, A - defer m A rs, {a \<in> A. condorcet_winner A rs a}))) \<and>
+        (defer_condorcet_consistency m \<longrightarrow>
+          (\<forall> A rs a. finite A \<longrightarrow> condorcet_winner A rs a \<longrightarrow>
+            m A rs = ({}, A - defer m A rs, {a \<in> A. condorcet_winner A rs a})))"
+      unfolding defer_condorcet_consistency_def
+      by blast
+    hence "m A p = ({}, A - defer m A p, {a \<in> A. condorcet_winner A p a})"
+      using c_win_x assms fin_A
+      by blast
     thus "x \<in> elect m A p"
       using assms x_not_in_defer fin_A cond_winner_unique_3 defer_condorcet_consistency_def
-            insertCI prod.sel(2)
-      by (metis (mono_tags, lifting))
+            insertCI prod.sel(2) c_win_x
+      by (metis (no_types, lifting))
   qed
   ultimately have
     "elect m A p \<union> defer m A p =
