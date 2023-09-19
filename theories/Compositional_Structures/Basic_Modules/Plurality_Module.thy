@@ -346,8 +346,6 @@ proof -
       by blast
     hence "\<forall> b \<in> A - {a}. b \<notin> defer plurality' A q"
       by simp
-    hence "\<forall> b \<in> A - {a}. b \<notin> defer plurality' A q"
-      by simp
     hence "\<forall> b \<in> A - {a}. b \<notin> defer plurality A q"
       using lift_a non_empty_A plurality_mod_elim_equiv
       unfolding Profile.lifted_def

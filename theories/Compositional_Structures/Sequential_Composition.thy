@@ -1282,15 +1282,23 @@ next
   proof (safe)
     fix a' :: "'a"
     assume a'_in_def_seq_m_n: "a' \<in> defer (m \<triangleright> n) A p"
-    moreover have "defer m A p = {a}"
-      using cond_winner_unique_3 dcc_m condorcet_winner.elims(2) cw_a snd_conv
-            defer_condorcet_consistency_def
-      by (metis (mono_tags, lifting))
+    have "{a} = {a \<in> A. condorcet_winner A p a}"
+      using cond_winner_unique_3 cw_a
+      by metis
+    moreover have "defer_condorcet_consistency m \<longrightarrow>
+            m A p = ({}, A - defer m A p, {a \<in> A. condorcet_winner A p a})"
+      using condorcet_winner.elims(2) cw_a defer_condorcet_consistency_def
+      by (metis (no_types))
+    ultimately have "defer m A p = {a}"
+      using dcc_m snd_conv
+      by (metis (no_types, lifting))
     hence "defer (m \<triangleright> n) A p = {a}"
       using cw_a a'_in_def_seq_m_n condorcet_winner.elims(2) empty_iff seq_comp_def_set_bounded
-            sound_m subset_singletonD nb_n non_blocking_def
+            sound_m subset_singletonD nb_n
+      unfolding non_blocking_def
       by metis
-    ultimately show "a' = a"
+    thus "a' = a"
+      using a'_in_def_seq_m_n
       by blast
   next
     have "\<exists> a'. defer_condorcet_consistency m \<and> condorcet_winner A p a'"
