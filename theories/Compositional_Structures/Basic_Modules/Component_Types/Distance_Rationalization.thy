@@ -7,7 +7,6 @@ section \<open>Distance Rationalization\<close>
 
 theory Distance_Rationalization
   imports "HOL-Combinatorics.Multiset_Permutations"
-          "Social_Choice_Types/Refined_Types/Preference_List"
           "Consensus_Class"
           "Distance"
 begin
@@ -23,29 +22,65 @@ text \<open>
 
 subsection \<open>Definitions\<close>
 
-fun \<K>\<^sub>\<E> :: "'a Consensus_Class \<Rightarrow> 'a \<Rightarrow> 'a Election set" where
+fun (in result) \<K>\<^sub>\<E> :: 
+"('a, 'v, 'r) Consensus_Class \<Rightarrow> 'b \<Rightarrow> ('a, 'v) Election set" where
   "\<K>\<^sub>\<E> K a =
-    {(A, p) | A p. (consensus_\<K> K) (A, p) \<and> finite_profile A p \<and> elect (rule_\<K> K) A p = {a}}"
+    {(A, V, p) | A V p. (consensus_\<K> K) (A, V, p) \<and> finite_profile V A p 
+                  \<and> winners ((rule_\<K> K) V A p) = {a}}"
 
-fun score :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a Election \<Rightarrow> 'a \<Rightarrow> ereal" where
+fun (in result) score :: 
+"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r) Consensus_Class 
+    \<Rightarrow> ('a, 'v) Election \<Rightarrow> 'b \<Rightarrow> ereal" where
   "score d K E a = Inf (d E ` (\<K>\<^sub>\<E> K a))"
 
 fun arg_min_set :: "('b \<Rightarrow> 'a :: ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
   "arg_min_set f A = Collect (is_arg_min f (\<lambda> a. a \<in> A))"
-
 (* fun arg_min_set' :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
    "arg_min_set_' f A = Set.filter (is_arg_min f (\<lambda> a. a \<in> A)) A" *)
 
-fun \<R>\<^sub>\<W> :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a set" where
-  "\<R>\<^sub>\<W> d K A p = arg_min_set (score d K (A, p)) A"
+fun (in result) \<R>\<^sub>\<W> :: 
+"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r) Consensus_Class 
+  \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'b set \<Rightarrow> 'b set" where
+  "\<R>\<^sub>\<W> d K V A p B = arg_min_set (score d K (A, V, p)) B"
 
-fun distance_\<R> :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a Electoral_Module" where
-  "distance_\<R> d K A p = (\<R>\<^sub>\<W> d K A p, A - \<R>\<^sub>\<W> d K A p, {})"
+fun (in result) distance_\<R> :: 
+"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r) Consensus_Class 
+\<Rightarrow> 'b set \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module" 
+where
+  "distance_\<R> d K B V A p = (\<R>\<^sub>\<W> d K V A p B, B - \<R>\<^sub>\<W> d K V A p B, {})"
+
+subsubsection \<open>Social Choice Case\<close>
+
+lemma (in social_choice_result) \<K>\<^sub>\<E>_equiv_def: 
+  fixes
+    cls :: "('a, 'v, 'a Result) Consensus_Class" and
+    a :: 'a and
+    e_set :: "('a, 'v) Election set"
+  shows
+    "\<K>\<^sub>\<E> cls a =  {(A, V, p) | A V p. (consensus_\<K> cls) (A, V, p) \<and> finite_profile V A p 
+                  \<and> elect V (rule_\<K> cls) A p = {a}}"
+  by auto
+
+fun (in social_choice_result) \<R>\<^sub>\<W>_choice :: 
+"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'a Result) Consensus_Class 
+  \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a set" where
+  "\<R>\<^sub>\<W>_choice d K V A p = \<R>\<^sub>\<W> d K V A p A"
+
+fun (in social_choice_result) distance_\<R>_choice ::
+"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'a Result) Consensus_Class 
+\<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" 
+where
+  "distance_\<R>_choice d K V A p = distance_\<R> d K A V A p"
+
+subsubsection \<open>Social Welfare Case\<close>
+
+(* TODO *)
+
 
 subsection \<open>Standard Definitions\<close>
 
-definition standard :: "'a Election Distance \<Rightarrow> bool" where
- "standard d \<equiv> \<forall> A A' p p'. (length p \<noteq> length p' \<or> A \<noteq> A') \<longrightarrow> d (A, p) (A', p') = \<infinity>"
+definition standard :: "('a, 'v) Election Distance \<Rightarrow> bool" where
+ "standard d \<equiv> \<forall> A A' V V' p p'. (V \<noteq> V' \<or> A \<noteq> A') \<longrightarrow> d (A, V, p) (A', V', p') = \<infinity>"
 
 (*
   We want "profile_permutations n A = {}" for infinite A.
@@ -56,10 +91,11 @@ definition standard :: "'a Election Distance \<Rightarrow> bool" where
   Open question: Would "finite A" instead of "permutations_of_set A = {}"
                  also work for code generation?
 *)
-fun profile_permutations :: "nat \<Rightarrow> 'a set \<Rightarrow> ('a Profile) set" where
+fun profile_permutations :: "nat \<Rightarrow> 'a set \<Rightarrow> (('a, 'v) Profile) set" where
   "profile_permutations n A =
     (if permutations_of_set A = {}
       then {} else listset (replicate n (pl_\<alpha> ` permutations_of_set A)))"
+
 
 fun \<K>\<^sub>\<E>_std :: "'a Consensus_Class \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> nat \<Rightarrow> 'a Election set" where
   "\<K>\<^sub>\<E>_std K a A n =

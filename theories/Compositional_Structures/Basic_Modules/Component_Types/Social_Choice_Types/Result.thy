@@ -25,11 +25,31 @@ text \<open>
 subsection \<open>Definition\<close>
 
 text \<open>
-  A result contains three sets of alternatives:
+  A result generally is related to the alternative set A (of type 'a).
+  A result should be well-formed on the alternatives.
+  Also it should be possible to limit a well-formed result to a subset of the alternatives.
+
+  Specific result types like social choice results (sets of alternatives) can be realized
+  via sublocales of the result locale.
+\<close>
+
+locale result =
+  fixes well_formed :: "'a set \<Rightarrow> 'r \<Rightarrow> bool" 
+    and limit :: "'a set \<Rightarrow> 'r \<Rightarrow> 'r"
+    and winners :: "'r \<Rightarrow> 'b set"
+  assumes "A \<subseteq> B \<Longrightarrow> well_formed B r \<Longrightarrow> well_formed A (limit A r)"
+
+type_synonym 'a Result = "'a set * 'a set * 'a set"
+
+subsection \<open>Social Choice Results\<close>
+
+text \<open>
+  A social choice result contains three sets of alternatives:
   elected, rejected, and deferred alternatives.
 \<close>
 
-type_synonym 'a Result = "'a set * 'a set * 'a set"
+locale social_choice_result
+begin
 
 subsection \<open>Auxiliary Functions\<close>
 
@@ -49,7 +69,10 @@ fun set_equals_partition :: "'a set \<Rightarrow>'a Result \<Rightarrow> bool" w
   "set_equals_partition A (e, r, d) = (e \<union> r \<union> d = A)"
 
 fun well_formed :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
-  "well_formed A result = (disjoint3 result \<and> set_equals_partition A result)"
+  "well_formed A res = (disjoint3 res \<and> set_equals_partition A res)"
+
+fun limit :: "'a set \<Rightarrow> 'a Result \<Rightarrow> 'a Result" where 
+  "limit A (e,r,d) = (A \<inter> e, A \<inter> r, A \<inter> d)"
 
 text \<open>
   These three functions return the elect, reject, or defer set of a result.
@@ -209,5 +232,29 @@ proof (safe)
     using UnCI assms fst_conv snd_conv disjoint3.cases
     by metis
 qed
+end
+
+locale social_welfare_result
+begin
+
+type_synonym 'a Result = "'a rel"
+
+fun well_formed :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
+  "well_formed A res = linear_order_on A res"
+
+fun limit :: "'a set \<Rightarrow> 'a Result \<Rightarrow> 'a Result" where 
+  "limit A res = res"
+
+end
+
+text \<open>
+  Interpret specific result types as sublocales of the more generic result locale.
+\<close>
+
+sublocale social_choice_result 
+            \<subseteq> result "social_choice_result.well_formed" 
+                      "social_choice_result.limit" 
+                      "social_choice_result.elect_r"
+proof (unfold_locales, simp, auto) qed
 
 end

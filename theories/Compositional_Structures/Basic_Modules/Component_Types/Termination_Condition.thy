@@ -19,6 +19,6 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-type_synonym 'a Termination_Condition = "'a Result \<Rightarrow> bool"
+type_synonym 'r Termination_Condition = "'r \<Rightarrow> bool"
 
 end

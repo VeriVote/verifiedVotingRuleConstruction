@@ -10,6 +10,9 @@ theory Borda_Module
   imports "Component_Types/Elimination_Module"
 begin
 
+context social_choice_result
+begin
+
 text \<open>
   This is the Borda module used by the Borda rule. The Borda rule is a voting
   rule, where on each ballot, each alternative is assigned a score that depends
@@ -22,11 +25,11 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun borda_score :: "'a Evaluation_Function" where
-  "borda_score x A p = (\<Sum> y \<in> A. (prefer_count p x y))"
+fun borda_score :: "('a, 'v) Evaluation_Function" where
+  "borda_score V x A p = (\<Sum> y \<in> A. (prefer_count V p x y))"
 
-fun borda :: "'a Electoral_Module" where
-  "borda A p = max_eliminator borda_score A p"
+fun borda :: "('a, 'v, 'a Result) Electoral_Module" where
+  "borda V A p = max_eliminator borda_score V A p"
 
 subsection \<open>Soundness\<close>
 
@@ -58,4 +61,5 @@ theorem borda_mod_non_electing[simp]: "non_electing borda"
   unfolding borda.simps non_electing_def
   by metis
 
+end
 end

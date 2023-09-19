@@ -45,14 +45,15 @@ definition vote_distance :: "('a Vote set \<Rightarrow> 'a Vote Distance \<Right
                                           'a Vote Distance \<Rightarrow> bool" where
   "vote_distance \<pi> d \<equiv> \<pi> {(A, p). linear_order_on A p \<and> finite A} d"
 
-definition election_distance :: "('a Election set \<Rightarrow> 'a Election Distance \<Rightarrow> bool) \<Rightarrow>
-                                              'a Election Distance \<Rightarrow> bool" where
-  "election_distance \<pi> d \<equiv> \<pi> {(A, p). finite_profile A p} d"
+definition election_distance :: 
+  "(('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool) \<Rightarrow>
+      ('a, 'v) Election Distance \<Rightarrow> bool" where
+  "election_distance \<pi> d \<equiv> \<pi> {(A, V, p). finite_profile V A p} d"
 
 subsection \<open>Standard Distance Property\<close>
 
-definition standard :: "'a Election Distance \<Rightarrow> bool" where
- "standard d \<equiv> \<forall> A A' p p'. length p \<noteq> length p' \<or> A \<noteq> A' \<longrightarrow> d (A, p) (A', p') = \<infinity>"
+definition standard :: "('a, 'v) Election Distance \<Rightarrow> bool" where
+ "standard d \<equiv> \<forall> A A' V V' p p'. A \<noteq> A' \<or> V \<noteq> V' \<longrightarrow> d (A, V, p) (A', V', p') = \<infinity>"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -170,11 +171,11 @@ lemma spearman_case_fin:
 
 section \<open>Properties\<close>
 
-definition distance_anonymity :: "'a Election Distance \<Rightarrow> bool" where
+definition distance_anonymity :: "('a, 'v) Election Distance \<Rightarrow> bool" where
   "distance_anonymity d \<equiv>
-    \<forall> A A' pi p p'.
-      (\<forall> n. (pi n) permutes {..< n}) \<longrightarrow>
-        d (A, p) (A', p') =
-          d (A, permute_list (pi (length p)) p) (A', permute_list (pi (length p')) p')"
+    \<forall> A A' V V' p p' \<pi>::('v \<Rightarrow> 'v).
+      (bij \<pi> \<longrightarrow>
+        (d (A, V, p) (A', V', p')) =
+          (d (rename \<pi> (A, V, p))) (rename \<pi> (A', V', p')))"
 
 end

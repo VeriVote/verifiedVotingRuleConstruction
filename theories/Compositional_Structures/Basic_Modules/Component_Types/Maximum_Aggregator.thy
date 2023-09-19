@@ -19,6 +19,9 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
+context social_choice_result
+begin
+
 fun max_aggregator :: "'a Aggregator" where
   "max_aggregator A (e1, r1, d1) (e2, r2, d2) =
     (e1 \<union> e2,
@@ -175,4 +178,5 @@ theorem max_agg_comm[simp]: "agg_commutative max_aggregator"
   unfolding agg_commutative_def
   by auto
 
+end
 end

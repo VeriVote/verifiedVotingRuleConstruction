@@ -19,10 +19,13 @@ text \<open>
   It is primarily used for defining an empty loop.
 \<close>
 
+context social_choice_result
+begin
+
 subsection \<open>Definition\<close>
 
-fun defer_module :: "'a Electoral_Module" where
-  "defer_module A p = ({}, {}, A)"
+fun defer_module :: "('a, 'v, 'a Result) Electoral_Module" where
+  "defer_module V A p = ({}, {}, A)"
 
 subsection \<open>Soundness\<close>
 
@@ -40,4 +43,5 @@ theorem def_mod_def_lift_inv: "defer_lift_invariance defer_module"
   unfolding defer_lift_invariance_def
   by simp
 
+end
 end
