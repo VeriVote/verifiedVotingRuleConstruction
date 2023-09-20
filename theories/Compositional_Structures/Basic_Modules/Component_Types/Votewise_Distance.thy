@@ -51,7 +51,8 @@ proof (unfold distance_anonymity_def, safe)
   hence listpi_sym: "\<forall> l. ?listpi l <~~> l"
     using mset_permute_list
     by metis
-  show "votewise_distance d n (A, p) (A', p') = votewise_distance d n (A, ?q) (A', ?q')"
+  show "votewise_distance d n (A, p) (A', p') =
+          votewise_distance d n (A, ?q) (A', ?q')"
   proof (cases "length p = length p' \<and> (0 < length p \<or> A = A')")
     case False
     thus ?thesis
@@ -59,13 +60,15 @@ proof (unfold distance_anonymity_def, safe)
       by auto
   next
     case True
-    hence "votewise_distance d n (A, p) (A', p') = n (map2 (\<lambda> x y. d (A, x) (A', y)) p p')"
+    hence "votewise_distance d n (A, p) (A', p') =
+            n (map2 (\<lambda> x y. d (A, x) (A', y)) p p')"
       by auto
     also have "\<dots> = n (?listpi (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
       using assms listpi_sym
       unfolding symmetry_def
       by (metis (no_types, lifting))
-    also have "\<dots> = n (map (case_prod (\<lambda> x y. d (A, x) (A', y))) (?listpi (zip p p')))"
+    also have "\<dots> = n (map (case_prod (\<lambda> x y. d (A, x) (A', y)))
+                            (?listpi (zip p p')))"
       using permute_list_map[of \<open>?pi_len p\<close> ?z ?c_prod] perm True
       by simp
     also have "\<dots> = n (map2 (\<lambda> x y. d (A, x) (A', y)) (?listpi p) (?listpi p'))"

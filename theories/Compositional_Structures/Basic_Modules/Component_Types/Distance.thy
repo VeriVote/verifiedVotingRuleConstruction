@@ -12,12 +12,14 @@ theory Distance
 begin
 
 text \<open>
-  A general distance on a set X is a mapping d : X x X to R union {+\<infinity>} such
-  that for every x, y, z in X the following four conditions are satisfied:
-  - d(x, y) >= 0 (nonnegativity);
-  - d(x, y) = 0 if and only if x = y (identity of indiscernibles);
-  - d(x, y) = d(y, x) (symmetry);
-  - d(x, y) <= d(x, z) + d(z, y) (triangle inequality).
+  A general distance on a set X is a mapping \<^latex>\<open>$d: X \times X \mapsto R \cup \{+\infty\}$\<close> such
+  that for every \<^latex>\<open>$x, y, z$\<close> in X, the following four conditions are satisfied:
+  \<^item> \<^latex>\<open>$d(x, y) \geq 0$\<close> (nonnegativity);
+  \<^item> \<^latex>\<open>$d(x, y) = 0$\<close> if and only if \<^latex>\<open>$x = y$\<close> (identity of indiscernibles);
+  \<^item> \<^latex>\<open>$d(x, y) = d(y, x)$\<close> (symmetry);
+  \<^item> \<^latex>\<open>$d(x, y) <= d(x, z) + d(z, y)$\<close> (triangle inequality).
+
+
   Moreover, a mapping that satisfies all but the second conditions is called
   a pseudodistance, whereas a quasidistance needs to satisfy the first three
   conditions (and not necessarily the last one).

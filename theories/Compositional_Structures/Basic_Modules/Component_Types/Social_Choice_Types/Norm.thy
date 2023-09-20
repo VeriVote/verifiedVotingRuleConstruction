@@ -11,11 +11,11 @@ theory Norm
 begin
 
 text \<open>
-  A norm on R to n is a mapping N: R to n on R that has the following properties:
-  - positive scalability: N(a * u) = |a| * N(u) for all u in R to n and all a in R;
-  - positive semidefiniteness: N(u) >= 0 for all u in R to n, and N(u) = 0 if and
-    only if u = (0, 0, . . . , 0);
-  - triangle inequality: N(u + v) <= N(u) + N(v) for all u,v in R to n.
+  A norm on R to n is a mapping \<^latex>\<open>$N: R \mapsto n$\<close> on R that has the following properties:
+  \<^item> positive scalability: \<^latex>\<open>$N(a * u) = |a| * N(u)$\<close> for all u in R to n and all a in R;
+  \<^item> positive semidefiniteness: \<^latex>\<open>$N(u) \geq 0$\<close> for all u in R to n, and \<^latex>\<open>$N(u) = 0$\<close> if
+    and only if \<^latex>\<open>$u = (0, 0, \dots, 0)$\<close>;
+  \<^item> triangle inequality: \<^latex>\<open>$N(u + v) \leq N(u) + N(v)$\<close> for all u and v in R to n.
 \<close>
 
 subsection \<open>Definition\<close>
