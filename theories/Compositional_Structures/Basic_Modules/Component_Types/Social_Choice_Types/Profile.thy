@@ -127,17 +127,34 @@ fun list_of_preferences :: "'v list \<Rightarrow> ('a, 'v) Profile
 
 lemma lop_simps: 
   fixes
+    n :: nat and 
     i :: nat
   assumes 
-    in_bounds: "i < length l"
+    "n = length l"
   shows length_inv: "length (list_of_preferences l p) = length l" and
-        index: "(list_of_preferences l p)!i = p (l!i)"
+        index: "i < n \<Longrightarrow> (list_of_preferences l p)!i = p (l!i)"
 proof -
   show length_inv: "length (list_of_preferences l p) = length l"
     by (induction rule: list_of_preferences.induct, auto) 
 next
-  show "list_of_preferences l p ! i = p (l ! i)"
-    sorry (* TODO *)
+  show "i < n \<Longrightarrow> list_of_preferences l p ! i = p (l ! i)"
+  proof -
+    fix 
+      i::nat
+    assume in_bounds: "i < n"
+    show "list_of_preferences l p ! i = p (l ! i)"
+    proof (cases l)
+      case Nil
+      hence "False" 
+        using assms in_bounds   
+        by simp
+      thus ?thesis 
+        by simp
+    next
+      case (Cons a list)
+      thus ?thesis sorry
+    qed
+  qed
 qed
 
 fun to_list :: "'v::linorder set \<Rightarrow> ('a, 'v) Profile 
@@ -162,53 +179,179 @@ proof -
   finally show ?thesis by auto
 qed
 
+lemma set_card: 
+  fixes i::nat and V :: "nat set"
+  assumes "finite V" and "(\<forall>v \<in> V. i > v)"
+  shows "(i \<ge> card V)"
+proof (cases "V = {}")
+  case True
+  thus ?thesis by simp
+next
+  case False
+  have "Max V \<in> V" using \<open>finite V\<close>
+    by (simp add: False)
+  moreover have "Max V \<ge> (card V) - 1"
+    by (metis False Max_ge_iff assms(1) calculation card_Diff1_less 
+              card_Diff_singleton finite_enumerate_in_set finite_le_enumerate)
+  ultimately show ?thesis 
+    using assms
+    by fastforce
+qed
+
+lemma sorted_list_of_set_nth_equals_card:
+  fixes 
+      V :: "'v::linorder set" and
+      x :: 'v
+  assumes 
+      fin_V: "finite V" and
+      x_V: "x \<in> V"
+  shows "sorted_list_of_set V ! card {v \<in> V. v < x} = x"
+proof -
+  let ?c = "card {v \<in> V. v < x}" and
+      ?set = "{v \<in> V. v < x}"
+  have ex_index: "\<forall> v \<in> V. \<exists>n. (n < card V \<and> (sorted_list_of_set V ! n) = v)"
+    using distinct_Ex1 fin_V 
+          sorted_list_of_set.set_sorted_key_list_of_set
+          sorted_list_of_set.distinct_sorted_key_list_of_set 
+          sorted_list_of_set.length_sorted_key_list_of_set 
+    by metis
+  then obtain \<phi> where index_\<phi>: "\<forall> v \<in> V. \<phi> v < card V \<and> (sorted_list_of_set V ! (\<phi> v)) = v"
+    by metis
+  (* we want to show that \<phi> x = ?c by showing \<phi> x \<ge> ?c and \<phi> x \<le> ?c separately *)
+  let ?i = "\<phi> x"
+  have inj_\<phi>: "inj_on \<phi> V"
+    by (metis inj_onI index_\<phi>)
+  have mono_\<phi>: "\<forall> v v'. (v \<in> V \<and> v' \<in> V \<and> v < v' \<longrightarrow> \<phi> v < \<phi> v')"
+    using dual_order.strict_trans2 fin_V index_\<phi> 
+          finite_sorted_distinct_unique linorder_neqE_nat
+          order_less_irrefl sorted_list_of_set.idem_if_sorted_distinct 
+          sorted_list_of_set.length_sorted_key_list_of_set sorted_wrt_iff_nth_less
+    by (metis (full_types))
+  have "\<forall>v \<in> ?set. v < x" by simp
+  hence "\<forall>v \<in> ?set. \<phi> v < ?i"
+    by (metis Collect_subset mono_\<phi> subsetD x_V)
+  hence "\<forall>j \<in> {\<phi> v | v. v \<in> ?set}. ?i > j"
+    by blast 
+  moreover have "finite ?set" using fin_V by simp
+  ultimately have "?i \<ge> card {\<phi> v | v. v \<in> ?set}" using set_card by simp
+  also have "card {\<phi> v | v. v \<in> ?set} = ?c" 
+    using inj_\<phi>
+    by (simp add: card_image inj_on_subset setcompr_eq_image)
+  finally have geq: "?i \<ge> ?c" by simp
+  have leq: "?i \<le> ?c" sorry
+  thus ?thesis using geq leq
+    by (simp add: x_V index_\<phi>)
+qed
+
 lemma to_list_permutes_under_bij:
   fixes 
     \<pi> :: "'v::linorder \<Rightarrow> 'v" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
-  assumes "bij \<pi>"
+  assumes 
+    bij: "bij \<pi>"
   shows
-  "to_list (\<pi> ` V) (\<lambda>x. p ((the_inv \<pi>) x)) <~~> (to_list V p)"
-proof -
-  show "mset (to_list (\<pi> ` V) (\<lambda>x. p (the_inv \<pi> x))) = mset (to_list V p)"
-  proof (cases "finite V")
-    let ?q = "(\<lambda>x. p ((the_inv \<pi>) x))" and 
-        ?v = "(\<pi> ` V)" and
-        ?perm = "(\<lambda>i. (if (i < card V) then (i) else (i)))"
-    case True
-    have "length (sorted_list_of_set ?v) = card V"
-      using assms bij_betw_same_card bij_betw_subset top_greatest
-            sorted_list_of_set.length_sorted_key_list_of_set 
-      by metis
-    hence "i < card V \<Longrightarrow> (to_list ?v ?q)!i = ?q ((sorted_list_of_set ?v)!i)"
-      using to_list_simp
-      by (metis sorted_list_of_set.length_sorted_key_list_of_set)
-    hence "i < card V \<Longrightarrow> (to_list ?v ?q)!i = p ((the_inv \<pi>) ((sorted_list_of_set ?v)!i))"
-      by auto
-    hence "i < card V \<Longrightarrow> (to_list ?v ?q)!i = p ((sorted_list_of_set V)!(?perm i))"
-      sorry
-    moreover have "to_list V p = list_of_preferences (sorted_list_of_set V) p"
-      by auto
-    ultimately have "(to_list ?v ?q) = permute_list ?perm (to_list V p)"
-      sorry
-    thus ?thesis 
-      by simp
-  next
-    case False
-    hence "infinite (\<pi> ` V)" using \<open>bij \<pi>\<close>
-      by (meson bij_betw_finite bij_betw_subset top_greatest)
-    hence "(to_list (\<pi> ` V) (\<lambda>x. p (the_inv \<pi> x))) = []"
-      by simp
-    moreover have "to_list V p = []" 
-      using \<open>infinite V\<close>
-      by simp
-    ultimately show ?thesis
-      by presburger
+  "let \<phi> = (\<lambda>i. (card ({v\<in>(\<pi> ` V). v < \<pi> ((sorted_list_of_set V)!i)}))) 
+    in (to_list V p) = permute_list \<phi> (to_list (\<pi> ` V) (\<lambda>x. p ((the_inv \<pi>) x)))"
+proof (cases "finite V")
+  case False
+  (* if V is infinite, both lists are empty *)
+  hence "to_list V p = []" by simp
+  moreover have "(to_list (\<pi> ` V) (\<lambda>x. p (the_inv \<pi> x))) = []"
+  proof -
+    have "infinite (\<pi> ` V)"
+      by (meson False assms bij_betw_finite bij_betw_subset top_greatest)
+    thus ?thesis by simp
   qed
+  ultimately show ?thesis by simp
+next
+  case True
+  let ?q = "(\<lambda>x. p ((the_inv \<pi>) x))" and 
+      ?img = "(\<pi> ` V)" and
+      ?n = "length (to_list V p)" and
+      ?perm = "(\<lambda>i. (card ({v\<in>(\<pi> ` V). v < \<pi> ((sorted_list_of_set V)!i)})))"
+  have card_eq: "card ?img = card V" 
+    using assms bij_betw_same_card bij_betw_subset top_greatest
+    by metis
+  also have card_length_V: "length (to_list V p) = card V"
+    using True length_inv to_list.simps
+          sorted_list_of_set.length_sorted_key_list_of_set 
+    by metis
+  also have card_length_img: 
+    "length (to_list ?img ?q) = card ?img"
+    using True assms card_eq length_inv to_list.simps
+          sorted_list_of_set.length_sorted_key_list_of_set
+          card.infinite list.size(3)
+    by metis
+  finally have eq_length: "length (to_list ?img ?q) = ?n"
+    by simp
+  show ?thesis
+  proof (unfold Let_def permute_list_def, rule nth_equalityI)
+    (* start by showing that the lists have equal lengths *)
+    show"length (to_list V p) 
+          = length
+              (map (\<lambda>i. to_list ?img ?q ! card {v \<in> ?img. v < \<pi> (sorted_list_of_set V ! i)})
+                   [0..<length (to_list ?img ?q)])" 
+      using eq_length
+      by auto
+  next
+    (* now show that the ith entries of the lists coincide *)
+    fix 
+      i :: nat
+    assume 
+      in_bnds: "i < ?n"
+      (* ?c is the index of sth in some list idk help me *)
+      let ?c = "card {v \<in> ?img. v < \<pi> (sorted_list_of_set V ! i)}"
+      have "map (\<lambda>i. (to_list ?img ?q) ! ?c) [0..<?n] ! i = p ((sorted_list_of_set V)!i)"
+      proof -
+        have "\<forall>v. v \<in> ?img \<longrightarrow> {v' \<in> ?img. v' < v} \<subseteq> ?img - {v}" by blast
+        moreover have elem_of_img: "\<pi> (sorted_list_of_set V ! i) \<in> ?img"
+          using True in_bnds image_eqI length_inv nth_mem
+                sorted_list_of_set.set_sorted_key_list_of_set to_list.simps
+          by metis
+        ultimately have "{v \<in> ?img. v < \<pi> (sorted_list_of_set V ! i)}
+                         \<subseteq> ?img - {\<pi> (sorted_list_of_set V ! i)}"
+          by auto
+        hence "{v \<in> ?img. v < \<pi> (sorted_list_of_set V ! i)} \<subset> ?img"
+          using elem_of_img by blast
+        moreover have img_card_eq_V_length: "card ?img = ?n"
+          using True bij length_inv subset_UNIV to_list.simps
+                bij_betw_same_card bij_betw_subset
+                sorted_list_of_set.length_sorted_key_list_of_set 
+          by metis
+        ultimately have card_in_bnds: "?c < ?n"
+          by (metis (mono_tags, lifting) True finite_imageI psubset_card_mono)
+        moreover have img_list_map: "map (\<lambda>i. to_list ?img ?q ! ?c) [0..<?n] ! i 
+                                     = to_list ?img ?q ! ?c"
+          using in_bnds
+          by auto
+        also have img_list_card_eq_inv_img_list: 
+          "to_list ?img ?q ! ?c = ?q ((sorted_list_of_set ?img) ! ?c)"
+          using in_bnds to_list_simp in_bnds img_card_eq_V_length card_in_bnds
+          by (metis (no_types, lifting))
+        also have img_card_eq_img_list_i: 
+          "(sorted_list_of_set ?img) ! ?c = \<pi> (sorted_list_of_set V ! i)"
+          using True elem_of_img sorted_list_of_set_nth_equals_card
+          by blast
+        finally show ?thesis 
+          using assms bij_betw_imp_inj_on the_inv_f_f
+                img_list_map img_card_eq_img_list_i
+                img_list_card_eq_inv_img_list
+          by metis
+      qed
+      also have "to_list V p ! i = p ((sorted_list_of_set V)!i)"
+        using True length_inv to_list.simps to_list_simp in_bnds 
+              sorted_list_of_set.length_sorted_key_list_of_set
+        by metis      
+      finally show "to_list V p ! i 
+                    = map (\<lambda>i. (to_list ?img ?q) 
+                               ! card {v \<in> ?img. v < \<pi> (sorted_list_of_set V ! i)})
+                          [0..<length (to_list ?img ?q)] ! i"
+        using in_bnds eq_length Collect_cong card_eq 
+        by auto
+    qed
 qed
   
-
 subsection \<open>Preference Counts and Comparisons\<close>
 
 text \<open>
