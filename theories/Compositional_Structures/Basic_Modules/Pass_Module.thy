@@ -21,8 +21,11 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun pass_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
-  "pass_module n r A p =
+context social_choice_result
+begin
+
+fun pass_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+  "pass_module n r V A p =
     ({},
     {a \<in> A. rank (limit A r) a > n},
     {a \<in> A. rank (limit A r) a \<le> n})"
@@ -37,7 +40,8 @@ theorem pass_mod_sound[simp]:
 proof (intro electoral_modI)
   fix
     A :: "'a set" and
-    p :: "'a Profile"
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
   let ?mod = "pass_module n r"
   have "\<forall> a \<in> A. a \<in> {x \<in> A. rank (limit A r) x > n} \<or>
                  a \<in> {x \<in> A. rank (limit A r) x \<le> n}"
@@ -45,7 +49,7 @@ proof (intro electoral_modI)
     by metis
   hence "{a \<in> A. rank (limit A r) a > n} \<union> {a \<in> A. rank (limit A r) a \<le> n} = A"
     by blast
-  hence "set_equals_partition A (pass_module n r A p)"
+  hence "set_equals_partition A (pass_module n r V A p)"
     by simp
   moreover have
     "\<forall> a \<in> A.
@@ -54,7 +58,7 @@ proof (intro electoral_modI)
     by simp
   hence "{a \<in> A. rank (limit A r) a > n} \<inter> {a \<in> A. rank (limit A r) a \<le> n} = {}"
     by blast
-  ultimately show "well_formed A (?mod A p)"
+  ultimately show "well_formed A (?mod V A p)"
     by simp
 qed
 
@@ -78,11 +82,12 @@ proof (unfold non_blocking_def, safe)
 next
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     a :: "'a"
   assume
     fin_A: "finite A" and
-    rej_pass_A: "reject (pass_module n r) A p = A" and
+    rej_pass_A: "reject V (pass_module n r) A p = A" and
     a_in_A: "a \<in> A"
   moreover have "linear_order_on A (limit A r)"
     using limit_presv_lin_ord order top_greatest
@@ -96,7 +101,7 @@ next
     using Suc_leI g0_n leD mem_Collect_eq above_rank
     unfolding One_nat_def
     by (metis (no_types, lifting))
-  hence "reject (pass_module n r) A p \<noteq> A"
+  hence "reject V (pass_module n r) A p \<noteq> A"
     by simp
   thus "a \<in> {}"
     using rej_pass_A
@@ -147,11 +152,12 @@ proof (unfold defers_def, safe)
 next
   fix
     A :: "'a set" and
-    p :: "'a Profile"
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
   assume
     card_pos: "0 \<le> card A" and
     finite_A: "finite A" and
-    prof_A: "profile A p"
+    prof_A: "profile V A p"
   have "linear_order_on A (limit A r)"
     using assms limit_presv_lin_ord
     by blast
@@ -172,7 +178,7 @@ next
   hence "card {a \<in> A. rank (limit A r) a \<le> 0} = 0"
     using card.empty
     by metis
-  thus "card (defer (pass_module 0 r) A p) = 0"
+  thus "card (defer V (pass_module 0 r) A p) = 0"
     by simp
 qed
 
@@ -194,12 +200,13 @@ proof (unfold defers_def, safe)
 next
   fix
     A :: "'a set" and
-    p :: "'a Profile"
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
   assume
     card_pos: "1 \<le> card A" and
     finite_A: "finite A" and
-    prof_A: "profile A p"
-  show "card (defer (pass_module 1 r) A p) = 1"
+    prof_A: "profile V A p"
+  show "card (defer V (pass_module 1 r) A p) = 1"
   proof -
     have "A \<noteq> {}"
       using card_pos
@@ -274,7 +281,7 @@ next
       thus ?thesis
         by simp
     qed
-    thus "card (defer (pass_module 1 r) A p) = 1"
+    thus "card (defer V (pass_module 1 r) A p) = 1"
       by simp
   qed
 qed
@@ -290,11 +297,12 @@ proof (unfold defers_def, safe)
 next
   fix
     A :: "'a set" and
-    p :: "'a Profile"
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
   assume
     min_2_card: "2 \<le> card A" and
     fin_A: "finite A" and
-    prof_A: "profile A p"
+    prof_A: "profile V A p"
   from min_2_card
   have not_empty_A: "A \<noteq> {}"
     by auto
@@ -320,7 +328,7 @@ next
           empty_iff fin_A finite.emptyI insert_iff limit_A_order above_one UNIV_bool
           nat.simps(3) zero_less_Suc One_nat_def above_rank
     by (metis (no_types, lifting))
-  hence a_in_defer: "a \<in> defer (pass_module 2 r) A p"
+  hence a_in_defer: "a \<in> defer V (pass_module 2 r) A p"
     by simp
   have "finite (A - {a})"
     using fin_A
@@ -363,7 +371,7 @@ next
   hence card_above_b_eq_two: "rank (limit A r) b = 2"
     using A_not_only_a b_in_limit
     by auto
-  hence b_in_defer: "b \<in> defer (pass_module 2 r) A p"
+  hence b_in_defer: "b \<in> defer V (pass_module 2 r) A p"
     using b_above_b above_subset
     by auto
   from b_best
@@ -391,19 +399,21 @@ next
   hence "\<forall> c \<in> A - {a, b}. rank (limit A r) c > 2"
     using less_le_trans numeral_less_iff order_refl semiring_norm(79)
     by metis
-  hence "\<forall> c \<in> A - {a, b}. c \<notin> defer (pass_module 2 r) A p"
+  hence "\<forall> c \<in> A - {a, b}. c \<notin> defer V (pass_module 2 r) A p"
     by (simp add: not_le)
-  moreover have "defer (pass_module 2 r) A p \<subseteq> A"
+  moreover have "defer V (pass_module 2 r) A p \<subseteq> A"
     by auto
-  ultimately have "defer (pass_module 2 r) A p \<subseteq> {a, b}"
+  ultimately have "defer V (pass_module 2 r) A p \<subseteq> {a, b}"
     by blast
-  hence "defer (pass_module 2 r) A p = {a, b}"
+  hence "defer V (pass_module 2 r) A p = {a, b}"
     using a_in_defer b_in_defer
     by fastforce
-  thus "card (defer (pass_module 2 r) A p) = 2"
+  thus "card (defer V (pass_module 2 r) A p) = 2"
     using above_b_eq_ab card_above_b_eq_two
     unfolding rank.simps
     by presburger
 qed
+
+end
 
 end

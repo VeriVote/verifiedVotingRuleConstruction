@@ -190,11 +190,7 @@ text \<open>
 theorem copeland_score_is_cr: "condorcet_rating copeland_score"
 proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
   fix
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    w :: "'a" and
-    l :: "'a"
+    A and V and p and w and l
   assume
     winner: "condorcet_winner V A p w" and
     l_in_A: "l \<in> A" and
@@ -221,7 +217,7 @@ proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
   moreover have "card A - 1 = card {a \<in> A. wins V w p a}"
     using cond_winner_imp_win_count winner
     by (metis (full_types))
-  ultimately have
+  ultimately show
     "enat (card {y \<in> A. wins V l p y} - card {y \<in> A. wins V y p l}) <
       enat (card {y \<in> A. wins V w p y} - card {y \<in> A. wins V y p w})"
     using enat_ord_simps
@@ -231,9 +227,7 @@ qed
 theorem copeland_is_dcc: "defer_condorcet_consistency copeland"
 proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
   fix
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile"
+    A and V and p
   assume
     "finite A" and
     "finite V" and
@@ -246,16 +240,13 @@ proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
     by auto
 next
   fix
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    w :: "'a"
+    A and V and p and w
   assume
     "condorcet_winner V A p w" and
     "finite A" and
     "finite V"
   moreover have "defer_condorcet_consistency (max_eliminator copeland_score)"
-    sorry
+    by (simp add: copeland_score_is_cr)
   moreover have "\<forall> A V p. (copeland V A p = max_eliminator copeland_score V A p)"
     by simp
   ultimately show

@@ -20,8 +20,11 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun elect_module :: "'a Electoral_Module" where
-  "elect_module A p = (A, {}, {})"
+context social_choice_result
+begin
+
+fun elect_module :: "('a, 'v, 'a Result) Electoral_Module" where
+  "elect_module V A p = (A, {}, {})"
 
 subsection \<open>Soundness\<close>
 
@@ -35,4 +38,5 @@ theorem elect_mod_electing[simp]: "electing elect_module"
   unfolding electing_def
   by simp
 
+end
 end

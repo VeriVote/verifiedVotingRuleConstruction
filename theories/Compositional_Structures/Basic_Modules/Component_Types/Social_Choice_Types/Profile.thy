@@ -808,7 +808,7 @@ text \<open>
 
 definition lifted :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "lifted V A p p' a \<equiv>
-    profile V A p \<and> profile V A p' \<and> a \<in> A 
+    finite_profile V A p \<and> finite_profile V A p' \<and> a \<in> A 
       \<and> (\<forall> v\<in>V. \<not> Preference_Relation.lifted A (p v) (p' v) a \<longrightarrow> (p v) = (p' v)) 
       \<and> (\<exists> v\<in>V. Preference_Relation.lifted A (p v) (p' v) a)"
 

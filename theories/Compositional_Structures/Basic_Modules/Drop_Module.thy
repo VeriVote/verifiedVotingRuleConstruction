@@ -9,6 +9,7 @@ section \<open>Drop Module\<close>
 
 theory Drop_Module
   imports "Component_Types/Electoral_Module"
+          "Component_Types/Social_Choice_Types/Result"
 begin
 
 text \<open>
@@ -23,8 +24,11 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
-  "drop_module n r A p =
+context social_choice_result
+begin
+
+fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+  "drop_module n r V A p =
     ({},
     {a \<in> A. rank (limit A r) a \<le> n},
     {a \<in> A. rank (limit A r) a > n})"
@@ -39,14 +43,16 @@ theorem drop_mod_sound[simp]:
 proof (intro electoral_modI)
   fix
     A :: "'a set" and
-    p :: "'a Profile"
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
+  assume "finite_profile V A p"
   let ?mod = "drop_module n r"
   have "\<forall> a \<in> A. a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<or>
                   a \<in> {x \<in> A. rank (limit A r) x > n}"
     by auto
   hence "{a \<in> A. rank (limit A r) a \<le> n} \<union> {a \<in> A. rank (limit A r) a > n} = A"
     by blast
-  hence set_partition: "set_equals_partition A (drop_module n r A p)"
+  hence set_partition: "set_equals_partition A (drop_module n r V A p)"
     by simp
   have "\<forall> a \<in> A.
           \<not> (a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<and>
@@ -54,7 +60,7 @@ proof (intro electoral_modI)
     by simp
   hence "{a \<in> A. rank (limit A r) a \<le> n} \<inter> {a \<in> A. rank (limit A r) a > n} = {}"
     by blast
-  thus "well_formed A (?mod A p)"
+  thus "well_formed A (?mod V A p)"
     using set_partition
     by simp
 qed
@@ -86,5 +92,7 @@ theorem drop_mod_def_lift_inv[simp]:
   shows "defer_lift_invariance (drop_module n r)"
   unfolding defer_lift_invariance_def
   by simp
+
+end
 
 end

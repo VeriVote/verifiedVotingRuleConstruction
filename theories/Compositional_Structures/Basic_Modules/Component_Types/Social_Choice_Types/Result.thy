@@ -35,9 +35,9 @@ text \<open>
 
 locale result =
   fixes well_formed :: "'a set \<Rightarrow> 'r \<Rightarrow> bool" 
-    and limit :: "'a set \<Rightarrow> 'r \<Rightarrow> 'r"
+    and limit_res :: "'a set \<Rightarrow> 'r \<Rightarrow> 'r"
     and winners :: "'r \<Rightarrow> 'b set"
-  assumes "A \<subseteq> B \<Longrightarrow> well_formed B r \<Longrightarrow> well_formed A (limit A r)"
+  assumes "A \<subseteq> B \<Longrightarrow> well_formed B r \<Longrightarrow> well_formed A (limit_res A r)"
 
 type_synonym 'a Result = "'a set * 'a set * 'a set"
 
@@ -71,8 +71,8 @@ fun set_equals_partition :: "'a set \<Rightarrow>'a Result \<Rightarrow> bool" w
 fun well_formed :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
   "well_formed A res = (disjoint3 res \<and> set_equals_partition A res)"
 
-fun limit :: "'a set \<Rightarrow> 'a Result \<Rightarrow> 'a Result" where 
-  "limit A (e,r,d) = (A \<inter> e, A \<inter> r, A \<inter> d)"
+fun limit_res :: "'a set \<Rightarrow> 'a Result \<Rightarrow> 'a Result" where 
+  "limit_res A (e,r,d) = (A \<inter> e, A \<inter> r, A \<inter> d)"
 
 text \<open>
   These three functions return the elect, reject, or defer set of a result.
@@ -242,8 +242,8 @@ type_synonym 'a Result = "'a rel"
 fun well_formed :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
   "well_formed A res = linear_order_on A res"
 
-fun limit :: "'a set \<Rightarrow> 'a Result \<Rightarrow> 'a Result" where 
-  "limit A res = res"
+fun limit_res :: "'a set \<Rightarrow> 'a Result \<Rightarrow> 'a Result" where 
+  "limit_res A res = res"
 
 end
 
@@ -253,7 +253,7 @@ text \<open>
 
 sublocale social_choice_result 
             \<subseteq> result "social_choice_result.well_formed" 
-                      "social_choice_result.limit" 
+                      "social_choice_result.limit_res" 
                       "social_choice_result.elect_r"
 proof (unfold_locales, simp, auto) qed
 

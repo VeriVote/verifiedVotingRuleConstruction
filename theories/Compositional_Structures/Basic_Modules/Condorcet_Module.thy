@@ -40,21 +40,21 @@ theorem condorcet_sound: "electoral_module condorcet"
 
 subsection \<open>Property\<close>
 
-(* Condorcet score is Condorcet rating. *)
-theorem condorcet_score_is_condorcet_rating: "condorcet_rating condorcet_score"
-proof (unfold condorcet_rating_def, safe)
-  fix
+lemma test:
+  fixes
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    w :: "'a" and
-    l :: "'a"
-  assume
+    w :: 'a and
+    l :: 'a
+  assumes
     c_win: "condorcet_winner V A p w" and
     l_neq_w: "l \<noteq> w"
+  shows "condorcet_score V l A p < condorcet_score V w A p"
+proof -
   have "\<not> condorcet_winner V A p l"
     using cond_winner_unique c_win l_neq_w
-    by (metis (no_types))
+    by metis
   hence zero_score: "condorcet_score V l A p = 0"
     by simp
   moreover have one_score: "condorcet_score V w A p = 1"
@@ -64,7 +64,61 @@ proof (unfold condorcet_rating_def, safe)
     by (metis one_score zero_less_one zero_score)
 qed
 
-theorem condorcet_is_dcc: "defer_condorcet_consistency condorcet"
+(* Condorcet score is Condorcet rating. *)
+theorem condorcet_score_is_condorcet_rating_0: "condorcet_rating condorcet_score"
+proof (unfold condorcet_rating_def, safe, rule test) qed
+
+theorem condorcet_score_is_condorcet_rating_1: "condorcet_rating condorcet_score"
+proof (unfold condorcet_rating_def, safe, rule test, auto) qed
+
+theorem condorcet_score_is_condorcet_rating_2: "condorcet_rating condorcet_score"
+proof (unfold condorcet_rating_def, safe)
+  fix
+    A and
+    V and
+    p and
+    w and
+    l 
+  assume
+    c_win: "condorcet_winner V A p w" and
+    l_neq_w: "l \<noteq> w"
+  have "\<not> condorcet_winner V A p l"
+    using cond_winner_unique c_win l_neq_w
+    by metis
+  hence zero_score: "condorcet_score V l A p = 0"
+    by simp
+  moreover have one_score: "condorcet_score V w A p = 1"
+    using c_win
+    by auto
+  ultimately show "condorcet_score V l A p < condorcet_score V w A p"
+    by (metis one_score zero_less_one zero_score)
+qed
+
+(* theorem condorcet_score_is_condorcet_rating: "condorcet_rating condorcet_score"
+proof (unfold condorcet_rating_def, safe)
+  fix
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    w :: 'a and
+    l :: 'a
+  assume
+    c_win: "condorcet_winner V A p w" and
+    l_neq_w: "l \<noteq> w"
+  have "\<not> condorcet_winner V A p l"
+    using cond_winner_unique c_win l_neq_w
+    by metis
+  hence zero_score: "condorcet_score V l A p = 0"
+    by simp
+  moreover have one_score: "condorcet_score V w A p = 1"
+    using c_win
+    by auto
+  ultimately show "condorcet_score V l A p < condorcet_score V w A p"
+    by (metis one_score zero_less_one zero_score)
+qed *)
+
+
+(* theorem condorcet_is_dcc: "defer_condorcet_consistency condorcet"
 proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
   fix
     A :: "'a set" and
@@ -105,7 +159,7 @@ next
           A - defer V condorcet A p,
           {d \<in> A. condorcet_winner V A p d})"
     by simp
-qed
+qed *)
 
 end
 end

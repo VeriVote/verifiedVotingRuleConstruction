@@ -96,7 +96,6 @@ fun profile_permutations :: "nat \<Rightarrow> 'a set \<Rightarrow> (('a, 'v) Pr
     (if permutations_of_set A = {}
       then {} else listset (replicate n (pl_\<alpha> ` permutations_of_set A)))"
 
-
 fun \<K>\<^sub>\<E>_std :: "'a Consensus_Class \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> nat \<Rightarrow> 'a Election set" where
   "\<K>\<^sub>\<E>_std K a A n =
     (\<lambda> p. (A, p)) ` (Set.filter (\<lambda> p. (consensus_\<K> K) (A, p) \<and> elect (rule_\<K> K) A p = {a})

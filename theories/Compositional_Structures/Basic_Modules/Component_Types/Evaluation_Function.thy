@@ -66,9 +66,9 @@ proof -
     moreover have "\<forall> n n'. (n::nat) = n' \<longrightarrow> n \<le> n'"
       by simp
     ultimately show "e V b A p \<le> e V a A p"
-      using less_imp_le rating winner
+      using less_imp_le rating winner order_refl
       unfolding condorcet_rating_def
-      by (metis (no_types))
+      by metis
   qed
   ultimately have "?eW \<in> ?set \<and> (\<forall> e \<in> ?set. e \<le> ?eW)"
     by blast
