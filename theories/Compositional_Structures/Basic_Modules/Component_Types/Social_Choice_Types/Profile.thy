@@ -125,34 +125,49 @@ fun list_of_preferences :: "'v list \<Rightarrow> ('a, 'v) Profile
   "list_of_preferences [] p = []" |
   "list_of_preferences (x#xs) p = (p x)#(list_of_preferences xs p)"
 
-lemma lop_simps: 
-  fixes
-    n :: nat and 
-    i :: nat
-  assumes 
-    "n = length l"
+lemma list_of_pref_simps: 
   shows length_inv: "length (list_of_preferences l p) = length l" and
-        index: "i < n \<Longrightarrow> (list_of_preferences l p)!i = p (l!i)"
+        index: "\<forall>i < length l. (list_of_preferences l p)!i = p (l!i)"
 proof -
   show length_inv: "length (list_of_preferences l p) = length l"
     by (induction rule: list_of_preferences.induct, auto) 
 next
-  show "i < n \<Longrightarrow> list_of_preferences l p ! i = p (l ! i)"
-  proof -
+  show "\<forall>i<length l. list_of_preferences l p ! i = p (l ! i)"
+  proof (clarify, induction l)
+    case Nil
     fix 
       i::nat
-    assume in_bounds: "i < n"
-    show "list_of_preferences l p ! i = p (l ! i)"
-    proof (cases l)
-      case Nil
-      hence "False" 
-        using assms in_bounds   
-        by simp
-      thus ?thesis 
-        by simp
+    assume in_bounds: "i < length []"
+    hence "False"
+      by (simp add: Nil)
+    thus "list_of_preferences [] p ! i = p ([] ! i)"
+      by simp
+  next
+    case (Cons a list)
+    fix 
+      i :: nat and
+      a :: 'v and
+      l :: "'v list" and
+      p :: "('a, 'v) Profile"
+    assume 
+      in_bnds: "i < length (a#l)" and
+      hyp: "(\<And>i. (i < length l \<Longrightarrow> list_of_preferences l p ! i = p (l ! i)))"
+    show "list_of_preferences (a # l) p ! i = p ((a # l) ! i)"
+    proof (cases "i = 0")
+      case True
+      thus ?thesis by simp
     next
-      case (Cons a list)
-      thus ?thesis sorry
+      case False
+      hence "list_of_preferences (a # l) p ! i = list_of_preferences l p ! (i-1)"
+        by simp
+      also have "list_of_preferences l p ! (i-1) = p (l ! (i-1))" 
+        using False hyp in_bnds 
+        by auto
+      also have "p (l ! (i-1)) = p ((a#l) ! i)"
+        using False 
+        by auto
+      finally show "list_of_preferences (a # l) p ! i = p ((a # l) ! i)" 
+        by simp
     qed
   qed
 qed
@@ -179,7 +194,7 @@ proof -
   finally show ?thesis by auto
 qed
 
-lemma set_card: 
+lemma set_card_upper_bound: 
   fixes i::nat and V :: "nat set"
   assumes "finite V" and "(\<forall>v \<in> V. i > v)"
   shows "(i \<ge> card V)"
@@ -217,7 +232,7 @@ proof -
     by metis
   then obtain \<phi> where index_\<phi>: "\<forall> v \<in> V. \<phi> v < card V \<and> (sorted_list_of_set V ! (\<phi> v)) = v"
     by metis
-  (* we want to show that \<phi> x = ?c by showing \<phi> x \<ge> ?c and \<phi> x \<le> ?c separately *)
+  (* \<phi> x = ?c, i.e. \<phi> x \<ge> ?c and \<phi> x \<le> ?c *)
   let ?i = "\<phi> x"
   have inj_\<phi>: "inj_on \<phi> V"
     by (metis inj_onI index_\<phi>)
@@ -232,13 +247,70 @@ proof -
     by (metis Collect_subset mono_\<phi> subsetD x_V)
   hence "\<forall>j \<in> {\<phi> v | v. v \<in> ?set}. ?i > j"
     by blast 
-  moreover have "finite ?set" using fin_V by simp
-  ultimately have "?i \<ge> card {\<phi> v | v. v \<in> ?set}" using set_card by simp
+  moreover have fin_img: "finite ?set" using fin_V by simp
+  ultimately have "?i \<ge> card {\<phi> v | v. v \<in> ?set}" 
+    using set_card_upper_bound
+    by simp
   also have "card {\<phi> v | v. v \<in> ?set} = ?c" 
     using inj_\<phi>
     by (simp add: card_image inj_on_subset setcompr_eq_image)
   finally have geq: "?i \<ge> ?c" by simp
-  have leq: "?i \<le> ?c" sorry
+  have sorted_\<phi>: 
+    "\<forall> i j. (i < card V \<and> j < card V \<and> i < j
+            \<longrightarrow> (sorted_list_of_set V ! i) < (sorted_list_of_set V ! j))"
+    by (simp add: sorted_wrt_nth_less)
+  have leq: "?i \<le> ?c"
+  proof (rule ccontr, cases "?c < card V")
+    case True
+    let ?A = "\<lambda>j. {sorted_list_of_set V ! j}"
+    assume "\<not> ?i \<le> ?c"
+    hence "?i > ?c" by simp
+    hence "\<forall> j \<le> ?c. (sorted_list_of_set V ! j \<in> V \<and> sorted_list_of_set V ! j < x)" 
+      using sorted_\<phi> dual_order.strict_trans2 geq index_\<phi> x_V fin_V 
+            nth_mem sorted_list_of_set.length_sorted_key_list_of_set 
+            sorted_list_of_set.set_sorted_key_list_of_set
+      by (metis (mono_tags, lifting))
+    hence "{sorted_list_of_set V ! j | j. j \<le> ?c} \<subseteq> {v \<in> V. v < x}"
+      by blast
+    also have "{sorted_list_of_set V ! j | j. j \<le> ?c} 
+               = {sorted_list_of_set V ! j | j. j \<in> {0..<(?c+1)}}"
+      using add.commute 
+      by auto
+    also have "{sorted_list_of_set V ! j | j. j \<in> {0..<(?c+1)}}
+               = (\<Union>j \<in> {0..<(?c+1)}. {sorted_list_of_set V ! j})"
+      by blast
+    finally have subset: "(\<Union>j \<in> {0..<(?c+1)}. (?A j)) \<subseteq> {v \<in> V. v < x}"
+      by simp
+    have "\<forall>i \<le> ?c. \<forall>j \<le> ?c. (i \<noteq> j \<longrightarrow> sorted_list_of_set V ! i \<noteq> sorted_list_of_set V ! j)"
+      using True
+      by (simp add: nth_eq_iff_index_eq)
+    hence "\<forall>i \<in> {0..<(?c+1)}. \<forall>j \<in> {0..<(?c+1)}. 
+              (i \<noteq> j \<longrightarrow> {sorted_list_of_set V ! i} \<inter> {sorted_list_of_set V ! j} = {})"
+      by fastforce
+    hence "disjoint_family_on ?A {0..<(?c+1)}"
+      by (meson disjoint_family_on_def)
+    moreover have "finite {0..<(?c+1)}"
+      by simp
+    moreover have "\<forall>j \<in> {0..<(?c+1)}. card (?A j) = 1"
+      by simp
+    ultimately have "card (\<Union>j \<in> {0..<(?c+1)}. (?A j)) = (\<Sum>j\<in>{0..<(?c+1)}. 1)" 
+      using card_UN_disjoint'
+      by fastforce
+    also have "(\<Sum>j\<in>{0..<(?c+1)}. 1) = ?c + 1"
+      by auto
+    finally have "card (\<Union>j \<in> {0..<(?c+1)}. (?A j)) = ?c + 1" 
+      by simp
+    hence "?c + 1 \<le> ?c" 
+      using subset card_mono fin_img
+      by (metis (no_types, lifting))
+    thus "False" by simp
+  next
+    case False
+    assume "\<not> ?i \<le> ?c"
+    thus "False" 
+      using False x_V index_\<phi> geq order_le_less_trans 
+      by blast
+  qed
   thus ?thesis using geq leq
     by (simp add: x_V index_\<phi>)
 qed
@@ -270,10 +342,11 @@ next
       ?img = "(\<pi> ` V)" and
       ?n = "length (to_list V p)" and
       ?perm = "(\<lambda>i. (card ({v\<in>(\<pi> ` V). v < \<pi> ((sorted_list_of_set V)!i)})))"
+  (* auxiliary statements equating everything with ?n *)
   have card_eq: "card ?img = card V" 
     using assms bij_betw_same_card bij_betw_subset top_greatest
     by metis
-  also have card_length_V: "length (to_list V p) = card V"
+  also have card_length_V: "?n = card V"
     using True length_inv to_list.simps
           sorted_list_of_set.length_sorted_key_list_of_set 
     by metis
@@ -284,10 +357,10 @@ next
           card.infinite list.size(3)
     by metis
   finally have eq_length: "length (to_list ?img ?q) = ?n"
-    by simp
+    by auto
   show ?thesis
   proof (unfold Let_def permute_list_def, rule nth_equalityI)
-    (* start by showing that the lists have equal lengths *)
+    (* the lists have equal lengths *)
     show"length (to_list V p) 
           = length
               (map (\<lambda>i. to_list ?img ?q ! card {v \<in> ?img. v < \<pi> (sorted_list_of_set V ! i)})
@@ -295,12 +368,11 @@ next
       using eq_length
       by auto
   next
-    (* now show that the ith entries of the lists coincide *)
+    (* the ith entries of the lists coincide *)
     fix 
       i :: nat
     assume 
       in_bnds: "i < ?n"
-      (* ?c is the index of sth in some list idk help me *)
       let ?c = "card {v \<in> ?img. v < \<pi> (sorted_list_of_set V ! i)}"
       have "map (\<lambda>i. (to_list ?img ?q) ! ?c) [0..<?n] ! i = p ((sorted_list_of_set V)!i)"
       proof -
