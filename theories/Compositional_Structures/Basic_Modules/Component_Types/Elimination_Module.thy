@@ -120,12 +120,9 @@ qed
 
 (* Social Choice Specific Results *)
 
-context social_choice_result
-begin
-
 subsection \<open>Social Choice Definitions\<close>
 
-fun (in social_choice_result) elimination_module :: "('a, 'v) Evaluation_Function \<Rightarrow> 
+fun elimination_module :: "('a, 'v) Evaluation_Function \<Rightarrow> 
   Threshold_Value \<Rightarrow> Threshold_Relation \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "elimination_module e t r V A p =
       (if (elimination_set e t r V A p) \<noteq> A
@@ -134,30 +131,31 @@ fun (in social_choice_result) elimination_module :: "('a, 'v) Evaluation_Functio
 
 subsection \<open>Common Social Choice Eliminators\<close>
 
-fun (in social_choice_result) less_eliminator :: "('a, 'v) Evaluation_Function \<Rightarrow> 
+fun less_eliminator :: "('a, 'v) Evaluation_Function \<Rightarrow> 
   Threshold_Value \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "less_eliminator e t V A p = elimination_module e t (<) V A p"
 
-fun (in social_choice_result) max_eliminator :: 
+fun max_eliminator :: 
   "('a, 'v) Evaluation_Function \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "max_eliminator e V A p =
     less_eliminator e (Max {e V x A p | x. x \<in> A}) V A p"
+find_theorems "max_eliminator"
 
-fun (in social_choice_result) leq_eliminator :: 
+fun leq_eliminator :: 
   "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow>
     ('a, 'v, 'a Result) Electoral_Module" where
   "leq_eliminator e t V A p = elimination_module e t (\<le>) V A p"
 
-fun (in social_choice_result) min_eliminator :: 
+fun min_eliminator :: 
   "('a, 'v) Evaluation_Function \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "min_eliminator e V A p =
     leq_eliminator e (Min {e V x A p | x. x \<in> A}) V A p"
 
-fun (in social_choice_result) less_average_eliminator :: 
+fun less_average_eliminator :: 
   "('a, 'v) Evaluation_Function \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "less_average_eliminator e V A p = less_eliminator e (average e V A p) V A p"
 
-fun (in social_choice_result) leq_average_eliminator :: 
+fun leq_average_eliminator :: 
   "('a, 'v) Evaluation_Function \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "leq_average_eliminator e V A p = leq_eliminator e (average e V A p) V A p"
 
@@ -168,48 +166,48 @@ lemma elim_mod_sound[simp]:
     e :: "('a, 'v) Evaluation_Function" and
     t :: "Threshold_Value" and
     r :: "Threshold_Relation"
-  shows "electoral_module (elimination_module e t r)"
-  unfolding electoral_module_def
+  shows "social_choice_result.electoral_module (elimination_module e t r)"
+  unfolding social_choice_result.electoral_module_def
   by auto
 
 lemma less_elim_sound[simp]:
   fixes
     e :: "('a, 'v) Evaluation_Function" and
     t :: "Threshold_Value"
-  shows "electoral_module (less_eliminator e t)"
-  unfolding electoral_module_def
+  shows "social_choice_result.electoral_module (less_eliminator e t)"
+  unfolding social_choice_result.electoral_module_def
   by auto
 
 lemma leq_elim_sound[simp]:
   fixes
     e :: "('a, 'v) Evaluation_Function" and
     t :: "Threshold_Value"
-  shows "electoral_module (leq_eliminator e t)"
-  unfolding electoral_module_def
+  shows "social_choice_result.electoral_module (leq_eliminator e t)"
+  unfolding social_choice_result.electoral_module_def
   by auto
 
 lemma max_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  shows "electoral_module (max_eliminator e)"
-  unfolding electoral_module_def
+  shows "social_choice_result.electoral_module (max_eliminator e)"
+  unfolding social_choice_result.electoral_module_def
   by auto
 
 lemma min_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  shows "electoral_module (min_eliminator e)"
-  unfolding electoral_module_def
+  shows "social_choice_result.electoral_module (min_eliminator e)"
+  unfolding social_choice_result.electoral_module_def
   by auto
 
 lemma less_avg_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  shows "electoral_module (less_average_eliminator e)"
-  unfolding electoral_module_def
+  shows "social_choice_result.electoral_module (less_average_eliminator e)"
+  unfolding social_choice_result.electoral_module_def
   by auto
 
 lemma leq_avg_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  shows "electoral_module (leq_average_eliminator e)"
-  unfolding electoral_module_def
+  shows "social_choice_result.electoral_module (leq_average_eliminator e)"
+  unfolding social_choice_result.electoral_module_def
   by auto
 
 subsection \<open>Non-Blocking\<close>
@@ -245,28 +243,28 @@ lemma max_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (max_eliminator e)"
   unfolding non_blocking_def
-  using electoral_module_def
+  using social_choice_result.electoral_module_def
   by auto
 
 lemma min_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (min_eliminator e)"
   unfolding non_blocking_def
-  using electoral_module_def
+  using social_choice_result.electoral_module_def
   by auto
 
 lemma less_avg_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (less_average_eliminator e)"
   unfolding non_blocking_def
-  using electoral_module_def
+  using social_choice_result.electoral_module_def
   by auto
 
 lemma leq_avg_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (leq_average_eliminator e)"
   unfolding non_blocking_def
-  using electoral_module_def
+  using social_choice_result.electoral_module_def
   by auto
 
 subsection \<open>Non-Electing\<close>
@@ -333,7 +331,7 @@ theorem cr_eval_imp_ccomp_max_elim[simp]:
   assumes "condorcet_rating e"
   shows "condorcet_compatibility (max_eliminator e)"
 proof (unfold condorcet_compatibility_def, safe)
-  show "electoral_module (max_eliminator e)"
+  show "social_choice_result.electoral_module (max_eliminator e)"
     by simp
 next
   fix
@@ -443,5 +441,4 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
   qed
 qed
 
-end
 end

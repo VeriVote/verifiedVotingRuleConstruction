@@ -9,9 +9,6 @@ theory Elect_First_Module
   imports "Component_Types/Electoral_Module"
 begin
 
-context social_choice_result
-begin
-
 text \<open>
   Elects the maximal elements of the first voter's preferences.
   Requires the existence of a "first voter".
@@ -30,8 +27,8 @@ fun elect_first_module :: "('a, 'v::wellorder, 'a Result) Electoral_Module" wher
 
 subsection \<open>Soundness\<close>
 
-theorem elect_first_mod_sound: "electoral_module elect_first_module"
-proof (intro electoral_modI)
+theorem elect_first_mod_sound: "social_choice_result.electoral_module elect_first_module"
+proof (intro social_choice_result.electoral_modI)
   fix
     A :: "'a set" and
     V :: "'v::wellorder set" and
@@ -51,5 +48,4 @@ proof (intro electoral_modI)
     by simp
 qed
 
-end
 end

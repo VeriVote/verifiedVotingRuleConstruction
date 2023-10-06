@@ -21,9 +21,6 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-context social_choice_result
-begin
-
 fun pass_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "pass_module n r V A p =
     ({},
@@ -36,8 +33,8 @@ theorem pass_mod_sound[simp]:
   fixes
     r :: "'a Preference_Relation" and
     n :: nat
-  shows "electoral_module (pass_module n r)"
-proof (intro electoral_modI)
+  shows "social_choice_result.electoral_module (pass_module n r)"
+proof (intro social_choice_result.electoral_modI)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -77,7 +74,7 @@ theorem pass_mod_non_blocking[simp]:
     g0_n:  "n > 0"
   shows "non_blocking (pass_module n r)"
 proof (unfold non_blocking_def, safe)
-  show "electoral_module (pass_module n r)"
+  show "social_choice_result.electoral_module (pass_module n r)"
     by simp
 next
   fix
@@ -146,7 +143,7 @@ theorem pass_zero_mod_def_zero[simp]:
   assumes "linear_order r"
   shows "defers 0 (pass_module 0 r)"
 proof (unfold defers_def, safe)
-  show "electoral_module (pass_module 0 r)"
+  show "social_choice_result.electoral_module (pass_module 0 r)"
     using pass_mod_sound assms
     by simp
 next
@@ -194,7 +191,7 @@ theorem pass_one_mod_def_one[simp]:
   assumes "linear_order r"
   shows "defers 1 (pass_module 1 r)"
 proof (unfold defers_def, safe)
-  show "electoral_module (pass_module 1 r)"
+  show "social_choice_result.electoral_module (pass_module 1 r)"
     using pass_mod_sound assms
     by simp
 next
@@ -291,7 +288,7 @@ theorem pass_two_mod_def_two:
   assumes "linear_order r"
   shows "defers 2 (pass_module 2 r)"
 proof (unfold defers_def, safe)
-  show "electoral_module (pass_module 2 r)"
+  show "social_choice_result.electoral_module (pass_module 2 r)"
     using assms
     by simp
 next
@@ -413,7 +410,5 @@ next
     unfolding rank.simps
     by presburger
 qed
-
-end
 
 end

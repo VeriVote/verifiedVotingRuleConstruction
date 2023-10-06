@@ -19,12 +19,12 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun copeland_rule :: "'a Electoral_Module" where
-  "copeland_rule A p = elector copeland A p"
+fun copeland_rule :: "('a, 'v, 'a Result) Electoral_Module" where
+  "copeland_rule V A p = elector copeland V A p"
 
 subsection \<open>Soundness\<close>
 
-theorem copeland_rule_sound: "electoral_module copeland_rule"
+theorem copeland_rule_sound: "social_choice_result.electoral_module copeland_rule"
   unfolding copeland_rule.simps
   using elector_sound copeland_sound
   by metis

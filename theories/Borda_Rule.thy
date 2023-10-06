@@ -21,27 +21,27 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun borda_rule :: "'a Electoral_Module" where
-  "borda_rule A p = elector borda A p"
+fun borda_rule :: "('a, 'v, 'a Result) Electoral_Module" where
+  "borda_rule V A p = elector borda V A p"
 
-fun borda_rule\<^sub>\<R> :: "'a Electoral_Module" where
-  "borda_rule\<^sub>\<R> A p = swap_\<R> unanimity A p"
+fun borda_rule\<^sub>\<R> :: "('a, 'v::wellorder, 'a Result) Electoral_Module" where
+  "borda_rule\<^sub>\<R> V A p = swap_\<R> unanimity V A p"
 
 subsection \<open>Soundness\<close>
 
-theorem borda_rule_sound: "electoral_module borda_rule"
+theorem borda_rule_sound: "social_choice_result.electoral_module borda_rule"
   unfolding borda_rule.simps
   using elector_sound borda_sound
   by metis
 
-theorem borda_rule\<^sub>\<R>_sound: "electoral_module borda_rule\<^sub>\<R>"
+theorem borda_rule\<^sub>\<R>_sound: "social_choice_result.electoral_module borda_rule\<^sub>\<R>"
   unfolding borda_rule\<^sub>\<R>.simps swap_\<R>.simps
-  using \<R>_sound
+  using social_choice_result.\<R>_sound
   by metis
 
 subsection \<open>Anonymity Property\<close>
 
-theorem borda_rule\<^sub>\<R>_anonymous: "anonymity borda_rule\<^sub>\<R>"
+theorem borda_rule\<^sub>\<R>_anonymous: "social_choice_result.anonymity borda_rule\<^sub>\<R>"
 proof (unfold borda_rule\<^sub>\<R>.simps swap_\<R>.simps)
   let ?swap_dist = "votewise_distance swap l_one"
   from l_one_is_symm
@@ -49,8 +49,9 @@ proof (unfold borda_rule\<^sub>\<R>.simps swap_\<R>.simps)
     using symmetric_norm_imp_distance_anonymous[of l_one]
     by simp
   with unanimity_anonymous
-  show "anonymity (distance_\<R> ?swap_dist unanimity)"
-    using anonymous_distance_and_consensus_imp_rule_anonymity
+  show "social_choice_result.anonymity 
+          (social_choice_result.distance_\<R> ?swap_dist unanimity)"
+    using social_choice_result.anonymous_distance_and_consensus_imp_rule_anonymity
     by metis
 qed
 

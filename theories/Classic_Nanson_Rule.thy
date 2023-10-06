@@ -21,13 +21,13 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun classic_nanson_rule :: "'a Electoral_Module" where
-  "classic_nanson_rule A p =
-    ((leq_average_eliminator borda_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
+fun classic_nanson_rule :: "('a, 'v, 'a Result) Electoral_Module" where
+  "classic_nanson_rule V A p =
+    ((leq_average_eliminator borda_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) V A p"
 
 subsection \<open>Soundness\<close>
 
-theorem classic_nanson_rule_sound: "electoral_module classic_nanson_rule"
+theorem classic_nanson_rule_sound: "social_choice_result.electoral_module classic_nanson_rule"
   unfolding classic_nanson_rule.simps
   by (simp add: loop_comp_sound)
 

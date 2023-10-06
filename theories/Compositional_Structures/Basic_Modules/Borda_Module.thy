@@ -10,9 +10,6 @@ theory Borda_Module
   imports "Component_Types/Elimination_Module"
 begin
 
-context social_choice_result
-begin
-
 text \<open>
   This is the Borda module used by the Borda rule. The Borda rule is a voting
   rule, where on each ballot, each alternative is assigned a score that depends
@@ -33,7 +30,7 @@ fun borda :: "('a, 'v, 'a Result) Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-theorem borda_sound: "electoral_module borda"
+theorem borda_sound: "social_choice_result.electoral_module borda"
   unfolding borda.simps
   using max_elim_sound
   by metis
@@ -61,5 +58,4 @@ theorem borda_mod_non_electing[simp]: "non_electing borda"
   unfolding borda.simps non_electing_def
   by metis
 
-end
 end

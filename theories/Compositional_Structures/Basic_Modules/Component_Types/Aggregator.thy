@@ -22,8 +22,6 @@ text \<open>
   decisions.
 \<close>
 
-context social_choice_result
-begin
 subsection \<open>Definition\<close>
 
 type_synonym 'a Aggregator = "'a set \<Rightarrow> 'a Result \<Rightarrow> 'a Result \<Rightarrow> 'a Result"
@@ -50,5 +48,4 @@ definition agg_conservative :: "'a Aggregator \<Rightarrow> bool" where
         reject_r (agg A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (r1 \<union> r2) \<and>
         defer_r (agg A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (d1 \<union> d2)))"
 
-end
 end

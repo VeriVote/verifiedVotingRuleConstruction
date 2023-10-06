@@ -19,9 +19,6 @@ text \<open>
   It is primarily used for defining an empty loop.
 \<close>
 
-context social_choice_result
-begin
-
 subsection \<open>Definition\<close>
 
 fun defer_module :: "('a, 'v, 'a Result) Electoral_Module" where
@@ -29,8 +26,8 @@ fun defer_module :: "('a, 'v, 'a Result) Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-theorem def_mod_sound[simp]: "electoral_module defer_module"
-  unfolding electoral_module_def
+theorem def_mod_sound[simp]: "social_choice_result.electoral_module defer_module"
+  unfolding social_choice_result.electoral_module_def
   by simp
 
 subsection \<open>Properties\<close>
@@ -43,5 +40,4 @@ theorem def_mod_def_lift_inv: "defer_lift_invariance defer_module"
   unfolding defer_lift_invariance_def
   by simp
 
-end
 end

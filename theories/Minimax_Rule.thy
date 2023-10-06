@@ -18,12 +18,12 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun minimax_rule :: "'a Electoral_Module" where
-  "minimax_rule A p = elector minimax A p"
+fun minimax_rule :: "('a, 'v, 'a Result) Electoral_Module" where
+  "minimax_rule V A p = elector minimax V A p"
 
 subsection \<open>Soundness\<close>
 
-theorem minimax_rule_sound: "electoral_module minimax_rule"
+theorem minimax_rule_sound: "social_choice_result.electoral_module minimax_rule"
   unfolding minimax_rule.simps
   using elector_sound minimax_sound
   by metis

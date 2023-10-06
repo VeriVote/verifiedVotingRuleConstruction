@@ -782,16 +782,6 @@ qed
     using prof_length prof_limit_n limit_prof_simp limit_presv_lin_ord nth_map subset
     by (metis (no_types)) *)
 
-
-(*
-lemma limit_prof_presv_size:
-  fixes
-    A :: "'a set" and
-    p :: "('a, 'v) Profile"
-  shows "length p = length (limit_profile A p)"
-  by simp
-*)
-
 subsection \<open>Lifting Property\<close>
 
 definition equiv_prof_except_a :: 
@@ -799,7 +789,7 @@ definition equiv_prof_except_a ::
   "equiv_prof_except_a V A p p' a \<equiv>
     profile V A p \<and> profile V A p' \<and> a \<in> A \<and> 
       (\<forall> v\<in>V. equiv_rel_except_a A (p v) (p' v) a)"
-(* profile or finite_profile or finite A? *)
+(* profile or finite_profile or finite A? [previously finite_profile was used] *)
 
 text \<open>
   An alternative gets lifted from one profile to another iff
@@ -846,7 +836,11 @@ next
     by (metis (no_types))
 qed
 
-(*
+(* 
+With the current defs of equiv_prof_except_a and limit_prof we can only conclude that
+the limited profiles coincide on the given voter set because limit_prof may change the 
+profiles everywhere while equiv_prof_except_a only makes statements about the voter set. 
+*)
 lemma negl_diff_imp_eq_limit_prof:
   fixes
     A :: "'a set" and
@@ -859,82 +853,71 @@ lemma negl_diff_imp_eq_limit_prof:
     change: "equiv_prof_except_a V A' p q a" and
     subset: "A \<subseteq> A'" and
     not_in_A: "a \<notin> A"
-  shows "limit_profile A p = limit_profile A q"
-proof (simp)
-  have "\<forall>v\<in>V. equiv_rel_except_a A' (p v) (q v) a"
+  shows "\<forall> v \<in> V. (limit_profile A p) v = (limit_profile A q) v"
+proof (clarify)
+  fix
+    v :: 'v
+  assume "v \<in> V"
+  hence "equiv_rel_except_a A' (p v) (q v) a"
     using change equiv_prof_except_a_def
     by metis
-  hence "\<forall>v\<in>V. limit A (p v) = limit A (q v)"
+  hence "limit A (p v) = limit A (q v)"
     using not_in_A negl_diff_imp_eq_limit subset
     by metis
-  fix
-    v::'v and
-    a::'a and
-    b::'a
-  assume "a \<in> A \<and> b \<in> B"
-  moreover have "(a,b) \<in> p v \<longleftrightarrow> (a,b) \<in> q v"
-    using change
-    try
+  thus "limit_profile A p v = limit_profile A q v"
+    by simp
 qed
 
 lemma limit_prof_eq_or_lifted:
   fixes
     A :: "'a set" and
     A' :: "'a set" and
-    p :: "'a Profile" and
-    p' :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    p' :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
-    lifted_a: "lifted A' p p' a" and
+    lifted_a: "lifted V A' p p' a" and
     subset: "A \<subseteq> A'"
-  shows "limit_profile A p = limit_profile A p' \<or>
-            lifted A (limit_profile A p) (limit_profile A p') a"
+  shows "(\<forall> v \<in> V. limit_profile A p v = limit_profile A p' v) \<or>
+            lifted V A (limit_profile A p) (limit_profile A p') a"
 proof (cases)
   assume a_in_A: "a \<in> A"
-  have "\<forall> i::nat. i < length p \<longrightarrow>
-          (Preference_Relation.lifted A' (p!i) (p'!i) a \<or> (p!i) = (p'!i))"
+  have "\<forall> v \<in> V. (Preference_Relation.lifted A' (p v) (p' v) a \<or> (p v) = (p' v))"
     using lifted_a
     unfolding lifted_def
     by metis
   hence one:
-    "\<forall> i::nat. i < length p \<longrightarrow>
-         (Preference_Relation.lifted A (limit A (p!i)) (limit A (p'!i)) a \<or>
-           (limit A (p!i)) = (limit A (p'!i)))"
+    "\<forall> v \<in> V.
+         (Preference_Relation.lifted A (limit A (p v)) (limit A (p' v)) a \<or>
+           (limit A (p v)) = (limit A (p' v)))"
     using limit_lifted_imp_eq_or_lifted subset
     by metis
   thus ?thesis
   proof (cases)
-    assume "\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (p'!i))"
+    assume "\<forall> v \<in> V. (limit A (p v)) = (limit A (p' v))"
     thus ?thesis
-      using length_map lifted_a nth_equalityI nth_map limit_profile.simps
-      unfolding lifted_def
-      by (metis (mono_tags, lifting))
+      by simp
   next
     assume forall_limit_p_q:
-      "\<not> (\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (p'!i)))"
+      "\<not> (\<forall> v \<in> V. (limit A (p v)) = (limit A (p' v)))"
     let ?p = "limit_profile A p"
     let ?q = "limit_profile A p'"
-    have "profile A ?p \<and> profile A ?q"
+    have "profile V A ?p \<and> profile V A ?q"
       using lifted_a limit_profile_sound subset
       unfolding lifted_def
       by metis
-    moreover have "length ?p = length ?q"
-      using lifted_a
-      unfolding lifted_def
-      by fastforce
     moreover have
-      "\<exists> i::nat. i < length ?p \<and> Preference_Relation.lifted A (?p!i) (?q!i) a"
-      using forall_limit_p_q length_map lifted_a limit_profile.simps nth_map one
+      "\<exists> v \<in> V. Preference_Relation.lifted A (?p v) (?q v) a"
+      using forall_limit_p_q lifted_a limit_profile.simps one
       unfolding lifted_def
       by (metis (no_types, lifting))
     moreover have
-      "\<forall> i::nat.
-        (i < length ?p \<and> \<not>Preference_Relation.lifted A (?p!i) (?q!i) a) \<longrightarrow>
-          (?p!i) = (?q!i)"
-      using length_map lifted_a limit_profile.simps nth_map one
+      "\<forall> v \<in> V. (\<not> Preference_Relation.lifted A (?p v) (?q v) a) \<longrightarrow> (?p v) = (?q v)"
+      using lifted_a limit_profile.simps one
       unfolding lifted_def
       by metis
-    ultimately have "lifted A ?p ?q a"
+    ultimately have "lifted V A ?p ?q a"
       using a_in_A lifted_a rev_finite_subset subset
       unfolding lifted_def
       by (metis (no_types, lifting))
@@ -946,6 +929,6 @@ next
   thus ?thesis
     using lifted_a negl_diff_imp_eq_limit_prof subset lifted_imp_equiv_prof_except_a
     by metis
-qed*)
+qed
 
 end

@@ -26,16 +26,18 @@ theorem drop_zero_mod_rej_zero[simp]:
   assumes "linear_order r"
   shows "rejects 0 (drop_module 0 r)"
 proof (unfold rejects_def, safe)
-  show "electoral_module (drop_module 0 r)"
+  show "social_choice_result.electoral_module (drop_module 0 r)"
     using assms
     by simp
 next
   fix
     A :: "'a set" and
-    p :: "'a Profile"
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
   assume
-    finite_A: "finite A" and
-    prof_A: "profile A p"
+    fin_A: "finite A" and
+    fin_V: "finite V" and
+    prof_A: "profile V A p"
   have "connex UNIV r"
     using assms lin_ord_imp_connex
     by auto
@@ -47,7 +49,7 @@ next
   hence "\<forall> a B. a \<in> A \<and> a \<in> B \<longrightarrow> connex B (limit A r) \<longrightarrow>
             \<not> card (above (limit A r) a) \<le> 0"
     using above_connex above_presv_limit card_eq_0_iff
-          finite_A finite_subset le_0_eq assms
+          fin_A finite_subset le_0_eq assms
     by (metis (no_types))
   hence "{a \<in> A. card (above (limit A r) a) \<le> 0} = {}"
     using connex
@@ -55,46 +57,126 @@ next
   hence "card {a \<in> A. card (above (limit A r) a) \<le> 0} = 0"
     using card.empty
     by (metis (full_types))
-  thus "card (reject (drop_module 0 r) A p) = 0"
+  thus "card (reject V (drop_module 0 r) A p) = 0"
     by simp
 qed
 
 text \<open>
-  The drop module rejects n alternatives (if there are n alternatives).
-  NOTE: The induction proof is still missing. Following is the proof for n=2.
+  The drop module rejects n alternatives (if there are at least n alternatives).
 \<close>
 
-theorem drop_two_mod_rej_two[simp]:
+theorem drop_two_mod_rej_n[simp]:
   fixes r :: "'a Preference_Relation"
   assumes "linear_order r"
-  shows "rejects 2 (drop_module 2 r)"
-proof -
-  have rej_drop_eq_def_pass: "reject (drop_module 2 r) = defer (pass_module 2 r)"
+  shows "rejects n (drop_module n r)"
+proof (unfold rejects_def, safe)
+  show "social_choice_result.electoral_module (drop_module n r)"
     by simp
-  obtain
-    m :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a set" and
-    m' :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a Profile" where
-      "\<forall> f n. (\<exists> A p. n \<le> card A \<and> finite_profile A p \<and> card (reject f A p) \<noteq> n) =
-          (n \<le> card (m f n) \<and> finite_profile (m f n) (m' f n) \<and>
-            card (reject f (m f n) (m' f n)) \<noteq> n)"
-    by moura
-  hence rejected_card:
-    "\<forall> f n.
-      (\<not> rejects n f \<and> electoral_module f \<longrightarrow>
-        n \<le> card (m f n) \<and> finite_profile (m f n) (m' f n) \<and>
-          card (reject f (m f n) (m' f n)) \<noteq> n)"
-    unfolding rejects_def
+next
+  fix
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"   
+  assume 
+    card_n: "n \<le> card A" and
+    fin_A: "finite A" and
+    "finite V" and
+    "profile V A p"
+  let ?inv_rank = "the_inv_into A (rank (limit A r))"
+  have lin_ord_limit: "linear_order_on A (limit A r)"
+    using assms limit_presv_lin_ord
+    by auto
+  hence "(limit A r) \<subseteq> A \<times> A"
+    unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
+    by simp
+  hence "\<forall> a \<in> A. (above (limit A r) a) \<subseteq> A"
+    unfolding above_def
+    by auto
+  hence leq: "\<forall> a \<in> A. rank (limit A r) a \<le> card A"
+    by (simp add: card_mono fin_A)
+  have "\<forall> a \<in> A. {a} \<subseteq> (above (limit A r) a)"
+    using lin_ord_limit
+    unfolding linear_order_on_def partial_order_on_def 
+              preorder_on_def refl_on_def above_def
+    by auto
+  hence "\<forall> a \<in> A. card {a} \<le> card (above (limit A r) a)"
+    using card_mono fin_A rev_finite_subset above_presv_limit
+    by metis
+  hence geq_1: "\<forall> a \<in> A. 1 \<le> rank (limit A r) a"
+    by simp
+  with leq have
+    "\<forall> a \<in> A. rank (limit A r) a \<in> {1..card A}"
+    by simp
+  hence "rank (limit A r) ` A \<subseteq> {1..card A}"
+    by auto
+  moreover have inj: "inj_on (rank (limit A r)) A"
+    using fin_A inj_onI rank_unique lin_ord_limit
+    by metis
+  ultimately have bij: "bij_betw (rank (limit A r)) A {1..card A}"
+    using bij_betw_def bij_betw_finite bij_betw_iff_card card_seteq 
+          dual_order.refl ex_bij_betw_nat_finite_1 fin_A
+    by metis
+  hence bij_inv: "bij_betw ?inv_rank {1..card A} A"
+    using bij_betw_the_inv_into 
     by blast
-  have
-    "2 \<le> card (m (drop_module 2 r) 2) \<and> finite (m (drop_module 2 r) 2) \<and>
-      profile (m (drop_module 2 r) 2) (m' (drop_module 2 r) 2) \<longrightarrow>
-        card (reject (drop_module 2 r) (m (drop_module 2 r) 2)
-          (m' (drop_module 2 r) 2)) = 2"
-    using rej_drop_eq_def_pass assms pass_two_mod_def_two
-    unfolding defers_def
-    by (metis (no_types))
-  thus ?thesis
-    using rejected_card drop_mod_sound assms
+  hence "\<forall> S \<subseteq> {1..card A}. card (?inv_rank ` S) = card S"
+    using fin_A bij_betw_same_card bij_betw_subset
+    by metis
+  moreover have subset: "{1..n} \<subseteq> {1..card A}"
+    using card_n
+    by simp
+  ultimately have "card (?inv_rank ` {1..n}) = n"
+    using numeral_One numeral_eq_iff semiring_norm(85) card_atLeastAtMost 
+    by presburger
+  also have "?inv_rank ` {1..n} = {a \<in> A. rank (limit A r) a \<in> {1..n}}"
+  proof 
+    show "?inv_rank ` {1..n} \<subseteq> {a \<in> A. rank (limit A r) a \<in> {1..n}}"
+    proof
+      fix 
+        a :: 'a
+      assume "a \<in> ?inv_rank ` {1..n}"
+      then obtain b where b_img: "b \<in> {1..n} \<and> ?inv_rank b = a"
+        by auto
+      hence "rank (limit A r) a = b"
+        using subset f_the_inv_into_f_bij_betw subsetD bij
+        by metis
+      hence "rank (limit A r) a \<in> {1..n}"
+        using b_img
+        by simp
+      moreover have "a \<in> A"
+        using b_img bij_inv bij_betwE subset 
+        by blast
+      ultimately show "a \<in> {a \<in> A. rank (limit A r) a \<in> {1..n}}" 
+        by blast
+    qed
+  next
+    show "{a \<in> A. rank (limit A r) a \<in> {1..n}} \<subseteq> the_inv_into A (rank (limit A r)) ` {1..n}"
+    proof
+      fix 
+        a :: 'a
+      assume el: "a \<in> {a \<in> A. rank (limit A r) a \<in> {1..n}}"
+      then obtain b where b_img: "b \<in> {1..n} \<and> rank (limit A r) a = b"
+        by auto
+      moreover have "a \<in> A"
+        using el
+        by simp
+      ultimately have "?inv_rank b = a"
+        using inj the_inv_into_f_f
+        by metis
+      thus "a \<in> ?inv_rank ` {1..n}"
+        using b_img
+        by auto
+    qed
+  qed   
+  finally have "card {a \<in> A. rank (limit A r) a \<in> {1..n}} = n"
+    by blast
+  also have 
+    "{a \<in> A. rank (limit A r) a \<in> {1..n}} = {a \<in> A. rank (limit A r) a \<le> n}"
+    using geq_1 
+    by auto
+  also have "... = reject V (drop_module n r) A p"
+    by simp
+  finally show "card (reject V (drop_module n r) A p) = n"
     by blast
 qed
 
@@ -109,54 +191,58 @@ theorem drop_pass_disj_compat[simp]:
   assumes "linear_order r"
   shows "disjoint_compatibility (drop_module n r) (pass_module n r)"
 proof (unfold disjoint_compatibility_def, safe)
-  show "electoral_module (drop_module n r)"
+  show "social_choice_result.electoral_module (drop_module n r)"
     using assms
     by simp
 next
-  show "electoral_module (pass_module n r)"
+  show "social_choice_result.electoral_module (pass_module n r)"
     using assms
     by simp
 next
-  fix A :: "'a set"
-  assume "finite A"
-  then obtain p :: "'a Profile" where
-    "finite_profile A p"
-    using empty_iff empty_set profile_set
-    by metis
+  fix A :: "'a set" and V :: "'b set"
+  assume fin_A: "finite A" and fin_V: "finite V"
+  have "linear_order_on A (limit A r)" 
+    using assms limit_presv_lin_ord 
+    by blast
+  hence "finite_profile V A (\<lambda>v. (limit A r))"
+    using fin_A fin_V profile_def 
+    by blast
+  then obtain p :: "('a, 'b) Profile" where
+    "finite_profile V A p"
+    by blast
   show
-    "\<exists> B \<subseteq> A.
-      (\<forall> a \<in> B. indep_of_alt (drop_module n r) A a \<and>
-        (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (drop_module n r) A p)) \<and>
-      (\<forall> a \<in> A - B. indep_of_alt (pass_module n r) A a \<and>
-        (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (pass_module n r) A p))"
+    "\<exists>B\<subseteq>A. (\<forall>a\<in>B. indep_of_alt V (drop_module n r) A a \<and>
+                         (\<forall>p. finite_profile V A p \<longrightarrow> a \<in> reject V (drop_module n r) A p)) \<and>
+            (\<forall>a\<in>A - B. indep_of_alt V (pass_module n r) A a \<and>
+                      (\<forall>p. finite_profile V A p \<longrightarrow> a \<in> reject V (pass_module n r) A p))"
   proof
     have same_A:
-      "\<forall> p q. (finite_profile A p \<and> finite_profile A q) \<longrightarrow>
-        reject (drop_module n r) A p = reject (drop_module n r) A q"
+      "\<forall> p q. (finite_profile V A p \<and> finite_profile V A q) \<longrightarrow>
+        reject V (drop_module n r) A p = reject V (drop_module n r) A q"
       by auto
-    let ?A = "reject (drop_module n r) A p"
+    let ?A = "reject V (drop_module n r) A p"
     have "?A \<subseteq> A"
       by auto
-    moreover have "\<forall> a \<in> ?A. indep_of_alt (drop_module n r) A a"
+    moreover have "\<forall> a \<in> ?A. indep_of_alt V (drop_module n r) A a"
       using assms
       unfolding indep_of_alt_def
       by simp
     moreover have
-      "\<forall> a \<in> ?A. \<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (drop_module n r) A p"
+      "\<forall> a \<in> ?A. \<forall> p. finite_profile V A p \<longrightarrow> a \<in> reject V (drop_module n r) A p"
       by auto
-    moreover have "\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) A a"
+    moreover have "\<forall> a \<in> A - ?A. indep_of_alt V (pass_module n r) A a"
       using assms
       unfolding indep_of_alt_def
       by simp
     moreover have
-      "\<forall> a \<in> A - ?A. \<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (pass_module n r) A p"
+      "\<forall> a \<in> A - ?A. \<forall> p. finite_profile V A p \<longrightarrow> a \<in> reject V (pass_module n r) A p"
       by auto
     ultimately show
       "?A \<subseteq> A \<and>
-        (\<forall> a \<in> ?A. indep_of_alt (drop_module n r) A a \<and>
-          (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (drop_module n r) A p)) \<and>
-        (\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) A a \<and>
-          (\<forall> p. finite_profile A p \<longrightarrow> a \<in> reject (pass_module n r) A p))"
+        (\<forall> a \<in> ?A. indep_of_alt V (drop_module n r) A a \<and>
+          (\<forall> p. finite_profile V A p \<longrightarrow> a \<in> reject V (drop_module n r) A p)) \<and>
+        (\<forall> a \<in> A - ?A. indep_of_alt V (pass_module n r) A a \<and>
+          (\<forall> p. finite_profile V A p \<longrightarrow> a \<in> reject V (pass_module n r) A p))"
       by simp
   qed
 qed

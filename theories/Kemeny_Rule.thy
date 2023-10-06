@@ -19,26 +19,28 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun kemeny_rule :: "'a Electoral_Module" where
-  "kemeny_rule A p = swap_\<R> strong_unanimity A p"
+fun kemeny_rule :: "('a, 'v::wellorder, 'a Result) Electoral_Module" where
+  "kemeny_rule V A p = swap_\<R> strong_unanimity V A p"
 
 subsection \<open>Soundness\<close>
 
-theorem kemeny_rule_sound: "electoral_module kemeny_rule"
+theorem kemeny_rule_sound: "social_choice_result.electoral_module kemeny_rule"
   unfolding kemeny_rule.simps swap_\<R>.simps
-  using \<R>_sound
+  using social_choice_result.\<R>_sound
   by metis
 
 subsection \<open>Anonymity Property\<close>
 
-theorem kemeny_rule_anonymous: "anonymity kemeny_rule"
+theorem kemeny_rule_anonymous: "social_choice_result.anonymity kemeny_rule"
 proof (unfold kemeny_rule.simps swap_\<R>.simps)
   let ?swap_dist = "votewise_distance swap l_one"
   have "distance_anonymity ?swap_dist"
     using l_one_is_symm symmetric_norm_imp_distance_anonymous[of l_one]
     by simp
-  thus "anonymity (distance_\<R> ?swap_dist strong_unanimity)"
-    using strong_unanimity_anonymous anonymous_distance_and_consensus_imp_rule_anonymity
+  thus "social_choice_result.anonymity 
+          (social_choice_result.distance_\<R> ?swap_dist strong_unanimity)"
+    using strong_unanimity_anonymous 
+          social_choice_result.anonymous_distance_and_consensus_imp_rule_anonymity
     by metis
 qed
 

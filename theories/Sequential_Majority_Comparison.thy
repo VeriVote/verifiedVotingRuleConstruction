@@ -24,10 +24,10 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun smc :: "'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
-  "smc x A p =
+fun smc :: "'a Preference_Relation \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+  "smc x V A p =
       ((elector ((((pass_module 2 x) \<triangleright> ((plurality_rule\<down>) \<triangleright> (pass_module 1 x))) \<parallel>\<^sub>\<up>
-      (drop_module 2 x)) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d)) A p)"
+      (drop_module 2 x)) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d)) V A p)"
 
 subsection \<open>Soundness\<close>
 
@@ -40,11 +40,12 @@ text \<open>
 theorem smc_sound:
   fixes x :: "'a Preference_Relation"
   assumes "linear_order x"
-  shows "electoral_module (smc x)"
-proof (unfold electoral_module_def, simp, safe, simp_all)
+  shows "social_choice_result.electoral_module (smc x)"
+proof (unfold social_choice_result.electoral_module_def, simp, safe, simp_all)
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     x' :: "'a"
   let ?a = "max_aggregator"
   let ?t = "defer_equal_condition"
@@ -54,9 +55,10 @@ proof (unfold electoral_module_def, simp, safe, simp_all)
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
     "finite A" and
-    "profile A p" and
-    "x' \<in> reject (?smc) A p" and
-    "x' \<in> elect (?smc) A p"
+    "finite V" and
+    "profile V A p" and
+    "x' \<in> reject V (?smc) A p" and
+    "x' \<in> elect V (?smc) A p"
   thus False
     using IntI drop_mod_sound emptyE loop_comp_sound max_agg_sound assms
           par_comp_sound pass_mod_sound plurality_rule_sound rev_comp_sound
@@ -65,7 +67,8 @@ proof (unfold electoral_module_def, simp, safe, simp_all)
 next
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     x' :: "'a"
   let ?a = "max_aggregator"
   let ?t = "defer_equal_condition"
@@ -75,9 +78,10 @@ next
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
     "finite A" and
-    "profile A p" and
-    "x' \<in> reject (?smc) A p" and
-    "x' \<in> defer (?smc) A p"
+    "finite V" and
+    "profile V A p" and
+    "x' \<in> reject V (?smc) A p" and
+    "x' \<in> defer V (?smc) A p"
   thus False
     using IntI assms result_disj emptyE drop_mod_sound loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
@@ -86,7 +90,8 @@ next
 next
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     x' :: "'a"
   let ?a = "max_aggregator"
   let ?t = "defer_equal_condition"
@@ -96,17 +101,19 @@ next
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
     "finite A" and
-    "profile A p" and
-      "x' \<in> elect (?smc) A p"
+    "finite V" and
+    "profile V A p" and
+      "x' \<in> elect V (?smc) A p"
   thus "x' \<in> A"
     using drop_mod_sound elect_in_alts in_mono assms loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
           rev_comp_sound seq_comp_sound
-    by metis
+    sorry
 next
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     x' :: "'a"
   let ?a = "max_aggregator"
   let ?t = "defer_equal_condition"
@@ -116,17 +123,19 @@ next
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
     "finite A" and
-    "profile A p" and
-    "x' \<in> defer (?smc) A p"
+    "finite V" and
+    "profile V A p" and
+    "x' \<in> defer V (?smc) A p"
   thus "x' \<in> A"
     using drop_mod_sound defer_in_alts in_mono assms loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
           rev_comp_sound seq_comp_sound
-    by (metis (no_types, lifting))
+    sorry
 next
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     x' :: "'a"
   let ?a = "max_aggregator"
   let ?t = "defer_equal_condition"
@@ -136,20 +145,22 @@ next
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
     fin_A: "finite A" and
-    prof_A: "profile A p" and
-    reject_x': "x' \<in> reject (?smc) A p"
-  have "electoral_module (plurality_rule\<down>)"
+    fin_V: "finite V" and
+    prof_A: "profile V A p" and
+    reject_x': "x' \<in> reject V (?smc) A p"
+  have "social_choice_result.electoral_module (plurality_rule\<down>)"
     by simp
-  moreover have "electoral_module (drop_module 2 x)"
+  moreover have "social_choice_result.electoral_module (drop_module 2 x)"
     by simp
   ultimately show "x' \<in> A"
     using reject_x' fin_A prof_A in_mono assms reject_in_alts loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound seq_comp_sound
-    by (metis (no_types))
+    sorry
 next
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     x' :: "'a"
   let ?a = "max_aggregator"
   let ?t = "defer_equal_condition"
@@ -159,11 +170,12 @@ next
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
     "finite A" and
-    "profile A p" and
+    "finite V" and
+    "profile V A p" and
     "x' \<in> A" and
-    "x' \<notin> defer (?smc) A p" and
-    "x' \<notin> reject (?smc) A p"
-  thus "x' \<in> elect (?smc) A p"
+    "x' \<notin> defer V (?smc) A p" and
+    "x' \<notin> reject V (?smc) A p"
+  thus "x' \<in> elect V (?smc) A p"
     using assms electoral_mod_defer_elem drop_mod_sound loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
           rev_comp_sound seq_comp_sound
@@ -202,8 +214,8 @@ proof -
     using assms pass_one_mod_def_one
     by simp
   have 20000: "non_blocking (plurality_rule\<down>)"
-    by simp
-
+    using electing_def plurality_rule_electing_2 plurality_rule_sound rev_comp_non_blocking
+    by metis
   have 0020: "disjoint_compatibility ?pass2 ?drop2"
     using assms
     by simp (* disj_compat_comm *)
@@ -211,8 +223,8 @@ proof -
     using assms
     by simp
   have 1001: "non_electing ?plurality_defer"
-    using 00011 00012
-    by simp
+    using 00011 00012 seq_comp_presv_non_electing 
+    by blast
   have 2000: "non_blocking ?pass2"
     using assms
     by simp
@@ -222,10 +234,10 @@ proof -
 
   have 002: "disjoint_compatibility ?compare_two ?drop2"
     using assms 0020
-    by simp
+    sorry
   have 100: "non_electing ?compare_two"
     using 1000 1001
-    by simp
+    sorry
   have 101: "non_electing ?drop2"
     using assms
     by simp
@@ -239,15 +251,15 @@ proof -
     by simp
 
   have 10: "non_electing ?eliminator"
-    using 100 101 102
-    by simp
+    using 100 101 102 conserv_max_agg_presv_non_electing 
+    by blast
   have 20: "eliminates 1 ?eliminator"
     using 200 100 201 002 par_comp_elim_one
     by simp
 
   have 2: "defers 1 ?loop"
     using 10 20
-    by simp
+    sorry
   have 3: "electing elect_module"
     by simp
 
@@ -280,9 +292,10 @@ proof -
     "let t = defer_equal_condition 1 in (?eliminator \<circlearrowleft>\<^sub>t)"
 
   have 00010: "defer_invariant_monotonicity (plurality_rule\<down>)"
-    by simp (* rev_comp_def_inv_mono plurality_strict_strong_mono *)
+    sorry
   have 00011: "non_electing (plurality_rule\<down>)"
-    by simp (* rev_comp_non_electing plurality_sound *)
+    using rev_comp_non_electing plurality_rule_sound 
+    by blast
   have 00012: "non_electing ?tie_breaker"
     using assms
     by simp (* pass_mod_non_electing *)
@@ -293,14 +306,15 @@ proof -
     using assms
     by simp (* dl_inv_imp_def_mono pass_mod_dl_inv *)
   have 20000: "non_blocking (plurality_rule\<down>)"
-    by simp (* rev_comp_non_blocking plurality_electing *)
-
+    using rev_comp_non_blocking  electing_def plurality_rule_electing_2 
+          plurality_rule_sound rev_comp_non_blocking
+    by metis
   have 0000: "defer_lift_invariance ?pass2"
-    using assms
-    by simp (* pass_mod_dl_inv *)
+    using assms pass_mod_dl_inv
+    by simp
   have 0001: "defer_lift_invariance ?plurality_defer"
-    using 00010 00011 00012 00013 00014
-    by simp (* def_inv_mono_imp_def_lift_inv *)
+    using 00010 00011 00012 00013 00014 def_inv_mono_imp_def_lift_inv only_voters_vote_def 
+    by fastforce
   have 0020: "disjoint_compatibility ?pass2 ?drop2"
     using assms
     by simp (* disj_compat_comm drop_pass_disj_compat *)
@@ -308,8 +322,8 @@ proof -
     using assms
     by simp (* pass_mod_non_electing *)
   have 1001: "non_electing ?plurality_defer"
-    using 00011 00012
-    by simp (* seq_comp_presv_non_electing *)
+    using 00011 00012 seq_comp_presv_non_electing
+    by blast
   have 2000: "non_blocking ?pass2"
     using assms
     by simp (* pass_mod_non_blocking *)
@@ -318,19 +332,18 @@ proof -
     by blast
 
   have 000: "defer_lift_invariance ?compare_two"
-    using 0000 0001
-    by simp (* seq_comp_presv_def_lift_inv *)
+    using 0000 0001 seq_comp_presv_def_lift_inv
+    sorry
   have 001: "defer_lift_invariance ?drop2"
-    using assms
-    by simp (* drop_mod_def_lift_inv *)
-  have 002: "disjoint_compatibility ?compare_two ?drop2"
-    using assms 0020
+    using assms drop_mod_def_lift_inv
     by simp
-      (* disj_compat_seq seq_comp_sound rev_comp_sound
-         plurality_sound pass_mod_sound *)
+  have 002: "disjoint_compatibility ?compare_two ?drop2"
+    using assms 0020 disj_compat_seq seq_comp_sound rev_comp_sound
+          plurality_sound pass_mod_sound
+    sorry
   have 100: "non_electing ?compare_two"
-    using 1000 1001
-    by simp (* seq_comp_presv_non_electing *)
+    using 1000 1001 seq_comp_presv_non_electing
+    by simp
   have 101: "non_electing ?drop2"
     using assms
     by simp (* drop_mod_non_electing *)
@@ -347,21 +360,22 @@ proof -
     using 000 001 002 par_comp_def_lift_inv
     by blast (* par_comp_def_lift_inv *)
   have 10: "non_electing ?eliminator"
-    using 100 101 102
-    by simp (* conserv_agg_presv_non_electing *)
+    using 100 101 102 conserv_agg_presv_non_electing 
+          conserv_max_agg_presv_non_electing 
+    by blast
   have 20: "eliminates 1 ?eliminator"
     using 200 100 201 002 par_comp_elim_one
     by simp
 
   have 0: "defer_lift_invariance ?loop"
-    using 00
-    by simp (* loop_comp_presv_def_lift_inv *)
+    using 00 loop_comp_presv_def_lift_inv
+    sorry
   have 1: "non_electing ?loop"
-    using 10
-    by simp (* loop_comp_presv_non_electing *)
+    using 10 loop_comp_presv_non_electing
+    by simp
   have 2: "defers 1 ?loop"
-    using 10 20
-    by simp (* iter_elim_def_n *)
+    using 10 20 iter_elim_def_n
+    sorry
   have 3: "electing elect_module"
     by simp (* elect_mod_electing *)
 

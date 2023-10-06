@@ -19,8 +19,8 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun (in social_choice_result) defer_equal_condition :: 
-  "nat \<Rightarrow> ('a Result) Termination_Condition" where
+fun defer_equal_condition :: 
+  "nat \<Rightarrow> 'a Termination_Condition" where
     "defer_equal_condition n (e,r,d) = (card d = n)"
 
 end

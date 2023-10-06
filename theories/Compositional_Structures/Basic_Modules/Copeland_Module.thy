@@ -10,9 +10,6 @@ theory Copeland_Module
   imports "Component_Types/Elimination_Module"
 begin
 
-context social_choice_result
-begin
-
 text \<open>
   This is the Copeland module used by the Copeland voting rule. The Copeland
   rule elects the alternatives with the highest difference between the amount
@@ -33,7 +30,7 @@ fun copeland :: "('a, 'v, 'a Result) Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-theorem copeland_sound: "electoral_module copeland"
+theorem copeland_sound: "social_choice_result.electoral_module copeland"
   unfolding copeland.simps
   using max_elim_sound
   by metis
@@ -190,7 +187,11 @@ text \<open>
 theorem copeland_score_is_cr: "condorcet_rating copeland_score"
 proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
   fix
-    A and V and p and w and l
+    A :: "'b set" and 
+    V :: "'v set" and 
+    p :: "('b, 'v) Profile" and 
+    w :: 'b and 
+    l :: 'b
   assume
     winner: "condorcet_winner V A p w" and
     l_in_A: "l \<in> A" and
@@ -225,22 +226,27 @@ proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
 qed
 
 theorem copeland_is_dcc: "defer_condorcet_consistency copeland"
-proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
+proof (unfold defer_condorcet_consistency_def social_choice_result.electoral_module_def, safe)
   fix
-    A and V and p
+    A :: "'b set" and 
+    V :: "'a set" and
+    p :: "('b, 'a) Profile"
   assume
     "finite A" and
     "finite V" and
     "profile V A p"
   hence "well_formed A (max_eliminator copeland_score V A p)"
     using max_elim_sound
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by metis
   thus "well_formed A (copeland V A p)"
     by auto
 next
   fix
-    A and V and p and w
+    A :: "'b set" and 
+    V :: "'v set" and 
+    p :: "('b, 'v) Profile" and 
+    w :: 'b
   assume
     "condorcet_winner V A p w" and
     "finite A" and
@@ -256,5 +262,4 @@ next
     by (metis (no_types, lifting))
 qed
 
-end
 end

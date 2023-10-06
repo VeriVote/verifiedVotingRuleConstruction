@@ -19,13 +19,14 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun nanson_baldwin_rule :: "'a Electoral_Module" where
+fun nanson_baldwin_rule :: "('a, 'v, 'a Result) Electoral_Module" where
   "nanson_baldwin_rule A p =
     ((min_eliminator borda_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
 
 subsection \<open>Soundness\<close>
 
-theorem nanson_baldwin_rule_sound: "electoral_module nanson_baldwin_rule"
+theorem nanson_baldwin_rule_sound: 
+"social_choice_result.electoral_module nanson_baldwin_rule"
   unfolding nanson_baldwin_rule.simps
   by (simp add: loop_comp_sound)
 

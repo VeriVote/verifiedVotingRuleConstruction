@@ -24,9 +24,6 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-context social_choice_result
-begin
-
 fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "drop_module n r V A p =
     ({},
@@ -39,8 +36,8 @@ theorem drop_mod_sound[simp]:
   fixes
     r :: "'a Preference_Relation" and
     n :: nat
-  shows "electoral_module (drop_module n r)"
-proof (intro electoral_modI)
+  shows "social_choice_result.electoral_module (drop_module n r)"
+proof (intro social_choice_result.electoral_modI)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -92,7 +89,5 @@ theorem drop_mod_def_lift_inv[simp]:
   shows "defer_lift_invariance (drop_module n r)"
   unfolding defer_lift_invariance_def
   by simp
-
-end
 
 end

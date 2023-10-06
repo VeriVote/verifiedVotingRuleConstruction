@@ -21,9 +21,6 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-context social_choice_result
-begin
-
 fun plurality_score :: "('a, 'v) Evaluation_Function" where
   "plurality_score V x A p = win_count V p x"
 
@@ -162,7 +159,7 @@ next
       ?no_max
     thus "win_count V p a \<le> win_count V p b"
       using exists_max
-      by fastforce
+      by simp
   qed
   thus "snd (max_eliminator (\<lambda> V b A p. win_count V p b) V A p) =
     snd ({},
@@ -174,13 +171,13 @@ qed
 
 subsection \<open>Soundness\<close>
 
-theorem plurality_sound[simp]: "electoral_module plurality"
+theorem plurality_sound[simp]: "social_choice_result.electoral_module plurality"
   unfolding plurality.simps
   using max_elim_sound
   by metis
 
-theorem plurality'_sound[simp]: "electoral_module plurality'"
-proof (unfold electoral_module_def, safe)
+theorem plurality'_sound[simp]: "social_choice_result.electoral_module plurality'"
+proof (unfold social_choice_result.electoral_module_def, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -430,14 +427,18 @@ text \<open>
 
 theorem plurality_mod_def_inv_mono[simp]: "defer_invariant_monotonicity plurality"
 proof (unfold defer_invariant_monotonicity_def, intro conjI impI allI)
-  show "electoral_module plurality"
+  show "social_choice_result.electoral_module plurality"
     by simp
 next
   show "non_electing plurality"
     by simp
 next
   fix
-    A and V and p and q and a
+    A :: "'b set" and 
+    V :: "'a set" and 
+    p :: "('b, 'a) Profile" and 
+    q :: "('b, 'a) Profile" and
+    a :: 'b
   assume "a \<in> snd (snd (plurality V A p)) \<and> Profile.lifted V A p q a"
   hence "defer V plurality A q = defer V plurality A p \<or> defer V plurality A q = {a}"
     using plurality_def_inv_mono_2
@@ -446,5 +447,4 @@ next
     by auto
 qed
 
-end
 end
