@@ -9,6 +9,7 @@ section \<open>Electoral Result\<close>
 
 theory Result
   imports Main
+          Profile
 begin
 
 text \<open>
@@ -33,13 +34,40 @@ text \<open>
   via sublocales of the result locale.
 \<close>
 
-locale result =
-  fixes well_formed :: "'a set \<Rightarrow> 'r \<Rightarrow> bool" 
-    and limit_res :: "'a set \<Rightarrow> 'r \<Rightarrow> 'r"
-    and winners :: "'r \<Rightarrow> 'b set"
-  assumes "A \<subseteq> B \<Longrightarrow> well_formed B r \<Longrightarrow> well_formed A (limit_res A r)"
+type_synonym 'r Result = "'r set * 'r set * 'r set"
 
-type_synonym 'a Result = "'a set * 'a set * 'a set"
+fun disjoint3 :: "'r Result \<Rightarrow> bool" where
+  "disjoint3 (e, r, d) =
+    ((e \<inter> r = {}) \<and>
+      (e \<inter> d = {}) \<and>
+      (r \<inter> d = {}))"
+
+fun set_equals_partition :: "'r set \<Rightarrow>'r Result \<Rightarrow> bool" where
+  "set_equals_partition X (r1, r2, r3) = (r1 \<union> r2 \<union> r3 = X)"
+
+locale result =
+  fixes well_formed :: "'a set \<Rightarrow> ('r Result) \<Rightarrow> bool" 
+    and limit_set :: "'a set \<Rightarrow> 'r set \<Rightarrow> 'r set"
+  assumes "\<And> A r. (set_equals_partition (limit_set A UNIV) r \<and> disjoint3 r) 
+            \<Longrightarrow> well_formed A r"
+      and "\<And> A B r1 r2 r3. A \<subseteq> B \<Longrightarrow> well_formed B (r1, r2, r3) 
+            \<Longrightarrow> well_formed A ((limit_set A r1), (limit_set A r2), (limit_set A r3))"
+
+text \<open>
+  These three functions return the elect, reject, or defer set of a result.
+\<close>
+
+fun (in result) limit_res :: "'a set \<Rightarrow> 'r Result \<Rightarrow> 'r Result" where
+  "limit_res A (e, r, d) = (limit_set A e, limit_set A r, limit_set A d)"
+
+abbreviation elect_r :: "'r Result \<Rightarrow> 'r set" where
+  "elect_r r \<equiv> fst r"
+
+abbreviation reject_r :: "'r Result \<Rightarrow> 'r set" where
+  "reject_r r \<equiv> fst (snd r)"
+
+abbreviation defer_r :: "'r Result \<Rightarrow> 'r set" where
+  "defer_r r \<equiv> snd (snd r)"
 
 subsection \<open>Social Choice Results\<close>
 
@@ -47,9 +75,6 @@ text \<open>
   A social choice result contains three sets of alternatives:
   elected, rejected, and deferred alternatives.
 \<close>
-
-locale social_choice_result
-begin
 
 subsection \<open>Auxiliary Functions\<close>
 
@@ -59,33 +84,11 @@ text \<open>
   in a three-tuple.
 \<close>
 
-fun disjoint3 :: "'a Result \<Rightarrow> bool" where
-  "disjoint3 (e, r, d) =
-    ((e \<inter> r = {}) \<and>
-      (e \<inter> d = {}) \<and>
-      (r \<inter> d = {}))"
-
-fun set_equals_partition :: "'a set \<Rightarrow>'a Result \<Rightarrow> bool" where
-  "set_equals_partition A (e, r, d) = (e \<union> r \<union> d = A)"
-
 fun well_formed :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
   "well_formed A res = (disjoint3 res \<and> set_equals_partition A res)"
 
-fun limit_res :: "'a set \<Rightarrow> 'a Result \<Rightarrow> 'a Result" where 
-  "limit_res A (e,r,d) = (A \<inter> e, A \<inter> r, A \<inter> d)"
-
-text \<open>
-  These three functions return the elect, reject, or defer set of a result.
-\<close>
-
-abbreviation elect_r :: "'a Result \<Rightarrow> 'a set" where
-  "elect_r r \<equiv> fst r"
-
-abbreviation reject_r :: "'a Result \<Rightarrow> 'a set" where
-  "reject_r r \<equiv> fst (snd r)"
-
-abbreviation defer_r :: "'a Result \<Rightarrow> 'a set" where
-  "defer_r r \<equiv> snd (snd r)"
+fun limit_set :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" where 
+  "limit_set A r = A \<inter> r"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -232,29 +235,92 @@ proof (safe)
     using UnCI assms fst_conv snd_conv disjoint3.cases
     by metis
 qed
-end
 
-locale social_welfare_result
-begin
-
-type_synonym 'a Result = "'a rel"
-
-fun well_formed :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
-  "well_formed A res = linear_order_on A res"
-
-fun limit_res :: "'a set \<Rightarrow> 'a Result \<Rightarrow> 'a Result" where 
-  "limit_res A res = res"
-
-end
+subsection \<open>Social Welfare Results\<close>
 
 text \<open>
-  Interpret specific result types as sublocales of the more generic result locale.
+  A social welfare result contains three sets of relations:
+  elected, rejected, and deferred
+  A well-formed social welfare result consists only of linear 
+  orders on the alternatives.
 \<close>
 
-sublocale social_choice_result 
-            \<subseteq> result "social_choice_result.well_formed" 
-                      "social_choice_result.limit_res" 
-                      "social_choice_result.elect_r"
+fun well_formed_welfare :: "'a set \<Rightarrow> ('a Preference_Relation) Result \<Rightarrow> bool" where
+  "well_formed_welfare A res = (disjoint3 res \<and> 
+                                  set_equals_partition {r. linear_order_on A r} res)"
+
+fun limit_set_welfare :: 
+  "'a set \<Rightarrow> ('a Preference_Relation) set \<Rightarrow> ('a Preference_Relation) set" where 
+  "limit_set_welfare A res = {limit A r | r. r \<in> res \<and> linear_order_on A (limit A r)}"
+(* TODO first result assumption does not hold like that *)
+
+subsection \<open>Result Interpretations\<close>
+
+(* print_locale! result *)
+
+interpretation social_choice_result:
+  result "well_formed" "limit_set" 
 proof (unfold_locales, simp, auto) qed
+
+interpretation social_welfare_result:
+  result "well_formed_welfare" "limit_set_welfare"
+proof (unfold_locales, safe)
+  fix 
+    A :: "'a set" and
+    r1 :: "('a Preference_Relation) set" and
+    r2 :: "('a Preference_Relation) set" and
+    r3 :: "('a Preference_Relation) set"
+  assume
+    partition: "set_equals_partition (limit_set_welfare A UNIV) (r1, r2, r3)" and
+    disj: "disjoint3 (r1, r2, r3)"
+  have "limit_set_welfare A UNIV = 
+          {limit A r | r. r \<in> UNIV \<and> linear_order_on A (limit A r)}"
+    by simp
+  also have "... = {limit A r | r. r \<in> UNIV} \<inter> 
+                    {limit A r | r. linear_order_on A (limit A r)}"
+    by auto
+  also have "... = {limit A r | r. linear_order_on A (limit A r)}"
+    by auto
+  also have "... = {r. linear_order_on A r}"
+  proof (safe)
+    fix 
+      r :: "'a Preference_Relation"
+    assume 
+      lin_ord: "linear_order_on A r"
+    hence "\<forall> a b. (a, b) \<in> r \<longrightarrow> (a, b) \<in> limit A r"
+      unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
+      by auto
+    hence "r \<subseteq> limit A r" by auto
+    moreover have "limit A r \<subseteq> r" by auto
+    ultimately have "r = limit A r" by simp
+    thus "\<exists>x. r = limit A x \<and> linear_order_on A (limit A x)"
+      using lin_ord
+      by metis
+  qed
+  thus "well_formed_welfare A (r1, r2, r3)"
+    using partition disj
+    by simp
+next
+  fix 
+    A :: "'a set" and
+    B :: "'a set" and
+    r1 :: "('a Preference_Relation) set" and
+    r2 :: "('a Preference_Relation) set" and
+    r3 :: "('a Preference_Relation) set"
+  assume 
+    subset: "A \<subseteq> B" and
+    wf_B: "well_formed_welfare B (r1, r2, r3)"
+  hence "\<forall> r \<in> r1 \<union> r2 \<union> r3. linear_order_on B r" 
+    by simp
+  moreover have "\<forall> r. (linear_order_on B r) \<longrightarrow> linear_order_on A (limit A r)"
+    using subset limit_presv_lin_ord
+    by blast
+  ultimately have "\<forall> r \<in> r1 \<union> r2 \<union> r3. linear_order_on A (limit A r)"
+    by blast
+(* TODO this doesn't hold with the current limit_set definition... *)
+  thus "well_formed_welfare A
+        (limit_set_welfare A r1, limit_set_welfare A r2, limit_set_welfare A r3)"  sorry
+qed
+    
 
 end

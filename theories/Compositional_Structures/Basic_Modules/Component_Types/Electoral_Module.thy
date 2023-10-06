@@ -18,6 +18,7 @@ theory Electoral_Module
           "HOL-Algebra.Group"
           "HOL-Algebra.Group_Action"
           "HOL.Fun"
+          "Collections.Locale_Code"
 begin
 
 text \<open>
@@ -48,8 +49,25 @@ text \<open>
 
 type_synonym ('a, 'v, 'r) Electoral_Module = "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r"
 
-context result
-begin
+abbreviation on_el :: "('a, 'v, 'r) Electoral_Module \<Rightarrow> (('a, 'v) Election \<Rightarrow> 'r)" where
+  "on_el m E \<equiv> m (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E)" 
+
+text \<open>
+  The next three functions take an electoral module and turn it into a
+  function only outputting the elect, reject, or defer set respectively.
+\<close>
+
+abbreviation elect :: 
+"'v set \<Rightarrow> ('a, 'v, 'r Result) Electoral_Module \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
+  "elect V m A p \<equiv> elect_r (m V A p)"
+
+abbreviation reject :: 
+"'v set \<Rightarrow> ('a, 'v, 'r Result) Electoral_Module \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
+  "reject V m A p \<equiv> reject_r (m V A p)"
+
+abbreviation "defer" :: 
+"'v set \<Rightarrow> ('a, 'v, 'r Result) Electoral_Module \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
+  "defer V m A p \<equiv> defer_r (m V A p)"
 
 subsection \<open>Auxiliary Definitions\<close>
 
@@ -62,11 +80,15 @@ text \<open>
   in multiple structures to create more complex electoral modules.
 \<close>
 
-definition electoral_module :: "('a, 'v, 'r) Electoral_Module \<Rightarrow> bool" where
-  "electoral_module m \<equiv> \<forall> A V p. finite_profile V A p \<longrightarrow> well_formed A (m V A p)"
+definition (in result) electoral_module :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" 
+  where
+    "electoral_module m \<equiv> \<forall> A V p. finite_profile V A p \<longrightarrow> well_formed A (m V A p)"
 
-lemma electoral_modI:
-  fixes m :: "('a, 'v, 'r) Electoral_Module"
+definition only_voters_vote :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
+  "only_voters_vote m \<equiv> \<forall> A V p p'. (\<forall> v \<in> V. p v = p' v) \<longrightarrow> m V A p = m V A p'"
+
+lemma (in result) electoral_modI:
+  fixes m :: "('a, 'v, ('r Result)) Electoral_Module"
   assumes "\<And> A V p. finite_profile V A p \<Longrightarrow> well_formed A (m V A p)"
   shows "electoral_module m"
   unfolding electoral_module_def
@@ -80,16 +102,65 @@ definition (in group_action) inv_under_group_action :: "('a, 'v, 'r) Electoral_M
    where "inv_under_group_action m \<equiv> "
 *)
 
+subsubsection \<open>Invariance under group action\<close>
+
+type_synonym 'g Magma = "('g set) * ('g \<Rightarrow> 'g \<Rightarrow> 'g)"
+
+abbreviation carrier :: "('g Magma) \<Rightarrow> ('g set)" where
+  "carrier G \<equiv> fst G"
+
+abbreviation mult :: "('g Magma) \<Rightarrow> ('g \<Rightarrow> 'g \<Rightarrow> 'g)" where
+  "mult G \<equiv> snd G"
+
+definition magma :: "('g Magma) \<Rightarrow> bool" where
+  "magma G \<equiv> \<forall> g \<in> (carrier G). (mult G g) ` (carrier G) \<subseteq> (carrier G)"
+
+definition half_group :: "('g Magma) \<Rightarrow> bool" where
+  "half_group G \<equiv> magma G \<and> (\<forall> a \<in> carrier G. \<forall> b \<in> carrier G. \<forall> c \<in> carrier G. 
+    mult G (mult G a b) c = mult G a (mult G b c))"
+
+definition neutral_element :: "('g Magma) \<Rightarrow> 'g \<Rightarrow> bool" where
+  "neutral_element G e \<equiv> e \<in> (carrier G) \<and> 
+    (\<forall> g \<in> carrier G. (mult G e g = g \<and> mult G g e = g))"
+
+definition monoid :: "('g Magma) \<Rightarrow> bool" where
+  "monoid G \<equiv> half_group G \<and> (\<exists> e. neutral_element G e)"
+
+definition group :: "('g Magma) \<Rightarrow> bool" where 
+  "group G \<equiv> monoid G \<and> (\<forall> g \<in> carrier G. \<exists> g_inv \<in> carrier G. 
+    (neutral_element G (mult G g g_inv) \<and> neutral_element G (mult G g_inv g)))"
+
+definition homomorphism :: "('g Magma) \<Rightarrow> ('h Magma) \<Rightarrow> ('g \<Rightarrow> 'h) \<Rightarrow> bool" where
+  "homomorphism G H \<phi> \<equiv> (\<forall> g \<in> carrier G. (\<phi> g) \<in> carrier H) \<and>
+    (\<forall> a \<in> carrier G. \<forall> b \<in> carrier G. \<phi> (mult G a b) = mult H (\<phi> a) (\<phi> b))"
+
+definition symmetry_group :: "'x set \<Rightarrow> ('x \<Rightarrow> 'x) Magma" where
+  "symmetry_group X = ({\<phi> :: 'x \<Rightarrow> 'x. bij_betw \<phi> X X}, (\<lambda> \<pi>1 \<pi>2 x. \<pi>1 (\<pi>2 x)))"
+
+type_synonym ('g, 'x) Group_Action = "('g Magma) * ('x set) * ('g  \<Rightarrow> 'x \<Rightarrow> 'x)"
+abbreviation group_of :: "('g, 'x) Group_Action \<Rightarrow> 'g Magma" where
+  "group_of \<alpha> \<equiv> fst \<alpha>"
+abbreviation set_of :: "('g, 'x) Group_Action \<Rightarrow> 'x set" where
+  "set_of \<alpha> \<equiv> fst (snd \<alpha>)"
+abbreviation action_of :: "('g, 'x) Group_Action \<Rightarrow> ('g \<Rightarrow> 'x \<Rightarrow> 'x)" where
+  "action_of \<alpha> \<equiv> snd (snd \<alpha>)"
+definition group_action :: "('g, 'x) Group_Action \<Rightarrow> bool" where
+  "group_action \<alpha> \<equiv> group (group_of \<alpha>) \<and>
+    homomorphism (group_of \<alpha>) (symmetry_group (set_of \<alpha>)) (action_of \<alpha>)"
+
+definition invariant :: "('x \<Rightarrow> 'y) \<Rightarrow> ('g, 'x) Group_Action \<Rightarrow> bool" where
+  "invariant f \<alpha> \<equiv> \<forall> x \<in> (set_of \<alpha>). \<forall> g \<in> (carrier (group_of \<alpha>)). f x = f (action_of \<alpha> g x)"
+
 subsubsection \<open>Homogeneity\<close>
 
-(*
-fun times :: "nat \<Rightarrow> 'v::order set \<Rightarrow> 'v set" where
-  "times n l = concat (replicate n l)"
-
-definition homogeneity :: "('a, 'v::order, 'r) Electoral_Module \<Rightarrow> bool" where
+definition (in result) homogeneity :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
   "homogeneity m \<equiv>
+    let count = \<lambda>r V p. card {v \<in> V. p v = r} in
     electoral_module m \<and>
-      (\<forall> A V p n. (finite_profile A V p \<and> n > 0 \<longrightarrow> (m V A p = m V A (times n p))))"*)
+      (\<forall> A V V' p p' n. (n > 0 \<longrightarrow> finite_profile V A p
+                        \<longrightarrow> (\<forall>r::('a Preference_Relation). count r V' p' = n * (count r V p))
+                        \<longrightarrow> finite_profile V' A p'
+                        \<longrightarrow> m V A p = m V' A p'))"
 
 subsubsection \<open>Anonymity\<close>
 
@@ -99,43 +170,209 @@ text \<open>
   identical result.
 \<close>
 
-definition anonymity :: "('a, 'v, 'r) Electoral_Module \<Rightarrow> bool" where
+definition (in result) anonymity :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
   "anonymity m \<equiv> 
     electoral_module m \<and>
       (\<forall> A V p \<pi>::('v \<Rightarrow> 'v). 
-        bij \<pi> \<longrightarrow> (let (A, V', q) = (rename \<pi> (A, V, p)) in
-            finite_profile V A p \<and> finite_profile V' A q \<longrightarrow> m V A p = m V' A q))"
+        bij \<pi> \<longrightarrow> (let (A', V', q) = (rename \<pi> (A, V, p)) in
+            finite_profile V A p \<and> finite_profile V' A' q \<longrightarrow> m V A p = m V' A' q))"
 
-(*
-lemma (in ) anon_symmetry_group : "anonymity m \<longleftrightarrow> inv_under_group_action TODO 
-*)
+abbreviation finite_election :: "('a, 'v) Election \<Rightarrow> bool" where
+  "finite_election el \<equiv> finite_profile (votrs_\<E> el) (alts_\<E> el) (prof_\<E> el)"
 
-end
+definition rename_voters_action :: "('v \<Rightarrow> 'v, ('a, 'v) Election) Group_Action" where
+  "rename_voters_action \<equiv> 
+    (symmetry_group (UNIV::('v set)), {el :: ('a, 'v) Election. finite_election el}, rename)"
+
+(* lemma rename_is_group_action: "group_action rename_voters_action"
+proof (unfold group_action_def rename_voters_action_def homomorphism_def, 
+        auto) *)
+
+lemma (in result) anon_equiv_inv_under_voter_rename:
+  "anonymity m = (electoral_module m \<and> invariant (on_el m) rename_voters_action)"
+proof (unfold anonymity_def, safe)
+  fix 
+    m :: "('a, 'v, ('r Result)) Electoral_Module"
+  assume
+    anon: "\<forall>A V p \<pi>.
+       bij \<pi> \<longrightarrow>
+       (let (A', V', q) = rename \<pi> (A, V, p)
+        in finite_profile V A p \<and> finite_profile V' A' q \<longrightarrow> m V A p = m V' A' q)" and
+    mod: "electoral_module m"
+  show "invariant (on_el m) rename_voters_action"
+  proof (unfold invariant_def, safe)
+    fix 
+      A :: "'a set" and
+      V :: "'v set" and
+      p :: "('a, 'v) Profile" and
+      g :: "'v \<Rightarrow> 'v"
+    assume 
+      el: "(A, V, p) \<in> set_of rename_voters_action" and
+      perm: "g \<in> carrier (group_of rename_voters_action)"
+    hence bij: "bij g" 
+      unfolding carrier_def rename_voters_action_def symmetry_group_def
+      by simp
+    have fin: "finite_profile V A p"
+      using el
+      unfolding rename_voters_action_def
+      by auto
+    hence "let (A', V', p') = (rename g (A,V,p)) in
+            finite_profile V' A' p'"
+      using bij rename.simps rename_sound
+      by fastforce
+    hence "on_el m (A,V,p) = on_el m (rename g (A,V,p))"
+      using bij anon fin
+      by simp
+    also have "... = on_el m (snd (snd rename_voters_action) g (A, V, p))"
+      unfolding rename_voters_action_def
+      by simp
+    finally show "on_el m (A, V, p) = on_el m (snd (snd rename_voters_action) g (A, V, p))"
+      by simp
+  qed
+next
+  fix 
+    m :: "('a, 'v, ('r Result)) Electoral_Module" and
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    \<pi> :: "'v \<Rightarrow> 'v"
+  assume
+    mod: "electoral_module m" and
+    inv: "invariant (on_el m) rename_voters_action" and
+    bij: "bij \<pi>"
+  show "let (A', V', q) = rename \<pi> (A, V, p)
+       in finite_profile V A p \<and> finite_profile V' A' q \<longrightarrow> m V A p = m V' A' q"
+  proof (unfold Let_def, safe)
+    fix 
+      A' :: "'a set" and
+      V' :: "'v set" and
+      p' :: "('a, 'v) Profile"
+    assume
+      renamed: "rename \<pi> (A, V, p) = (A', V', p')" and
+      fin_A: "finite A" and
+      fin_V: "finite V" and
+      prof: "profile V A p"
+    have "(A, V, p) \<in> (set_of rename_voters_action)"
+      using fin_A fin_V prof
+      unfolding rename_voters_action_def
+      by simp
+    moreover have "\<pi> \<in> (carrier (group_of rename_voters_action))"
+      using bij
+      unfolding carrier_def rename_voters_action_def symmetry_group_def
+      by simp
+    moreover have "(A', V', p') = (action_of rename_voters_action \<pi> (A, V, p))"
+      using renamed
+      unfolding rename_voters_action_def
+      by simp
+    ultimately have "(on_el m) (A, V, p) = (on_el m) (A', V', p')"
+      using inv
+      unfolding invariant_def
+      by metis
+    thus "m V A p = m V' A' p'"
+      by simp
+  qed
+qed
+      
+lemma (in result) hom_imp_anon: 
+  "homogeneity m \<Longrightarrow> anonymity m"
+proof (unfold anonymity_def  Let_def, safe)
+  fix
+    m :: "('a, 'v, ('r Result)) Electoral_Module"
+  assume
+    "homogeneity m"
+  thus "electoral_module m"
+    using homogeneity_def 
+    by fastforce
+next
+  fix 
+    A :: "'a set" and
+    A' :: "'a set" and
+    V :: "'c set" and
+    V' :: "'c set" and
+    p :: "('a, 'c) Profile" and
+    p' :: "('a, 'c) Profile" and
+    \<pi> :: "'c \<Rightarrow> 'c" and
+    m :: "('a, 'c, ('r Result)) Electoral_Module"
+  assume
+    hom:  "homogeneity m" and
+    bij: "bij \<pi>" and
+    rn: "rename \<pi> (A, V, p) = (A', V', p')" and
+    fin_A: "finite A" and
+    fin_V: "finite V" and
+    prof: "profile V A p"
+  hence "finite_profile V A p" by simp
+  moreover have "finite_profile V' A' p'" 
+    using rn rename.simps fin_A fin_V prof bij
+          prod.inject rename_finite
+    by metis
+  moreover have "A' = A" 
+    using rn
+    by simp
+  ultimately have 
+    "\<forall>n. n > 0 \<longrightarrow> ((\<forall>r. card {v \<in> V'. p' v = r} = n * card {v \<in> V. p v = r}) \<longrightarrow> 
+          m V A p = m V' A p')"
+    using hom
+    unfolding homogeneity_def Let_def
+    by auto
+  hence "(\<forall>r. card {v \<in> V'. p' v = r} = card {v \<in> V. p v = r}) \<longrightarrow> 
+          m V A p = m V' A p'"
+    by auto
+  moreover have "\<forall>r. card {v \<in> V'. p' v = r} = card {v \<in> V. p v = r}"
+  proof (clarify)
+    fix
+      r :: "'a Preference_Relation"
+    have "\<forall>v \<in> {v \<in> V'. p' v = r}. p ((the_inv \<pi>) v) = r"
+      using bij rn rename.simps
+      by auto
+    hence "\<forall>v \<in> {v \<in> V'. p' v = r}. \<exists>x \<in>  {v \<in> V. p v = r}. \<pi> x = v"
+      using the_inv_f_f
+      sorry
+    hence "\<pi> ` {v \<in> V. p v = r} = {v \<in> V'. p' v = r}" sorry
+    moreover have "inj_on \<pi> {v \<in> V. p v = r}"
+      using bij bij_is_inj injD inj_onI
+      by (metis (mono_tags, lifting))
+    ultimately have "bij_betw \<pi> {v \<in> V. p v = r} {v \<in> V'. p' v = r}"
+      by (simp add: bij_betw_def)
+    thus "card {v \<in> V'. p' v = r} = card {v \<in> V. p v = r}"
+      by (simp add: bij_betw_same_card)
+  qed
+  ultimately show "m V A p = m V' A' p'"
+    using \<open>A' = A\<close> 
+    by fastforce
+qed
+
+subsubsection \<open>Neutrality\<close>
+
+definition (in result) neutrality :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
+  "neutrality m \<equiv> 
+      electoral_module m \<and>
+            (\<forall> A V p \<pi>::('v \<Rightarrow> 'v). 
+              bij \<pi> \<longrightarrow> (let (A, V', q) = (rename \<pi> (A, V, p)) in
+                  finite_profile V A p \<and> finite_profile V' A q \<longrightarrow> m V A p = m V' A q))"
 
 text \<open>
   The following results require electoral modules to return social choice results, 
   i.e. sets of elected, rejected and deferred alternatives.
+  In order to export code, we use the hack provided by Locale_Code.
 \<close>
 
-context social_choice_result
-begin
+setup Locale_Code.open_block
 
-text \<open>
-  The next three functions take an electoral module and turn it into a
-  function only outputting the elect, reject, or defer set respectively.
-\<close>
+(* define lemma that just states the instantiated definition of the interpreted function *)
+lemma em_social_choice: 
+  "social_choice_result.electoral_module m = 
+    (\<forall> A V p. finite_profile V A p \<longrightarrow> well_formed A (m V A p))"
+  using social_choice_result.electoral_module_def 
+  by blast
 
-abbreviation elect :: 
-"'v set \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a set" where
-  "elect V m A p \<equiv> elect_r (m V A p)"
+declare [[lc_add "social_choice_result.electoral_module" em_social_choice]]
 
-abbreviation reject :: 
-"'v set \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a set" where
-  "reject V m A p \<equiv> reject_r (m V A p)"
+setup Locale_Code.close_block
 
-abbreviation "defer" :: 
-"'v set \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a set" where
-  "defer V m A p \<equiv> defer_r (m V A p)"
+(* code generation only works for constants, so an alias is needed *)
+definition "electoral_module_sc = social_choice_result.electoral_module"
+
+export_code electoral_module_sc in Haskell
 
 text \<open>
   "defers n" is true for all electoral modules that defer exactly
@@ -144,9 +381,8 @@ text \<open>
 
 definition defers :: "nat \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "defers n m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
       (\<forall> A V p. (card A \<ge> n \<and> finite_profile V A p) \<longrightarrow> card (defer V m A p) = n)"
-
 
 text \<open>
   "rejects n" is true for all electoral modules that reject exactly
@@ -155,7 +391,7 @@ text \<open>
 
 definition rejects :: "nat \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "rejects n m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
       (\<forall> A V p. (card A \<ge> n \<and> finite_profile V A p) \<longrightarrow> card (reject V m A p) = n)"
 
 text \<open>
@@ -165,7 +401,7 @@ text \<open>
 
 definition eliminates :: "nat \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "eliminates n m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
       (\<forall> A V p. (card A > n \<and> finite_profile V A p) \<longrightarrow> card (reject V m A p) = n)"
 
 text \<open>
@@ -175,7 +411,7 @@ text \<open>
 
 definition elects :: "nat \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "elects n m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
       (\<forall> A V p. (card A \<ge> n \<and> finite_profile V A p) \<longrightarrow> card (elect V m A p) = n)"
 
 text \<open>
@@ -186,12 +422,13 @@ text \<open>
 definition indep_of_alt :: "'v set \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" 
   where
   "indep_of_alt V m A a \<equiv>
-    electoral_module m \<and> (\<forall> p q. equiv_prof_except_a V A p q a \<longrightarrow> m V A p = m V A q)"
+    social_choice_result.electoral_module m 
+      \<and> (\<forall> p q. equiv_prof_except_a V A p q a \<longrightarrow> m V A p = m V A q)"
 
 definition unique_winner_if_profile_non_empty :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" 
   where
   "unique_winner_if_profile_non_empty m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
     (\<forall> A V p. (A \<noteq> {} \<and> V \<noteq> {} \<and> finite_profile V A p) \<longrightarrow>
               (\<exists> a \<in> A. m V A p = ({a}, A - {a}, {})))"
 
@@ -200,7 +437,8 @@ subsection \<open>Equivalence Definitions\<close>
 definition prof_contains_result :: "'v set \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set
                                     \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "prof_contains_result V m A p q a \<equiv>
-    electoral_module m \<and> finite_profile V A p \<and> finite_profile V A q \<and> a \<in> A \<and>
+    social_choice_result.electoral_module m \<and> 
+    finite_profile V A p \<and> finite_profile V A q \<and> a \<in> A \<and>
     (a \<in> elect V m A p \<longrightarrow> a \<in> elect V m A q) \<and>
     (a \<in> reject V m A p \<longrightarrow> a \<in> reject V m A q) \<and>
     (a \<in> defer V m A p \<longrightarrow> a \<in> defer V m A q)"
@@ -208,14 +446,16 @@ definition prof_contains_result :: "'v set \<Rightarrow> ('a, 'v, 'a Result) Ele
 definition prof_leq_result :: "'v set \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set 
                                 \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "prof_leq_result V m A p q a \<equiv>
-    electoral_module m \<and> finite_profile V A p \<and> finite_profile V A q \<and> a \<in> A \<and>
+    social_choice_result.electoral_module m \<and> 
+    finite_profile V A p \<and> finite_profile V A q \<and> a \<in> A \<and>
     (a \<in> reject V m A p \<longrightarrow> a \<in> reject V m A q) \<and>
     (a \<in> defer V m A p \<longrightarrow> a \<notin> elect V m A q)"
 
 definition prof_geq_result :: "'v set \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set 
                                 \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "prof_geq_result V m A p q a \<equiv>
-    electoral_module m \<and> finite_profile V A p \<and> finite_profile V A q \<and> a \<in> A \<and>
+    social_choice_result.electoral_module m \<and> 
+    finite_profile V A p \<and> finite_profile V A q \<and> a \<in> A \<and>
     (a \<in> elect V m A p \<longrightarrow> a \<in> elect V m A q) \<and>
     (a \<in> defer V m A p \<longrightarrow> a \<notin> reject V m A q)"
 
@@ -223,7 +463,9 @@ definition mod_contains_result :: "'v set \<Rightarrow> ('a, 'v, 'a Result) Elec
                                     \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set 
                                     \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "mod_contains_result V m n A p a \<equiv>
-    electoral_module m \<and> electoral_module n \<and> finite_profile V A p \<and> a \<in> A \<and>
+    social_choice_result.electoral_module m \<and> 
+    social_choice_result.electoral_module n \<and> 
+    finite_profile V A p \<and> a \<in> A \<and>
     (a \<in> elect V m A p \<longrightarrow> a \<in> elect V n A p) \<and>
     (a \<in> reject V m A p \<longrightarrow> a \<in> reject V n A p) \<and>
     (a \<in> defer V m A p \<longrightarrow> a \<in> defer V n A p)"
@@ -253,11 +495,11 @@ lemma par_comp_result_sound:
     A :: "'a set" and
     p :: "('a, 'v) Profile"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p"
   shows "well_formed A (m V A p)"
   using assms
-  unfolding electoral_module_def
+  unfolding social_choice_result.electoral_module_def
   by simp
 
 lemma result_presv_alts:
@@ -267,7 +509,7 @@ lemma result_presv_alts:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p"
   shows "(elect V m A p) \<union> (reject V m A p) \<union> (defer V m A p) = A"
 proof (safe)
@@ -279,7 +521,7 @@ proof (safe)
     by simp
   moreover have "set_equals_partition A (m V A p)"
     using assms
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by simp
   ultimately show "a \<in> A"
     using UnI1 fstI
@@ -293,7 +535,7 @@ next
     by simp
   moreover have "set_equals_partition A (m V A p)"
     using assms
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by simp
   ultimately show "a \<in> A"
     using UnI1 fstI sndI subsetD sup_ge2
@@ -307,7 +549,7 @@ next
     by simp
   moreover have "set_equals_partition A (m V A p)"
     using assms
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by simp
   ultimately show "a \<in> A"
     using sndI subsetD sup_ge2
@@ -324,7 +566,7 @@ next
     by simp
   moreover have "set_equals_partition A (m V A p)"
     using assms
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by simp
   ultimately show "a \<in> elect V m A p"
     using fst_conv snd_conv Un_iff
@@ -338,7 +580,7 @@ lemma result_disj:
     p :: "('a, 'v) Profile" and
     V :: "'v set"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p"
   shows
     "(elect V m A p) \<inter> (reject V m A p) = {} \<and>
@@ -351,7 +593,7 @@ proof (safe, simp_all)
     "a \<in> reject V m A p"
   moreover have "well_formed A (m V A p)"
     using assms
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by metis
   ultimately show False
     using prod.exhaust_sel DiffE UnCI result_imp_rej
@@ -367,7 +609,7 @@ next
     by simp
   have "well_formed A (m V A p)"
     using assms
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by metis
   hence "disjoint3 (m V A p)"
     by simp
@@ -398,7 +640,7 @@ next
     "a \<in> defer V m A p"
   moreover have "well_formed A (m V A p)"
     using assms
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by simp
   ultimately show False
     using prod.exhaust_sel DiffE UnCI result_imp_rej
@@ -411,7 +653,7 @@ lemma elect_in_alts:
     A :: "'a set" and
     p :: "('a, 'v) Profile"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p"
   shows "elect V m A p \<subseteq> A"
   using le_supI1 assms result_presv_alts sup_ge1
@@ -424,7 +666,7 @@ lemma reject_in_alts:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p"
   shows "reject V m A p \<subseteq> A"
   using le_supI1 assms result_presv_alts sup_ge2
@@ -437,7 +679,7 @@ lemma defer_in_alts:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p"
   shows "defer V m A p \<subseteq> A"
   using assms result_presv_alts
@@ -449,7 +691,7 @@ lemma def_presv_fin_prof:
     A :: "'a set" and
     p :: "('a, 'v) Profile"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p"
   shows "let new_A = defer V m A p in finite_profile V new_A (limit_profile new_A p)"
   using defer_in_alts infinite_super limit_profile_sound assms
@@ -467,7 +709,7 @@ lemma upper_card_bounds_for_result:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p"
   shows
     "card (elect V m A p) \<le> card A \<and>
@@ -483,13 +725,13 @@ lemma reject_not_elec_or_def:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p"
   shows "reject V m A p = A - (elect V m A p) - (defer V m A p)"
 proof -
   have "well_formed A (m V A p)"
     using assms
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by simp
   hence "(elect V m A p) \<union> (reject V m A p) \<union> (defer V m A p) = A"
     using assms result_presv_alts
@@ -509,7 +751,7 @@ lemma elec_and_def_not_rej:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p"
   shows "elect V m A p \<union> defer V m A p = A - (reject V m A p)"
 proof -
@@ -530,13 +772,13 @@ lemma defer_not_elec_or_rej:
     A :: "'a set" and
     p :: "('a, 'v) Profile"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p"
   shows "defer V m A p = A - (elect V m A p) - (reject V m A p)"
 proof -
   have "well_formed A (m V A p)"
     using assms
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by simp
   hence "(elect V m A p) \<union> (reject V m A p) \<union> (defer V m A p) = A"
     using assms result_presv_alts
@@ -557,7 +799,7 @@ lemma electoral_mod_defer_elem:
     p :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p" and
     "a \<in> A" and
     "a \<notin> elect V m A p" and
@@ -578,12 +820,12 @@ lemma mod_contains_result_comm:
   shows "mod_contains_result V n m A p a"
 proof (unfold mod_contains_result_def, safe)
   from assms
-  show "electoral_module n"
+  show "social_choice_result.electoral_module n"
     unfolding mod_contains_result_def
     by safe
 next
   from assms
-  show "electoral_module m"
+  show "social_choice_result.electoral_module m"
     unfolding mod_contains_result_def
     by safe
 next
@@ -609,20 +851,20 @@ next
 next
   assume "a \<in> elect V n A p"
   thus "a \<in> elect V m A p"
-    using IntI assms electoral_mod_defer_elem empty_iff
-          mod_contains_result_def result_disj
+    using IntI assms electoral_mod_defer_elem empty_iff result_disj
+    unfolding mod_contains_result_def
     by (metis (mono_tags, lifting))
 next
   assume "a \<in> reject V n A p"
   thus "a \<in> reject V m A p"
-    using IntI assms electoral_mod_defer_elem empty_iff
-          mod_contains_result_def result_disj
+    using IntI assms electoral_mod_defer_elem empty_iff result_disj
+    unfolding mod_contains_result_def
     by (metis (mono_tags, lifting))
 next
   assume "a \<in> defer V n A p"
   thus "a \<in> defer V m A p"
-    using IntI assms electoral_mod_defer_elem empty_iff
-          mod_contains_result_def result_disj
+    using IntI assms electoral_mod_defer_elem empty_iff result_disj
+    unfolding mod_contains_result_def
     by (metis (mono_tags, lifting))
 qed
 
@@ -634,7 +876,7 @@ lemma not_rej_imp_elec_or_def:
     p :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "finite_profile V A p" and
     "a \<in> A" and
     "a \<notin> reject V m A p"
@@ -666,7 +908,7 @@ lemma eq_alts_in_profs_imp_eq_results:
     q :: "('a, 'v) Profile"
   assumes
     eq: "\<forall> a \<in> A. prof_contains_result V m A p q a" and
-    mod_m: "electoral_module m" and
+    mod_m: "social_choice_result.electoral_module m" and
     fin_prof_p: "finite_profile V A p" and
     fin_prof_q: "finite_profile V A q"
   shows "m V A p = m V A q"
@@ -754,8 +996,8 @@ lemma eq_def_and_elect_imp_eq:
     p :: "('a, 'v) Profile" and
     q :: "('a, 'v) Profile"
   assumes
-    mod_m: "electoral_module m" and
-    mod_n: "electoral_module n" and
+    mod_m: "social_choice_result.electoral_module m" and
+    mod_n: "social_choice_result.electoral_module n" and
     fin_p: "finite_profile V A p" and
     fin_q: "finite_profile V A q" and
     elec_eq: "elect V m A p = elect V n A q" and
@@ -764,11 +1006,11 @@ lemma eq_def_and_elect_imp_eq:
 proof -
   have "reject V m A p = A - ((elect V m A p) \<union> (defer V m A p))"
     using mod_m fin_p combine_ele_rej_def result_imp_rej
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by metis
   moreover have "reject V n A q = A - ((elect V n A q) \<union> (defer V n A q))"
     using mod_n fin_q combine_ele_rej_def result_imp_rej
-    unfolding electoral_module_def
+    unfolding social_choice_result.electoral_module_def
     by metis
   ultimately show ?thesis
     using elec_eq def_eq prod_eqI
@@ -784,7 +1026,7 @@ text \<open>
 
 definition non_blocking :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "non_blocking m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
       (\<forall> A V p. ((A \<noteq> {} \<and> finite_profile V A p) \<longrightarrow> reject V m A p \<noteq> A))"
 
 subsection \<open>Electing\<close>
@@ -796,7 +1038,7 @@ text \<open>
 
 definition electing :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "electing m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
       (\<forall> A V p. (A \<noteq> {} \<and> finite_profile V A p) \<longrightarrow> elect V m A p \<noteq> {})"
 
 lemma electing_for_only_alt:
@@ -813,7 +1055,7 @@ lemma electing_for_only_alt:
 proof (safe)
   fix a :: "'a"
   assume elect_a: "a \<in> elect V m A p"
-  have "electoral_module m \<longrightarrow> elect V m A p \<subseteq> A"
+  have "social_choice_result.electoral_module m \<longrightarrow> elect V m A p \<subseteq> A"
     using f_prof
     by (simp add: elect_in_alts)
   hence "elect V m A p \<subseteq> A"
@@ -839,7 +1081,7 @@ theorem electing_imp_non_blocking:
   shows "non_blocking m"
 proof (unfold non_blocking_def, safe)
   from assms
-  show "electoral_module m"
+  show "social_choice_result.electoral_module m"
     unfolding electing_def
     by simp
 next
@@ -855,7 +1097,7 @@ next
     "reject V m A p = A" and
     "a \<in> A"
   moreover have
-    "electoral_module m \<and>
+    "social_choice_result.electoral_module m \<and>
       (\<forall> A V q. A \<noteq> {} \<and> finite A \<and> finite V \<and> profile V A q \<longrightarrow> elect V m A q \<noteq> {})"
     using assms
     unfolding electing_def
@@ -874,7 +1116,8 @@ text \<open>
 
 definition non_electing :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "non_electing m \<equiv>
-    electoral_module m \<and> (\<forall> A V p. finite_profile V A p \<longrightarrow> elect V m A p = {})"
+    social_choice_result.electoral_module m \<and> 
+      (\<forall> A V p. finite_profile V A p \<longrightarrow> elect V m A p = {})"
 
 lemma single_elim_decr_def_card:
   fixes
@@ -890,7 +1133,8 @@ lemma single_elim_decr_def_card:
   shows "card (defer V m A p) = card A - 1"
 proof -
   have no_elect:
-    "electoral_module m \<and> (\<forall> A V q. finite A \<and> finite V \<and> profile V A q \<longrightarrow> elect V m A q = {})"
+    "social_choice_result.electoral_module m \<and> 
+      (\<forall> A V q. finite A \<and> finite V \<and> profile V A q \<longrightarrow> elect V m A q = {})"
     using non_electing
     unfolding non_electing_def
     by (metis (no_types))
@@ -921,7 +1165,8 @@ lemma single_elim_decr_def_card_2:
   shows "card (defer V m A p) = card A - 1"
 proof -
   have no_elect:
-    "electoral_module m \<and> (\<forall> A V q. finite A \<and> finite V \<and> profile V A q \<longrightarrow> elect V m A q = {})"
+    "social_choice_result.electoral_module m \<and> 
+      (\<forall> A V q. finite A \<and> finite V \<and> profile V A q \<longrightarrow> elect V m A q = {})"
     using non_electing
     unfolding non_electing_def
     by (metis (no_types))
@@ -946,7 +1191,7 @@ text \<open>
 
 definition defer_deciding :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "defer_deciding m \<equiv>
-    electoral_module m \<and> non_electing m \<and> defers 1 m"
+    social_choice_result.electoral_module m \<and> non_electing m \<and> defers 1 m"
 
 text \<open>
   An electoral module decrements iff
@@ -955,18 +1200,18 @@ text \<open>
 
 definition decrementing :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "decrementing m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
       (\<forall> A V p. finite_profile V A p \<and> card A > 1 \<longrightarrow> card (reject V m A p) \<ge> 1)"
 
 definition defer_condorcet_consistency :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "defer_condorcet_consistency m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
     (\<forall> A V p a. condorcet_winner V A p a \<and> finite A \<and> finite V \<longrightarrow>
       (m V A p = ({}, A - (defer V m A p), {d \<in> A. condorcet_winner V A p d})))"
 
 definition condorcet_compatibility :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "condorcet_compatibility m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
     (\<forall> A V p a. condorcet_winner V A p a \<and> finite A \<and> finite V \<longrightarrow>
       (a \<notin> reject V m A p \<and>
         (\<forall> b. \<not> condorcet_winner V A p b \<longrightarrow> b \<notin> elect V m A p) \<and>
@@ -980,7 +1225,7 @@ text \<open>
 
 definition defer_monotonicity :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "defer_monotonicity m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
       (\<forall> A V p q a.
         (finite A \<and> finite V \<and> a \<in> defer V m A p \<and> lifted V A p q a) \<longrightarrow> a \<in> defer V m A q)"
 
@@ -991,7 +1236,7 @@ text \<open>
 
 definition defer_lift_invariance :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "defer_lift_invariance m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
       (\<forall> A V p q a. (a \<in> (defer V m A p) \<and> lifted V A p q a) \<longrightarrow> m V A p = m V A q)"
 
 text \<open>
@@ -1003,7 +1248,7 @@ text \<open>
 definition disjoint_compatibility :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
                                          ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "disjoint_compatibility m n \<equiv>
-    electoral_module m \<and> electoral_module n \<and>
+    social_choice_result.electoral_module m \<and> social_choice_result.electoral_module n \<and>
         (\<forall> V. finite V \<longrightarrow>
           (\<forall> A. finite A \<longrightarrow>
             (\<exists> B \<subseteq> A.
@@ -1020,7 +1265,7 @@ text \<open>
 
 definition invariant_monotonicity :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "invariant_monotonicity m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
         (\<forall> A V p q a. (a \<in> elect V m A p \<and> lifted V A p q a) \<longrightarrow>
           (elect V m A q = elect V m A p \<or> elect V m A q = {a}))"
 
@@ -1032,7 +1277,7 @@ text \<open>
 
 definition defer_invariant_monotonicity :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "defer_invariant_monotonicity m \<equiv>
-    electoral_module m \<and> non_electing m \<and>
+    social_choice_result.electoral_module m \<and> non_electing m \<and>
         (\<forall> A V p q a. (a \<in> defer V m A p \<and> lifted V A p q a) \<longrightarrow>
           (defer V m A q = defer V m A p \<or> defer V m A q = {a}))"
 
@@ -1099,7 +1344,7 @@ theorem ccomp_and_dd_imp_dcc[simp]:
     dd: "defer_deciding m"
   shows "defer_condorcet_consistency m"
 proof (unfold defer_condorcet_consistency_def, auto)
-  show "electoral_module m"
+  show "social_choice_result.electoral_module m"
     using dd
     unfolding defer_deciding_def
     by metis
@@ -1160,12 +1405,12 @@ theorem disj_compat_comm[simp]:
   assumes "disjoint_compatibility m n"
   shows "disjoint_compatibility n m"
 proof (unfold disjoint_compatibility_def, safe)
-  show "electoral_module m"
+  show "social_choice_result.electoral_module m"
     using assms
     unfolding disjoint_compatibility_def
     by simp
 next
-  show "electoral_module n"
+  show "social_choice_result.electoral_module n"
     using assms
     unfolding disjoint_compatibility_def
     by simp
@@ -1226,19 +1471,19 @@ subsubsection \<open>Condorcet Consistency\<close>
 
 definition condorcet_consistency :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "condorcet_consistency m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
     (\<forall> A V p a. condorcet_winner V A p a \<longrightarrow>
       (m V A p = ({e \<in> A. condorcet_winner V A p e}, A - (elect V m A p), {})))"
 
 lemma condorcet_consistency_2:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   shows "condorcet_consistency m =
-           (electoral_module m \<and>
+           (social_choice_result.electoral_module m \<and>
               (\<forall> A V p a. condorcet_winner V A p a \<longrightarrow>
                 (m V A p = ({a}, A - (elect V m A p), {}))))"
 proof (safe)
   assume "condorcet_consistency m"
-  thus "electoral_module m"
+  thus "social_choice_result.electoral_module m"
     unfolding condorcet_consistency_def
     by metis
 next
@@ -1256,7 +1501,7 @@ next
     by (metis (mono_tags, lifting))
 next
   assume
-    "electoral_module m" and
+    "social_choice_result.electoral_module m" and
     "\<forall> A V p a. condorcet_winner V A p a \<longrightarrow> m V A p = ({a}, A - elect V m A p, {})"
   moreover have
     "\<forall> A V p a. condorcet_winner V A p (a::'a) \<longrightarrow>
@@ -1271,7 +1516,7 @@ qed
 lemma condorcet_consistency_3:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   shows "condorcet_consistency m =
-           (electoral_module m \<and>
+           (social_choice_result.electoral_module m \<and>
               (\<forall> A V p a.
                 condorcet_winner V A p a \<longrightarrow> (m V A p = ({a}, A - {a}, {}))))"
 proof (simp only: condorcet_consistency_2, safe)
@@ -1281,7 +1526,7 @@ proof (simp only: condorcet_consistency_2, safe)
     p :: "('a, 'v) Profile" and
     a :: "'a"
   assume
-    e_mod: "electoral_module m" and
+    e_mod: "social_choice_result.electoral_module m" and
     cc: "\<forall> A V p a'. condorcet_winner V A p a' \<longrightarrow>
       m V A p = ({a'}, A - elect V m A p, {})" and
     c_win: "condorcet_winner V A p a"
@@ -1295,7 +1540,7 @@ next
     p :: "('a, 'v) Profile" and
     a :: "'a"
   assume
-    e_mod: "electoral_module m" and
+    e_mod: "social_choice_result.electoral_module m" and
     cc: "\<forall> A V p a'. condorcet_winner V A p a' \<longrightarrow> m V A p = ({a'}, A -  {a'}, {})" and
     c_win: "condorcet_winner V A p a"
   show "m V A p = ({a}, A -  elect V m A p, {})"
@@ -1312,10 +1557,8 @@ text \<open>
 
 definition monotonicity :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "monotonicity m \<equiv>
-    electoral_module m \<and>
+    social_choice_result.electoral_module m \<and>
       (\<forall> A V p q a. (finite A \<and> finite V \<and> a \<in> elect V m A p \<and> lifted V A p q a) 
                         \<longrightarrow> a \<in> elect V m A q)"
-
-end
 
 end
