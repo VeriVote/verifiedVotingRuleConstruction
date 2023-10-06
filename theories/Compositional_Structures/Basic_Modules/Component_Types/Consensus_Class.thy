@@ -33,7 +33,8 @@ fun rule_\<K> :: "('a, 'v, 'r) Consensus_Class \<Rightarrow> ('a, 'v, 'r) Electo
 
 text \<open>
   We call a consensus class completely determined if the electoral module
-  is invariant on all consensus elections that agree on their candidate set.
+  is invariant on all consensus elections that agree on their candidate set,
+  i.e. the results of consensus elections are completely determined by the candidates.
 \<close>
 
 definition completely_determined :: 
@@ -49,7 +50,7 @@ text \<open>
   for all consensus elections and defers all candidates otherwise.
 \<close>
 
-fun (in social_choice_result) consensus_choice :: 
+fun consensus_choice :: 
 "('a, 'v) Consensus \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module 
   \<Rightarrow> ('a, 'v, 'a Result) Consensus_Class" where
   "consensus_choice c m =
@@ -59,7 +60,7 @@ fun (in social_choice_result) consensus_choice ::
 
 subsection \<open>Auxiliary Lemmas\<close>
 
-lemma  (in social_choice_result)
+lemma
 unanimity'_consensus_imp_elect_fst_mod_completely_determined:
   fixes a :: 'a
   shows
@@ -100,7 +101,7 @@ proof (unfold completely_determined_def, safe)
         using cond_Ap cond_Ap' Collect_mem_eq LeastI 
               empty_Collect_eq equal_top\<^sub>\<C>'.simps 
               nonempty_profile\<^sub>\<C>.simps 
-              social_choice_result.least.simps
+              least.simps
         by (metis (no_types, lifting))
     next
       assume a'_neq_a: "a' \<noteq> a"
@@ -112,7 +113,7 @@ proof (unfold completely_determined_def, safe)
         using not_empty_A not_empty_A' prof_p prof_p' 
               \<open>a' \<in> A\<close> card.empty card.remove enumerate.simps(1) 
               enumerate_in_set fin_A finite_enumerate_in_set 
-              finite_has_minimal social_choice_result.least.elims 
+              finite_has_minimal least.elims 
               zero_less_Suc zero_order(3)
         unfolding profile_def
         by metis
@@ -123,8 +124,7 @@ proof (unfold completely_determined_def, safe)
       thus ?thesis
         using bot_nat_0.not_eq_extremum card_0_eq cond_Ap cond_Ap' 
               enumerate.simps(1) enumerate_in_set equal_top\<^sub>\<C>'.simps 
-              finite_enumerate_in_set non_empty 
-              social_choice_result.least.simps
+              finite_enumerate_in_set non_empty least.simps
         by metis
     qed
   qed
@@ -132,7 +132,7 @@ proof (unfold completely_determined_def, safe)
     by auto
 qed
 
-lemma (in social_choice_result) 
+lemma
 strong_unanimity'consensus_imp_elect_fst_mod_completely_determined:
   fixes r :: "'a Preference_Relation"
   shows
@@ -166,7 +166,7 @@ proof (unfold completely_determined_def, clarify)
     using eq_vote_p eq_vote_p' not_empty_p not_empty_p'
           bot_nat_0.not_eq_extremum card_0_eq enumerate.simps(1) 
           enumerate_in_set equal_vote\<^sub>\<C>'.simps finite_enumerate_in_set 
-          nonempty_profile\<^sub>\<C>.simps social_choice_result.least.elims
+          nonempty_profile\<^sub>\<C>.simps least.elims
     by (metis (no_types, lifting))
   thus "elect_first_module V A p = elect_first_module V' A p'"
     by auto
@@ -181,7 +181,7 @@ text \<open>
   Unanimity condition.
 \<close>
 
-definition (in social_choice_result) unanimity :: 
+definition unanimity :: 
 "('a, 'v::wellorder, 'a Result) Consensus_Class" where
   "unanimity = consensus_choice unanimity\<^sub>\<C> elect_first_module"
 
@@ -189,7 +189,7 @@ text \<open>
   Strong unanimity condition.
 \<close>
 
-definition (in social_choice_result) strong_unanimity :: 
+definition strong_unanimity :: 
 "('a, 'v::wellorder, 'a Result) Consensus_Class" where
   "strong_unanimity = consensus_choice strong_unanimity\<^sub>\<C> elect_first_module"
 
@@ -206,7 +206,7 @@ definition consensus_rule_anonymity :: "('a, 'v, 'r) Consensus_Class \<Rightarro
 
 subsection \<open>Inference Rules\<close>
 
-lemma (in social_choice_result) consensus_choice_anonymous:
+lemma consensus_choice_anonymous:
   fixes
     \<alpha> :: "('a, 'v) Consensus" and
     \<beta> :: "('a, 'v) Consensus" and
@@ -279,7 +279,7 @@ qed
 
 subsection \<open>Theorems\<close>
 
-lemma (in social_choice_result) unanimity_anonymous: "consensus_rule_anonymity unanimity"
+lemma unanimity_anonymous: "consensus_rule_anonymity unanimity"
 proof (unfold unanimity_def)
   let ?ne_cond = "(\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c)"
   have "consensus_anonymity ?ne_cond"
@@ -303,7 +303,7 @@ proof (unfold unanimity_def)
     by (rule HOL.back_subst)
 qed
 
-lemma (in social_choice_result) strong_unanimity_anonymous: 
+lemma strong_unanimity_anonymous: 
 "consensus_rule_anonymity strong_unanimity"
 proof (unfold strong_unanimity_def)
   have "consensus_anonymity (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c)"

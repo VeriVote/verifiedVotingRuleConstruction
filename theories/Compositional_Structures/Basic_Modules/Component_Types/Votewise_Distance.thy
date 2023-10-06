@@ -76,49 +76,6 @@ proof -
   finally show ?thesis
     by simp
 qed
-
-lemma permute_invariant_under_zip: 
-  fixes
-    l_1 :: "'a list" and 
-    l_2 :: "'a list" and 
-    ls_1 :: "'a list" and 
-    ls_2 :: "'a list" and
-    \<pi> :: "nat \<Rightarrow> nat" and
-    n :: "nat"
-  assumes
-    "bij_betw \<pi> {..<length l_1} {..<length l_1}" and
-    "ls_1 = permute_list \<pi> l_1" and 
-    "ls_2 = permute_list \<pi> l_2" and
-    "length ls_2 = n" and
-    "length l_2 = n" and
-    "length ls_1 = n" and
-    "length l_1 = n"
-  shows "permute_list \<pi> (zip l_1 l_2) = zip ls_1 ls_2"
-proof (simp add: assms, unfold permute_list_def, simp add: assms)
-  have "\<forall>j < n. \<pi> j \<in> {..< n}" 
-    using assms bij_betwE
-    by auto
-  hence "\<forall>j < n. (map (\<lambda>i. zip l_1 l_2 ! \<pi> i) [0..<n])!j = (l_1 ! \<pi> j, l_2 ! \<pi> j)"
-    using assms
-    by simp
-  moreover have "\<forall>j < n. zip (map (\<lambda>i. l_1 ! \<pi> i) [0..<n]) (map (\<lambda>i. l_2 ! \<pi> i) [0..<n])!j 
-              = (l_1 ! \<pi> j, l_2 ! \<pi> j)"
-    using assms
-    by auto
-  ultimately have "\<forall>j < n. ((map (\<lambda>i. zip l_1 l_2 ! \<pi> i) [0..<n])!j
-                   = zip (map (\<lambda>i. l_1 ! \<pi> i) [0..<n]) (map (\<lambda>i. l_2 ! \<pi> i) [0..<n])!j)"
-    using assms
-    by simp
-  moreover have "length (zip l_1 l_2) = n" 
-    using assms 
-    by auto
-  moreover have "length (map (\<lambda>i. zip l_1 l_2 ! \<pi> i) [0..<n]) = n"
-    by simp
-  ultimately show "map (\<lambda>i. zip l_1 l_2 ! \<pi> i) [0..<n] 
-                   = zip (map (\<lambda>i. l_1 ! \<pi> i) [0..<n]) (map (\<lambda>i. l_2 ! \<pi> i) [0..<n])"
-    using assms length_map length_zip list_eq_iff_nth_eq
-    by (metis (no_types, lifting))
-qed
     
 lemma permute_invariant_under_map:
   fixes
@@ -280,7 +237,8 @@ proof (unfold distance_anonymity_def, safe)
           by (metis (no_types, lifting) Collect_cong True finite_imageI)
         moreover have "\<forall>i. i < ?len \<longrightarrow> i \<in> {0..<?len}"
           by simp
-        ultimately have "\<forall> i \<in> {0..<?len}. \<forall>j \<in> {0..<?len}. (?perm_total i = ?perm_total j \<longrightarrow> i = j)"
+        ultimately have "\<forall> i \<in> {0..<?len}. \<forall>j \<in> {0..<?len}. 
+                          (?perm_total i = ?perm_total j \<longrightarrow> i = j)"
           by auto
         hence inj: "inj_on ?perm_total {0..<?len}"
           using inj_on_def by blast
