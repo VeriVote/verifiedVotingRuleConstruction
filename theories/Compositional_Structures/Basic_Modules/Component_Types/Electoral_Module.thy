@@ -12,13 +12,12 @@ section \<open>Electoral Module\<close>
 
 theory Electoral_Module
   imports "Social_Choice_Types/Profile"
-          "Social_Choice_Types/Result"
+          "Social_Choice_Types/Result_Interpretations"
           "HOL-Combinatorics.List_Permutation"
           "HOL-Algebra.Bij"
           "HOL-Algebra.Group"
           "HOL-Algebra.Group_Action"
           "HOL.Fun"
-          "Collections.Locale_Code"
 begin
 
 text \<open>
@@ -48,9 +47,6 @@ text \<open>
 \<close>
 
 type_synonym ('a, 'v, 'r) Electoral_Module = "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r"
-
-abbreviation on_el :: "('a, 'v, 'r) Electoral_Module \<Rightarrow> (('a, 'v) Election \<Rightarrow> 'r)" where
-  "on_el m E \<equiv> m (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E)" 
 
 text \<open>
   The next three functions take an electoral module and turn it into a
@@ -97,60 +93,6 @@ lemma (in result) electoral_modI:
 
 subsection \<open>Properties\<close>
 
-(*
-definition (in group_action) inv_under_group_action :: "('a, 'v, 'r) Electoral_Module \<Rightarrow> bool" 
-   where "inv_under_group_action m \<equiv> "
-*)
-
-subsubsection \<open>Invariance under group action\<close>
-
-type_synonym 'g Magma = "('g set) * ('g \<Rightarrow> 'g \<Rightarrow> 'g)"
-
-abbreviation carrier :: "('g Magma) \<Rightarrow> ('g set)" where
-  "carrier G \<equiv> fst G"
-
-abbreviation mult :: "('g Magma) \<Rightarrow> ('g \<Rightarrow> 'g \<Rightarrow> 'g)" where
-  "mult G \<equiv> snd G"
-
-definition magma :: "('g Magma) \<Rightarrow> bool" where
-  "magma G \<equiv> \<forall> g \<in> (carrier G). (mult G g) ` (carrier G) \<subseteq> (carrier G)"
-
-definition half_group :: "('g Magma) \<Rightarrow> bool" where
-  "half_group G \<equiv> magma G \<and> (\<forall> a \<in> carrier G. \<forall> b \<in> carrier G. \<forall> c \<in> carrier G. 
-    mult G (mult G a b) c = mult G a (mult G b c))"
-
-definition neutral_element :: "('g Magma) \<Rightarrow> 'g \<Rightarrow> bool" where
-  "neutral_element G e \<equiv> e \<in> (carrier G) \<and> 
-    (\<forall> g \<in> carrier G. (mult G e g = g \<and> mult G g e = g))"
-
-definition monoid :: "('g Magma) \<Rightarrow> bool" where
-  "monoid G \<equiv> half_group G \<and> (\<exists> e. neutral_element G e)"
-
-definition group :: "('g Magma) \<Rightarrow> bool" where 
-  "group G \<equiv> monoid G \<and> (\<forall> g \<in> carrier G. \<exists> g_inv \<in> carrier G. 
-    (neutral_element G (mult G g g_inv) \<and> neutral_element G (mult G g_inv g)))"
-
-definition homomorphism :: "('g Magma) \<Rightarrow> ('h Magma) \<Rightarrow> ('g \<Rightarrow> 'h) \<Rightarrow> bool" where
-  "homomorphism G H \<phi> \<equiv> (\<forall> g \<in> carrier G. (\<phi> g) \<in> carrier H) \<and>
-    (\<forall> a \<in> carrier G. \<forall> b \<in> carrier G. \<phi> (mult G a b) = mult H (\<phi> a) (\<phi> b))"
-
-definition symmetry_group :: "'x set \<Rightarrow> ('x \<Rightarrow> 'x) Magma" where
-  "symmetry_group X = ({\<phi> :: 'x \<Rightarrow> 'x. bij_betw \<phi> X X}, (\<lambda> \<pi>1 \<pi>2 x. \<pi>1 (\<pi>2 x)))"
-
-type_synonym ('g, 'x) Group_Action = "('g Magma) * ('x set) * ('g  \<Rightarrow> 'x \<Rightarrow> 'x)"
-abbreviation group_of :: "('g, 'x) Group_Action \<Rightarrow> 'g Magma" where
-  "group_of \<alpha> \<equiv> fst \<alpha>"
-abbreviation set_of :: "('g, 'x) Group_Action \<Rightarrow> 'x set" where
-  "set_of \<alpha> \<equiv> fst (snd \<alpha>)"
-abbreviation action_of :: "('g, 'x) Group_Action \<Rightarrow> ('g \<Rightarrow> 'x \<Rightarrow> 'x)" where
-  "action_of \<alpha> \<equiv> snd (snd \<alpha>)"
-definition group_action :: "('g, 'x) Group_Action \<Rightarrow> bool" where
-  "group_action \<alpha> \<equiv> group (group_of \<alpha>) \<and>
-    homomorphism (group_of \<alpha>) (symmetry_group (set_of \<alpha>)) (action_of \<alpha>)"
-
-definition invariant :: "('x \<Rightarrow> 'y) \<Rightarrow> ('g, 'x) Group_Action \<Rightarrow> bool" where
-  "invariant f \<alpha> \<equiv> \<forall> x \<in> (set_of \<alpha>). \<forall> g \<in> (carrier (group_of \<alpha>)). f x = f (action_of \<alpha> g x)"
-
 subsubsection \<open>Homogeneity\<close>
 
 definition (in result) homogeneity :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
@@ -176,102 +118,6 @@ definition (in result) anonymity :: "('a, 'v, ('r Result)) Electoral_Module \<Ri
       (\<forall> A V p \<pi>::('v \<Rightarrow> 'v). 
         bij \<pi> \<longrightarrow> (let (A', V', q) = (rename \<pi> (A, V, p)) in
             finite_profile V A p \<and> finite_profile V' A' q \<longrightarrow> m V A p = m V' A' q))"
-
-abbreviation finite_election :: "('a, 'v) Election \<Rightarrow> bool" where
-  "finite_election el \<equiv> finite_profile (votrs_\<E> el) (alts_\<E> el) (prof_\<E> el)"
-
-definition rename_voters_action :: "('v \<Rightarrow> 'v, ('a, 'v) Election) Group_Action" where
-  "rename_voters_action \<equiv> 
-    (symmetry_group (UNIV::('v set)), {el :: ('a, 'v) Election. finite_election el}, rename)"
-
-(* lemma rename_is_group_action: "group_action rename_voters_action"
-proof (unfold group_action_def rename_voters_action_def homomorphism_def, 
-        auto) *)
-
-lemma (in result) anon_equiv_inv_under_voter_rename:
-  "anonymity m = (electoral_module m \<and> invariant (on_el m) rename_voters_action)"
-proof (unfold anonymity_def, safe)
-  fix 
-    m :: "('a, 'v, ('r Result)) Electoral_Module"
-  assume
-    anon: "\<forall>A V p \<pi>.
-       bij \<pi> \<longrightarrow>
-       (let (A', V', q) = rename \<pi> (A, V, p)
-        in finite_profile V A p \<and> finite_profile V' A' q \<longrightarrow> m V A p = m V' A' q)" and
-    mod: "electoral_module m"
-  show "invariant (on_el m) rename_voters_action"
-  proof (unfold invariant_def, safe)
-    fix 
-      A :: "'a set" and
-      V :: "'v set" and
-      p :: "('a, 'v) Profile" and
-      g :: "'v \<Rightarrow> 'v"
-    assume 
-      el: "(A, V, p) \<in> set_of rename_voters_action" and
-      perm: "g \<in> carrier (group_of rename_voters_action)"
-    hence bij: "bij g" 
-      unfolding carrier_def rename_voters_action_def symmetry_group_def
-      by simp
-    have fin: "finite_profile V A p"
-      using el
-      unfolding rename_voters_action_def
-      by auto
-    hence "let (A', V', p') = (rename g (A,V,p)) in
-            finite_profile V' A' p'"
-      using bij rename.simps rename_sound
-      by fastforce
-    hence "on_el m (A,V,p) = on_el m (rename g (A,V,p))"
-      using bij anon fin
-      by simp
-    also have "... = on_el m (snd (snd rename_voters_action) g (A, V, p))"
-      unfolding rename_voters_action_def
-      by simp
-    finally show "on_el m (A, V, p) = on_el m (snd (snd rename_voters_action) g (A, V, p))"
-      by simp
-  qed
-next
-  fix 
-    m :: "('a, 'v, ('r Result)) Electoral_Module" and
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    \<pi> :: "'v \<Rightarrow> 'v"
-  assume
-    mod: "electoral_module m" and
-    inv: "invariant (on_el m) rename_voters_action" and
-    bij: "bij \<pi>"
-  show "let (A', V', q) = rename \<pi> (A, V, p)
-       in finite_profile V A p \<and> finite_profile V' A' q \<longrightarrow> m V A p = m V' A' q"
-  proof (unfold Let_def, safe)
-    fix 
-      A' :: "'a set" and
-      V' :: "'v set" and
-      p' :: "('a, 'v) Profile"
-    assume
-      renamed: "rename \<pi> (A, V, p) = (A', V', p')" and
-      fin_A: "finite A" and
-      fin_V: "finite V" and
-      prof: "profile V A p"
-    have "(A, V, p) \<in> (set_of rename_voters_action)"
-      using fin_A fin_V prof
-      unfolding rename_voters_action_def
-      by simp
-    moreover have "\<pi> \<in> (carrier (group_of rename_voters_action))"
-      using bij
-      unfolding carrier_def rename_voters_action_def symmetry_group_def
-      by simp
-    moreover have "(A', V', p') = (action_of rename_voters_action \<pi> (A, V, p))"
-      using renamed
-      unfolding rename_voters_action_def
-      by simp
-    ultimately have "(on_el m) (A, V, p) = (on_el m) (A', V', p')"
-      using inv
-      unfolding invariant_def
-      by metis
-    thus "m V A p = m V' A' p'"
-      by simp
-  qed
-qed
       
 lemma (in result) hom_imp_anon: 
   "homogeneity m \<Longrightarrow> anonymity m"
@@ -341,38 +187,11 @@ next
     by fastforce
 qed
 
-subsubsection \<open>Neutrality\<close>
-
-definition (in result) neutrality :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
-  "neutrality m \<equiv> 
-      electoral_module m \<and>
-            (\<forall> A V p \<pi>::('v \<Rightarrow> 'v). 
-              bij \<pi> \<longrightarrow> (let (A, V', q) = (rename \<pi> (A, V, p)) in
-                  finite_profile V A p \<and> finite_profile V' A q \<longrightarrow> m V A p = m V' A q))"
-
 text \<open>
   The following results require electoral modules to return social choice results, 
   i.e. sets of elected, rejected and deferred alternatives.
   In order to export code, we use the hack provided by Locale_Code.
 \<close>
-
-setup Locale_Code.open_block
-
-(* define lemma that just states the instantiated definition of the interpreted function *)
-lemma em_social_choice: 
-  "social_choice_result.electoral_module m = 
-    (\<forall> A V p. finite_profile V A p \<longrightarrow> well_formed A (m V A p))"
-  using social_choice_result.electoral_module_def 
-  by blast
-
-declare [[lc_add "social_choice_result.electoral_module" em_social_choice]]
-
-setup Locale_Code.close_block
-
-(* code generation only works for constants, so an alias is needed *)
-definition "electoral_module_sc = social_choice_result.electoral_module"
-
-export_code electoral_module_sc in Haskell
 
 text \<open>
   "defers n" is true for all electoral modules that defer exactly
@@ -497,7 +316,7 @@ lemma par_comp_result_sound:
   assumes
     "social_choice_result.electoral_module m" and
     "finite_profile V A p"
-  shows "well_formed A (m V A p)"
+  shows "well_formed_soc_choice A (m V A p)"
   using assms
   unfolding social_choice_result.electoral_module_def
   by simp
@@ -591,7 +410,7 @@ proof (safe, simp_all)
   assume
     "a \<in> elect V m A p" and
     "a \<in> reject V m A p"
-  moreover have "well_formed A (m V A p)"
+  moreover have "well_formed_soc_choice A (m V A p)"
     using assms
     unfolding social_choice_result.electoral_module_def
     by metis
@@ -607,7 +426,7 @@ next
     "\<forall> p'. disjoint3 p' \<longrightarrow>
       (\<exists> B C D. p' = (B, C, D) \<and> B \<inter> C = {} \<and> B \<inter> D = {} \<and> C \<inter> D = {})"
     by simp
-  have "well_formed A (m V A p)"
+  have "well_formed_soc_choice A (m V A p)"
     using assms
     unfolding social_choice_result.electoral_module_def
     by metis
@@ -638,7 +457,7 @@ next
   assume
     "a \<in> reject V m A p" and
     "a \<in> defer V m A p"
-  moreover have "well_formed A (m V A p)"
+  moreover have "well_formed_soc_choice A (m V A p)"
     using assms
     unfolding social_choice_result.electoral_module_def
     by simp
@@ -729,7 +548,7 @@ lemma reject_not_elec_or_def:
     "finite_profile V A p"
   shows "reject V m A p = A - (elect V m A p) - (defer V m A p)"
 proof -
-  have "well_formed A (m V A p)"
+  have "well_formed_soc_choice A (m V A p)"
     using assms
     unfolding social_choice_result.electoral_module_def
     by simp
@@ -776,7 +595,7 @@ lemma defer_not_elec_or_rej:
     "finite_profile V A p"
   shows "defer V m A p = A - (elect V m A p) - (reject V m A p)"
 proof -
-  have "well_formed A (m V A p)"
+  have "well_formed_soc_choice A (m V A p)"
     using assms
     unfolding social_choice_result.electoral_module_def
     by simp
