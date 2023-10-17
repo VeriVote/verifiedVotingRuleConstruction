@@ -96,6 +96,8 @@ fun all_profiles :: "'v set \<Rightarrow> 'a set \<Rightarrow> (('a, 'v) Profile
     (if (infinite A \<or> infinite V)
       then {} else {p. p ` V \<subseteq> (pl_\<alpha> ` permutations_of_set A)})"
 
+export_code all_profiles in Haskell
+
 fun \<K>\<^sub>\<E>_std :: 
 "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> 'a set \<Rightarrow> 'v set \<Rightarrow> ('a, 'v) Election set" where
   "\<K>\<^sub>\<E>_std K w A V =
@@ -920,7 +922,7 @@ proof -
       using eq_intersect
       by (simp add: top_ereal_def)
     also have "score_std d K (A, V, p) w = \<infinity>" 
-      using True score_std.simps votrs_\<E>.simps alts_\<E>.simps
+      using True score_std.simps
       unfolding Let_def
       by simp
     finally show ?thesis

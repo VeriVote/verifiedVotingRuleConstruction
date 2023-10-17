@@ -39,11 +39,11 @@ type_synonym ('a, 'v) Profile = "'v \<Rightarrow> ('a Preference_Relation)"
 
 type_synonym ('a, 'v) Election = "'a set \<times> 'v set \<times> ('a, 'v) Profile"
 
-fun alts_\<E> :: "('a, 'v) Election \<Rightarrow> 'a set" where "alts_\<E> E = fst E"
+abbreviation alts_\<E> :: "('a, 'v) Election \<Rightarrow> 'a set" where "alts_\<E> E \<equiv> fst E"
 
-fun votrs_\<E> :: "('a, 'v) Election \<Rightarrow> 'v set" where "votrs_\<E> E = fst (snd E)"
+abbreviation votrs_\<E> :: "('a, 'v) Election \<Rightarrow> 'v set" where "votrs_\<E> E \<equiv> fst (snd E)"
 
-fun prof_\<E> :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Profile" where "prof_\<E> E = snd (snd E)"
+abbreviation prof_\<E> :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Profile" where "prof_\<E> E \<equiv> snd (snd E)"
 
 text \<open>
   A profile on a set of alternatives A and a voter set V consists of ballots
