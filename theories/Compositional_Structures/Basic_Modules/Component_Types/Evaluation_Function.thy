@@ -24,7 +24,7 @@ type_synonym ('a, 'v) Evaluation_Function =
 subsection \<open>Property\<close>
 
 text \<open>
-  An Evaluation function is Condorcet-rating iff the following holds:
+  An Evaluation function is a Condorcet-rating iff the following holds:
   If a Condorcet Winner w exists, w and only w has the highest value.
 \<close>
 
@@ -32,6 +32,16 @@ definition condorcet_rating :: "('a, 'v) Evaluation_Function \<Rightarrow> bool"
   "condorcet_rating f \<equiv>
     \<forall> A V p w . condorcet_winner V A p w \<longrightarrow>
       (\<forall> l \<in> A . l \<noteq> w \<longrightarrow> f V l A p < f V w A p)"
+
+text \<open>
+  An Evaluation function is dependent only on the participating voters iff
+  it is invariant under profile changes that only impact non-voters.
+\<close>
+
+definition only_voters_count :: "('a, 'v) Evaluation_Function \<Rightarrow> bool" where
+  "only_voters_count f \<equiv> 
+    \<forall> A V p p'. (\<forall> v \<in> V. p v = p' v) \<longrightarrow> 
+      (\<forall> a \<in> A. f V a A p = f V a A p')"
 
 subsection \<open>Theorems\<close>
 

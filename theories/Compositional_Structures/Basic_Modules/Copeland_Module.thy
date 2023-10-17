@@ -35,6 +35,35 @@ theorem copeland_sound: "social_choice_result.electoral_module copeland"
   using max_elim_sound
   by metis
 
+subsection \<open>Only participating voters impact the result\<close>
+
+lemma copeland_score_only_voters_count: "only_voters_count copeland_score"
+proof (unfold copeland_score.simps only_voters_count_def, safe)
+  fix 
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile" and
+    p' :: "('b, 'a) Profile" and
+    a :: 'b
+  assume
+    "\<forall>v\<in>V. p v = p' v" and
+    "a \<in> A"
+  hence "\<forall> x y. {v \<in> V. (x, y) \<in> p v} = {v \<in> V. (x, y) \<in> p' v}"
+    by blast
+  hence "\<forall> x y. card {y \<in> A. wins V x p y} = card {y \<in> A. wins V x p' y} \<and>
+                card {x \<in> A. wins V x p y} = card {x \<in> A. wins V x p' y}"
+    by simp
+  thus "card {y \<in> A. wins V a p y} - card {y \<in> A. wins V y p a} =
+       card {y \<in> A. wins V a p' y} - card {y \<in> A. wins V y p' a}"
+    by presburger
+qed
+
+theorem copeland_only_voters_vote: "only_voters_vote copeland"
+  unfolding copeland.simps
+  using max_elim_only_voters only_voters_vote_def 
+        copeland_score_only_voters_count
+  by blast
+
 subsection \<open>Lemmas\<close>
 
 text \<open>

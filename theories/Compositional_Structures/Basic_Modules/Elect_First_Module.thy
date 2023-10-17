@@ -44,7 +44,7 @@ proof (intro social_choice_result.electoral_modI)
     by blast
   hence "disjoint3 (elect_first_module V A p)"
     by simp
-  ultimately show "well_formed A (elect_first_module V A p)"
+  ultimately show "well_formed_soc_choice A (elect_first_module V A p)"
     by simp
 qed
 

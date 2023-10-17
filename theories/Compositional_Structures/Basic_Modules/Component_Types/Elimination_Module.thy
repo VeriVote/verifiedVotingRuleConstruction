@@ -210,6 +210,161 @@ lemma leq_avg_elim_sound[simp]:
   unfolding social_choice_result.electoral_module_def
   by auto
 
+subsection \<open>Only participating voters impact the result\<close>
+
+lemma elim_mod_only_voters[simp]:
+  fixes
+    e :: "('a, 'v) Evaluation_Function" and
+    t :: "Threshold_Value" and
+    r :: "Threshold_Relation"
+  assumes "only_voters_count e"
+  shows "only_voters_vote (elimination_module e t r)"
+proof (unfold only_voters_vote_def elimination_module.simps, safe)
+  fix 
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    p' :: "('a, 'v) Profile" 
+  assume 
+    "\<forall>v\<in>V. p v = p' v"
+  hence "\<forall> a \<in> A. (e V a A p) = (e V a A p')"
+    using assms
+    by (simp add: only_voters_count_def)
+  hence "{a \<in> A. r (e V a A p) t} = {a \<in> A. r (e V a A p') t}"
+    by fastforce
+  hence "elimination_set e t r V A p = elimination_set e t r V A p'"
+    unfolding elimination_set.simps
+    by presburger
+  thus 
+    "(if elimination_set e t r V A p \<noteq> A
+        then ({}, elimination_set e t r V A p, A - elimination_set e t r V A p) else ({}, {}, A)) =
+     (if elimination_set e t r V A p' \<noteq> A
+        then ({}, elimination_set e t r V A p', A - elimination_set e t r V A p') else ({}, {}, A))"
+    by presburger
+qed
+
+lemma less_elim_only_voters[simp]:
+  fixes
+    e :: "('a, 'v) Evaluation_Function" and
+    t :: "Threshold_Value"
+  assumes "only_voters_count e"
+  shows "only_voters_vote (less_eliminator e t)"
+  unfolding less_eliminator.simps
+  using only_voters_vote_def elim_mod_only_voters assms
+  by simp
+
+lemma leq_elim_only_voters[simp]:
+  fixes
+    e :: "('a, 'v) Evaluation_Function" and
+    t :: "Threshold_Value"
+  assumes "only_voters_count e"
+  shows "only_voters_vote (leq_eliminator e t)"
+  unfolding leq_eliminator.simps
+  using only_voters_vote_def elim_mod_only_voters assms
+  by simp 
+
+lemma max_elim_only_voters[simp]:
+  fixes e :: "('a, 'v) Evaluation_Function"
+  assumes "only_voters_count e"
+  shows "only_voters_vote (max_eliminator e)"
+proof (unfold max_eliminator.simps only_voters_vote_def, safe)
+  fix 
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    p' :: "('a, 'v) Profile" 
+  assume 
+    coinciding: "\<forall>v\<in>V. p v = p' v"
+  hence "\<forall> x \<in> A. e V x A p = e V x A p'"
+    using assms 
+    unfolding only_voters_count_def
+    by simp
+  hence "Max {e V x A p |x. x \<in> A} = Max {e V x A p' |x. x \<in> A}"
+    by metis
+  thus "less_eliminator e (Max {e V x A p |x. x \<in> A}) V A p =
+       less_eliminator e (Max {e V x A p' |x. x \<in> A}) V A p'"
+    using coinciding assms less_elim_only_voters
+    unfolding only_voters_vote_def 
+    by (metis (no_types, lifting))
+qed
+  
+lemma min_elim_only_voters[simp]:
+  fixes e :: "('a, 'v) Evaluation_Function"
+  assumes "only_voters_count e"
+  shows "only_voters_vote (min_eliminator e)"
+proof (unfold min_eliminator.simps only_voters_vote_def, safe)
+  fix 
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    p' :: "('a, 'v) Profile" 
+  assume 
+    coinciding: "\<forall>v\<in>V. p v = p' v"
+  hence "\<forall> x \<in> A. e V x A p = e V x A p'"
+    using assms 
+    unfolding only_voters_count_def
+    by simp
+  hence "Min {e V x A p |x. x \<in> A} = Min {e V x A p' |x. x \<in> A}"
+    by metis
+  thus "leq_eliminator e (Min {e V x A p |x. x \<in> A}) V A p =
+       leq_eliminator e (Min {e V x A p' |x. x \<in> A}) V A p'"
+    using coinciding assms leq_elim_only_voters
+    unfolding only_voters_vote_def 
+    by (metis (no_types, lifting))
+qed
+
+lemma less_avg_only_voters[simp]:
+  fixes e :: "('a, 'v) Evaluation_Function"
+  assumes "only_voters_count e"
+  shows "only_voters_vote (less_average_eliminator e)"
+proof (unfold less_average_eliminator.simps only_voters_vote_def, safe)
+  fix 
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    p' :: "('a, 'v) Profile" 
+  assume 
+    coinciding: "\<forall>v\<in>V. p v = p' v"
+  hence "\<forall> x \<in> A. e V x A p = e V x A p'"
+    using assms 
+    unfolding only_voters_count_def
+    by simp
+  hence "average e V A p = average e V A p'"
+    unfolding average.simps
+    by auto
+  thus "less_eliminator e (average e V A p) V A p =
+       less_eliminator e (average e V A p') V A p'"
+    using coinciding assms less_elim_only_voters
+    unfolding only_voters_vote_def 
+    by (metis (no_types, lifting))
+qed
+
+lemma leq_avg_only_voters[simp]:
+  fixes e :: "('a, 'v) Evaluation_Function"
+  assumes "only_voters_count e"
+  shows "only_voters_vote (leq_average_eliminator e)"
+proof (unfold leq_average_eliminator.simps only_voters_vote_def, safe)
+  fix 
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    p' :: "('a, 'v) Profile" 
+  assume 
+    coinciding: "\<forall>v\<in>V. p v = p' v"
+  hence "\<forall> x \<in> A. e V x A p = e V x A p'"
+    using assms 
+    unfolding only_voters_count_def
+    by simp
+  hence "average e V A p = average e V A p'"
+    unfolding average.simps
+    by auto
+  thus "leq_eliminator e (average e V A p) V A p =
+       leq_eliminator e (average e V A p') V A p'"
+    using coinciding assms leq_elim_only_voters
+    unfolding only_voters_vote_def 
+    by (metis (no_types, lifting))
+qed
+
 subsection \<open>Non-Blocking\<close>
 
 lemma elim_mod_non_blocking:
