@@ -2,6 +2,7 @@
     Copyright   2022  Karlsruhe Institute of Technology (KIT)
 *)
 \<^marker>\<open>creator "Marion Steinriede, Karlsruhe Institute of Technology (KIT)"\<close>
+\<^marker>\<open>contributor "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
 
 section \<open>Distance Rationalization\<close>
 
@@ -32,9 +33,6 @@ fun score :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow
 
 fun arg_min_set :: "('b \<Rightarrow> 'a :: ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
   "arg_min_set f A = Collect (is_arg_min f (\<lambda> a. a \<in> A))"
-
-(* fun arg_min_set' :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
-   "arg_min_set_' f A = Set.filter (is_arg_min f (\<lambda> a. a \<in> A)) A" *)
 
 fun \<R>\<^sub>\<W> :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a set" where
   "\<R>\<^sub>\<W> d K A p = arg_min_set (score d K (A, p)) A"
@@ -79,148 +77,6 @@ fun distance_\<R>_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class 
   "distance_\<R>_std d K A p = (\<R>\<^sub>\<W>_std d K A p, A - \<R>\<^sub>\<W>_std d K A p, {})"
 
 subsection \<open>Auxiliary Lemmas\<close>
-
-lemma list_cons_presv_finiteness:
-  fixes
-    A :: "'a set" and
-    S :: "'a list set"
-  assumes
-    fin_A: "finite A" and
-    fin_B: "finite S"
-  shows "finite {a#l | a l. a \<in> A \<and> l \<in> S}"
-proof -
-  let ?P = "\<lambda> A. finite {a#l | a l. a \<in> A \<and> l \<in> S}"
-  have "\<And> a A'. finite A' \<Longrightarrow> a \<notin> A' \<Longrightarrow> ?P A' \<Longrightarrow> ?P (insert a A')"
-  proof -
-    fix
-      a :: "'a" and
-      A' :: "'a set"
-    assume
-      fin: "finite A'" and
-      not_in: "a \<notin> A'" and
-      fin_set: "finite {a#l | a l. a \<in> A' \<and> l \<in> S}"
-    have "{a'#l | a' l. a' \<in> insert a A' \<and> l \<in> S}
-            = {a#l | a l. a \<in> A' \<and> l \<in> S} \<union> {a#l | l. l \<in> S}"
-      by auto
-    moreover have "finite {a#l | l. l \<in> S}"
-      using fin_B
-      by simp
-    ultimately have "finite {a'#l | a' l. a' \<in> insert a A' \<and> l \<in> S}"
-      using fin_set
-      by simp
-    thus "?P (insert a A')"
-      by simp
-  qed
-  moreover have "?P {}"
-    by simp
-  ultimately show "?P A"
-    using finite_induct[of A ?P] fin_A
-    by simp
-qed
-
-lemma listset_finiteness:
-  fixes l :: "'a set list"
-  assumes "\<forall> i::nat. i < length l \<longrightarrow> finite (l!i)"
-  shows "finite (listset l)"
-  using assms
-proof (induct l, simp)
-  case (Cons a l)
-  fix
-    a :: "'a set" and
-    l :: "'a set list"
-  assume
-    elems_fin_then_set_fin: "\<forall> i::nat < length l. finite (l!i) \<Longrightarrow> finite (listset l)" and
-    fin_all_elems: "\<forall> i::nat < length (a#l). finite ((a#l)!i)"
-  hence "finite a"
-    by auto
-  moreover from fin_all_elems
-  have "\<forall> i < length l. finite (l!i)"
-    by auto
-  hence "finite (listset l)"
-    using elems_fin_then_set_fin
-    by simp
-  ultimately have "finite {a'#l' | a' l'. a' \<in> a \<and> l' \<in> (listset l)}"
-    using list_cons_presv_finiteness
-    by auto
-  thus "finite (listset (a#l))"
-    by (simp add: set_Cons_def)
-qed
-
-lemma all_ls_elems_same_len:
-  fixes l :: "'a set list"
-  shows "\<forall> l'::('a list). l' \<in> listset l \<longrightarrow> length l' = length l"
-proof (induct l, simp)
-  case (Cons a l)
-  fix
-    a :: "'a set" and
-    l :: "'a set list"
-  assume "\<forall> l'. l' \<in> listset l \<longrightarrow> length l' = length l"
-  moreover have
-    "\<forall> a' l'::('a set list). listset (a'#l') = {b#m | b m. b \<in> a' \<and> m \<in> listset l'}"
-    by (simp add: set_Cons_def)
-  ultimately show "\<forall> l'. l' \<in> listset (a#l) \<longrightarrow> length l' = length (a#l)"
-    using local.Cons
-    by force
-qed
-
-lemma all_ls_elems_in_ls_set:
-  fixes l :: "'a set list"
-  shows "\<forall> l' i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i"
-proof (induct l, simp, safe)
-  case (Cons a l)
-  fix
-    a :: "'a set" and
-    l :: "'a set list" and
-    l' :: "'a list" and
-    i :: nat
-  assume elems_in_set_then_elems_pos:
-    "\<forall> l' i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i" and
-    l_prime_in_set_a_l: "l' \<in> listset (a#l)" and
-    i_lt_len_l_prime: "i < length l'"
-  have "l' \<in> set_Cons a (listset l)"
-    using l_prime_in_set_a_l
-    by simp
-  hence "l' \<in> {m. \<exists> b m'. m = b#m' \<and> b \<in> a \<and> m' \<in> (listset l)}"
-    unfolding set_Cons_def
-    by simp
-  hence "\<exists> b m. l' = b#m \<and> b \<in> a \<and> m \<in> (listset l)"
-    by simp
-  thus "l'!i \<in> (a#l)!i"
-    using elems_in_set_then_elems_pos i_lt_len_l_prime nth_Cons_Suc
-          Suc_less_eq gr0_conv_Suc length_Cons nth_non_equal_first_eq
-    by metis
-qed
-
-lemma all_ls_in_ls_set:
-  fixes l :: "'a set list"
-  shows "\<forall> l'. (length l' = length l \<and> (\<forall> i < length l'. l'!i \<in> l!i)) \<longrightarrow> l' \<in> listset l"
-proof (induction l, safe, simp)
-  case (Cons a l)
-  fix
-    l :: "'a set list" and
-    l' :: "'a list" and
-    s :: "'a set"
-  assume
-    all_ls_in_ls_set_induct:
-    "\<forall> m. length m = length l \<and> (\<forall> i < length m. m!i \<in> l!i) \<longrightarrow> m \<in> listset l" and
-    len_eq: "length l' = length (s#l)" and
-    elems_pos_in_cons_ls_pos: "\<forall> i < length l'. l'!i \<in> (s#l)!i"
-  then obtain t and x where
-    l'_cons: "l' = x#t"
-    using length_Cons list.exhaust list.size(3) nat.simps(3)
-    by metis
-  hence "x \<in> s"
-    using elems_pos_in_cons_ls_pos
-    by force
-  moreover have "t \<in> listset l"
-    using l'_cons all_ls_in_ls_set_induct len_eq diff_Suc_1 diff_Suc_eq_diff_pred
-          elems_pos_in_cons_ls_pos length_Cons nth_Cons_Suc zero_less_diff
-    by metis
-  ultimately show "l' \<in> listset (s#l)"
-    using l'_cons
-    unfolding listset_def set_Cons_def
-    by simp
-qed
 
 lemma lin_ord_pl_\<alpha>:
   fixes
@@ -710,56 +566,6 @@ lemma \<R>_sound:
 
 subsection \<open>Inference Rules\<close>
 
-lemma is_arg_min_equal:
-  fixes
-    f :: "'a \<Rightarrow> 'b::ord" and
-    g :: "'a \<Rightarrow> 'b" and
-    S :: "'a set" and
-    x :: 'a
-  assumes "\<forall> x \<in> S. f x = g x"
-  shows "is_arg_min f (\<lambda> s. s \<in> S) x = is_arg_min g (\<lambda> s. s \<in> S) x"
-proof (unfold is_arg_min_def, cases "x \<in> S")
-  case False
-  thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
-    by simp
-next
-  case x_in_S: True
-  thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
-  proof (cases "\<exists> y. (\<lambda> s. s \<in> S) y \<and> f y < f x")
-    case y: True
-    then obtain y :: 'a where
-      "(\<lambda> s. s \<in> S) y \<and> f y < f x"
-      by metis
-    hence "(\<lambda> s. s \<in> S) y \<and> g y < g x"
-      using x_in_S assms
-      by metis
-    thus ?thesis
-      using y
-      by metis
-  next
-    case not_y: False
-    have "\<not> (\<exists> y. (\<lambda> s. s \<in> S) y \<and> g y < g x)"
-    proof (safe)
-      fix  y :: "'a"
-      assume
-        y_in_S: "y \<in> S" and
-        g_y_lt_g_x: "g y < g x"
-      have f_eq_g_for_elems_in_S: "\<forall> a. a \<in> S \<longrightarrow> f a = g a"
-        using assms
-        by simp
-      hence "g x = f x"
-        using x_in_S
-        by presburger
-      thus "False"
-        using f_eq_g_for_elems_in_S g_y_lt_g_x not_y y_in_S
-        by (metis (no_types))
-    qed
-    thus ?thesis
-      using x_in_S not_y
-      by simp
-  qed
-qed
-
 lemma standard_distance_imp_equal_score:
   fixes
     d :: "'a Election Distance" and
@@ -918,12 +724,11 @@ next
     p :: "'a Profile" and
     q :: "'a Profile"
   assume
-    fin: "finite A" and
-    profile_p: "profile A p" and
-    profile_q: "profile A q" and
-    p_q_perm: "p <~~> q"
-  from p_q_perm
-  obtain pi where
+    "finite A" and
+    "profile A p" and
+    "profile A q" and
+    "p <~~> q"
+  then obtain pi where
     pi_perm: "pi permutes {..< length p}" and
     pq: "permute_list pi p = q"
     using mset_eq_permutation
@@ -1002,7 +807,7 @@ next
           case False
           thus ?thesis
             using consensus_election_E
-            by fastforce (* because ?listpi ?p = ?p *)
+            by fastforce
         qed
       qed
     next
@@ -1038,7 +843,7 @@ next
           case False
           thus ?thesis
             using consensus_elect_permut_E rp'
-            by fastforce (* because ?listpi ?p = ?p *)
+            by fastforce
         qed
       qed
     qed
