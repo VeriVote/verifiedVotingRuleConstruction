@@ -12,7 +12,10 @@ theory Consensus_Class
 begin
 
 text \<open>
-  TODO.
+  A consensus class is a pair of a set of elections and a mapping that assigns a unique alternative
+  to each election in that set (of elections). This alternative is then called the consensus
+  alternative (winner). Here, we model the mapping by an electoral module that defers alternatives
+  which are not in the consensus.
 \<close>
 
 subsection \<open>Definition\<close>
@@ -23,10 +26,10 @@ fun consensus_\<K> :: "'a Consensus_Class \<Rightarrow> 'a Consensus" where "con
 
 fun rule_\<K> :: "'a Consensus_Class \<Rightarrow> 'a Electoral_Module" where "rule_\<K> K = snd K"
 
-subsection \<open>TODO\<close>
+subsection \<open>Consensus Choice\<close>
 
-definition completely_determined :: "'a Consensus \<Rightarrow> 'a Electoral_Module \<Rightarrow> bool" where
-  "completely_determined c m \<equiv>
+definition well_formed :: "'a Consensus \<Rightarrow> 'a Electoral_Module \<Rightarrow> bool" where
+  "well_formed c m \<equiv>
     \<forall> A p p'. finite A \<and> profile A p \<and> profile A p' \<and> c (A, p) \<and> c (A, p') \<longrightarrow> m A p = m A p'"
 
 fun consensus_choice :: "'a Consensus \<Rightarrow> 'a Electoral_Module \<Rightarrow> 'a Consensus_Class" where
@@ -41,9 +44,8 @@ subsection \<open>Auxiliary Lemmas\<close>
 lemma unanimity'_consensus_imp_elect_fst_mod_completely_determined:
   fixes a :: "'a"
   shows
-    "completely_determined
-      (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C>' a c) elect_first_module"
-proof (unfold completely_determined_def, safe)
+    "well_formed (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C>' a c) elect_first_module"
+proof (unfold well_formed_def, safe)
   fix
     a :: 'a and
     A :: "'a set" and
@@ -100,9 +102,8 @@ qed
 lemma strong_unanimity'consensus_imp_elect_fst_mod_completely_determined:
   fixes r :: "'a Preference_Relation"
   shows
-    "completely_determined
-      (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C>' r c) elect_first_module"
-  unfolding completely_determined_def
+    "well_formed (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C>' r c) elect_first_module"
+  unfolding well_formed_def
   by simp
 
 subsection \<open>Consensus Rules\<close>
@@ -143,7 +144,7 @@ lemma consensus_choice_anonymous:
     beta_sat: "\<beta> = (\<lambda> E. \<exists> a. \<beta>' a E)" and
     beta'_anon: "\<forall> x. consensus_anonymity (\<beta>' x)" and
     anon_cons_cond: "consensus_anonymity \<alpha>" and
-    conditions_univ: "\<forall> x. completely_determined (\<lambda> E. \<alpha> E \<and> \<beta>' x E) m"
+    conditions_univ: "\<forall> x. well_formed (\<lambda> E. \<alpha> E \<and> \<beta>' x E) m"
   shows "consensus_rule_anonymity (consensus_choice (\<lambda> E. \<alpha> E \<and> \<beta> E) m)"
 proof (unfold consensus_rule_anonymity_def, safe)
   fix
@@ -185,7 +186,7 @@ proof (unfold consensus_rule_anonymity_def, safe)
     by metis
   have "m A p = m A q"
     using alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p conditions_univ fin_A prof_p prof_q
-    unfolding completely_determined_def
+    unfolding well_formed_def
     by metis
   thus "rule_\<K> (consensus_choice (\<lambda> E. \<alpha> E \<and> \<beta> E) m) A p =
              rule_\<K> (consensus_choice (\<lambda> E. \<alpha> E \<and> \<beta> E) m) A q"

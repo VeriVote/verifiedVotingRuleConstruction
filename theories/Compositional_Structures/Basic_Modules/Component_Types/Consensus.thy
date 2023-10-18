@@ -11,7 +11,9 @@ theory Consensus
 begin
 
 text \<open>
-  TODO.
+  An election consisting of a set of alternatives and a list of preferential votes (a profile)
+  is a consensus if it has an undisputed winner reflecting a certain concept of fairness in the
+  society.
 \<close>
 
 subsection \<open>Definition\<close>

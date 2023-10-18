@@ -10,7 +10,8 @@ theory Elect_First_Module
 begin
 
 text \<open>
-  TODO.
+  The elect first module elects the alternative that is most preferred on the first ballot and
+  rejects all other alternatives.
 \<close>
 
 subsection \<open>Definition\<close>
