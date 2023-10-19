@@ -13,25 +13,27 @@ section \<open>Electoral Module\<close>
 theory Electoral_Module
   imports "Social_Choice_Types/Profile"
           "Social_Choice_Types/Result"
+          "HOL-Combinatorics.List_Permutation"
 begin
 
 text \<open>
-  Electoral modules are the principal component type of the composable modules
-  voting framework, as they are a generalization of voting rules in the sense
-  of social choice functions.
-  These are only the types used for electoral modules. Further restrictions are
-  encompassed by the electoral-module predicate.
+  Electoral modules are the principal component type of the composable
+  modules voting framework, as they are a generalization of voting rules in
+  the sense of social choice functions.
+  These are only the types used for electoral modules. Further restrictions
+  are encompassed by the electoral-module predicate.
 
   An electoral module does not need to make final decisions for all
-  alternatives, but can instead defer the decision for some or all of them to
-  other modules. Hence, electoral modules partition the received (possibly
-  empty) set of alternatives into elected, rejected and deferred alternatives.
+  alternatives, but can instead defer the decision for some or all of them
+  to other modules. Hence, electoral modules partition the received
+  (possibly empty) set of alternatives into elected, rejected and deferred
+  alternatives.
   In particular, any of those sets, e.g., the set of winning (elected)
-  alternatives, may also be left empty, as long as they collectively still hold
-  all the received alternatives. Just like a voting rule, an electoral module
-  also receives a profile which holds the voters’ preferences, which, unlike a
-  voting rule, consider only the (sub-)set of alternatives that the module
-  receives.
+  alternatives, may also be left empty, as long as they collectively still
+  hold all the received alternatives. Just like a voting rule, an electoral
+  module also receives a profile which holds the voters’ preferences, which,
+  unlike a voting rule, consider only the (sub-)set of alternatives that
+  the module receives.
 \<close>
 
 subsection \<open>Definition\<close>
@@ -1234,5 +1236,13 @@ definition homogeneity :: "'a Electoral_Module \<Rightarrow> bool" where
   "homogeneity m \<equiv>
     electoral_module m \<and>
       (\<forall> A p n. (finite_profile A p \<and> n > 0 \<longrightarrow> (m A p = m A (times n p))))"
+
+subsubsection \<open>Anonymity\<close>
+
+definition anonymity :: "'a Electoral_Module \<Rightarrow> bool" where
+  "anonymity m \<equiv>
+    electoral_module m \<and>
+      (\<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<longrightarrow>
+        m A p = m A q)"
 
 end
