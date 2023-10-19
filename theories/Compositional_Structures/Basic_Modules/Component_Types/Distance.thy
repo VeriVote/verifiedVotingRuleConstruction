@@ -54,7 +54,8 @@ definition election_distance :: "('a Election set \<Rightarrow> 'a Election Dist
 subsection \<open>Standard Distance Property\<close>
 
 definition standard :: "'a Election Distance \<Rightarrow> bool" where
- "standard d \<equiv> \<forall> A A' p p'. length p \<noteq> length p' \<or> A \<noteq> A' \<longrightarrow> d (A, p) (A', p') = \<infinity>"
+ "standard d \<equiv>
+    \<forall> A A' p p'. length p \<noteq> length p' \<or> A \<noteq> A' \<longrightarrow> d (A, p) (A', p') = \<infinity>"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -73,7 +74,8 @@ lemma distrib:
     A :: "'a set" and
     f :: "'a \<Rightarrow> int" and
     g :: "'a \<Rightarrow> int"
-  shows "(\<Sum> a \<in> A. (f::'a \<Rightarrow> int) a) + (\<Sum> a \<in> A. g a) = (\<Sum> a \<in> A. (f a) + (g a))"
+  shows
+    "(\<Sum> a \<in> A. (f::'a \<Rightarrow> int) a) + (\<Sum> a \<in> A. g a) = (\<Sum> a \<in> A. (f a) + (g a))"
   using sum.distrib
   by metis
 
@@ -82,8 +84,8 @@ lemma distrib_ereal:
     A :: "'a set" and
     f :: "'a \<Rightarrow> int" and
     g :: "'a \<Rightarrow> int"
-  shows "ereal (real_of_int ((\<Sum> a \<in> A. (f::'a \<Rightarrow> int) a) + (\<Sum> a \<in> A. g a)))
-          = ereal (real_of_int ((\<Sum> a \<in> A. (f a) + (g a))))"
+  shows "ereal (real_of_int ((\<Sum> a \<in> A. (f::'a \<Rightarrow> int) a) + (\<Sum> a \<in> A. g a))) =
+    ereal (real_of_int ((\<Sum> a \<in> A. (f a) + (g a))))"
   using distrib[of f]
   by simp
 
@@ -98,16 +100,18 @@ lemma uneq_ereal:
 
 subsection \<open>Swap Distance\<close>
 
-fun neq_ord :: "'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" where
+fun neq_ord :: "'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
+                  'a \<Rightarrow> 'a \<Rightarrow> bool" where
   "neq_ord r s a b = ((a \<preceq>\<^sub>r b \<and> b \<preceq>\<^sub>s a) \<or> (b \<preceq>\<^sub>r a \<and> a \<preceq>\<^sub>s b))"
 
-fun pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
-                                      ('a \<times> 'a) set" where
+fun pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow>
+                                'a Preference_Relation \<Rightarrow> ('a \<times> 'a) set" where
   "pairwise_disagreements A r s = {(a, b) \<in> A \<times> A. a \<noteq> b \<and> neq_ord r s a b}"
 
-fun pairwise_disagreements' :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
-                                      ('a \<times> 'a) set" where
-  "pairwise_disagreements' A r s = Set.filter (\<lambda> (a, b). a \<noteq> b \<and> neq_ord r s a b) (A \<times> A)"
+fun pairwise_disagreements' :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow>
+                                'a Preference_Relation \<Rightarrow> ('a \<times> 'a) set" where
+  "pairwise_disagreements' A r s =
+      Set.filter (\<lambda> (a, b). a \<noteq> b \<and> neq_ord r s a b) (A \<times> A)"
 
 lemma set_eq_filter:
   fixes
@@ -166,7 +170,8 @@ lemma spearman_case_fin:
     x :: "'a Vote" and
     y :: "'a Vote"
   assumes "alts_\<V> x = alts_\<V> y"
-  shows "spearman x y = (\<Sum> a \<in> alts_\<V> x. abs (int (rank (pref_\<V> x) a) - int (rank (pref_\<V> y) a)))"
+  shows "spearman x y =
+    (\<Sum> a \<in> alts_\<V> x. abs (int (rank (pref_\<V> x) a) - int (rank (pref_\<V> y) a)))"
   using assms
   by (induction rule: spearman.induct, simp)
 

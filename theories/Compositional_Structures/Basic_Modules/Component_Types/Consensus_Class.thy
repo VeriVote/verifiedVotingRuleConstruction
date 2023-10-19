@@ -22,15 +22,23 @@ subsection \<open>Definition\<close>
 
 type_synonym 'a Consensus_Class = "'a Consensus \<times> 'a Electoral_Module"
 
-fun consensus_\<K> :: "'a Consensus_Class \<Rightarrow> 'a Consensus" where "consensus_\<K> K = fst K"
+fun consensus_\<K> :: "'a Consensus_Class \<Rightarrow> 'a Consensus" where
+  "consensus_\<K> K = fst K"
 
-fun rule_\<K> :: "'a Consensus_Class \<Rightarrow> 'a Electoral_Module" where "rule_\<K> K = snd K"
+fun rule_\<K> :: "'a Consensus_Class \<Rightarrow> 'a Electoral_Module" where
+  "rule_\<K> K = snd K"
 
 subsection \<open>Consensus Choice\<close>
 
+text \<open>
+  A consensus class is deemed well-formed if the result of its mapping is completely
+  determined by its consensus, the elected set of the electoral module's result.
+\<close>
+
 definition well_formed :: "'a Consensus \<Rightarrow> 'a Electoral_Module \<Rightarrow> bool" where
   "well_formed c m \<equiv>
-    \<forall> A p p'. finite A \<and> profile A p \<and> profile A p' \<and> c (A, p) \<and> c (A, p') \<longrightarrow> m A p = m A p'"
+    \<forall> A p p'. finite A \<and> profile A p \<and> profile A p' \<and> c (A, p) \<and> c (A, p') \<longrightarrow>
+      m A p = m A p'"
 
 fun consensus_choice :: "'a Consensus \<Rightarrow> 'a Electoral_Module \<Rightarrow> 'a Consensus_Class" where
   "consensus_choice c m =
@@ -41,10 +49,11 @@ fun consensus_choice :: "'a Consensus \<Rightarrow> 'a Electoral_Module \<Righta
 
 subsection \<open>Auxiliary Lemmas\<close>
 
-lemma unanimity'_consensus_imp_elect_fst_mod_completely_determined:
+lemma unanimity'_consensus_imp_elect_fst_mod_well_formed:
   fixes a :: "'a"
   shows
-    "well_formed (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C>' a c) elect_first_module"
+    "well_formed (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C>' a c)
+      elect_first_module"
 proof (unfold well_formed_def, safe)
   fix
     a :: 'a and
@@ -99,10 +108,11 @@ proof (unfold well_formed_def, safe)
     by auto
 qed
 
-lemma strong_unanimity'consensus_imp_elect_fst_mod_completely_determined:
+lemma strong_unanimity'consensus_imp_elect_fst_mod_well_formed:
   fixes r :: "'a Preference_Relation"
   shows
-    "well_formed (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C>' r c) elect_first_module"
+    "well_formed (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C>' r c)
+      elect_first_module"
   unfolding well_formed_def
   by simp
 
@@ -129,7 +139,8 @@ subsection \<open>Properties\<close>
 
 definition consensus_rule_anonymity :: "'a Consensus_Class \<Rightarrow> bool" where
   "consensus_rule_anonymity c \<equiv>
-    \<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<and> consensus_\<K> c (A, p) \<longrightarrow>
+    \<forall> A p q.
+      finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<and> consensus_\<K> c (A, p) \<longrightarrow>
       consensus_\<K> c (A, q) \<and> (rule_\<K> c A p = rule_\<K> c A q)"
 
 subsection \<open>Inference Rules\<close>
@@ -170,9 +181,11 @@ proof (unfold consensus_rule_anonymity_def, safe)
   moreover have "\<beta> (A, q)"
     using beta'_anon
     unfolding consensus_anonymity_def
-    using beta_Ap beta_sat ex_anon_cons_imp_cons_anonymous perm fin_A prof_p prof_q
+    using beta_Ap beta_sat ex_anon_cons_imp_cons_anonymous perm fin_A
+          prof_p prof_q
     by blast
-  ultimately show em_cond_perm: "consensus_\<K> (consensus_choice (\<lambda> E. \<alpha> E \<and> \<beta> E) m) (A, q)"
+  ultimately show em_cond_perm:
+    "consensus_\<K> (consensus_choice (\<lambda> E. \<alpha> E \<and> \<beta> E) m) (A, q)"
     by simp
   have "\<exists> x. \<beta>' x (A, p)"
     using beta_Ap beta_sat
@@ -185,7 +198,8 @@ proof (unfold consensus_rule_anonymity_def, safe)
     unfolding consensus_anonymity_def
     by metis
   have "m A p = m A q"
-    using alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p conditions_univ fin_A prof_p prof_q
+    using alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p conditions_univ
+          fin_A prof_p prof_q
     unfolding well_formed_def
     by metis
   thus "rule_\<K> (consensus_choice (\<lambda> E. \<alpha> E \<and> \<beta> E) m) A p =
@@ -209,12 +223,14 @@ proof (unfold unanimity_def)
      (consensus_choice
         (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C> c) elect_first_module)"
     using consensus_choice_anonymous[of equal_top\<^sub>\<C> equal_top\<^sub>\<C>' ?ne_cond]
-          equal_top_cons'_anonymous unanimity'_consensus_imp_elect_fst_mod_completely_determined
+          equal_top_cons'_anonymous unanimity'_consensus_imp_elect_fst_mod_well_formed
     by fastforce
-  moreover have "unanimity\<^sub>\<C> = (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C> c)"
+  moreover have
+    "unanimity\<^sub>\<C> = (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C> c)"
     by force
   hence "consensus_choice
-    (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C> c) elect_first_module =
+    (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C> c)
+      elect_first_module =
         consensus_choice unanimity\<^sub>\<C> elect_first_module"
     by metis
   ultimately show "consensus_rule_anonymity (consensus_choice unanimity\<^sub>\<C> elect_first_module)"
@@ -236,16 +252,18 @@ proof (unfold strong_unanimity_def)
     using consensus_choice_anonymous[of equal_vote\<^sub>\<C> equal_vote\<^sub>\<C>'
             "\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c"]
           nonempty_set_cons_anonymous nonempty_profile_cons_anonymous eq_vote_cons'_anonymous
-          strong_unanimity'consensus_imp_elect_fst_mod_completely_determined
+          strong_unanimity'consensus_imp_elect_fst_mod_well_formed
     by fastforce
-  moreover have "strong_unanimity\<^sub>\<C> = (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C> c)"
+  moreover have "strong_unanimity\<^sub>\<C> =
+    (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C> c)"
     by force
   hence
     "consensus_choice (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C> c)
         elect_first_module =
           consensus_choice strong_unanimity\<^sub>\<C> elect_first_module"
     by metis
-  ultimately show "consensus_rule_anonymity (consensus_choice strong_unanimity\<^sub>\<C> elect_first_module)"
+  ultimately show
+    "consensus_rule_anonymity (consensus_choice strong_unanimity\<^sub>\<C> elect_first_module)"
     by metis
 qed
 

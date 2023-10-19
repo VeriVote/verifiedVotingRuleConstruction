@@ -69,7 +69,7 @@ lemma rank_gt_zero:
     refl: "a \<preceq>\<^sub>r a" and
     fin:  "finite r"
   shows "rank r a \<ge> 1"
-proof -
+proof (unfold rank.simps above_def)
   have "a \<in> {b \<in> Field r. (a, b) \<in> r}"
     using FieldI2 refl
     by fastforce
@@ -77,12 +77,8 @@ proof -
     by blast
   hence "card {b \<in> Field r. (a, b) \<in> r} \<noteq> 0"
     by (simp add: fin finite_Field)
-  moreover have "card {b \<in> Field r. (a, b) \<in> r} \<ge> 0"
-    using fin
-    by auto
-  ultimately show ?thesis
-    using Collect_cong FieldI2 less_one not_le_imp_less rank.elims
-    unfolding above_def
+  thus "1 \<le> card {b. (a, b) \<in> r}"
+    using Collect_cong FieldI2 less_one not_le_imp_less
     by (metis (no_types, lifting))
 qed
 
@@ -482,10 +478,10 @@ lemma above_one:
 proof -
   obtain n :: nat where
     len_n_plus_one: "n + 1 = card A"
-    using Suc_eq_plus1 antisym_conv2 fin_A non_empty_A
-          card_eq_0_iff gr0_implies_Suc le0
+    using Suc_eq_plus1 antisym_conv2 fin_A non_empty_A card_eq_0_iff
+          gr0_implies_Suc le0
     by metis
-  have "(linear_order_on A r \<and> finite A \<and> A \<noteq> {} \<and> n + 1 = card A) \<longrightarrow>
+  have "linear_order_on A r \<and> finite A \<and> A \<noteq> {} \<and> n + 1 = card A \<longrightarrow>
           (\<exists> a. a \<in> A \<and> above r a = {a})"
   proof (induction n arbitrary: A r)
     case 0
@@ -547,7 +543,7 @@ proof -
       proof (cases)
         assume a_pref_r_b: "a \<preceq>\<^sub>r' b"
         have refl_A:
-          "\<forall> A'' r'' a' a''. (refl_on A'' r'' \<and> (a'::'a, a'') \<in> r'') \<longrightarrow> a' \<in> A'' \<and> a'' \<in> A''"
+          "\<forall> A'' r'' a' a''. refl_on A'' r'' \<and> (a'::'a, a'') \<in> r'' \<longrightarrow> a' \<in> A'' \<and> a'' \<in> A''"
           using refl_on_domain
           by metis
         have connex_refl: "\<forall> A'' r''. connex (A''::'a set) r'' \<longrightarrow> refl_on A'' r''"
@@ -561,7 +557,7 @@ proof -
         hence "a \<in> A' \<and> b \<in> A'"
           using refl_A a_pref_r_b
           by simp
-        hence b_in_r: "\<forall> a'. a' \<in> A' \<longrightarrow> (b = a' \<or> (b, a') \<in> r' \<or> (a', b) \<in> r')"
+        hence b_in_r: "\<forall> a'. a' \<in> A' \<longrightarrow> b = a' \<or> (b, a') \<in> r' \<or> (a', b) \<in> r'"
           using lin_ord_r order_on_defs(3)
           unfolding total_on_def
           by metis
@@ -615,7 +611,7 @@ proof -
           by simp
         have lin_ord_subset_A:
           "\<forall> B' B'' r''.
-            (linear_order_on (B''::'a set) r'' \<and> B' \<subseteq> B'') \<longrightarrow>
+            linear_order_on (B''::'a set) r'' \<and> B' \<subseteq> B'' \<longrightarrow>
                 linear_order_on B' (limit B' r'')"
           using limit_presv_lin_ord
           by metis
@@ -637,7 +633,7 @@ proof -
           unfolding total_on_def
           by metis
         hence "\<forall> a' a''. a' \<in> B \<longrightarrow> a'' \<in> B \<longrightarrow>
-                (a' = a'' \<or> (a', a'') \<in> limit B r' \<or> (a'', a') \<in> limit B r')"
+                a' = a'' \<or> (a', a'') \<in> limit B r' \<or> (a'', a') \<in> limit B r'"
           using limit_B
           by simp
         hence "\<forall> a' \<in> B. b \<in> above r' a'"
@@ -898,7 +894,7 @@ proof (safe)
     using assms lifted_imp_equiv_rel_except_a lin_imp_antisym
     unfolding equiv_rel_except_a_def
     by metis
-  hence "(\<forall> a' b'. (a', b') \<in> r \<longrightarrow> (b', a') \<in> r \<longrightarrow> a' = b')"
+  hence "\<forall> a' b'. (a', b') \<in> r \<longrightarrow> (b', a') \<in> r \<longrightarrow> a' = b'"
     unfolding antisym_def
     by metis
   hence imp_b_eq_a: "(b, a) \<in> r \<Longrightarrow> (a, b) \<in> r \<Longrightarrow> b = a"

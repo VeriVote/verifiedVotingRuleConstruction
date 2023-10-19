@@ -19,7 +19,8 @@ text \<open>
 
 subsection \<open>Common Rationalizations\<close>
 
-fun swap_\<R> :: "('a Election \<Rightarrow> bool) \<times> 'a Electoral_Module \<Rightarrow> 'a Electoral_Module" where
+fun swap_\<R> :: "('a Election \<Rightarrow> bool) \<times> 'a Electoral_Module \<Rightarrow>
+                  'a Electoral_Module" where
   "swap_\<R> A p = distance_\<R> (votewise_distance swap l_one) A p"
 
 subsection \<open>Theorems\<close>
@@ -50,7 +51,8 @@ proof (unfold standard_def, clarify)
     have len_gt_zero: "0 < length (map2 (\<lambda> x y. swap (C, x) (B, y)) p q)"
       using False
       by force
-    moreover have "(\<Sum> i::nat < min (length p) (length q). ereal_of_enat (\<infinity>)) = \<infinity>"
+    moreover have
+      "(\<Sum> i::nat < min (length p) (length q). ereal_of_enat (\<infinity>)) = \<infinity>"
       using finite_lessThan sum_Pinfty ereal_of_enat_simps(2) lessThan_iff min.idem
             False not_gr_zero of_nat_eq_enat
       by metis
@@ -65,8 +67,9 @@ qed
 
 subsection \<open>Equivalence Lemmas\<close>
 
-lemma equal_score_swap: "score (votewise_distance swap l_one)
-                          = score_std (votewise_distance swap l_one)"
+lemma equal_score_swap:
+  "score (votewise_distance swap l_one) =
+    score_std (votewise_distance swap l_one)"
   using standard_distance_imp_equal_score swap_standard
   by fast
 
@@ -79,8 +82,8 @@ proof -
   hence "\<forall> K A p. \<R>\<^sub>\<W> (votewise_distance swap l_one) K A p =
             \<R>\<^sub>\<W>_std (votewise_distance swap l_one) K A p"
     by (simp add: equal_score_swap)
-  hence "\<forall> K A p. distance_\<R> (votewise_distance swap l_one) K A p
-          = distance_\<R>_std (votewise_distance swap l_one) K A p"
+  hence "\<forall> K A p. distance_\<R> (votewise_distance swap l_one) K A p =
+          distance_\<R>_std (votewise_distance swap l_one) K A p"
     by fastforce
   thus ?thesis
     unfolding swap_\<R>.simps

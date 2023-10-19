@@ -75,7 +75,8 @@ subsection \<open>Properties\<close>
 
 definition consensus_anonymity :: "'a Consensus \<Rightarrow> bool" where
   "consensus_anonymity c \<equiv>
-    \<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<longrightarrow> c (A, p) \<longrightarrow> c (A, q)"
+    \<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<longrightarrow>
+      c (A, p) \<longrightarrow> c (A, q)"
 
 subsection \<open>Auxiliary Lemmas\<close>
 

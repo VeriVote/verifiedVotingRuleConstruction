@@ -86,7 +86,8 @@ next
   have "\<forall> f A A'. bij_betw f (A::'a set) (A'::'b set) = (inj_on f A \<and> f ` A = A')"
     unfolding bij_betw_def
     by simp
-  hence inv_without_a: "\<forall> a' \<in> (A' - {f a}). the_inv_into (A - {a}) f a' = the_inv_into A f a'"
+  hence inv_without_a:
+    "\<forall> a' \<in> (A' - {f a}). the_inv_into (A - {a}) f a' = the_inv_into A f a'"
     using inj_on_A A'_sub_fa
     by (simp add: inj_on_diff the_inv_into_f_eq)
   have card_without_a: "card (A - {a}) = x"
@@ -105,7 +106,8 @@ next
   also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into A f a')) + g a"
     using inv_without_a
     by simp
-  also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into A f a')) + g (the_inv_into A f (f a))"
+  also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into A f a')) +
+                    g (the_inv_into A f (f a))"
     using a_in_A bij_A_A'
     by (simp add: bij_betw_imp_inj_on the_inv_into_f_f)
   also have "\<dots> = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"

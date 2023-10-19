@@ -26,24 +26,29 @@ subsection \<open>Definitions\<close>
 
 fun \<K>\<^sub>\<E> :: "'a Consensus_Class \<Rightarrow> 'a \<Rightarrow> 'a Election set" where
   "\<K>\<^sub>\<E> K a =
-    {(A, p) | A p. (consensus_\<K> K) (A, p) \<and> finite_profile A p \<and> elect (rule_\<K> K) A p = {a}}"
+    {(A, p) | A p.
+      (consensus_\<K> K) (A, p) \<and> finite_profile A p \<and> elect (rule_\<K> K) A p = {a}}"
 
-fun score :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a Election \<Rightarrow> 'a \<Rightarrow> ereal" where
+fun score :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a Election \<Rightarrow>
+                'a \<Rightarrow> ereal" where
   "score d K E a = Inf (d E ` (\<K>\<^sub>\<E> K a))"
 
 fun arg_min_set :: "('b \<Rightarrow> 'a :: ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
   "arg_min_set f A = Collect (is_arg_min f (\<lambda> a. a \<in> A))"
 
-fun \<R>\<^sub>\<W> :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a set" where
+fun \<R>\<^sub>\<W> :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow>
+              'a set" where
   "\<R>\<^sub>\<W> d K A p = arg_min_set (score d K (A, p)) A"
 
-fun distance_\<R> :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a Electoral_Module" where
+fun distance_\<R> :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow>
+                      'a Electoral_Module" where
   "distance_\<R> d K A p = (\<R>\<^sub>\<W> d K A p, A - \<R>\<^sub>\<W> d K A p, {})"
 
 subsection \<open>Standard Definitions\<close>
 
 definition standard :: "'a Election Distance \<Rightarrow> bool" where
- "standard d \<equiv> \<forall> A A' p p'. (length p \<noteq> length p' \<or> A \<noteq> A') \<longrightarrow> d (A, p) (A', p') = \<infinity>"
+ "standard d \<equiv>
+    \<forall> A A' p p'. (length p \<noteq> length p' \<or> A \<noteq> A') \<longrightarrow> d (A, p) (A', p') = \<infinity>"
 
 (*
   We want "profile_permutations n A = {}" for infinite A.
@@ -61,19 +66,23 @@ fun profile_permutations :: "nat \<Rightarrow> 'a set \<Rightarrow> ('a Profile)
 
 fun \<K>\<^sub>\<E>_std :: "'a Consensus_Class \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> nat \<Rightarrow> 'a Election set" where
   "\<K>\<^sub>\<E>_std K a A n =
-    (\<lambda> p. (A, p)) ` (Set.filter (\<lambda> p. (consensus_\<K> K) (A, p) \<and> elect (rule_\<K> K) A p = {a})
-                                (profile_permutations n A))"
+    (\<lambda> p. (A, p)) `
+      (Set.filter
+        (\<lambda> p. (consensus_\<K> K) (A, p) \<and> elect (rule_\<K> K) A p = {a})
+        (profile_permutations n A))"
 
-fun score_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a Election \<Rightarrow> 'a \<Rightarrow> ereal" where
+fun score_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a Election \<Rightarrow>
+                    'a \<Rightarrow> ereal" where
   "score_std d K E a =
     (if \<K>\<^sub>\<E>_std K a (alts_\<E> E) (length (prof_\<E> E)) = {}
       then \<infinity> else Min (d E ` (\<K>\<^sub>\<E>_std K a (alts_\<E> E) (length (prof_\<E> E)))))"
 
-fun \<R>\<^sub>\<W>_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a set
-                          \<Rightarrow> 'a Profile \<Rightarrow> 'a set" where
+fun \<R>\<^sub>\<W>_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow>
+                  'a set" where
   "\<R>\<^sub>\<W>_std d K A p = arg_min_set (score_std d K (A, p)) A"
 
-fun distance_\<R>_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a Electoral_Module" where
+fun distance_\<R>_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow>
+                          'a Electoral_Module" where
   "distance_\<R>_std d K A p = (\<R>\<^sub>\<W>_std d K A p, A - \<R>\<^sub>\<W>_std d K A p, {})"
 
 subsection \<open>Auxiliary Lemmas\<close>
@@ -94,9 +103,11 @@ proof -
     using lin_ord_r
     unfolding underS_def linear_order_on_def partial_order_on_def antisym_def
     by simp
-  hence "\<forall> a b c. a \<in> (underS r b) \<inter> A \<longrightarrow> b \<in> (underS r c) \<inter> A \<longrightarrow> a \<in> (underS r c) \<inter> A"
+  hence "\<forall> a b c.
+    a \<in> (underS r b) \<inter> A \<longrightarrow> b \<in> (underS r c) \<inter> A \<longrightarrow> a \<in> (underS r c) \<inter> A"
     using lin_ord_r CollectD CollectI transD IntE IntI
-    unfolding underS_def linear_order_on_def partial_order_on_def preorder_on_def trans_def
+    unfolding underS_def linear_order_on_def partial_order_on_def
+              preorder_on_def trans_def
     by (metis (mono_tags, lifting))
   hence "\<forall> a b. a \<in> (underS r b) \<inter> A \<longrightarrow> (underS r a) \<inter> A \<subset> (underS r b) \<inter> A"
     using antisym
@@ -105,7 +116,8 @@ proof -
     using fin_A
     by (simp add: psubset_card_mono)
   moreover have total_underS:
-    "\<forall> a b. a \<in> A \<and> b \<in> A \<and> a \<noteq> b \<longrightarrow> a \<in> (underS r b) \<inter> A \<or> b \<in> (underS r a) \<inter> A"
+    "\<forall> a b. a \<in> A \<and> b \<in> A \<and> a \<noteq> b \<longrightarrow>
+        a \<in> (underS r b) \<inter> A \<or> b \<in> (underS r a) \<inter> A"
     using lin_ord_r totalp_onD totalp_on_total_on_eq
     unfolding underS_def linear_order_on_def partial_order_on_def antisym_def
     by fastforce
@@ -166,7 +178,8 @@ proof -
       by simp
     ultimately have "\<forall> i < card A. ?l!i = ?inv (card A - 1 - i)"
       by presburger
-    moreover have "card A - 1 - (card A - 1 - card (underS r a \<inter> A)) = card (underS r a \<inter> A)"
+    moreover have
+      "card A - 1 - (card A - 1 - card (underS r a \<inter> A)) = card (underS r a \<inter> A)"
       using in_bounds a_in_A
       by auto
     moreover have "?inv (card (underS r a \<inter> A)) = a"
@@ -333,7 +346,8 @@ proof (cases "\<not> finite A", clarsimp)
       q :: "'a Profile"
     assume
       prof_perms_eq_set_induct:
-        "profile_permutations (length q) A = {q'. finite_profile A q' \<and> length q' = length q}" and
+        "profile_permutations (length q) A =
+            {q'. finite_profile A q' \<and> length q' = length q}" and
       p'_in_prof: "p' \<in> profile_permutations (length (r#q)) A"
     show len_eq: "length p' = length (r#q)"
       using all_ls_elems_same_len fin_A length_replicate p'_in_prof
@@ -500,7 +514,8 @@ proof (cases "\<not> finite A", clarsimp)
         by simp
       moreover have
         "\<And> l a b c.
-          \<lbrakk> a \<in> (set l); b \<in> (set l); c \<in> (set l) \<rbrakk> \<Longrightarrow> ?P l a b \<Longrightarrow> ?P l b c \<Longrightarrow> ?P l a c"
+          \<lbrakk> a \<in> (set l); b \<in> (set l); c \<in> (set l) \<rbrakk> \<Longrightarrow>
+              ?P l a b \<Longrightarrow> ?P l b c \<Longrightarrow> ?P l a c"
         by simp
       moreover have
         "\<And> l a b. \<lbrakk> a \<in> (set l); b \<in> (set l) \<rbrakk> \<Longrightarrow> ?P l a b \<Longrightarrow> ?P l b a \<Longrightarrow> a = b"
@@ -533,7 +548,8 @@ proof (cases "\<not> finite A", clarsimp)
       p' :: "'a Profile"
     assume
       prof_perms_eq_set_induct:
-      "profile_permutations (length q) A = {q'. finite_profile A q' \<and> length q' = length q}" and
+      "profile_permutations (length q) A =
+          {q'. finite_profile A q' \<and> length q' = length q}" and
       len_eq: "length p' = length (r#q)" and
       fin_A: "finite A" and
       prof_p': "profile A p'"
@@ -576,7 +592,9 @@ lemma standard_distance_imp_equal_score:
   assumes std: "standard d"
   shows "score d K (A, p) a = score_std d K (A, p) a"
 proof -
-  have "\<K>\<^sub>\<E> K a \<inter> Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p} \<subseteq> \<K>\<^sub>\<E> K a"
+  have "\<K>\<^sub>\<E> K a \<inter>
+          Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p} \<subseteq>
+        \<K>\<^sub>\<E> K a"
     by simp
   hence inf_lte_inf_int_pair:
     "Inf (d (A, p) ` (\<K>\<^sub>\<E> K a)) \<le>
@@ -590,8 +608,11 @@ proof -
         Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
   proof (rule INF_greatest)
     let ?inf =
-      "Inf (d (A, p) ` (\<K>\<^sub>\<E> K a \<inter> Pair A ` {p'. finite_profile A p' \<and> length p' = length p}))"
-    let ?compl = "(\<K>\<^sub>\<E> K a) - (\<K>\<^sub>\<E> K a \<inter> Pair A ` {p'. finite_profile A p' \<and> length p' = length p})"
+      "Inf (d (A, p) `
+        (\<K>\<^sub>\<E> K a \<inter> Pair A ` {p'. finite_profile A p' \<and> length p' = length p}))"
+    let ?compl =
+      "(\<K>\<^sub>\<E> K a) -
+        (\<K>\<^sub>\<E> K a \<inter> Pair A ` {p'. finite_profile A p' \<and> length p' = length p})"
     fix i :: "'a Election"
     assume i_in_\<K>\<^sub>\<E>: "i \<in> \<K>\<^sub>\<E> K a"
     have in_intersect:
@@ -599,7 +620,8 @@ proof -
         ?inf \<le> d (A, p) i"
       using INF_lower
       by (metis (no_types, lifting))
-    have "i \<in> ?compl \<Longrightarrow> \<not> (A = fst i \<and> finite_profile A (snd i) \<and> length (snd i) = length p)"
+    have "i \<in> ?compl \<Longrightarrow>
+            \<not> (A = fst i \<and> finite_profile A (snd i) \<and> length (snd i) = length p)"
       by fastforce
     moreover have "A \<noteq> fst i \<Longrightarrow> d (A, p) i = \<infinity>"
       using std
@@ -611,16 +633,22 @@ proof -
       unfolding standard_def
       using prod.exhaust_sel
       by metis
-    moreover have "A = fst i \<and> length (snd i) = length p \<longrightarrow> finite_profile A (snd i)"
+    moreover have
+      "A = fst i \<and> length (snd i) = length p \<longrightarrow> finite_profile A (snd i)"
       using i_in_\<K>\<^sub>\<E> \<K>\<^sub>\<E>.simps
       by auto
     ultimately have
       "i \<in> ?compl \<Longrightarrow>
-        Inf (d (A, p) ` (\<K>\<^sub>\<E> K a \<inter> Pair A ` {p'. finite_profile A p' \<and> length p' = length p})) \<le>
-          d (A, p) i"
+        Inf (d (A, p) `
+          (\<K>\<^sub>\<E> K a \<inter> Pair A `
+            {p'. finite_profile A p' \<and> length p' = length p})) \<le>
+        d (A, p) i"
       by (metis (no_types, lifting) ereal_less_eq(1))
-    thus "Inf (d (A, p) `
-      (\<K>\<^sub>\<E> K a \<inter> Pair A ` {p'. finite_profile A p' \<and> length p' = length p})) \<le> d (A, p) i"
+    thus
+      "Inf (d (A, p) `
+          (\<K>\<^sub>\<E> K a \<inter> Pair A `
+            {p'. finite_profile A p' \<and> length p' = length p})) \<le>
+        d (A, p) i"
       using in_intersect i_in_\<K>\<^sub>\<E>
       by blast
   qed
@@ -630,12 +658,15 @@ proof -
     using profile_permutation_set
     by blast
   hence eq_intersect: "\<K>\<^sub>\<E>_std K a A (length p) =
-           \<K>\<^sub>\<E> K a \<inter> Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
+           \<K>\<^sub>\<E> K a \<inter> Pair A `
+            {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}"
     by force
   moreover have
     "Inf (d (A, p) ` (\<K>\<^sub>\<E> K a)) =
-                   Inf (d (A, p) ` (\<K>\<^sub>\<E> K a \<inter>
-                    Pair A ` {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
+      Inf (d (A, p) `
+        (\<K>\<^sub>\<E> K a \<inter>
+          Pair A `
+            {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
     using inf_gte_inf_int_pair order_antisym inf_lte_inf_int_pair
     by blast
   ultimately have inf_eq_inf_for_std_cons:
@@ -690,8 +721,9 @@ proof -
         thus ?thesis
           by simp
       qed
-      hence "finite (Set.filter (\<lambda> p. (consensus_\<K> K) (A, p) \<and> elect (rule_\<K> K) A p = {a})
-                (profile_permutations (length p) A))"
+      hence "finite (Set.filter
+              (\<lambda> p. (consensus_\<K> K) (A, p) \<and> elect (rule_\<K> K) A p = {a})
+              (profile_permutations (length p) A))"
         using finite_filter
         by blast
       thus ?thesis
@@ -771,7 +803,8 @@ next
       ultimately show "(S, y) \<in> \<K>\<^sub>\<E> K a"
         by simp
     qed
-    show "{(A', p') | A' p'. ?P a A' p'} = {(A', ?listpi' p') | A' p'. ?P a A' p'}" (is "?X = ?Y")
+    show "{(A', p') | A' p'. ?P a A' p'} =
+            {(A', ?listpi' p') | A' p'. ?P a A' p'}" (is "?X = ?Y")
     proof
       show "?X \<subseteq> ?Y"
       proof
@@ -799,7 +832,8 @@ next
                 {(A', ?listpi p') | A' p'. length p' = length p \<and> ?P a A' p'}"
             by auto
           also have "permute_list pi (permute_list (inv pi) ?p) = ?p"
-            using permute_list_compose True pi_perm permute_list_id permutes_inv_o(2) pi_perm(1)
+            using permute_list_compose permute_list_id permutes_inv_o(2)
+                  True pi_perm
             by metis
           finally show ?thesis
             by auto
@@ -863,9 +897,10 @@ next
       by simp
     from d_anon
     have anon:
-      "\<And> A' p' A p pi. (\<forall> n. (pi n) permutes {..< n})
-          \<longrightarrow> d (A, p) (A', p')
-                = d (A, permute_list (pi (length p)) p) (A', permute_list (pi (length p')) p')"
+      "\<And> A' p' A p pi. (\<forall> n. (pi n) permutes {..< n}) \<longrightarrow>
+        d (A, p) (A', p') =
+          d (A, permute_list (pi (length p)) p)
+            (A', permute_list (pi (length p')) p')"
       unfolding distance_anonymity_def
       by blast
     show "{d (A, p) (A', p') | A' p'. ?P a A' p'} =

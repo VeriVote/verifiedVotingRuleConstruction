@@ -155,10 +155,10 @@ proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
     A :: "'a set" and
     p :: "'a Profile"
   assume
-    finA: "finite A" and
-    profA: "profile A p"
-  have "well_formed A (max_eliminator minimax_score A p)"
-    using finA max_elim_sound par_comp_result_sound profA
+    "finite A" and
+    "profile A p"
+  hence "well_formed A (max_eliminator minimax_score A p)"
+    using max_elim_sound par_comp_result_sound
     by metis
   thus "well_formed A (minimax A p)"
     by simp
