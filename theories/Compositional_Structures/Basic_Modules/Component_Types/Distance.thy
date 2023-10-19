@@ -12,12 +12,12 @@ theory Distance
 begin
 
 text \<open>
-  A general distance on a set X is a mapping \<^latex>\<open>$d: X \times X \mapsto R \cup \{+\infty\}$\<close> such
-  that for every \<^latex>\<open>$x, y, z$\<close> in X, the following four conditions are satisfied:
-  \<^item> \<^latex>\<open>$d(x, y) \geq 0$\<close> (nonnegativity);
-  \<^item> \<^latex>\<open>$d(x, y) = 0$\<close> if and only if \<^latex>\<open>$x = y$\<close> (identity of indiscernibles);
-  \<^item> \<^latex>\<open>$d(x, y) = d(y, x)$\<close> (symmetry);
-  \<^item> \<^latex>\<open>$d(x, y) <= d(x, z) + d(z, y)$\<close> (triangle inequality).
+  A general distance on a set X is a mapping \<open>d: X \<times> X \<mapsto> R \<union> {+\<infinity>}\<close> such
+  that for every \<open>x, y, z\<close> in X, the following four conditions are satisfied:
+  \<^item> \<open>d(x, y) \<ge> 0\<close> (nonnegativity);
+  \<^item> \<open>d(x, y) = 0\<close> if and only if \<open>x = y\<close> (identity of indiscernibles);
+  \<^item> \<open>d(x, y) = d(y, x)\<close> (symmetry);
+  \<^item> \<open>d(x, y) \<le> d(x, z) + d(z, y)\<close> (triangle inequality).
 
 
   Moreover, a mapping that satisfies all but the second conditions is called
