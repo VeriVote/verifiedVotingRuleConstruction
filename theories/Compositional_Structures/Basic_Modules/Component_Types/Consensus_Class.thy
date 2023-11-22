@@ -279,6 +279,8 @@ qed
 
 subsection \<open>Theorems\<close>
 
+subsubsection \<open>Anonymity\<close>
+
 lemma unanimity_anonymous: "consensus_rule_anonymity unanimity"
 proof (unfold unanimity_def)
   let ?ne_cond = "(\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c)"

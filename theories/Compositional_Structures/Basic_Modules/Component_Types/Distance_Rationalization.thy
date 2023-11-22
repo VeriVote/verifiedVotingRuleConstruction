@@ -33,7 +33,10 @@ fun \<K>\<^sub>\<E> ::
 "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> ('a, 'v) Election set" where
   "\<K>\<^sub>\<E> K w =
     {(A, V, p) | A V p. (consensus_\<K> K) (A, V, p) \<and> finite_profile V A p 
-                  \<and> elect V (rule_\<K> K) A p = {w}}"
+                  \<and> elect V (rule_\<K> K) A p = {w}}" (* use profile instead of finite_profile? *)
+
+abbreviation \<K>_els :: "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> ('a, 'v) Election set" where
+  "\<K>_els K \<equiv> \<Union> ((\<K>\<^sub>\<E> K) ` UNIV)"
 
 text \<open>
   Returns the distance of the given election to the preimage of the given unique winner
@@ -774,7 +777,7 @@ proof (unfold electoral_module_def, safe)
     using distance_\<R>.simps
     by simp
   ultimately show "well_formed A (distance_\<R> d K V A p)"
-    using result_axioms result_def 
+    using result_axioms result_def
     by blast
 qed
      
@@ -1139,16 +1142,15 @@ next
       assume 
         consensus: "(A, V, p) \<in> \<K>\<^sub>\<E> K w"
       let ?inv = "rename (the_inv \<pi>) (A, V, p)"
-      have "the_inv (the_inv \<pi>) = \<pi>"
+      have inv_inv_id: "the_inv (the_inv \<pi>) = \<pi>"
         using the_inv_f_f bij bij_betw_imp_inj_on bij_betw_imp_surj 
               inj_on_the_inv_into surj_imp_inv_eq the_inv_into_onto
         by (metis (no_types, opaque_lifting))
-      hence "?inv = (A, ((the_inv \<pi>) ` V), (\<lambda>v. p (\<pi> v)))"
+      hence "?inv = (A, ((the_inv \<pi>) ` V), p \<circ> (the_inv (the_inv \<pi>)))"
         by simp
-      moreover have "(\<lambda>v. (\<lambda>v. p (\<pi> v)) ((the_inv \<pi>) v)) = (\<lambda>v. p v)"
-        using the_inv_f_f bij
-        by (simp add: f_the_inv_into_f_bij_betw)
-      moreover have "(\<lambda>v. p v) = p" by simp
+      moreover have "(p \<circ> (the_inv (the_inv \<pi>))) \<circ> (the_inv \<pi>) = p"
+        using bij
+        by (simp add: the_inv_f_f inv_inv_id bij_betw_def comp_def f_the_inv_into_f)
       moreover have "\<pi> ` (the_inv \<pi>) ` V = V"
         using bij the_inv_f_f bij_betw_def image_inv_into_cancel 
               surj_imp_inv_eq top_greatest

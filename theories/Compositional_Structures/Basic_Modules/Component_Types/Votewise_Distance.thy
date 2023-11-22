@@ -8,6 +8,7 @@ section \<open>Votewise Distance\<close>
 theory Votewise_Distance
   imports "Social_Choice_Types/Norm"
           "Distance"
+          "Symmetry_Properties"
 begin
 
 text \<open>
@@ -137,8 +138,8 @@ proof (unfold distance_anonymity_def, safe)
       ?rn2 = "rename \<pi> (A', V', p')" and
       ?rn_V = "\<pi> ` V" and
       ?rn_V' = "\<pi> ` V'" and
-      ?rn_p = "\<lambda>v. p (the_inv \<pi> v)" and
-      ?rn_p' = "\<lambda>v. p' (the_inv \<pi> v)" and
+      ?rn_p = "p \<circ> (the_inv \<pi>)" and
+      ?rn_p' = "p' \<circ> (the_inv \<pi>)" and
       ?len = "length (to_list V p)" and
       ?sl_V = "sorted_list_of_set V"
   let ?perm = "\<lambda>i. (card ({v \<in> ?rn_V. v < \<pi> (?sl_V!i)}))" and
@@ -191,6 +192,7 @@ proof (unfold distance_anonymity_def, safe)
           permutes the original list using ?perm_total *)
       have rn_V_permutes: "(to_list V p) = permute_list ?perm (to_list ?rn_V ?rn_p)"
         using assms to_list_permutes_under_bij bij to_list_permutes_under_bij
+        unfolding comp_def
         by (metis (no_types))
       hence len_V_rn_V_eq: "?len = length (to_list ?rn_V ?rn_p)"
         by simp
@@ -207,6 +209,7 @@ proof (unfold distance_anonymity_def, safe)
       (* show that the list of the renamed (A', V', p') 
           permutes the original list using ?perm_total *)
       have rn_V'_permutes: "(to_list V' p') = permute_list ?perm (to_list ?rn_V' ?rn_p')"
+        unfolding comp_def
         by (metis (no_types) True bij to_list_permutes_under_bij)
       hence "permute_list ?perm (to_list ?rn_V' ?rn_p')
               = permute_list ?perm_total (to_list ?rn_V' ?rn_p')"
