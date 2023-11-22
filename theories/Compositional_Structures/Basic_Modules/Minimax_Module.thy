@@ -196,11 +196,11 @@ proof (unfold defer_condorcet_consistency_def social_choice_result.electoral_mod
     finA: "finite A" and
     finV: "finite A" and
     profA: "profile V A p"
-  have "well_formed A (((max_eliminator minimax_score)::('b, 'a, 'b Result) Electoral_Module) 
-                          V A p)"
+  have "well_formed_soc_choice A (
+          ((max_eliminator minimax_score)::('b, 'a, 'b Result) Electoral_Module) V A p)"
     using finA finV max_elim_sound par_comp_result_sound profA
     by auto
-  thus "well_formed A (minimax V A p)"
+  thus "well_formed_soc_choice A (minimax V A p)"
     by simp
 next
   fix

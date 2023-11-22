@@ -35,11 +35,6 @@ theorem borda_sound: "social_choice_result.electoral_module borda"
   using max_elim_sound
   by metis
 
-subsection \<open>Only participating voters impact the result\<close>
-
-theorem borda_only_voters_vote: "only_voters_vote borda"
-  sorry
-  
 subsection \<open>Non-Blocking\<close>
 
 text \<open>

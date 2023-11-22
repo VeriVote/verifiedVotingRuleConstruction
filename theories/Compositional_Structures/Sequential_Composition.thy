@@ -118,11 +118,11 @@ proof -
     by fastforce
   from module_m f_prof
   have disjoint_m: "disjoint3 (m V A p)"
-    unfolding social_choice_result.electoral_module_def well_formed.simps
+    unfolding social_choice_result.electoral_module_def well_formed_soc_choice.simps
     by blast
   from module_m module_n def_presv_fin_prof f_prof
   have disjoint_n: "disjoint3 (n V ?new_A ?new_p)"
-    unfolding social_choice_result.electoral_module_def well_formed.simps
+    unfolding social_choice_result.electoral_module_def well_formed_soc_choice.simps
     by metis
   have disj_n:
     "elect V m A p \<inter> reject V m A p = {} \<and>
@@ -319,10 +319,10 @@ proof (unfold social_choice_result.electoral_module_def, safe)
     fin_A: "finite A" and
     fin_V: "finite V" and
     prof_A: "profile V A p"
-  have "\<forall> r. well_formed (A::'a set) r =
+  have "\<forall> r. well_formed_soc_choice (A::'a set) r =
           (disjoint3 r \<and> set_equals_partition A r)"
     by simp
-  thus "well_formed A ((m \<triangleright> n) V A p)"
+  thus "well_formed_soc_choice A ((m \<triangleright> n) V A p)"
     using assms seq_comp_presv_disj seq_comp_presv_alts fin_A fin_V prof_A
     by metis
 qed
@@ -578,7 +578,7 @@ proof -
     unfolding non_blocking_def
     by metis
   from non_blocking_m
-  have "?input_sound \<longrightarrow> well_formed A (m V A p)"
+  have "?input_sound \<longrightarrow> well_formed_soc_choice A (m V A p)"
     unfolding social_choice_result.electoral_module_def non_blocking_def
     by simp
   hence "?input_sound \<longrightarrow> elect V m A p \<union> defer V m A p = A - reject V m A p"

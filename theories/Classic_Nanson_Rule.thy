@@ -25,6 +25,8 @@ fun classic_nanson_rule :: "('a, 'v, 'a Result) Electoral_Module" where
   "classic_nanson_rule V A p =
     ((leq_average_eliminator borda_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) V A p"
 
+export_code classic_nanson_rule in Haskell
+
 subsection \<open>Soundness\<close>
 
 theorem classic_nanson_rule_sound: "social_choice_result.electoral_module classic_nanson_rule"

@@ -264,11 +264,11 @@ proof (unfold defer_condorcet_consistency_def social_choice_result.electoral_mod
     "finite A" and
     "finite V" and
     "profile V A p"
-  hence "well_formed A (max_eliminator copeland_score V A p)"
+  hence "well_formed_soc_choice A (max_eliminator copeland_score V A p)"
     using max_elim_sound
     unfolding social_choice_result.electoral_module_def
     by metis
-  thus "well_formed A (copeland V A p)"
+  thus "well_formed_soc_choice A (copeland V A p)"
     by auto
 next
   fix

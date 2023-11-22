@@ -201,7 +201,7 @@ lemma loop_comp_helper_imp_partit:
     profile: "finite_profile V A p" and
     module_acc: "social_choice_result.electoral_module acc" and
     defer_card_n: "n = card (defer V acc A p)"
-  shows "well_formed A (loop_comp_helper acc m t V A p)"
+  shows "well_formed_soc_choice A (loop_comp_helper acc m t V A p)"
   using assms
 proof (induct arbitrary: acc rule: less_induct)
   case (less)
@@ -214,11 +214,11 @@ proof (induct arbitrary: acc rule: less_induct)
     by metis
   hence "\<not> t (acc V A p) \<and> defer V (acc \<triangleright> m) A p \<subset> defer V acc A p \<and>
             finite (defer V acc A p) \<longrightarrow>
-          well_formed A (loop_comp_helper acc m t V A p)"
+          well_formed_soc_choice A (loop_comp_helper acc m t V A p)"
     using less.hyps less.prems loop_comp_helper.simps(2)
           psubset_card_mono
   by metis
-  moreover have "well_formed A (acc V A p)"
+  moreover have "well_formed_soc_choice A (acc V A p)"
     using less.prems profile
     unfolding social_choice_result.electoral_module_def
     by blast

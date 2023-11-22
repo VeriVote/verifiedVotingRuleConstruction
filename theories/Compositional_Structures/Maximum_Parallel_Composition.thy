@@ -112,11 +112,11 @@ next
         by blast
       have set_intersect: "\<forall> a' A' A''. (a' \<in> A' \<inter> A'') = (a' \<in> A' \<and> a' \<in> A'')"
         by blast
-      have wf_n: "well_formed A (n V A p)"
+      have wf_n: "well_formed_soc_choice A (n V A p)"
         using f_prof module_n
         unfolding social_choice_result.electoral_module_def
         by blast
-      have wf_m: "well_formed A (m V A p)"
+      have wf_m: "well_formed_soc_choice A (m V A p)"
         using f_prof module_m
         unfolding social_choice_result.electoral_module_def
         by blast
@@ -173,7 +173,8 @@ next
         by simp
       have well_f_max:
         "\<forall> r' r'' e' e'' d' d'' A'.
-          well_formed A' (e', r', d') \<and> well_formed A' (e'', r'', d'') \<longrightarrow>
+          well_formed_soc_choice A' (e', r', d') \<and> 
+          well_formed_soc_choice A' (e'', r'', d'') \<longrightarrow>
             reject_r (max_aggregator A' (e', r', d') (e'', r'', d'')) = r' \<inter> r''"
         using max_agg_rej_set
         by metis
@@ -1038,7 +1039,7 @@ next
     have "finite A"
       using fin_A
       by simp
-    moreover have "well_formed A (elect V m A p, reject V m A p, defer V m A p)"
+    moreover have "well_formed_soc_choice A (elect V m A p, reject V m A p, defer V m A p)"
       using fin_A fin_V prof_A module
       unfolding social_choice_result.electoral_module_def
       by simp

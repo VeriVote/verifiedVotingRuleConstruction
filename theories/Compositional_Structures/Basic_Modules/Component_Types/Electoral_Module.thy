@@ -48,6 +48,9 @@ text \<open>
 
 type_synonym ('a, 'v, 'r) Electoral_Module = "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r"
 
+abbreviation on_els :: "('a, 'v, 'r) Electoral_Module \<Rightarrow> (('a,'v) Election \<Rightarrow> 'r)" where
+  "on_els m \<equiv> (\<lambda>E. m (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E))"
+
 text \<open>
   The next three functions take an electoral module and turn it into a
   function only outputting the elect, reject, or defer set respectively.
@@ -202,6 +205,9 @@ definition defers :: "nat \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<R
   "defers n m \<equiv>
     social_choice_result.electoral_module m \<and>
       (\<forall> A V p. (card A \<ge> n \<and> finite_profile V A p) \<longrightarrow> card (defer V m A p) = n)"
+
+definition test :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool"
+  where "test = social_choice_result.electoral_module"
 
 text \<open>
   "rejects n" is true for all electoral modules that reject exactly

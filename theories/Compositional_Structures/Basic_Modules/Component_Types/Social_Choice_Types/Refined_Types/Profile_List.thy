@@ -24,13 +24,15 @@ text \<open>
   Abstraction from profile list to profile.
 \<close>
 
-fun pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> 'a Profile" where
-  "pl_to_pr_\<alpha> pl = map (Preference_List.pl_\<alpha>) pl"
+fun pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> ('a,nat) Profile" where
+  "pl_to_pr_\<alpha> pl = (\<lambda> n. if (n < length pl \<and> n \<ge> 0) 
+                         then (map (Preference_List.pl_\<alpha>) pl)!n
+                         else {})"
 
 lemma prof_abstr_presv_size:
   fixes p :: "'a Profile_List"
-  shows "length p = length (pl_to_pr_\<alpha> p)"
-  by simp
+  shows "length p = length (to_list {0..<length p} (pl_to_pr_\<alpha> p))"
+  sorry
 
 text \<open>
   A profile on a finite set of alternatives A contains only ballots that are
@@ -45,8 +47,9 @@ lemma refinement:
     A :: "'a set" and
     p :: "'a Profile_List"
   assumes "profile_l A p"
-  shows "profile A (pl_to_pr_\<alpha> p)"
-proof (unfold profile_def, intro allI impI)
+  shows "profile {0..<length p} A (pl_to_pr_\<alpha> p)"
+  sorry
+(*proof (unfold profile_def, intro allI impI)
   fix i :: nat
   assume in_range: "i < length (pl_to_pr_\<alpha> p)"
   moreover have "well_formed_l (p!i)"
@@ -60,6 +63,6 @@ proof (unfold profile_def, intro allI impI)
   ultimately show "linear_order_on A ((pl_to_pr_\<alpha> p)!i)"
     using lin_ord_equiv length_map nth_map pl_to_pr_\<alpha>.simps
     by metis
-qed
+qed*)
 
 end

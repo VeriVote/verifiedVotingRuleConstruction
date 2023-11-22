@@ -57,13 +57,17 @@ definition profile :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profil
 abbreviation finite_profile :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> bool" where
   "finite_profile V A p \<equiv> finite A \<and> finite V \<and> profile V A p"
 
+definition finite_elections :: "('a, 'v) Election set" where
+  "finite_elections = 
+    {el :: ('a, 'v) Election. finite_profile (votrs_\<E> el) (alts_\<E> el) (prof_\<E> el)}"
+
 text \<open>
   A common action of interest on elections is renaming the voters, 
   e.g. when talking about anonymity.
 \<close>
 
 fun rename :: "('v \<Rightarrow> 'v) \<Rightarrow> ('a, 'v) Election \<Rightarrow> ('a, 'v) Election" where
-  "rename \<pi> (A, V, p) = (let p' = (\<lambda>v. p ((the_inv \<pi>) v)) in (A, \<pi> ` V, p'))"
+  "rename \<pi> (A, V, p) = (A, \<pi> ` V, p \<circ> (the_inv \<pi>))"
 
 lemma rename_sound:
   fixes
@@ -115,6 +119,32 @@ proof (safe)
     using assms rename_sound 
     by metis
 qed
+
+lemma rename_inj: 
+   fixes
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    A' :: "'a set" and
+    V' :: "'v set" and
+    p' :: "('a, 'v) Profile" and
+    \<pi> :: "'v \<Rightarrow> 'v"
+  assumes 
+    ineq: "(A, V, p) \<noteq> (A', V', p')" and
+    bij: "bij \<pi>"
+  shows "rename \<pi> (A, V, p) \<noteq> rename \<pi> (A', V', p')"
+  sorry
+
+lemma rename_surj:
+  fixes
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    \<pi> :: "'v \<Rightarrow> 'v"
+  assumes 
+    bij: "bij \<pi>"
+  shows "\<exists> A' V' p'. finite_profile V' A' p' \<and> (A, V, p) = rename \<pi> (A', V', p')"
+  sorry
 
 text \<open>
   A profile on a voter set that has a natural order can be viewed as a list of ballots.

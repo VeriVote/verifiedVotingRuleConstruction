@@ -192,7 +192,7 @@ proof (unfold social_choice_result.electoral_module_def, safe)
       {a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a} = A"
     using not_le_imp_less
     by auto
-  ultimately show "well_formed A (plurality' V A p)"
+  ultimately show "well_formed_soc_choice A (plurality' V A p)"
     by simp
 qed
 

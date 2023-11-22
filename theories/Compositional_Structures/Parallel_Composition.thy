@@ -55,20 +55,20 @@ proof (unfold social_choice_result.electoral_module_def, safe)
   moreover have
     "\<forall> a'. aggregator a' =
       (\<forall> A' e r d e' r' d'.
-        (well_formed (A'::'a set) (e, r', d) \<and> well_formed A' (r, d', e')) \<longrightarrow>
-          well_formed A' (a' A' (e, r', d) (r, d', e')))"
+        (well_formed_soc_choice (A'::'a set) (e, r', d) \<and> well_formed_soc_choice A' (r, d', e')) \<longrightarrow>
+          well_formed_soc_choice A' (a' A' (e, r', d) (r, d', e')))"
     unfolding aggregator_def
     by blast
   moreover have
     "\<forall> m' V' A' p'.
       (social_choice_result.electoral_module m' \<and> finite (A'::'a set) 
-        \<and> finite (V'::'v set) \<and> profile V' A' p') \<longrightarrow> well_formed A' (m' V' A' p')"
+        \<and> finite (V'::'v set) \<and> profile V' A' p') \<longrightarrow> well_formed_soc_choice A' (m' V' A' p')"
     using par_comp_result_sound
     by (metis (no_types))
-  ultimately have "well_formed A (a A (m V A p) (n V A p))"
+  ultimately have "well_formed_soc_choice A (a A (m V A p) (n V A p))"
     using combine_ele_rej_def assms
     by metis
-  thus "well_formed A ((m \<parallel>\<^sub>a n) V A p)"
+  thus "well_formed_soc_choice A ((m \<parallel>\<^sub>a n) V A p)"
     by simp
 qed
 
@@ -125,11 +125,13 @@ next
     unfolding non_electing_def
     by simp
   have "\<forall> r r' d d' e e' A' f.
-          ((well_formed (A'::'a set) (e', r', d') \<and> well_formed A' (e, r, d)) \<longrightarrow>
+          ((well_formed_soc_choice (A'::'a set) (e', r', d') \<and> 
+            well_formed_soc_choice A' (e, r, d)) \<longrightarrow>
             elect_r (f A' (e', r', d') (e, r, d)) \<subseteq> e' \<union> e \<and>
               reject_r (f A' (e', r', d') (e, r, d)) \<subseteq> r' \<union> r \<and>
               defer_r (f A' (e', r', d') (e, r, d)) \<subseteq> d' \<union> d) =
-                ((well_formed A' (e', r', d') \<and> well_formed A' (e, r, d)) \<longrightarrow>
+                ((well_formed_soc_choice A' (e', r', d') \<and> 
+                  well_formed_soc_choice A' (e, r, d)) \<longrightarrow>
                   elect_r (f A' (e', r', d') (e, r, d)) \<subseteq> e' \<union> e \<and>
                     reject_r (f A' (e', r', d') (e, r, d)) \<subseteq> r' \<union> r \<and>
                     defer_r (f A' (e', r', d') (e, r, d)) \<subseteq> d' \<union> d)"
@@ -137,7 +139,8 @@ next
   hence "\<forall> a'. agg_conservative a' =
           (aggregator a' \<and>
             (\<forall> A' e e' d d' r r'.
-              (well_formed (A'::'a set) (e, r, d) \<and> well_formed A' (e', r', d')) \<longrightarrow>
+              (well_formed_soc_choice (A'::'a set) (e, r, d) \<and> 
+               well_formed_soc_choice A' (e', r', d')) \<longrightarrow>
                 elect_r (a' A' (e, r, d) (e', r', d')) \<subseteq> e \<union> e' \<and>
                   reject_r (a' A' (e, r, d) (e', r', d')) \<subseteq> r \<union> r' \<and>
                   defer_r (a' A' (e, r, d) (e', r', d')) \<subseteq> d \<union> d'))"
@@ -145,7 +148,8 @@ next
     by simp
   hence "aggregator a \<and>
           (\<forall> A' e e' d d' r r'.
-            (well_formed A' (e, r, d) \<and> well_formed A' (e', r', d')) \<longrightarrow>
+            (well_formed_soc_choice A' (e, r, d) \<and> 
+             well_formed_soc_choice A' (e', r', d')) \<longrightarrow>
               elect_r (a A' (e, r, d) (e', r', d')) \<subseteq> e \<union> e' \<and>
                 reject_r (a A' (e, r, d) (e', r', d')) \<subseteq> r \<union> r' \<and>
                 defer_r (a A' (e, r, d) (e', r', d')) \<subseteq> d \<union> d')"

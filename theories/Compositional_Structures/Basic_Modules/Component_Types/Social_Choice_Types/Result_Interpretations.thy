@@ -17,7 +17,7 @@ setup Locale_Code.open_block
 
 global_interpretation social_choice_result:
   result "well_formed_soc_choice" "limit_set_soc_choice" 
-proof (unfold_locales, simp, auto) qed
+proof (unfold_locales, auto) qed
 
 global_interpretation social_welfare_result:
   result "well_formed_welfare" "limit_set_welfare"
@@ -57,26 +57,6 @@ proof (unfold_locales, safe)
   thus "well_formed_welfare A (r1, r2, r3)"
     using partition disj
     by simp
-next
-  fix 
-    A :: "'a set" and
-    B :: "'a set" and
-    r1 :: "('a Preference_Relation) set" and
-    r2 :: "('a Preference_Relation) set" and
-    r3 :: "('a Preference_Relation) set"
-  assume 
-    subset: "A \<subseteq> B" and
-    wf_B: "well_formed_welfare B (r1, r2, r3)"
-  hence "\<forall> r \<in> r1 \<union> r2 \<union> r3. linear_order_on B r" 
-    by simp
-  moreover have "\<forall> r. (linear_order_on B r) \<longrightarrow> linear_order_on A (limit A r)"
-    using subset limit_presv_lin_ord
-    by blast
-  ultimately have "\<forall> r \<in> r1 \<union> r2 \<union> r3. linear_order_on A (limit A r)"
-    by blast
-(* TODO this doesn't hold with the current limit_set definition... *)
-  thus "well_formed_welfare A
-        (limit_set_welfare A r1, limit_set_welfare A r2, limit_set_welfare A r3)"  sorry
 qed
 
 setup Locale_Code.close_block

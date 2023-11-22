@@ -313,8 +313,10 @@ proof -
     using assms pass_mod_dl_inv
     by simp
   have 0001: "defer_lift_invariance ?plurality_defer"
-    using 00010 00011 00012 00013 00014 def_inv_mono_imp_def_lift_inv only_voters_vote_def 
-    by fastforce
+    using 00010 00012 00013 00014 
+          def_inv_mono_imp_def_lift_inv only_voters_vote_def 
+          pass_module.simps 
+    by (metis (no_types, lifting))
   have 0020: "disjoint_compatibility ?pass2 ?drop2"
     using assms
     by simp (* disj_compat_comm drop_pass_disj_compat *)
