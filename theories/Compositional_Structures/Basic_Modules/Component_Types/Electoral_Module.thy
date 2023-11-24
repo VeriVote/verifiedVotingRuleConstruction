@@ -887,10 +887,10 @@ definition condorcet_compatibility :: "'a Electoral_Module \<Rightarrow> bool" w
   "condorcet_compatibility m \<equiv>
     electoral_module m \<and>
     (\<forall> A p a. condorcet_winner A p a \<longrightarrow>
-      (a \<notin> reject m A p \<and>
+      a \<notin> reject m A p \<and>
         (\<forall> b. \<not> condorcet_winner A p b \<longrightarrow> b \<notin> elect m A p) \<and>
           (a \<in> elect m A p \<longrightarrow>
-            (\<forall> b \<in> A. \<not> condorcet_winner A p b \<longrightarrow> b \<in> reject m A p))))"
+            (\<forall> b \<in> A. \<not> condorcet_winner A p b \<longrightarrow> b \<in> reject m A p)))"
 
 text \<open>
   An electoral module is defer-monotone iff,
@@ -938,8 +938,8 @@ text \<open>
 definition invariant_monotonicity :: "'a Electoral_Module \<Rightarrow> bool" where
   "invariant_monotonicity m \<equiv>
     electoral_module m \<and>
-        (\<forall> A p q a. (a \<in> elect m A p \<and> lifted A p q a) \<longrightarrow>
-          (elect m A q = elect m A p \<or> elect m A q = {a}))"
+        (\<forall> A p q a. a \<in> elect m A p \<and> lifted A p q a \<longrightarrow>
+          elect m A q = elect m A p \<or> elect m A q = {a})"
 
 text \<open>
   Lifting a deferred alternative a from a defer-invariant-monotone
@@ -950,8 +950,8 @@ text \<open>
 definition defer_invariant_monotonicity :: "'a Electoral_Module \<Rightarrow> bool" where
   "defer_invariant_monotonicity m \<equiv>
     electoral_module m \<and> non_electing m \<and>
-        (\<forall> A p q a. (a \<in> defer m A p \<and> lifted A p q a) \<longrightarrow>
-          (defer m A q = defer m A p \<or> defer m A q = {a}))"
+        (\<forall> A p q a. a \<in> defer m A p \<and> lifted A p q a \<longrightarrow>
+          defer m A q = defer m A p \<or> defer m A q = {a})"
 
 subsection \<open>Inference Rules\<close>
 
@@ -1189,7 +1189,7 @@ lemma condorcet_consistency'':
   shows "condorcet_consistency m =
            (electoral_module m \<and>
               (\<forall> A p a.
-                condorcet_winner A p a \<longrightarrow> (m A p = ({a}, A - {a}, {}))))"
+                condorcet_winner A p a \<longrightarrow> m A p = ({a}, A - {a}, {})))"
 proof (simp only: condorcet_consistency', safe)
   fix
     A :: "'a set" and

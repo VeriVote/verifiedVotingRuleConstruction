@@ -403,11 +403,11 @@ proof -
     unfolding profile_def
     by (simp add: lin_ord_imp_connex)
   hence asym: "\<forall> i::nat. i < length p \<longrightarrow>
-              \<not> (let r = (p!i) in (b \<preceq>\<^sub>r a)) \<longrightarrow> (let r = (p!i) in (a \<preceq>\<^sub>r b))"
+              (let r = (p!i) in (\<not> b \<preceq>\<^sub>r a)) \<longrightarrow> (let r = (p!i) in (a \<preceq>\<^sub>r b))"
     using a_in_A b_in_A
     unfolding connex_def
     by metis
-  have "\<forall> i::nat. i < length p \<longrightarrow> ((b, a) \<in> (p!i) \<longrightarrow> (a, b) \<notin> (p!i))"
+  have "\<forall> i::nat. i < length p \<longrightarrow> (b, a) \<in> (p!i) \<longrightarrow> (a, b) \<notin> (p!i)"
     using antisymD neq lin_imp_antisym prof
     unfolding profile_def
     by metis
@@ -624,8 +624,8 @@ proof (clarsimp)
   have limit_prof_simp: "limit_profile A p = map (limit A) p"
     by simp
   obtain n :: nat where
-    prof_limit_n: "(n < length (limit_profile A p) \<longrightarrow>
-            linear_order_on A (limit_profile A p!n)) \<longrightarrow> profile A (limit_profile A p)"
+    prof_limit_n: "n < length (limit_profile A p) \<longrightarrow>
+            linear_order_on A (limit_profile A p!n) \<longrightarrow> profile A (limit_profile A p)"
     using prof_is_lin_ord
     by metis
   have prof_n_lin_ord: "\<forall> n < length p. linear_order_on B (p!n)"
@@ -637,7 +637,9 @@ proof (clarsimp)
     using prof_n_lin_ord
     by simp
   thus "profile A (map (limit A) p)"
-    using prof_length prof_limit_n limit_prof_simp limit_presv_lin_ord nth_map subset
+    using prof_length prof_limit_n limit_prof_simp
+          limit_presv_lin_ord nth_map subset profile
+    unfolding profile_def
     by (metis (no_types))
 qed
 
@@ -750,8 +752,8 @@ proof (cases)
     by metis
   hence one:
     "\<forall> i::nat. i < length p \<longrightarrow>
-         (Preference_Relation.lifted A (limit A (p!i)) (limit A (p'!i)) a \<or>
-           (limit A (p!i)) = (limit A (p'!i)))"
+         Preference_Relation.lifted A (limit A (p!i)) (limit A (p'!i)) a \<or>
+           (limit A (p!i)) = (limit A (p'!i))"
     using limit_lifted_imp_eq_or_lifted subset
     by metis
   thus ?thesis
@@ -763,11 +765,7 @@ proof (cases)
       by (metis (mono_tags, lifting))
   next
     assume forall_limit_p_q:
-      "\<not> (\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (p'!i)))" and
-      foo:
-      "\<forall> i < length p.
-        Preference_Relation.lifted A (limit A (p!i)) (limit A (p'!i)) a
-          \<or> limit A (p!i) = limit A (p'!i)"
+      "\<not> (\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (p'!i)))"
     let ?p = "limit_profile A p"
     let ?q = "limit_profile A p'"
     have "profile A ?p \<and> profile A ?q"
@@ -786,7 +784,7 @@ proof (cases)
       by (metis (no_types, lifting))
     moreover have
       "\<forall> i::nat.
-        (i < length ?p \<and> \<not>Preference_Relation.lifted A (?p!i) (?q!i) a) \<longrightarrow>
+        i < length ?p \<and> \<not> Preference_Relation.lifted A (?p!i) (?q!i) a \<longrightarrow>
           (?p!i) = (?q!i)"
       using length_map lifted_a limit_profile.simps nth_map one
       unfolding lifted_def

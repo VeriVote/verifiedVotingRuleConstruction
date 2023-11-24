@@ -194,11 +194,11 @@ proof -
   have lifted_winner:
     "\<forall> b \<in> A.
       \<forall> i::nat. i < length p \<longrightarrow>
-        (above (p!i) b = {b} \<longrightarrow> (above (q!i) b = {b} \<or> above (q!i) a = {a}))"
+        above (p!i) b = {b} \<longrightarrow> above (q!i) b = {b} \<or> above (q!i) a = {a}"
     using lift_a lifted_above_winner_alts
     unfolding Profile.lifted_def
     by (metis (no_types, lifting))
-  hence "\<forall> i::nat. i < length p \<longrightarrow> (above (p!i) a = {a} \<longrightarrow> above (q!i) a = {a})"
+  hence "\<forall> i::nat. i < length p \<longrightarrow> above (p!i) a = {a} \<longrightarrow> above (q!i) a = {a}"
     using defer_a lift_a
     unfolding Profile.lifted_def
     by metis
@@ -218,14 +218,14 @@ proof -
     by metis
   hence
     "\<forall> b \<in> A - {a}.
-      \<forall> i::nat. i < length p \<longrightarrow> (above (q!i) a = {a} \<longrightarrow> above (q!i) b \<noteq> {b})"
+      \<forall> i::nat. i < length p \<longrightarrow> above (q!i) a = {a} \<longrightarrow> above (q!i) b \<noteq> {b}"
     using DiffE above_one_eq lift_a insertCI insert_absorb insert_not_empty sizes
     unfolding Profile.lifted_def profile_def
     by metis
   with lifted_winner
   have above_QtoP:
     "\<forall> b \<in> A - {a}.
-      \<forall> i::nat. i < length p \<longrightarrow> (above (q!i) b = {b} \<longrightarrow> above (p!i) b = {b})"
+      \<forall> i::nat. i < length p \<longrightarrow> above (q!i) b = {b} \<longrightarrow> above (p!i) b = {b}"
     using lifted_above_winner_other lift_a
     unfolding Profile.lifted_def
     by metis
@@ -255,12 +255,12 @@ proof -
     moreover have
       "\<forall> b \<in> A - {a}.
         \<forall> i::nat. i < length p \<longrightarrow>
-          (above (p!i) b = {b} \<longrightarrow> (above (q!i) b = {b} \<or> above (q!i) a = {a}))"
+          above (p!i) b = {b} \<longrightarrow> above (q!i) b = {b} \<or> above (q!i) a = {a}"
       using lifted_winner
       by auto
     moreover have
       "\<forall> b \<in> A - {a}.
-        \<forall> i::nat. i < length p \<longrightarrow> (above (p!i) b = {b} \<longrightarrow> above (p!i) a \<noteq> {a})"
+        \<forall> i::nat. i < length p \<longrightarrow> above (p!i) b = {b} \<longrightarrow> above (p!i) a \<noteq> {a}"
     proof (rule ccontr, simp, safe, simp)
       fix
         b :: "'a" and
@@ -284,7 +284,7 @@ proof -
     qed
     ultimately have above_PtoQ:
       "\<forall> b \<in> A - {a}. \<forall> i::nat.
-        i < length p \<longrightarrow> (above (p!i) b = {b} \<longrightarrow> above (q!i) b = {b})"
+        i < length p \<longrightarrow> above (p!i) b = {b} \<longrightarrow> above (q!i) b = {b}"
       by simp
     hence "\<forall> b \<in> A.
             card {i::nat. i < length p \<and> above (p!i) b = {b}} =
@@ -338,7 +338,7 @@ proof -
       using DiffD1 antisym dual_order.trans not_le_imp_less win_count_a strict_less
             win_count_other
       by metis
-    hence "\<forall> b \<in> A - {a}. \<not> (\<forall> c \<in> A. win_count q c \<le> win_count q b)"
+    hence "\<forall> b \<in> A - {a}. \<exists> c \<in> A. \<not> win_count q c \<le> win_count q b"
       using lift_a not_le
       unfolding Profile.lifted_def
       by metis

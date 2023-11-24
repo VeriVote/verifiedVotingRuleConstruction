@@ -101,9 +101,8 @@ next
     thus ?thesis
     proof (safe)
       assume not_mod_cont_mn: "\<not> mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p a"
-      have par_emod:
-        "\<forall> m' n'. (electoral_module m' \<and> electoral_module n') \<longrightarrow>
-          electoral_module (m' \<parallel>\<^sub>\<up> n')"
+      have par_emod: "\<forall> m' n'.
+        electoral_module m' \<and> electoral_module n' \<longrightarrow> electoral_module (m' \<parallel>\<^sub>\<up> n')"
         using max_par_comp_sound
         by blast
       have set_intersect: "\<forall> a' A' A''. (a' \<in> A' \<inter> A'') = (a' \<in> A' \<and> a' \<in> A'')"

@@ -241,7 +241,7 @@ next
   assume "condorcet_winner A p w"
   moreover have "defer_condorcet_consistency (max_eliminator copeland_score)"
     by (simp add: copeland_score_is_cr)
-  moreover have "\<forall> A p. (copeland A p = max_eliminator copeland_score A p)"
+  moreover have "\<forall> A p. copeland A p = max_eliminator copeland_score A p"
     by simp
   ultimately show
     "copeland A p = ({}, A - defer copeland A p, {d \<in> A. condorcet_winner A p d})"

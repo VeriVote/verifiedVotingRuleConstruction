@@ -50,13 +50,13 @@ proof (unfold electoral_module_def, safe)
   moreover have
     "\<forall> a'. aggregator a' =
       (\<forall> A' e r d e' r' d'.
-        (well_formed (A'::'a set) (e, r', d) \<and> well_formed A' (r, d', e')) \<longrightarrow>
+        well_formed (A'::'a set) (e, r', d) \<and> well_formed A' (r, d', e') \<longrightarrow>
           well_formed A' (a' A' (e, r', d) (r, d', e')))"
     unfolding aggregator_def
     by blast
   moreover have
     "\<forall> m' A' p'.
-      (electoral_module m' \<and> finite (A'::'a set) \<and> profile A' p') \<longrightarrow>
+      electoral_module m' \<and> finite (A'::'a set) \<and> profile A' p' \<longrightarrow>
           well_formed A' (m' A' p')"
     using par_comp_result_sound
     by (metis (no_types))
@@ -117,11 +117,11 @@ next
     unfolding non_electing_def
     by simp
   have "\<forall> r r' d d' e e' A' f.
-          ((well_formed (A'::'a set) (e', r', d') \<and> well_formed A' (e, r, d)) \<longrightarrow>
+          (well_formed (A'::'a set) (e', r', d') \<and> well_formed A' (e, r, d) \<longrightarrow>
             elect_r (f A' (e', r', d') (e, r, d)) \<subseteq> e' \<union> e \<and>
               reject_r (f A' (e', r', d') (e, r, d)) \<subseteq> r' \<union> r \<and>
               defer_r (f A' (e', r', d') (e, r, d)) \<subseteq> d' \<union> d) =
-                ((well_formed A' (e', r', d') \<and> well_formed A' (e, r, d)) \<longrightarrow>
+                (well_formed A' (e', r', d') \<and> well_formed A' (e, r, d) \<longrightarrow>
                   elect_r (f A' (e', r', d') (e, r, d)) \<subseteq> e' \<union> e \<and>
                     reject_r (f A' (e', r', d') (e, r, d)) \<subseteq> r' \<union> r \<and>
                     defer_r (f A' (e', r', d') (e, r, d)) \<subseteq> d' \<union> d)"
@@ -129,7 +129,7 @@ next
   hence "\<forall> a'. agg_conservative a' =
           (aggregator a' \<and>
             (\<forall> A' e e' d d' r r'.
-              (well_formed (A'::'a set) (e, r, d) \<and> well_formed A' (e', r', d')) \<longrightarrow>
+              well_formed (A'::'a set) (e, r, d) \<and> well_formed A' (e', r', d') \<longrightarrow>
                 elect_r (a' A' (e, r, d) (e', r', d')) \<subseteq> e \<union> e' \<and>
                   reject_r (a' A' (e, r, d) (e', r', d')) \<subseteq> r \<union> r' \<and>
                   defer_r (a' A' (e, r, d) (e', r', d')) \<subseteq> d \<union> d'))"
@@ -137,18 +137,18 @@ next
     by simp
   hence "aggregator a \<and>
           (\<forall> A' e e' d d' r r'.
-            (well_formed A' (e, r, d) \<and> well_formed A' (e', r', d')) \<longrightarrow>
+            well_formed A' (e, r, d) \<and> well_formed A' (e', r', d') \<longrightarrow>
               elect_r (a A' (e, r, d) (e', r', d')) \<subseteq> e \<union> e' \<and>
                 reject_r (a A' (e, r, d) (e', r', d')) \<subseteq> r \<union> r' \<and>
                 defer_r (a A' (e, r, d) (e', r', d')) \<subseteq> d \<union> d')"
     using conservative
     by presburger
   hence "let c = (a A (m A p) (n A p)) in
-          (elect_r c \<subseteq> ((elect m A p) \<union> (elect n A p)))"
+          elect_r c \<subseteq> (elect m A p) \<union> (elect n A p)"
     using emod_m emod_n par_comp_result_sound
           prod.collapse prof_A
     by metis
-  hence "w \<in> ((elect m A p) \<union> (elect n A p))"
+  hence "w \<in> (elect m A p) \<union> (elect n A p)"
     using w_wins
     by auto
   thus "w \<in> {}"

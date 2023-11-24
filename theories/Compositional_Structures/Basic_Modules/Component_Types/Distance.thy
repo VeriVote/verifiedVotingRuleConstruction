@@ -30,18 +30,18 @@ subsection \<open>Definition\<close>
 type_synonym 'a Distance = "'a \<Rightarrow> 'a \<Rightarrow> ereal"
 
 definition distance :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
-  "distance S d \<equiv> \<forall> x y. (x \<in> S \<and> y \<in> S) \<longrightarrow> (d x x = 0 \<and> 0 \<le> d x y)"
+  "distance S d \<equiv> \<forall> x y. x \<in> S \<and> y \<in> S \<longrightarrow> d x x = 0 \<and> 0 \<le> d x y"
 
 subsection \<open>Conditions\<close>
 
 definition symmetric :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
-  "symmetric S d \<equiv> \<forall> x y. (x \<in> S \<and> y \<in> S) \<longrightarrow> d x y = d y x"
+  "symmetric S d \<equiv> \<forall> x y. x \<in> S \<and> y \<in> S \<longrightarrow> d x y = d y x"
 
 definition triangle_ineq :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
-  "triangle_ineq S d \<equiv> \<forall> x y z. (x \<in> S \<and> y \<in> S \<and> z \<in> S) \<longrightarrow> d x z \<le> d x y + d y z"
+  "triangle_ineq S d \<equiv> \<forall> x y z. x \<in> S \<and> y \<in> S \<and> z \<in> S \<longrightarrow> d x z \<le> d x y + d y z"
 
 definition eq_if_zero :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
-  "eq_if_zero S d \<equiv> \<forall> x y. (x \<in> S \<and> y \<in> S) \<longrightarrow> d x y = 0 \<longrightarrow> x = y"
+  "eq_if_zero S d \<equiv> \<forall> x y. x \<in> S \<and> y \<in> S \<longrightarrow> d x y = 0 \<longrightarrow> x = y"
 
 definition vote_distance :: "('a Vote set \<Rightarrow> 'a Vote Distance \<Rightarrow> bool) \<Rightarrow>
                                           'a Vote Distance \<Rightarrow> bool" where

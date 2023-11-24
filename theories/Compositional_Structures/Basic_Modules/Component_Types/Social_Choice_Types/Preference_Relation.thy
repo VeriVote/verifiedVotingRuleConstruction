@@ -782,7 +782,8 @@ proof (unfold rank.simps above_def, clarify)
     by (metis (full_types))
   obtain p :: "'a \<Rightarrow> bool" where
     rel_b: "\<forall> y. p y = ((b, y) \<in> r)"
-    by moura
+    using is_less_preferred_than.simps
+    by metis
   hence "finite (Collect p)"
     using refl_r refl_on_domain fin_A rev_finite_subset mem_Collect_eq subsetI
     by metis
@@ -1117,7 +1118,7 @@ proof -
         by (simp add: Ball_def_raw)
       hence limit_rel_r:
         "limited A (limit A r) \<and>
-          (\<forall> b b'. b \<in> A \<and> b' \<in> A \<longrightarrow> ((b, b') \<in> limit A r \<or> (b', b) \<in> limit A r))"
+          (\<forall> b b'. b \<in> A \<and> b' \<in> A \<longrightarrow> (b, b') \<in> limit A r \<or> (b', b) \<in> limit A r)"
         using connex
         by simp
       have limit_imp_rel: "\<forall> b b' A'' r''. (b::'a, b') \<in> limit A'' r'' \<longrightarrow> b \<preceq>\<^sub>r'' b'"
@@ -1125,12 +1126,12 @@ proof -
         by metis
       have limit_rel_s:
         "limited A (limit A r') \<and>
-          (\<forall> b b'. b \<in> A \<and> b' \<in> A \<longrightarrow> ((b, b') \<in> limit A r' \<or> (b', b) \<in> limit A r'))"
+          (\<forall> b b'. b \<in> A \<and> b' \<in> A \<longrightarrow> (b, b') \<in> limit A r' \<or> (b', b) \<in> limit A r')"
         using connex
         unfolding connex_def
         by simp
       ultimately have
-        "\<forall> a' \<in> A - {a}. (a \<preceq>\<^sub>r a' \<and> a \<preceq>\<^sub>r' a') \<or> (a' \<preceq>\<^sub>r a \<and> a' \<preceq>\<^sub>r' a)"
+        "\<forall> a' \<in> A - {a}. a \<preceq>\<^sub>r a' \<and> a \<preceq>\<^sub>r' a' \<or> a' \<preceq>\<^sub>r a \<and> a' \<preceq>\<^sub>r' a"
         using DiffD1 limit_rel_r limit_rel_presv_prefs a_in_A
         by metis
       have "\<forall> a' \<in> A - {a}. ((a, a') \<in> (limit A r)) = ((a, a') \<in> (limit A r'))"

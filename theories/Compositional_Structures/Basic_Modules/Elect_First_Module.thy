@@ -34,8 +34,8 @@ proof (unfold electoral_module_def, safe)
   hence "set_equals_partition A (elect_first_module A p)"
     by simp
   moreover have
-    "\<forall> a \<in> A. (a \<notin> {a' \<in> A.  above (p!0) a' = {a'}} \<or>
-                a \<notin> {a' \<in> A. above (p!0) a' \<noteq> {a'}})"
+    "\<forall> a \<in> A. a \<notin> {a' \<in> A.  above (p!0) a' = {a'}} \<or>
+                a \<notin> {a' \<in> A. above (p!0) a' \<noteq> {a'}}"
     by simp
   hence "{a \<in> A. above (p!0) a = {a}} \<inter> {a \<in> A. above (p!0) a \<noteq> {a}} = {}"
     by blast

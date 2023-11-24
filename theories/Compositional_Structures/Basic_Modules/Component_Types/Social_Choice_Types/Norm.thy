@@ -87,7 +87,7 @@ next
     unfolding bij_betw_def
     by simp
   hence inv_without_a:
-    "\<forall> a' \<in> (A' - {f a}). the_inv_into (A - {a}) f a' = the_inv_into A f a'"
+    "\<forall> a' \<in> A' - {f a}. the_inv_into (A - {a}) f a' = the_inv_into A f a'"
     using inj_on_A A'_sub_fa
     by (simp add: inj_on_diff the_inv_into_f_eq)
   have card_without_a: "card (A - {a}) = x"

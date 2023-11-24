@@ -154,7 +154,7 @@ next
     prof_p: "profile A p" and
     elect_none: "elect plurality_rule A p = {}" and
     a_in_A: "a \<in> A"
-  have "\<forall> A p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow> elect plurality_rule A p \<noteq> {}"
+  have "\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> elect plurality_rule A p \<noteq> {}"
     using plurality_rule_elect_non_empty
     by (metis (no_types))
   hence empty_A: "A = {}"

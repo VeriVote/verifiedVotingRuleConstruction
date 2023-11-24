@@ -38,7 +38,7 @@ text \<open>
 \<close>
 
 definition profile_l :: "'a set \<Rightarrow> 'a Profile_List \<Rightarrow> bool" where
-  "profile_l A p \<equiv> (\<forall> i < length p. ballot_on A (p!i))"
+  "profile_l A p \<equiv> \<forall> i < length p. ballot_on A (p!i)"
 
 lemma refinement:
   fixes

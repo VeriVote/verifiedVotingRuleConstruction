@@ -72,17 +72,17 @@ proof -
   have rej_drop_eq_def_pass: "reject (drop_module 2 r) = defer (pass_module 2 r)"
     by simp
   obtain
-    m :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a set" and
-    m' :: "('a Electoral_Module) \<Rightarrow> nat \<Rightarrow> 'a Profile" where
+    m :: "'a Electoral_Module \<Rightarrow> nat \<Rightarrow> 'a set" and
+    m' :: "'a Electoral_Module \<Rightarrow> nat \<Rightarrow> 'a Profile" where
       "\<forall> f n. (\<exists> A p. n \<le> card A \<and> finite_profile A p \<and> card (reject f A p) \<noteq> n) =
           (n \<le> card (m f n) \<and> finite_profile (m f n) (m' f n) \<and>
             card (reject f (m f n) (m' f n)) \<noteq> n)"
     by moura
   hence rejected_card:
     "\<forall> f n.
-      (\<not> rejects n f \<and> electoral_module f \<longrightarrow>
+      \<not> rejects n f \<and> electoral_module f \<longrightarrow>
         n \<le> card (m f n) \<and> finite_profile (m f n) (m' f n) \<and>
-          card (reject f (m f n) (m' f n)) \<noteq> n)"
+          card (reject f (m f n) (m' f n)) \<noteq> n"
     unfolding rejects_def
     by blast
   have

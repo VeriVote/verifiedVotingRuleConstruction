@@ -108,7 +108,7 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
     by metis
   hence "finite {prefer_count p w y | y . y \<in> A - {w}}"
     by simp
-  hence "\<exists> n \<in> A - {w} . prefer_count p w n =
+  hence "\<exists> n \<in> A - {w}. prefer_count p w n =
             Min {prefer_count p w y | y . y \<in> A - {w}}"
     using pref_counts_non_empty Min_in
     by fastforce

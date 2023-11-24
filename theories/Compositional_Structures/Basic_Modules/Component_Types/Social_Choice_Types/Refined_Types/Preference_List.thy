@@ -520,7 +520,7 @@ definition refl_on_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> b
   "refl_on_l A l \<equiv> (\<forall> a. a \<in> set l \<longrightarrow> a \<in> A) \<and> (\<forall> a \<in> A. a \<lesssim>\<^sub>l a)"
 
 definition trans :: "'a Preference_List \<Rightarrow> bool" where
-  "trans l \<equiv> \<forall> (a, b, c) \<in> (set l \<times> set l \<times> set l). a \<lesssim>\<^sub>l b \<and> b \<lesssim>\<^sub>l c \<longrightarrow> a \<lesssim>\<^sub>l c"
+  "trans l \<equiv> \<forall> (a, b, c) \<in> set l \<times> set l \<times> set l. a \<lesssim>\<^sub>l b \<and> b \<lesssim>\<^sub>l c \<longrightarrow> a \<lesssim>\<^sub>l c"
 
 definition preorder_on_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> bool" where
   "preorder_on_l A l \<equiv> refl_on_l A l \<and> trans l"

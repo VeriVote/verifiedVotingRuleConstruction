@@ -48,7 +48,7 @@ subsection \<open>Standard Definitions\<close>
 
 definition standard :: "'a Election Distance \<Rightarrow> bool" where
  "standard d \<equiv>
-    \<forall> A A' p p'. (length p \<noteq> length p' \<or> A \<noteq> A') \<longrightarrow> d (A, p) (A', p') = \<infinity>"
+    \<forall> A A' p p'. length p \<noteq> length p' \<or> A \<noteq> A' \<longrightarrow> d (A, p) (A', p') = \<infinity>"
 
 (*
   We want "profile_permutations n A = {}" for infinite A.
@@ -512,15 +512,15 @@ proof (cases "\<not> finite A", clarsimp)
         qed
       qed
       let ?P = "\<lambda> l a b. rank_l l b \<le> rank_l l a"
-      have "\<forall> l a. a \<in> (set l) \<longrightarrow> ?P l a a"
+      have "\<forall> l a. a \<in> set l \<longrightarrow> ?P l a a"
         by simp
       moreover have
         "\<forall> l a b c.
-          a \<in> (set l) \<longrightarrow> b \<in> (set l) \<longrightarrow> c \<in> (set l) \<longrightarrow>
+          a \<in> set l \<longrightarrow> b \<in> set l \<longrightarrow> c \<in> set l \<longrightarrow>
               ?P l a b \<longrightarrow> ?P l b c \<longrightarrow> ?P l a c"
         by simp
       moreover have
-        "\<forall> l a b. a \<in> (set l) \<longrightarrow> b \<in> (set l) \<longrightarrow> ?P l a b \<longrightarrow> ?P l b a \<longrightarrow> a = b"
+        "\<forall> l a b. a \<in> set l \<longrightarrow> b \<in> set l \<longrightarrow> ?P l a b \<longrightarrow> ?P l b a \<longrightarrow> a = b"
         using pos_in_list_yields_pos le_antisym
         by metis
       ultimately have "\<forall> l. partial_order_on (set l) (relation_of (?P l) (set l))"

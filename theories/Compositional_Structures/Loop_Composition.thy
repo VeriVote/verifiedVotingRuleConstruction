@@ -153,7 +153,7 @@ proof (safe)
     using term_rel
     by presburger
   have "\<forall> R'. All
-    (loop_comp_helper_dom::
+    (loop_comp_helper_dom ::
       'a Electoral_Module \<times> 'a Electoral_Module \<times> 'a Termination_Condition \<times>
           _ set \<times> (_ \<times> _) set list \<Rightarrow> bool) \<or>
       (\<exists> t' m' A' p' n'. wf R' \<longrightarrow>
@@ -787,7 +787,7 @@ lemma loop_comp_helper_iter_elim_def_n:
   assumes
     "non_electing m" and
     "eliminates 1 m" and
-    "\<forall> r. ((t r) = (card (defer_r r) = x))" and
+    "\<forall> r. (t r) = (card (defer_r r) = x)" and
     "x > 0" and
     "profile A p" and
     "card (defer acc A p) \<ge> x" and
@@ -876,7 +876,7 @@ next
     "a \<in> defer (m \<circlearrowleft>\<^sub>t) A p" and
     "lifted A p q a"
   moreover have
-    "\<forall> p' q' a'. (a' \<in> (defer (m \<circlearrowleft>\<^sub>t) A p') \<and> lifted A p' q' a') \<longrightarrow>
+    "\<forall> p' q' a'. a' \<in> (defer (m \<circlearrowleft>\<^sub>t) A p') \<and> lifted A p' q' a' \<longrightarrow>
         (m \<circlearrowleft>\<^sub>t) A p' = (m \<circlearrowleft>\<^sub>t) A q'"
     using assms lifted_imp_fin_prof loop_comp_helper_def_lift_inv
           loop_composition.simps defer_module.simps

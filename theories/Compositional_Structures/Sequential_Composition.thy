@@ -60,8 +60,7 @@ proof -
     by metis
   have defer_in_A:
     "\<forall> A' p' m' a.
-      (profile A' p' \<and> electoral_module m' \<and> (a::'a) \<in> defer m' A' p')
-        \<longrightarrow> a \<in> A'"
+      profile A' p' \<and> electoral_module m' \<and> (a::'a) \<in> defer m' A' p' \<longrightarrow> a \<in> A'"
     using UnCI result_presv_alts
     by (metis (mono_tags))
   from module_m prof_p
@@ -96,11 +95,12 @@ proof -
       "\<forall> B B'.
         (\<exists> a b. a \<in> B' \<and> b \<in> B \<and> a = b) =
           (f B B' \<in> B' \<and> (\<exists> a. a \<in> B \<and> f B B' = a))"
-      by moura
+      using disjoint_iff
+      by metis
     then obtain g :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a" where
       "\<forall> B B'.
         (B \<inter> B' = {} \<longrightarrow> (\<forall> a b. a \<in> B \<and> b \<in> B' \<longrightarrow> a \<noteq> b)) \<and>
-          (B \<inter> B' \<noteq> {} \<longrightarrow> (f B B' \<in> B \<and> g B B' \<in> B' \<and> f B B' = g B B'))"
+          (B \<inter> B' \<noteq> {} \<longrightarrow> f B B' \<in> B \<and> g B B' \<in> B' \<and> f B B' = g B B')"
       by auto
     thus ?thesis
       using defer_in_A disj_n module_n prof_def_lim
@@ -656,19 +656,20 @@ proof -
   thus ?thesis
   proof -
     obtain
-      p :: "('a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) \<Rightarrow> 'a set" and
-      A :: "('a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Result) \<Rightarrow> 'a Profile" where
+      p :: "'a Electoral_Module \<Rightarrow> 'a set" and
+      A :: "'a Electoral_Module \<Rightarrow> 'a Profile" where
       f_mod:
-      "\<forall> m'.
-        (\<not> electing m' \<or> electoral_module m' \<and>
-          (\<forall> A' p'. (A' \<noteq> {} \<and> finite_profile A' p') \<longrightarrow> elect m' A' p' \<noteq> {})) \<and>
-        (electing m' \<or> \<not> electoral_module m' \<or> p m' \<noteq> {} \<and>
+      "\<forall> m' A' p'.
+        (electing m' \<longrightarrow> electoral_module m' \<and> A' \<noteq> {} \<and> finite_profile A' p'
+          \<longrightarrow> elect m' A' p' \<noteq> {}) \<and>
+        (\<not> electing m' \<longrightarrow> electoral_module m' \<longrightarrow> p m' \<noteq> {} \<and>
           profile (p m') (A m') \<and> elect m' (p m') (A m') = {})"
       unfolding electing_def
       by moura
-    hence f_elect:
-      "electoral_module n \<and> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> elect n A p \<noteq> {})"
+    hence f_elect: "electoral_module n
+        \<and> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> elect n A p \<noteq> {})"
       using electing_n
+      unfolding electing_def
       by metis
     have def_card_one:
       "electoral_module m \<and>
@@ -768,15 +769,15 @@ proof -
       unfolding lifted_def
       by (metis (no_types, lifting))
     from def_and_lifted modules
-    have "\<forall> i. (0 \<le> i \<and> i < length ?new_p) \<longrightarrow>
-            (Preference_Relation.lifted A (p!i) (q!i) a \<or> (p!i) = (q!i))"
+    have "\<forall> i. 0 \<le> i \<and> i < length ?new_p \<longrightarrow>
+            Preference_Relation.lifted A (p!i) (q!i) a \<or> (p!i) = (q!i)"
       using limit_prof_presv_size
       unfolding Profile.lifted_def
       by metis
     with def_and_lifted modules mono_m
-    have "\<forall> i. (0 \<le> i \<and> i < length ?new_p) \<longrightarrow>
-            (Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a \<or>
-              (?new_p!i) = (?new_q!i))"
+    have "\<forall> i. 0 \<le> i \<and> i < length ?new_p \<longrightarrow>
+            Preference_Relation.lifted ?new_Ap (?new_p!i) (?new_q!i) a \<or>
+              (?new_p!i) = (?new_q!i)"
       using limit_lifted_imp_eq_or_lifted defer_in_alts
             limit_prof_presv_size nth_map
       unfolding Profile.lifted_def limit_profile.simps
@@ -867,7 +868,7 @@ next
   moreover have
     "\<forall> i m'. defers i m' =
       (electoral_module m' \<and>
-        (\<forall> A' p'. (i \<le> card A' \<and> finite A' \<and> profile A' p') \<longrightarrow>
+        (\<forall> A' p'. i \<le> card A' \<and> finite A' \<and> profile A' p' \<longrightarrow>
             card (defer m' A' p') = i))"
     unfolding defers_def
     by simp
