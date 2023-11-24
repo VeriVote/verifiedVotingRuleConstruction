@@ -34,7 +34,7 @@ theorem pass_mod_sound[simp]:
     r :: "'a Preference_Relation" and
     n :: nat
   shows "electoral_module (pass_module n r)"
-proof (intro electoral_modI)
+proof (unfold electoral_module_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile"
@@ -88,15 +88,15 @@ next
     using limit_presv_lin_ord order top_greatest
     by metis
   moreover have
-    "\<exists> b \<in> A. above (limit A r) b = {b} \<and>
-      (\<forall> c \<in> A. above (limit A r) c = {c} \<longrightarrow> c = b)"
-    using calculation above_one
+    "\<exists> b \<in> A. above (limit A r) b = {b}
+      \<and> (\<forall> c \<in> A. above (limit A r) c = {c} \<longrightarrow> c = b)"
+    using calculation above_one fin_A
     by blast
-  ultimately have "{b \<in> A. rank (limit A r) b > n} \<noteq> A"
-    using Suc_leI g0_n leD mem_Collect_eq above_rank
+  moreover have "{b \<in> A. rank (limit A r) b > n} \<noteq> A"
+    using Suc_leI g0_n leD mem_Collect_eq above_rank calculation
     unfolding One_nat_def
     by (metis (no_types, lifting))
-  hence "reject (pass_module n r) A p \<noteq> A"
+  ultimately have "reject (pass_module n r) A p \<noteq> A"
     by simp
   thus "a \<in> {}"
     using rej_pass_A
@@ -261,7 +261,7 @@ next
         ultimately have "rank (limit A r) a = 1"
           by simp
         hence "{a} = above (limit A r) a"
-          using a_above_a lin_ord_on_A rank_one_2
+          using a_above_a lin_ord_on_A rank_one_imp_above_one
           by metis
         hence "a = w"
           using w_unique
@@ -348,7 +348,7 @@ next
     by auto
   hence c_not_above_b: "\<forall> c \<in> A - {a, b}. c \<notin> above (limit A r) b"
     using b Diff_iff Diff_insert2 above_presv_limit insert_subset assms limit_presv_above
-          limit_presv_above_2
+          limit_rel_presv_above
     by metis
   moreover have above_subset: "above (limit A r) b \<subseteq> A"
     using above_presv_limit assms

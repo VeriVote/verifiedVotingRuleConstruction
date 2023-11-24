@@ -34,23 +34,23 @@ theorem rev_comp_sound[simp]:
   shows "electoral_module (revision_composition m)"
 proof -
   from assms
-  have "\<forall> A p. finite_profile A p \<longrightarrow> elect m A p \<subseteq> A"
+  have "\<forall> A p. profile A p \<longrightarrow> elect m A p \<subseteq> A"
     using elect_in_alts
     by metis
-  hence "\<forall> A p. finite_profile A p \<longrightarrow> (A - elect m A p) \<union> elect m A p = A"
+  hence "\<forall> A p. profile A p \<longrightarrow> (A - elect m A p) \<union> elect m A p = A"
     by blast
   hence unity:
-    "\<forall> A p. finite_profile A p \<longrightarrow>
+    "\<forall> A p. profile A p \<longrightarrow>
       set_equals_partition A (revision_composition m A p)"
     by simp
-  have "\<forall> A p. finite_profile A p \<longrightarrow> (A - elect m A p) \<inter> elect m A p = {}"
+  have "\<forall> A p. profile A p \<longrightarrow> (A - elect m A p) \<inter> elect m A p = {}"
     by blast
   hence disjoint:
-    "\<forall> A p. finite_profile A p \<longrightarrow> disjoint3 (revision_composition m A p)"
+    "\<forall> A p. profile A p \<longrightarrow> disjoint3 (revision_composition m A p)"
     by simp
   from unity disjoint
   show ?thesis
-    by (simp add: electoral_modI)
+    by (simp add: electoral_module_def)
 qed
 
 subsection \<open>Composition Rules\<close>

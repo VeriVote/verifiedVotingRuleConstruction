@@ -25,7 +25,7 @@ fun elect_first_module :: "'a Electoral_Module" where
 subsection \<open>Soundness\<close>
 
 theorem elect_first_mod_sound: "electoral_module elect_first_module"
-proof (intro electoral_modI)
+proof (unfold electoral_module_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile"

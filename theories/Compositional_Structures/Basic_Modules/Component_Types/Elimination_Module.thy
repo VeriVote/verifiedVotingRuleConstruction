@@ -369,9 +369,7 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
     A :: "'a set" and
     p :: "'a Profile" and
     a :: "'a"
-  assume
-    winner: "condorcet_winner A p a" and
-    finite: "finite A"
+  assume winner: "condorcet_winner A p a"
   hence profile: "finite_profile A p"
     by simp
   let ?trsh = "Max {e b A p | b. b \<in> A}"
@@ -401,10 +399,10 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
       "... = ({},
               A - defer (max_eliminator e) A p,
               {b \<in> A. condorcet_winner A p b})"
-      using cond_winner_unique_3 winner Collect_cong
+      using cond_winner_unique winner Collect_cong
       by (metis (no_types, lifting))
     finally show ?thesis
-      using finite winner
+      using winner
       by metis
   next
     case False

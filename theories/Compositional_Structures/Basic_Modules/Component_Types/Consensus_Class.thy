@@ -37,8 +37,7 @@ text \<open>
 
 definition well_formed :: "'a Consensus \<Rightarrow> 'a Electoral_Module \<Rightarrow> bool" where
   "well_formed c m \<equiv>
-    \<forall> A p p'. finite A \<and> profile A p \<and> profile A p' \<and> c (A, p) \<and> c (A, p') \<longrightarrow>
-      m A p = m A p'"
+    \<forall> A p p'. profile A p \<and> profile A p' \<and> c (A, p) \<and> c (A, p') \<longrightarrow> m A p = m A p'"
 
 fun consensus_choice :: "'a Consensus \<Rightarrow> 'a Electoral_Module \<Rightarrow> 'a Consensus_Class" where
   "consensus_choice c m =
@@ -63,7 +62,6 @@ proof (unfold well_formed_def, safe)
   let ?cond =
     "\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C>' a c"
   assume
-    fin_A: "finite A" and
     prof_p: "profile A p" and
     prof_p': "profile A p'" and
     eq_top_p: "equal_top\<^sub>\<C>' a (A, p)" and
@@ -79,7 +77,7 @@ proof (unfold well_formed_def, safe)
   have "\<forall> a' \<in> A. (above (p!0) a' = {a'}) = (above (p'!0) a' = {a'})"
   proof
     fix a' :: "'a"
-    assume "a' \<in> A"
+    assume a_in_A: "a' \<in> A"
     show "(above (p!0) a' = {a'}) = (above (p'!0) a' = {a'})"
     proof (cases)
       assume "a' = a"
@@ -97,7 +95,9 @@ proof (unfold well_formed_def, safe)
         by simp
       hence "(above (p!0) a = {a} \<and> above (p!0) a' = {a'} \<longrightarrow> a = a') \<and>
              (above (p'!0) a = {a} \<and> above (p'!0) a' = {a'} \<longrightarrow> a = a')"
-        using a'_neq_a fin_A above_one_2
+        using a_in_A above_trans insert_iff singletonD subset_singletonD
+              cond_Ap' insert_not_empty
+        unfolding order_on_defs total_on_def equal_top\<^sub>\<C>'.simps
         by metis
       thus ?thesis
         using a'_neq_a eq_top_p' eq_top_p lens_p_and_p'_ok
@@ -139,9 +139,8 @@ subsection \<open>Properties\<close>
 
 definition consensus_rule_anonymity :: "'a Consensus_Class \<Rightarrow> bool" where
   "consensus_rule_anonymity c \<equiv>
-    \<forall> A p q.
-      finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<and> consensus_\<K> c (A, p) \<longrightarrow>
-      consensus_\<K> c (A, q) \<and> (rule_\<K> c A p = rule_\<K> c A q)"
+    \<forall> A p q. profile A p \<and> profile A q \<and> p <~~> q \<and> consensus_\<K> c (A, p)
+              \<longrightarrow> consensus_\<K> c (A, q) \<and> (rule_\<K> c A p = rule_\<K> c A q)"
 
 subsection \<open>Inference Rules\<close>
 
@@ -163,7 +162,6 @@ proof (unfold consensus_rule_anonymity_def, safe)
     p :: "'a Profile" and
     q :: "'a Profile"
   assume
-    fin_A: "finite A" and
     prof_p: "profile A p" and
     prof_q: "profile A q" and
     perm: "p <~~> q" and
@@ -175,13 +173,13 @@ proof (unfold consensus_rule_anonymity_def, safe)
     beta_Ap: "\<beta> (A, p)"
     by simp_all
   have alpha_A_perm_p: "\<alpha> (A, q)"
-    using anon_cons_cond alpha_Ap perm fin_A prof_p prof_q
+    using anon_cons_cond alpha_Ap perm prof_p prof_q
     unfolding consensus_anonymity_def
     by metis
   moreover have "\<beta> (A, q)"
     using beta'_anon
     unfolding consensus_anonymity_def
-    using beta_Ap beta_sat ex_anon_cons_imp_cons_anonymous perm fin_A
+    using beta_Ap beta_sat ex_anon_cons_imp_cons_anonymous perm
           prof_p prof_q
     by blast
   ultimately show em_cond_perm:
@@ -194,12 +192,12 @@ proof (unfold consensus_rule_anonymity_def, safe)
     beta'_x_Ap: "\<beta>' x (A, p)"
     by metis
   hence beta'_x_A_perm_p: "\<beta>' x (A, q)"
-    using beta'_anon perm fin_A prof_p prof_q
+    using beta'_anon perm prof_p prof_q
     unfolding consensus_anonymity_def
     by metis
   have "m A p = m A q"
-    using alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p conditions_univ
-          fin_A prof_p prof_q
+    using alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p
+          conditions_univ prof_p prof_q
     unfolding well_formed_def
     by metis
   thus "rule_\<K> (consensus_choice (\<lambda> E. \<alpha> E \<and> \<beta> E) m) A p =

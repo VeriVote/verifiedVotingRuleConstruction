@@ -206,7 +206,7 @@ proof (safe)
     "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
     by simp
   ultimately show "a \<in> A"
-    using UnCI assms fst_conv snd_conv disjoint3.cases
+    using UnCI assms prod.sel disjoint3.cases
     by metis
 qed
 

@@ -46,9 +46,7 @@ proof (unfold electoral_module_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile"
-  assume
-    "finite A" and
-    "profile A p"
+  assume "profile A p"
   moreover have
     "\<forall> a'. aggregator a' =
       (\<forall> A' e r d e' r' d'.
@@ -63,7 +61,7 @@ proof (unfold electoral_module_def, safe)
     using par_comp_result_sound
     by (metis (no_types))
   ultimately have "well_formed A (a A (m A p) (n A p))"
-    using combine_ele_rej_def assms
+    using combine_ele_rej_def assms par_comp_result_sound
     by metis
   thus "well_formed A ((m \<parallel>\<^sub>a n) A p)"
     by simp
@@ -108,7 +106,6 @@ next
     p :: "'a Profile" and
     w :: "'a"
   assume
-    fin_A: "finite A" and
     prof_A: "profile A p" and
     w_wins: "w \<in> elect (m \<parallel>\<^sub>a n) A p"
   have emod_m: "electoral_module m"
@@ -148,15 +145,14 @@ next
     by presburger
   hence "let c = (a A (m A p) (n A p)) in
           (elect_r c \<subseteq> ((elect m A p) \<union> (elect n A p)))"
-    using emod_m emod_n fin_A par_comp_result_sound
+    using emod_m emod_n par_comp_result_sound
           prod.collapse prof_A
     by metis
   hence "w \<in> ((elect m A p) \<union> (elect n A p))"
     using w_wins
     by auto
   thus "w \<in> {}"
-    using sup_bot_right fin_A prof_A
-          non_electing_m non_electing_n
+    using sup_bot_right prof_A non_electing_m non_electing_n
     unfolding non_electing_def
     by (metis (no_types, lifting))
 qed

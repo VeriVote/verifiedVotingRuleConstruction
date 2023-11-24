@@ -54,49 +54,25 @@ theorem elector_electing[simp]:
     non_block_m: "non_blocking m"
   shows "electing (elector m)"
 proof -
-  have non_block: "non_blocking (elect_module::'a set \<Rightarrow> _ Profile \<Rightarrow> _ Result)"
-    by (simp add: electing_imp_non_blocking)
-  moreover obtain
+  obtain
     A :: "'a Electoral_Module \<Rightarrow> 'a set" and
     p :: "'a Electoral_Module \<Rightarrow> 'a Profile" where
-    electing_mod:
     "\<forall> m'.
-      (\<not> electing m' \<and> electoral_module m' \<longrightarrow>
-        profile (A m') (p m') \<and> finite (A m') \<and>
-          elect m' (A m') (p m') = {} \<and> A m' \<noteq> {}) \<and>
-      (electing m' \<and> electoral_module m' \<longrightarrow>
-        (\<forall> A p. (A \<noteq> {} \<and> profile A p \<and> finite A) \<longrightarrow> elect m' A p \<noteq> {}))"
+      (\<not> electing m' \<and> electoral_module m' \<longrightarrow> elect m' (A m') (p m') = {})
+      \<and> (electing m' \<longrightarrow> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> elect m' A p \<noteq> {}))"
     using electing_def
     by metis
-  moreover obtain
-    e :: "'a Result \<Rightarrow> 'a set" and
-    r :: "'a Result \<Rightarrow> 'a set" and
-    d :: "'a Result \<Rightarrow> 'a set" where
-    result: "\<forall> s. (e s, r s, d s) = s"
-    using disjoint3.cases
-    by (metis (no_types))
-  moreover from this
-  have "\<forall> s. (elect_r s, r s, d s) = s"
-    by simp
-  moreover from this
-  have "profile (A (elector m)) (p (elector m)) \<and> finite (A (elector m)) \<longrightarrow>
-          d (elector m (A (elector m)) (p (elector m))) = {}"
-    by simp
   moreover have "electoral_module (elector m)"
-    using elector_sound module_m
-    by simp
-  moreover from electing_mod result
-  have "finite (A (elector m)) \<and> profile (A (elector m)) (p (elector m)) \<and>
-          elect (elector m) (A (elector m)) (p (elector m)) = {} \<and>
-          d (elector m (A (elector m)) (p (elector m))) = {} \<and>
-          reject (elector m) (A (elector m)) (p (elector m)) =
-            r (elector m (A (elector m)) (p (elector m))) \<longrightarrow>
-              electing (elector m)"
-    using Diff_empty elector.simps non_block_m snd_conv non_blocking_def reject_not_elec_or_def
-          non_block seq_comp_presv_non_blocking
-    by (metis (mono_tags, opaque_lifting))
+    by (simp add: module_m)
+  moreover from this have
+    "\<not> electing (elector m) \<longrightarrow> elect (elector m) (A (elector m)) (p (elector m)) \<noteq> {}"
+    using Un_empty_left boolean_algebra.disj_zero_right fst_conv non_block_m
+          result_presv_alts seq_comp_def_then_elect_elec_set sup_bot.eq_neutr_iff
+    unfolding elect_module.simps elector.simps electing_def non_blocking_def
+    by (metis (no_types, lifting))
   ultimately show ?thesis
-    using fst_conv snd_conv
+    using non_block_m
+    unfolding elector.simps
     by metis
 qed
 
@@ -143,15 +119,15 @@ next
     fix x :: "'a"
     assume x_in_elect_or_defer: "x \<in> elect m A p \<union> defer m A p"
     hence x_eq_w: "x = w"
-      using Diff_empty Diff_iff assms cond_winner_unique_3 c_win fin_A insert_iff
-            snd_conv prod.sel(1) sup_bot.left_neutral
+      using Diff_empty Diff_iff assms cond_winner_unique c_win fin_A insert_iff
+            prod.sel sup_bot.left_neutral
       unfolding defer_condorcet_consistency_def
       by (metis (mono_tags, lifting))
-    have "\<And> x. x \<in> elect m A p \<Longrightarrow> x \<in> A"
+    have "\<forall> x. x \<in> elect m A p \<longrightarrow> x \<in> A"
       using fin_A prof_A assms elect_in_alts in_mono
       unfolding defer_condorcet_consistency_def
       by metis
-    moreover have "\<And> x. x \<in> defer m A p \<Longrightarrow> x \<in> A"
+    moreover have "\<forall> x. x \<in> defer m A p \<longrightarrow> x \<in> A"
       using fin_A prof_A assms defer_in_alts in_mono
       unfolding defer_condorcet_consistency_def
       by metis
@@ -194,8 +170,8 @@ next
       using c_win_x assms fin_A
       by blast
     thus "x \<in> elect m A p"
-      using assms x_not_in_defer fin_A cond_winner_unique_3 defer_condorcet_consistency_def
-            insertCI prod.sel(2) c_win_x
+      using assms x_not_in_defer fin_A cond_winner_unique defer_condorcet_consistency_def
+            insertCI snd_conv c_win_x
       by (metis (no_types, lifting))
   qed
   ultimately have

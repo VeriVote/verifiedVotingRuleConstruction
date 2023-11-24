@@ -53,7 +53,6 @@ proof (unfold electoral_module_def, simp, safe, simp_all)
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    "finite A" and
     "profile A p" and
     "x' \<in> reject (?smc) A p" and
     "x' \<in> elect (?smc) A p"
@@ -74,7 +73,6 @@ next
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    "finite A" and
     "profile A p" and
     "x' \<in> reject (?smc) A p" and
     "x' \<in> defer (?smc) A p"
@@ -95,7 +93,6 @@ next
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    "finite A" and
     "profile A p" and
       "x' \<in> elect (?smc) A p"
   thus "x' \<in> A"
@@ -115,7 +112,6 @@ next
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    "finite A" and
     "profile A p" and
     "x' \<in> defer (?smc) A p"
   thus "x' \<in> A"
@@ -135,7 +131,6 @@ next
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    fin_A: "finite A" and
     prof_A: "profile A p" and
     reject_x': "x' \<in> reject (?smc) A p"
   have "electoral_module (plurality_rule\<down>)"
@@ -143,7 +138,7 @@ next
   moreover have "electoral_module (drop_module 2 x)"
     by simp
   ultimately show "x' \<in> A"
-    using reject_x' fin_A prof_A in_mono assms reject_in_alts loop_comp_sound
+    using reject_x' prof_A in_mono assms reject_in_alts loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound seq_comp_sound
     by (metis (no_types))
 next
@@ -158,7 +153,6 @@ next
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    "finite A" and
     "profile A p" and
     "x' \<in> A" and
     "x' \<notin> defer (?smc) A p" and

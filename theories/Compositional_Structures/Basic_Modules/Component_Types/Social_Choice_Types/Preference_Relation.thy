@@ -87,16 +87,6 @@ subsection \<open>Limited Preference\<close>
 definition limited :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> bool" where
   "limited A r \<equiv> r \<subseteq> A \<times> A"
 
-lemma limitedI:
-  fixes
-    r :: "'a Preference_Relation" and
-    A :: "'a set"
-  assumes "\<And> a b. a \<preceq>\<^sub>r b \<Longrightarrow> a \<in> A \<and> b \<in> A"
-  shows "limited A r"
-  using assms
-  unfolding limited_def
-  by auto
-
 lemma limited_dest:
   fixes
     A :: "'a set" and
@@ -313,7 +303,7 @@ lemma limit_presv_lin_ord:
         limit_presv_trans lin_ord_imp_connex order_on_defs(1, 2, 3)
   by metis
 
-lemma limit_presv_prefs_1:
+lemma limit_presv_prefs:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
@@ -327,7 +317,7 @@ lemma limit_presv_prefs_1:
   using assms
   by simp
 
-lemma limit_presv_prefs_2:
+lemma limit_rel_presv_prefs:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
@@ -450,10 +440,10 @@ lemma limit_presv_above:
     "a \<in> A" and
     "b \<in> A"
   shows "b \<in> above (limit A r) a"
-  using assms pref_imp_in_above limit_presv_prefs_1
+  using assms pref_imp_in_above limit_presv_prefs
   by metis
 
-lemma limit_presv_above_2:
+lemma limit_rel_presv_above:
   fixes
     A :: "'a set" and
     B :: "'a set" and
@@ -462,7 +452,7 @@ lemma limit_presv_above_2:
     b :: "'a"
   assumes "b \<in> above (limit B r) a"
   shows "b \<in> above r a"
-  using assms limit_presv_prefs_2 mem_Collect_eq pref_imp_in_above
+  using assms limit_rel_presv_prefs mem_Collect_eq pref_imp_in_above
   unfolding above_def
   by metis
 
@@ -537,7 +527,7 @@ proof -
         unfolding above_def
         by metis
       hence b_pref_b: "b \<preceq>\<^sub>r' b"
-        using CollectD limit_presv_prefs_2 singletonI
+        using CollectD limit_rel_presv_prefs singletonI
         by (metis (lifting))
       show "\<exists> a'. a' \<in> A' \<and> above r' a' = {a'}"
       proof (cases)
@@ -637,7 +627,7 @@ proof -
           using limit_B
           by simp
         hence "\<forall> a' \<in> B. b \<in> above r' a'"
-          using limit_presv_prefs_2 pref_imp_in_above singletonD mem_Collect_eq
+          using limit_rel_presv_prefs pref_imp_in_above singletonD mem_Collect_eq
                 lin_ord_r alt_b b_above b_pref_b subset_B_card b_in_B
           by (metis (lifting))
         hence "\<forall> a' \<in> B. a' \<preceq>\<^sub>r' b"
@@ -684,7 +674,7 @@ proof -
     by metis
 qed
 
-lemma above_one_2:
+lemma above_one_eq:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
@@ -717,7 +707,7 @@ proof -
     by metis
 qed
 
-lemma rank_one_1:
+lemma above_one_imp_rank_one:
   fixes
     r :: "'a Preference_Relation" and
     a :: "'a"
@@ -726,7 +716,7 @@ lemma rank_one_1:
   using assms
   by simp
 
-lemma rank_one_2:
+lemma rank_one_imp_above_one:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
@@ -738,7 +728,7 @@ lemma rank_one_2:
 proof -
   from lin_ord
   have "refl_on A r"
-    using linear_order_on_def partial_order_onD(1)
+    using linear_order_on_def partial_order_onD
     by blast
   moreover from assms
   have "a \<in> A"
@@ -762,7 +752,7 @@ theorem above_rank:
     a :: "'a"
   assumes "linear_order_on A r"
   shows "(above r a = {a}) = (rank r a = 1)"
-  using assms rank_one_1 rank_one_2
+  using assms above_one_imp_rank_one rank_one_imp_above_one
   by metis
 
 lemma rank_unique:
@@ -870,7 +860,7 @@ lemma lifted_imp_equiv_rel_except_a:
   unfolding lifted_def equiv_rel_except_a_def
   by simp
 
-lemma lifted_mono:
+lemma lifted_imp_switched:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
@@ -939,7 +929,7 @@ proof (safe)
     by metis
 qed
 
-lemma lifted_mono2:
+lemma lifted_mono:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
@@ -988,7 +978,7 @@ proof (simp)
   qed
 qed
 
-lemma lifted_above:
+lemma lifted_above_subset:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
@@ -1037,7 +1027,7 @@ proof (unfold above_def, safe)
     by (metis (full_types))
 qed
 
-lemma lifted_above_2:
+lemma lifted_above_mono:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
@@ -1061,7 +1051,7 @@ proof (safe, simp)
     unfolding above_def
     by simp
   hence "(b \<in> above r a') = (b \<in> above r' a')"
-    using lifted_a b_not_in_above_s lifted_mono2 limited_dest lifted_def lin_ord_imp_connex
+    using lifted_a b_not_in_above_s lifted_mono limited_dest lifted_def lin_ord_imp_connex
           member_remove pref_imp_in_above
     unfolding equiv_rel_except_a_def remove_def connex_def
     by metis
@@ -1089,7 +1079,7 @@ proof -
   hence eql_rs:
     "\<forall> a' \<in> A - {a}. \<forall> b' \<in> A - {a}.
         ((a', b') \<in> (limit A r)) = ((a', b') \<in> (limit A r'))"
-    using DiffD1 limit_presv_prefs_1 limit_presv_prefs_2
+    using DiffD1 limit_presv_prefs limit_rel_presv_prefs
     by simp
   have lin_ord_r_s: "linear_order_on A (limit A r) \<and> linear_order_on A (limit A r')"
     using lifted subset lifted_def equiv_rel_except_a_def limit_presv_lin_ord
@@ -1102,7 +1092,7 @@ proof -
       assume "\<exists> a' \<in> A - {a}. a \<preceq>\<^sub>r a' \<and> a' \<preceq>\<^sub>r' a"
       hence "\<exists> a' \<in> A - {a}.
                 (let q = limit A r in a \<preceq>\<^sub>q a') \<and> (let u = limit A r' in a' \<preceq>\<^sub>u a)"
-        using DiffD1 limit_presv_prefs_1 a_in_A
+        using DiffD1 limit_presv_prefs a_in_A
         by simp
       thus ?thesis
         using a_in_A eql_rs lin_ord_r_s
@@ -1113,7 +1103,7 @@ proof -
       hence strict_pref_to_a: "\<forall> a' \<in> A - {a}. \<not> (a \<preceq>\<^sub>r a' \<and> a' \<preceq>\<^sub>r' a)"
         by simp
       moreover have not_worse: "\<forall> a' \<in> A - {a}. \<not> (a' \<preceq>\<^sub>r a \<and> a \<preceq>\<^sub>r' a')"
-        using lifted subset lifted_mono
+        using lifted subset lifted_imp_switched
         by fastforce
       moreover have connex: "connex A (limit A r) \<and> connex A (limit A r')"
         using lifted subset limit_presv_lin_ord lin_ord_imp_connex
@@ -1131,7 +1121,7 @@ proof -
         using connex
         by simp
       have limit_imp_rel: "\<forall> b b' A'' r''. (b::'a, b') \<in> limit A'' r'' \<longrightarrow> b \<preceq>\<^sub>r'' b'"
-        using limit_presv_prefs_2
+        using limit_rel_presv_prefs
         by metis
       have limit_rel_s:
         "limited A (limit A r') \<and>
@@ -1141,7 +1131,7 @@ proof -
         by simp
       ultimately have
         "\<forall> a' \<in> A - {a}. (a \<preceq>\<^sub>r a' \<and> a \<preceq>\<^sub>r' a') \<or> (a' \<preceq>\<^sub>r a \<and> a' \<preceq>\<^sub>r' a)"
-        using DiffD1 limit_rel_r limit_presv_prefs_2 a_in_A
+        using DiffD1 limit_rel_r limit_rel_presv_prefs a_in_A
         by metis
       have "\<forall> a' \<in> A - {a}. ((a, a') \<in> (limit A r)) = ((a, a') \<in> (limit A r'))"
         using DiffD1 limit_imp_rel limit_rel_r limit_rel_s a_in_A
@@ -1153,7 +1143,7 @@ proof -
         by simp
       moreover have
         "\<forall> a' \<in> A - {a}. ((a', a) \<in> (limit A r)) = ((a', a) \<in> (limit A r'))"
-        using a_in_A strict_pref_to_a not_worse DiffD1 limit_presv_prefs_2
+        using a_in_A strict_pref_to_a not_worse DiffD1 limit_rel_presv_prefs
               limit_rel_s limit_rel_r
         by metis
       moreover have "(a, a) \<in> (limit A r) \<and> (a, a) \<in> (limit A r')"
@@ -1196,7 +1186,7 @@ proof -
     by auto
 qed
 
-theorem lifted_above_winner:
+theorem lifted_above_winner_alts:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
@@ -1211,7 +1201,7 @@ theorem lifted_above_winner:
 proof (cases)
   assume "a = a'"
   thus ?thesis
-    using above_subset_geq_one lifted_a a'_above_a' lifted_above
+    using above_subset_geq_one lifted_a a'_above_a' lifted_above_subset
     unfolding lifted_def equiv_rel_except_a_def
     by metis
 next
@@ -1234,8 +1224,8 @@ next
         unfolding equiv_rel_except_a_def lifted_def
         by simp
       ultimately show "b \<preceq>\<^sub>r a'"
-        using fin_A y_in_A above_one above_one_2 a'_above_a' lin_ord_imp_connex
-              pref_imp_in_above singletonD
+        using y_in_A a'_above_a' lin_ord_imp_connex pref_imp_in_above
+              singletonD limited_dest singletonI
         unfolding connex_def
         by (metis (no_types))
     qed
@@ -1244,9 +1234,9 @@ next
       unfolding lifted_def
       by metis
     moreover have "a' \<in> A - {a}"
-      using above_one above_one_2 a_neq_a' assms calculation
-            insert_not_empty member_remove insert_absorb
-      unfolding equiv_rel_except_a_def remove_def
+      using a_neq_a' calculation member_remove
+            limited_dest lin_ord_imp_connex
+      using equiv_rel_except_a_def remove_def connex_def
       by metis
     ultimately have "\<forall> a'' \<in> A - {a}. a'' \<preceq>\<^sub>r' a'"
       using DiffD1 lifted_a
@@ -1256,7 +1246,7 @@ next
       using a'_not_above_a' empty_iff insert_iff pref_imp_in_above
       by metis
     hence "above r' a = {a}"
-      using Diff_iff all_not_in_conv lifted_a fin_A above_one singleton_iff
+      using Diff_iff all_not_in_conv lifted_a above_one singleton_iff fin_A
       unfolding lifted_def equiv_rel_except_a_def
       by metis
     thus "above r' a' = {a'} \<or> above r' a = {a}"
@@ -1264,7 +1254,7 @@ next
   qed
 qed
 
-theorem lifted_above_winner_2:
+theorem lifted_above_winner_single:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
@@ -1275,10 +1265,10 @@ theorem lifted_above_winner_2:
     "above r a = {a}" and
     "finite A"
   shows "above r' a = {a}"
-  using assms lifted_above_winner
+  using assms lifted_above_winner_alts
   by metis
 
-theorem lifted_above_winner_3:
+theorem lifted_above_winner_other:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
@@ -1299,10 +1289,10 @@ proof (rule ccontr)
     unfolding lifted_def equiv_rel_except_a_def
     by metis
   hence "above r' b = {b} \<or> above r' a = {a}"
-    using lifted_a fin_A lifted_above_winner
+    using lifted_a fin_A lifted_above_winner_alts
     by metis
   moreover have "\<forall> a''. above r' a'' = {a''} \<longrightarrow> a'' = a'"
-    using all_not_in_conv lifted_a a'_above_a' fin_A above_one_2
+    using all_not_in_conv lifted_a a'_above_a' fin_A above_one_eq
     unfolding lifted_def equiv_rel_except_a_def
     by metis
   ultimately have "b = a'"

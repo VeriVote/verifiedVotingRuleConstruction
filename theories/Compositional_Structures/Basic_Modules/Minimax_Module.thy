@@ -154,9 +154,7 @@ proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile"
-  assume
-    "finite A" and
-    "profile A p"
+  assume "profile A p"
   hence "well_formed A (max_eliminator minimax_score A p)"
     using max_elim_sound par_comp_result_sound
     by metis
@@ -167,9 +165,7 @@ next
     A :: "'a set" and
     p :: "'a Profile" and
     w :: "'a"
-  assume
-    cwin_w: "condorcet_winner A p w" and
-    fin_A: "finite A"
+  assume cwin_w: "condorcet_winner A p w"
   have max_mmaxscore_dcc:
     "defer_condorcet_consistency (max_eliminator minimax_score)"
     using cr_eval_imp_dcc_max_elim
@@ -179,7 +175,7 @@ next
       ({},
        A - defer (max_eliminator minimax_score) A p,
        {a \<in> A. condorcet_winner A p a})"
-    using cwin_w fin_A
+    using cwin_w
     unfolding defer_condorcet_consistency_def
     by (metis (no_types))
   thus

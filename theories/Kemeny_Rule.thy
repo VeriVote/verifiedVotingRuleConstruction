@@ -35,7 +35,7 @@ theorem kemeny_rule_anonymous: "anonymity kemeny_rule"
 proof (unfold kemeny_rule.simps swap_\<R>.simps)
   let ?swap_dist = "votewise_distance swap l_one"
   have "distance_anonymity ?swap_dist"
-    using l_one_is_symm symmetric_norm_imp_distance_anonymous[of l_one]
+    using l_one_is_sym symmetric_norm_imp_distance_anonymous[of l_one]
     by simp
   thus "anonymity (distance_\<R> ?swap_dist strong_unanimity)"
     using strong_unanimity_anonymous anonymous_distance_and_consensus_imp_rule_anonymity

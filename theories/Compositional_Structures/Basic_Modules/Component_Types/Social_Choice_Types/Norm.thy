@@ -130,7 +130,7 @@ definition symmetry :: "Norm \<Rightarrow> bool" where
 
 subsection \<open>Theorems\<close>
 
-theorem l_one_is_symm: "symmetry l_one"
+theorem l_one_is_sym: "symmetry l_one"
 proof (unfold symmetry_def, safe)
   fix
     xs :: "ereal list" and

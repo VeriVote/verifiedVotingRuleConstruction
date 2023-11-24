@@ -49,7 +49,7 @@ proof (unfold condorcet_rating_def, safe)
     c_win: "condorcet_winner A p w" and
     l_neq_w: "l \<noteq> w"
   hence "\<not> condorcet_winner A p l"
-    using cond_winner_unique
+    using cond_winner_unique_eq
     by (metis (no_types))
   thus "condorcet_score l A p < condorcet_score w A p"
     using c_win
@@ -61,9 +61,7 @@ proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile"
-  assume
-    "finite A" and
-    "profile A p"
+  assume "profile A p"
   hence "well_formed A (max_eliminator condorcet_score A p)"
     using max_elim_sound
     unfolding electoral_module_def
@@ -75,9 +73,7 @@ next
     A :: "'a set" and
     p :: "'a Profile" and
     a :: "'a"
-  assume
-    c_win_w: "condorcet_winner A p a" and
-    fin_A: "finite A"
+  assume c_win_w: "condorcet_winner A p a"
   have "defer_condorcet_consistency (max_eliminator condorcet_score)"
     using cr_eval_imp_dcc_max_elim
     by (simp add: condorcet_score_is_condorcet_rating)
@@ -85,7 +81,7 @@ next
           ({},
           A - defer (max_eliminator condorcet_score) A p,
           {b \<in> A. condorcet_winner A p b})"
-    using c_win_w fin_A
+    using c_win_w
     unfolding defer_condorcet_consistency_def
     by (metis (no_types))
   thus "condorcet A p =

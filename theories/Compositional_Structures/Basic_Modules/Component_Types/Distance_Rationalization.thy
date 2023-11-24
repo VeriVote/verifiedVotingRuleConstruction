@@ -128,14 +128,14 @@ proof -
     unfolding inj_on_def
     by metis
   have in_bounds: "\<forall> a \<in> A. ?\<phi> a < card A"
-    using CollectD IntD1 card_seteq fin_A inf_sup_ord(2) linorder_le_less_linear
+    using CollectD IntD1 card_seteq inf_sup_ord(2) linorder_le_less_linear fin_A
     unfolding underS_def
     by (metis (mono_tags, lifting))
   hence "?\<phi> ` A \<subseteq> {0 ..< card A}"
     using atLeast0LessThan
     by blast
   moreover have "card (?\<phi> ` A) = card A"
-    using inj fin_A card_image
+    using inj card_image
     by metis
   ultimately have "?\<phi> ` A = {0 ..< card A}"
     by (simp add: card_subset_eq)
@@ -186,11 +186,13 @@ proof -
       using a_in_A inj the_inv_into_f_f
       by fastforce
     ultimately have "?l!(card A - 1 - card (underS r a \<inter> A)) = a"
-      using in_bounds a_in_A card_Diff_singleton card_Suc_Diff1 diff_less_Suc fin_A
+      using in_bounds a_in_A diff_less_Suc Suc_diff_Suc
+            diff_Suc_eq_diff_pred not_less_eq
       by metis
     thus "index ?l a = card A - 1 - card (underS r a \<inter> A)"
-      using bij_inv dist_inv_of_rev a_in_A len_card_A card_Diff_singleton card_Suc_Diff1
-            diff_less_Suc fin_A index_nth_id length_map length_rev
+      using bij_inv dist_inv_of_rev a_in_A len_card_A card_Diff_singleton
+            card_Suc_Diff1 diff_less_Suc index_nth_id length_map length_rev
+            card.infinite in_bounds not_less_zero
       by metis
   qed
   moreover have "pl_\<alpha> ?l = r"
@@ -262,14 +264,14 @@ proof -
         using index_b_lte_a index_eq
         by metis
       moreover have "\<forall> a < card A. ?\<phi> (?inv a) < card A"
-        using fin_A bij_inv bij
+        using bij_inv bij
         unfolding bij_betw_def
         by fastforce
       hence "?\<phi> (?inv b) \<le> card A - 1 \<and> ?\<phi> (?inv a) \<le> card A - 1"
-        using a_lt_card_A b_lt_card_A fin_A
+        using a_lt_card_A b_lt_card_A
         by fastforce
       ultimately have "?\<phi> (?inv b) \<ge> ?\<phi> (?inv a)"
-        using fin_A le_diff_iff'
+        using le_diff_iff'
         by blast
       hence "?\<phi> (?inv a) < ?\<phi> (?inv b) \<or> ?\<phi> (?inv a) = ?\<phi> (?inv b)"
         by auto
@@ -510,27 +512,27 @@ proof (cases "\<not> finite A", clarsimp)
         qed
       qed
       let ?P = "\<lambda> l a b. rank_l l b \<le> rank_l l a"
-      have "\<And> l a. a \<in> (set l) \<Longrightarrow> ?P l a a"
+      have "\<forall> l a. a \<in> (set l) \<longrightarrow> ?P l a a"
         by simp
       moreover have
-        "\<And> l a b c.
-          \<lbrakk> a \<in> (set l); b \<in> (set l); c \<in> (set l) \<rbrakk> \<Longrightarrow>
-              ?P l a b \<Longrightarrow> ?P l b c \<Longrightarrow> ?P l a c"
+        "\<forall> l a b c.
+          a \<in> (set l) \<longrightarrow> b \<in> (set l) \<longrightarrow> c \<in> (set l) \<longrightarrow>
+              ?P l a b \<longrightarrow> ?P l b c \<longrightarrow> ?P l a c"
         by simp
       moreover have
-        "\<And> l a b. \<lbrakk> a \<in> (set l); b \<in> (set l) \<rbrakk> \<Longrightarrow> ?P l a b \<Longrightarrow> ?P l b a \<Longrightarrow> a = b"
+        "\<forall> l a b. a \<in> (set l) \<longrightarrow> b \<in> (set l) \<longrightarrow> ?P l a b \<longrightarrow> ?P l b a \<longrightarrow> a = b"
         using pos_in_list_yields_pos le_antisym
         by metis
-      ultimately have "\<And> l. partial_order_on (set l) (relation_of (?P l) (set l))"
-        using partial_order_on_relation_ofI
+      ultimately have "\<forall> l. partial_order_on (set l) (relation_of (?P l) (set l))"
+        using partial_order_on_relation_ofI dual_order.refl
         by (smt (verit, best))
-      moreover have set: "\<And> l. l \<in> permutations_of_set A \<Longrightarrow> set l = A"
+      moreover have set: "\<forall> l. l \<in> permutations_of_set A \<longrightarrow> set l = A"
         unfolding permutations_of_setD
-        by simp
+        by (simp add: permutations_of_setD)
       ultimately have "partial_order_on A (p'!i)"
         using relation_of
         by fastforce
-      moreover have "\<And> l. total_on (set l) (relation_of (?P l) (set l))"
+      moreover have "\<forall> l. total_on (set l) (relation_of (?P l) (set l))"
         using relation_of
         unfolding total_on_def relation_of_def
         by auto
@@ -616,41 +618,43 @@ proof -
     fix i :: "'a Election"
     assume i_in_\<K>\<^sub>\<E>: "i \<in> \<K>\<^sub>\<E> K a"
     have in_intersect:
-      "i \<in> (\<K>\<^sub>\<E> K a \<inter> Pair A ` {p'. finite_profile A p' \<and> length p' = length p}) \<Longrightarrow>
+      "i \<in> (\<K>\<^sub>\<E> K a \<inter> Pair A ` {p'. finite_profile A p' \<and> length p' = length p}) \<longrightarrow>
         ?inf \<le> d (A, p) i"
       using INF_lower
       by (metis (no_types, lifting))
-    have "i \<in> ?compl \<Longrightarrow>
+    have "i \<in> ?compl \<longrightarrow>
             \<not> (A = fst i \<and> finite_profile A (snd i) \<and> length (snd i) = length p)"
       by fastforce
-    moreover have "A \<noteq> fst i \<Longrightarrow> d (A, p) i = \<infinity>"
+    moreover have "A \<noteq> fst i \<longrightarrow> d (A, p) i = \<infinity>"
       using std
       unfolding standard_def
       using prod.collapse
       by metis
-    moreover have "length (snd i) \<noteq> length p \<Longrightarrow> d (A, p) i = \<infinity>"
+    moreover have "length (snd i) \<noteq> length p \<longrightarrow> d (A, p) i = \<infinity>"
       using std
       unfolding standard_def
       using prod.exhaust_sel
       by metis
     moreover have
       "A = fst i \<and> length (snd i) = length p \<longrightarrow> finite_profile A (snd i)"
-      using i_in_\<K>\<^sub>\<E> \<K>\<^sub>\<E>.simps
+      using i_in_\<K>\<^sub>\<E>
+      unfolding \<K>\<^sub>\<E>.simps
       by auto
     ultimately have
-      "i \<in> ?compl \<Longrightarrow>
+      "i \<in> ?compl \<longrightarrow>
         Inf (d (A, p) `
           (\<K>\<^sub>\<E> K a \<inter> Pair A `
             {p'. finite_profile A p' \<and> length p' = length p})) \<le>
         d (A, p) i"
-      by (metis (no_types, lifting) ereal_less_eq(1))
+      using ereal_less_eq i_in_\<K>\<^sub>\<E>
+      by (metis (mono_tags, lifting))
     thus
       "Inf (d (A, p) `
           (\<K>\<^sub>\<E> K a \<inter> Pair A `
             {p'. finite_profile A p' \<and> length p' = length p})) \<le>
         d (A, p) i"
       using in_intersect i_in_\<K>\<^sub>\<E>
-      by blast
+      by force
   qed
   have profile_perm_set:
     "profile_permutations (length p) A =
@@ -668,7 +672,7 @@ proof -
           Pair A `
             {p' :: 'a Profile. finite_profile A p' \<and> length p' = length p}))"
     using inf_gte_inf_int_pair order_antisym inf_lte_inf_int_pair
-    by blast
+    by (simp add: INF_superset_mono Orderings.order_eq_iff)
   ultimately have inf_eq_inf_for_std_cons:
     "Inf (d (A, p) ` (\<K>\<^sub>\<E> K a)) =
       Inf (d (A, p) ` (\<K>\<^sub>\<E>_std K a A (length p)))"
@@ -717,20 +721,14 @@ proof -
         have "\<forall> i < length ?xs. ?xs!i = {}"
           by simp
         hence "finite (listset (replicate (length p) (pl_\<alpha> ` permutations_of_set A)))"
-          by (simp add: listset_finiteness)
+          using listset_finiteness finite.emptyI length_replicate nth_replicate
+          by metis
         thus ?thesis
           by simp
       qed
-      hence "finite (Set.filter
-              (\<lambda> p. (consensus_\<K> K) (A, p) \<and> elect (rule_\<K> K) A p = {a})
-              (profile_permutations (length p) A))"
-        using finite_filter
-        by blast
       thus ?thesis
         by simp
     qed
-    hence "finite (d (A, p) ` (\<K>\<^sub>\<E>_std K a A (length p)))"
-      by simp
     ultimately show ?thesis
       by (simp add: Lattices_Big.complete_linorder_class.Min_Inf)
   qed
@@ -756,7 +754,6 @@ next
     p :: "'a Profile" and
     q :: "'a Profile"
   assume
-    "finite A" and
     "profile A p" and
     "profile A q" and
     "p <~~> q"
@@ -776,8 +773,8 @@ next
   have "\<forall> a. {(A', p') | A' p'. ?P a A' p'} = {(A', ?listpi' p') | A' p'. ?P a A' p'}"
   proof (clarify)
     fix a :: "'a"
-    have apply_perm: "\<And> S x y. x <~~> y \<Longrightarrow> ?P a S x \<Longrightarrow> ?P a S y"
-    proof -
+    have apply_perm: "\<forall> S x y. x <~~> y \<longrightarrow> ?P a S x \<longrightarrow> ?P a S y"
+    proof (safe)
       fix
         S :: "'a set" and
         x :: "'a Profile" and
@@ -897,7 +894,7 @@ next
       by simp
     from d_anon
     have anon:
-      "\<And> A' p' A p pi. (\<forall> n. (pi n) permutes {..< n}) \<longrightarrow>
+      "\<And> A' p' A p pi. (\<forall> n. (pi n) permutes {..< n}) \<Longrightarrow>
         d (A, p) (A', p') =
           d (A, permute_list (pi (length p)) p)
             (A', permute_list (pi (length p')) p')"

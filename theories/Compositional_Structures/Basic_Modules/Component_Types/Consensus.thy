@@ -75,8 +75,7 @@ subsection \<open>Properties\<close>
 
 definition consensus_anonymity :: "'a Consensus \<Rightarrow> bool" where
   "consensus_anonymity c \<equiv>
-    \<forall> A p q. finite_profile A p \<and> finite_profile A q \<and> p <~~> q \<longrightarrow>
-      c (A, p) \<longrightarrow> c (A, q)"
+    \<forall> A p q. profile A p \<and> profile A q \<and> p <~~> q \<longrightarrow> c (A, p) \<longrightarrow> c (A, q)"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -95,7 +94,6 @@ proof (unfold consensus_anonymity_def, safe)
     q :: "'a Profile"
   assume
     cond_b: "b (A, p)" and
-    fin_C: "finite A" and
     prof_p: "profile A p" and
     prof_q: "profile A q" and
     perm: "p <~~> q"
@@ -106,7 +104,7 @@ proof (unfold consensus_anonymity_def, safe)
     "b' x (A, p)"
     by blast
   hence "b' x (A, q)"
-    using all_cond_anon perm fin_C prof_p prof_q
+    using all_cond_anon perm prof_p prof_q
     unfolding consensus_anonymity_def
     by blast
   hence "\<exists> x. b' x (A, q)"

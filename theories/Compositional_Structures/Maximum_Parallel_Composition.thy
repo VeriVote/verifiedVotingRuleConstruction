@@ -59,7 +59,7 @@ lemma max_agg_eq_result:
   assumes
     module_m: "electoral_module m" and
     module_n: "electoral_module n" and
-    f_prof: "finite_profile A p" and
+    prof_p: "profile A p" and
     a_in_A: "a \<in> A"
   shows "mod_contains_result (m \<parallel>\<^sub>\<up> n) m A p a \<or>
           mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p a"
@@ -74,21 +74,21 @@ proof (cases)
   moreover have
     "\<forall> m' n' A' p' a'.
       mod_contains_result m' n' A' p' (a'::'a) =
-        (electoral_module m' \<and> electoral_module n' \<and> finite A' \<and>
-          profile A' p' \<and> a' \<in> A' \<and>
-          (a' \<notin> elect m' A' p' \<or> a' \<in> elect n' A' p') \<and>
-          (a' \<notin> reject m' A' p' \<or> a' \<in> reject n' A' p') \<and>
-          (a' \<notin> defer m' A' p' \<or> a' \<in> defer n' A' p'))"
+        (electoral_module m' \<and> electoral_module n'
+          \<and> profile A' p' \<and> a' \<in> A'
+          \<and> (a' \<notin> elect m' A' p' \<or> a' \<in> elect n' A' p')
+          \<and> (a' \<notin> reject m' A' p' \<or> a' \<in> reject n' A' p')
+          \<and> (a' \<notin> defer m' A' p' \<or> a' \<in> defer n' A' p'))"
     unfolding mod_contains_result_def
     by simp
   moreover have module_mn: "electoral_module (m \<parallel>\<^sub>\<up> n)"
     using module_m module_n
     by simp
   moreover have "a \<notin> defer (m \<parallel>\<^sub>\<up> n) A p"
-    using module_mn IntI a_elect empty_iff f_prof result_disj
+    using module_mn IntI a_elect empty_iff prof_p result_disj
     by (metis (no_types))
   moreover have "a \<notin> reject (m \<parallel>\<^sub>\<up> n) A p"
-    using module_mn IntI a_elect empty_iff f_prof result_disj
+    using module_mn IntI a_elect empty_iff prof_p result_disj
     by (metis (no_types))
   ultimately show ?thesis
     using assms
@@ -109,11 +109,11 @@ next
       have set_intersect: "\<forall> a' A' A''. (a' \<in> A' \<inter> A'') = (a' \<in> A' \<and> a' \<in> A'')"
         by blast
       have wf_n: "well_formed A (n A p)"
-        using f_prof module_n
+        using prof_p module_n
         unfolding electoral_module_def
         by blast
       have wf_m: "well_formed A (m A p)"
-        using f_prof module_m
+        using prof_p module_m
         unfolding electoral_module_def
         by blast
       have e_mod_par: "electoral_module (m \<parallel>\<^sub>\<up> n)"
@@ -128,7 +128,7 @@ next
             defer (m \<parallel>\<^sub>max_aggregator n) A p = {} \<and>
           reject (m \<parallel>\<^sub>max_aggregator n) A p \<inter>
             defer (m \<parallel>\<^sub>max_aggregator n) A p = {}"
-        using f_prof result_disj
+        using prof_p result_disj
         by metis
       have a_not_elect: "a \<notin> elect (m \<parallel>\<^sub>max_aggregator n) A p"
         using result_disj_max a_in_def
@@ -155,11 +155,11 @@ next
       have mod_cont_res_fg:
         "\<forall> m' n' A' p' (a'::'a).
           mod_contains_result m' n' A' p' a' =
-            (electoral_module m' \<and> electoral_module n' \<and> finite A' \<and>
-              profile A' p' \<and> a' \<in> A' \<and>
-              (a' \<in> elect m' A' p' \<longrightarrow> a' \<in> elect n' A' p') \<and>
-              (a' \<in> reject m' A' p' \<longrightarrow> a' \<in> reject n' A' p') \<and>
-              (a' \<in> defer m' A' p' \<longrightarrow> a' \<in> defer n' A' p'))"
+            (electoral_module m' \<and> electoral_module n'
+              \<and> profile A' p' \<and> a' \<in> A'
+              \<and> (a' \<in> elect m' A' p' \<longrightarrow> a' \<in> elect n' A' p')
+              \<and> (a' \<in> reject m' A' p' \<longrightarrow> a' \<in> reject n' A' p')
+              \<and> (a' \<in> defer m' A' p' \<longrightarrow> a' \<in> defer n' A' p'))"
         by (simp add: mod_contains_result_def)
       have max_agg_res:
         "max_aggregator A (elect m A p, reject m A p, defer m A p)
@@ -172,25 +172,24 @@ next
         using max_agg_rej_set
         by metis
       have e_mod_disj:
-        "\<forall> m' (A'::'a set) p'.
-          (electoral_module m' \<and> finite (A'::'a set) \<and> profile A' p') \<longrightarrow>
-            elect m' A' p' \<union> reject m' A' p' \<union> defer m' A' p' = A'"
+        "\<forall> m' (A'::'a set) p'. electoral_module m' \<and> profile A' p'
+          \<longrightarrow> elect m' A' p' \<union> reject m' A' p' \<union> defer m' A' p' = A'"
         using result_presv_alts
         by blast
       hence e_mod_disj_n: "elect n A p \<union> reject n A p \<union> defer n A p = A"
-        using f_prof module_n
+        using prof_p module_n
         by metis
       have "\<forall> m' n' A' p' (b::'a).
               mod_contains_result m' n' A' p' b =
-                (electoral_module m' \<and> electoral_module n' \<and> finite A' \<and>
-                  profile A' p' \<and> b \<in> A' \<and>
-                  (b \<in> elect m' A' p' \<longrightarrow> b \<in> elect n' A' p') \<and>
-                  (b \<in> reject m' A' p' \<longrightarrow> b \<in> reject n' A' p') \<and>
-                  (b \<in> defer m' A' p' \<longrightarrow> b \<in> defer n' A' p'))"
+                (electoral_module m' \<and> electoral_module n'
+                  \<and> profile A' p' \<and> b \<in> A'
+                  \<and> (b \<in> elect m' A' p' \<longrightarrow> b \<in> elect n' A' p')
+                  \<and> (b \<in> reject m' A' p' \<longrightarrow> b \<in> reject n' A' p')
+                  \<and> (b \<in> defer m' A' p' \<longrightarrow> b \<in> defer n' A' p'))"
         unfolding mod_contains_result_def
         by simp
       hence "a \<in> reject n A p"
-        using e_mod_disj_n e_mod_par f_prof a_in_A module_n not_mod_cont_mn
+        using e_mod_disj_n e_mod_par prof_p a_in_A module_n not_mod_cont_mn
               a_not_elect b_not_elect_mn b_not_mpar_rej
         by auto
       hence "a \<notin> reject m A p"
@@ -198,10 +197,10 @@ next
               wf_m wf_n b_not_mpar_rej
         by (metis (no_types))
       hence "a \<notin> defer (m \<parallel>\<^sub>\<up> n) A p \<or> a \<in> defer m A p"
-          using e_mod_disj f_prof a_in_A module_m b_not_elect_mn
+          using e_mod_disj prof_p a_in_A module_m b_not_elect_mn
           by blast
       thus "mod_contains_result (m \<parallel>\<^sub>\<up> n) m A p a"
-        using b_not_mpar_rej mod_cont_res_fg e_mod_par f_prof a_in_A
+        using b_not_mpar_rej mod_cont_res_fg e_mod_par prof_p a_in_A
               module_m a_not_elect
         by auto
     qed
@@ -211,7 +210,7 @@ next
       by auto
     from not_a_elect not_a_defer
     have a_reject: "a \<in> reject (m \<parallel>\<^sub>\<up> n) A p"
-      using electoral_mod_defer_elem a_in_A module_m module_n f_prof max_par_comp_sound
+      using electoral_mod_defer_elem a_in_A module_m module_n prof_p max_par_comp_sound
       by metis
     hence "case snd (m A p) of (r, d) \<Rightarrow>
             case n A p of (e', r', d') \<Rightarrow>
@@ -230,7 +229,7 @@ next
       by force
     thus ?thesis
       using mod_contains_result_comm mod_contains_result_def Un_iff
-            a_reject f_prof a_in_A module_m module_n max_par_comp_sound
+            a_reject prof_p a_in_A module_m module_n max_par_comp_sound
       by (metis (no_types))
   qed
 qed
@@ -283,7 +282,7 @@ next
     by (metis (no_types))
 qed
 
-lemma max_agg_rej_1:
+lemma max_agg_rej_fst_imp_seq_contained:
   fixes
     m :: "'a Electoral_Module" and
     n :: "'a Electoral_Module" and
@@ -296,25 +295,14 @@ lemma max_agg_rej_1:
     module_n: "electoral_module n" and
     rejected: "a \<in> reject n A p"
   shows "mod_contains_result m (m \<parallel>\<^sub>\<up> n) A p a"
+  using assms
 proof (unfold mod_contains_result_def, safe)
-  show "electoral_module m"
-    using module_m
-    by simp
-next
   show "electoral_module (m \<parallel>\<^sub>\<up> n)"
     using module_m module_n
     by simp
 next
-  show "finite A"
-    using f_prof
-    by simp
-next
-  show "profile A p"
-    using f_prof
-    by simp
-next
   show "a \<in> A"
-    using f_prof module_n reject_in_alts rejected
+    using f_prof module_n rejected reject_in_alts
     by auto
 next
   assume a_in_elect: "a \<in> elect m A p"
@@ -351,7 +339,7 @@ next
     by (metis (no_types))
   have
     "\<forall> m' A' p'.
-      (electoral_module m' \<and> finite A' \<and> profile A' p') \<longrightarrow>
+      electoral_module m' \<and> finite A' \<and> profile A' p' \<longrightarrow>
         elect m' A' p' \<union> reject m' A' p' \<union> defer m' A' p' = A'"
     using result_presv_alts
     by metis
@@ -366,7 +354,7 @@ next
     by metis
 qed
 
-lemma max_agg_rej_2:
+lemma max_agg_rej_fst_equiv_seq_contained:
   fixes
     m :: "'a Electoral_Module" and
     n :: "'a Electoral_Module" and
@@ -378,11 +366,41 @@ lemma max_agg_rej_2:
     "electoral_module m" and
     "electoral_module n" and
     "a \<in> reject n A p"
-  shows "mod_contains_result (m \<parallel>\<^sub>\<up> n) m A p a"
-  using mod_contains_result_comm max_agg_rej_1 assms
-  by metis
+  shows "mod_contains_result_sym (m \<parallel>\<^sub>\<up> n) m A p a"
+  using assms
+proof (unfold mod_contains_result_sym_def, safe)
+  assume "a \<in> reject (m \<parallel>\<^sub>\<up> n) A p"
+  thus "a \<in> reject m A p"
+    using assms max_agg_rej_iff_both_reject
+    by (metis (no_types))
+next
+  have "mod_contains_result m (m \<parallel>\<^sub>\<up> n) A p a"
+    using assms max_agg_rej_fst_imp_seq_contained
+    by (metis (full_types))
+  thus
+    "a \<in> elect (m \<parallel>\<^sub>\<up> n) A p \<Longrightarrow> a \<in> elect m A p" and
+    "a \<in> defer (m \<parallel>\<^sub>\<up> n) A p \<Longrightarrow> a \<in> defer m A p"
+    using mod_contains_result_comm
+    unfolding mod_contains_result_def
+    by (metis (full_types), metis (full_types))
+next
+  show
+    "electoral_module (m \<parallel>\<^sub>\<up> n)" and
+    "a \<in> A"
+    using assms max_agg_rej_fst_imp_seq_contained
+    unfolding mod_contains_result_def
+    by (metis (full_types), metis (full_types))
+next
+  show
+    "a \<in> elect m A p \<Longrightarrow> a \<in> elect (m \<parallel>\<^sub>\<up> n) A p" and
+    "a \<in> reject m A p \<Longrightarrow> a \<in> reject (m \<parallel>\<^sub>\<up> n) A p" and
+    "a \<in> defer m A p \<Longrightarrow> a \<in> defer (m \<parallel>\<^sub>\<up> n) A p"
+    using assms max_agg_rej_fst_imp_seq_contained
+    unfolding mod_contains_result_def
+    by (metis (no_types), metis (no_types), metis (no_types))
+qed
 
-lemma max_agg_rej_3:
+lemma max_agg_rej_snd_imp_seq_contained:
   fixes
     m :: "'a Electoral_Module" and
     n :: "'a Electoral_Module" and
@@ -395,21 +413,10 @@ lemma max_agg_rej_3:
     module_n: "electoral_module n" and
     rejected: "a \<in> reject m A p"
   shows "mod_contains_result n (m \<parallel>\<^sub>\<up> n) A p a"
+  using assms
 proof (unfold mod_contains_result_def, safe)
-  show "electoral_module n"
-    using module_n
-    by simp
-next
   show "electoral_module (m \<parallel>\<^sub>\<up> n)"
     using module_m module_n
-    by simp
-next
-  show "finite A"
-    using f_prof
-    by simp
-next
-  show "profile A p"
-    using f_prof
     by simp
 next
   show "a \<in> A"
@@ -430,7 +437,7 @@ next
 next
   assume "a \<in> defer n A p"
   moreover have "a \<in> A"
-    using f_prof max_agg_rej_1 mod_contains_result_def module_m rejected
+    using f_prof max_agg_rej_fst_imp_seq_contained mod_contains_result_def module_m rejected
     by metis
   ultimately show "a \<in> defer (m \<parallel>\<^sub>\<up> n) A p"
     using disjoint_iff_not_equal max_agg_eq_result max_agg_rej_iff_both_reject
@@ -439,7 +446,7 @@ next
       by metis
 qed
 
-lemma max_agg_rej_4:
+lemma max_agg_rej_snd_equiv_seq_contained:
   fixes
     m :: "'a Electoral_Module" and
     n :: "'a Electoral_Module" and
@@ -451,9 +458,39 @@ lemma max_agg_rej_4:
     "electoral_module m" and
     "electoral_module n" and
     "a \<in> reject m A p"
-  shows "mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p a"
-  using mod_contains_result_comm max_agg_rej_3 assms
-  by metis
+  shows "mod_contains_result_sym (m \<parallel>\<^sub>\<up> n) n A p a"
+  using assms
+proof (unfold mod_contains_result_sym_def, safe)
+  assume "a \<in> reject (m \<parallel>\<^sub>\<up> n) A p"
+  thus "a \<in> reject n A p"
+    using assms max_agg_rej_iff_both_reject
+    by (metis (no_types))
+next
+  have "mod_contains_result n (m \<parallel>\<^sub>\<up> n) A p a"
+    using assms max_agg_rej_snd_imp_seq_contained
+    by (metis (full_types))
+  thus
+    "a \<in> elect (m \<parallel>\<^sub>\<up> n) A p \<Longrightarrow> a \<in> elect n A p" and
+    "a \<in> defer (m \<parallel>\<^sub>\<up> n) A p \<Longrightarrow> a \<in> defer n A p"
+    using mod_contains_result_comm
+    unfolding mod_contains_result_def
+    by (metis (full_types), metis (full_types))
+next
+  show
+    "electoral_module (m \<parallel>\<^sub>\<up> n)" and
+    "a \<in> A"
+    using assms max_agg_rej_snd_imp_seq_contained
+    unfolding mod_contains_result_def
+    by (metis (full_types), metis (full_types))
+next
+  show
+    "a \<in> elect n A p \<Longrightarrow> a \<in> elect (m \<parallel>\<^sub>\<up> n) A p" and
+    "a \<in> reject n A p \<Longrightarrow> a \<in> reject (m \<parallel>\<^sub>\<up> n) A p" and
+    "a \<in> defer n A p \<Longrightarrow> a \<in> defer (m \<parallel>\<^sub>\<up> n) A p"
+    using assms max_agg_rej_snd_imp_seq_contained
+    unfolding mod_contains_result_def
+    by (metis (no_types), metis (no_types), metis (no_types))
+qed
 
 lemma max_agg_rej_intersect:
   fixes
@@ -498,7 +535,7 @@ lemma dcompat_dec_by_one_mod:
   shows
     "(\<forall> p. finite_profile A p \<longrightarrow> mod_contains_result m (m \<parallel>\<^sub>\<up> n) A p a) \<or>
         (\<forall> p. finite_profile A p \<longrightarrow> mod_contains_result n (m \<parallel>\<^sub>\<up> n) A p a)"
-  using DiffI assms max_agg_rej_1 max_agg_rej_3
+  using DiffI assms max_agg_rej_fst_imp_seq_contained max_agg_rej_snd_imp_seq_contained
   unfolding disjoint_compatibility_def
   by metis
 
@@ -575,36 +612,28 @@ next
       by blast
     with defer_a
     have defer_n: "a \<in> defer n A p"
-      using compatible f_profs max_agg_rej_4
-      unfolding disjoint_compatibility_def mod_contains_result_def
+      using compatible f_profs max_agg_rej_snd_equiv_seq_contained
+      unfolding disjoint_compatibility_def mod_contains_result_sym_def
       by metis
-    have "\<forall> b \<in> B. mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p b"
-      using alts compatible max_agg_rej_4 f_profs
+    have "\<forall> b \<in> B. mod_contains_result_sym (m \<parallel>\<^sub>\<up> n) n A p b"
+      using alts compatible max_agg_rej_snd_equiv_seq_contained f_profs
       unfolding disjoint_compatibility_def
       by metis
     moreover have "\<forall> b \<in> A. prof_contains_result n A p q b"
     proof (unfold prof_contains_result_def, clarify)
       fix b :: "'a"
       assume b_in_A: "b \<in> A"
-      show "electoral_module n \<and> finite_profile A p \<and> finite_profile A q \<and> b \<in> A \<and>
-              (b \<in> elect n A p \<longrightarrow> b \<in> elect n A q) \<and>
-              (b \<in> reject n A p \<longrightarrow> b \<in> reject n A q) \<and>
-              (b \<in> defer n A p \<longrightarrow> b \<in> defer n A q)"
+      show "electoral_module n \<and> profile A p \<and> profile A q \<and> b \<in> A
+              \<and> (b \<in> elect n A p \<longrightarrow> b \<in> elect n A q)
+              \<and> (b \<in> reject n A p \<longrightarrow> b \<in> reject n A q)
+              \<and> (b \<in> defer n A p \<longrightarrow> b \<in> defer n A q)"
       proof (safe)
         show "electoral_module n"
           using monotone_n
           unfolding defer_lift_invariance_def
           by metis
       next
-        show "finite A"
-          using f_profs
-          by simp
-      next
         show "profile A p"
-          using f_profs
-          by simp
-      next
-        show "finite A"
           using f_profs
           by simp
       next
@@ -636,22 +665,23 @@ next
       qed
     qed
     moreover have "\<forall> b \<in> B. mod_contains_result n (m \<parallel>\<^sub>\<up> n) A q b"
-      using alts compatible max_agg_rej_3 f_profs
+      using alts compatible max_agg_rej_snd_imp_seq_contained f_profs
       unfolding disjoint_compatibility_def
       by metis
     ultimately have prof_contains_result_of_comps_for_elems_in_B:
       "\<forall> b \<in> B. prof_contains_result (m \<parallel>\<^sub>\<up> n) A p q b"
-      unfolding mod_contains_result_def prof_contains_result_def
+      unfolding mod_contains_result_def mod_contains_result_sym_def
+                prof_contains_result_def
       by simp
-    have "\<forall> b \<in> A - B. mod_contains_result (m \<parallel>\<^sub>\<up> n) m A p b"
-      using alts max_agg_rej_2 monotone_m monotone_n f_profs
+    have "\<forall> b \<in> A - B. mod_contains_result_sym (m \<parallel>\<^sub>\<up> n) m A p b"
+      using alts max_agg_rej_fst_equiv_seq_contained monotone_m monotone_n f_profs
       unfolding defer_lift_invariance_def
       by metis
     moreover have "\<forall> b \<in> A. prof_contains_result m A p q b"
     proof (unfold prof_contains_result_def, clarify)
       fix b :: "'a"
       assume b_in_A: "b \<in> A"
-      show "electoral_module m \<and> finite_profile A p \<and> finite_profile A q \<and> b \<in> A \<and>
+      show "electoral_module m \<and> profile A p \<and> profile A q \<and> b \<in> A \<and>
               (b \<in> elect m A p \<longrightarrow> b \<in> elect m A q) \<and>
               (b \<in> reject m A p \<longrightarrow> b \<in> reject m A q) \<and>
               (b \<in> defer m A p \<longrightarrow> b \<in> defer m A q)"
@@ -661,15 +691,7 @@ next
           unfolding defer_lift_invariance_def
           by metis
       next
-        show "finite A"
-          using f_profs
-          by simp
-      next
         show "profile A p"
-          using f_profs
-          by simp
-      next
-        show "finite A"
           using f_profs
           by simp
       next
@@ -701,11 +723,12 @@ next
       qed
     qed
     moreover have "\<forall> b \<in> A - B. mod_contains_result m (m \<parallel>\<^sub>\<up> n) A q b"
-      using alts max_agg_rej_1 monotone_m monotone_n f_profs
+      using alts max_agg_rej_fst_imp_seq_contained monotone_m monotone_n f_profs
       unfolding defer_lift_invariance_def
       by metis
     ultimately have "\<forall> b \<in> A - B. prof_contains_result (m \<parallel>\<^sub>\<up> n) A p q b"
-      unfolding mod_contains_result_def prof_contains_result_def
+      unfolding mod_contains_result_def mod_contains_result_sym_def
+                prof_contains_result_def
       by simp
     thus ?thesis
       using prof_contains_result_of_comps_for_elems_in_B
@@ -725,33 +748,25 @@ next
             mod_contains_result_def defer_a
       unfolding maximum_parallel_composition.simps
       by metis
-    have "\<forall> b \<in> B. mod_contains_result (m \<parallel>\<^sub>\<up> n) n A p b"
-      using alts compatible max_agg_rej_4 f_profs
-      unfolding disjoint_compatibility_def
+    have "\<forall> b \<in> B. mod_contains_result_sym (m \<parallel>\<^sub>\<up> n) n A p b"
+      using alts max_agg_rej_snd_equiv_seq_contained monotone_m monotone_n f_profs
+      unfolding defer_lift_invariance_def
       by metis
     moreover have "\<forall> b \<in> A. prof_contains_result n A p q b"
     proof (unfold prof_contains_result_def, clarify)
       fix b :: "'a"
       assume b_in_A: "b \<in> A"
-      show "electoral_module n \<and> finite_profile A p \<and> finite_profile A q \<and> b \<in> A \<and>
-              (b \<in> elect n A p \<longrightarrow> b \<in> elect n A q) \<and>
-              (b \<in> reject n A p \<longrightarrow> b \<in> reject n A q) \<and>
-              (b \<in> defer n A p \<longrightarrow> b \<in> defer n A q)"
+      show "electoral_module n \<and> profile A p \<and> profile A q \<and> b \<in> A
+              \<and> (b \<in> elect n A p \<longrightarrow> b \<in> elect n A q)
+              \<and> (b \<in> reject n A p \<longrightarrow> b \<in> reject n A q)
+              \<and> (b \<in> defer n A p \<longrightarrow> b \<in> defer n A q)"
       proof (safe)
         show "electoral_module n"
           using monotone_n
           unfolding defer_lift_invariance_def
           by metis
       next
-        show "finite A"
-          using f_profs
-          by simp
-      next
         show "profile A p"
-          using f_profs
-          by simp
-      next
-        show "finite A"
           using f_profs
           by simp
       next
@@ -783,40 +798,33 @@ next
       qed
   qed
   moreover have "\<forall> b \<in> B. mod_contains_result n (m \<parallel>\<^sub>\<up> n) A q b"
-    using alts compatible max_agg_rej_3 f_profs
+    using alts compatible max_agg_rej_snd_imp_seq_contained f_profs
     unfolding disjoint_compatibility_def
     by metis
   ultimately have prof_contains_result_of_comps_for_elems_in_B:
     "\<forall> b \<in> B. prof_contains_result (m \<parallel>\<^sub>\<up> n) A p q b"
-    unfolding mod_contains_result_def prof_contains_result_def
+      unfolding mod_contains_result_def mod_contains_result_sym_def
+                prof_contains_result_def
     by simp
-  have "\<forall> b \<in> A - B. mod_contains_result (m \<parallel>\<^sub>\<up> n) m A p b"
-    using alts max_agg_rej_2 monotone_m monotone_n f_profs
+  have "\<forall> b \<in> A - B. mod_contains_result_sym (m \<parallel>\<^sub>\<up> n) m A p b"
+    using alts max_agg_rej_fst_equiv_seq_contained monotone_m monotone_n f_profs
     unfolding defer_lift_invariance_def
     by metis
   moreover have "\<forall> b \<in> A. prof_contains_result m A p q b"
   proof (unfold prof_contains_result_def, clarify)
     fix b :: "'a"
     assume b_in_A: "b \<in> A"
-    show "electoral_module m \<and> finite_profile A p \<and> finite_profile A q \<and> b \<in> A \<and>
-            (b \<in> elect m A p \<longrightarrow> b \<in> elect m A q) \<and>
-            (b \<in> reject m A p \<longrightarrow> b \<in> reject m A q) \<and>
-            (b \<in> defer m A p \<longrightarrow> b \<in> defer m A q)"
+    show "electoral_module m \<and> profile A p \<and> profile A q \<and> b \<in> A
+            \<and> (b \<in> elect m A p \<longrightarrow> b \<in> elect m A q)
+            \<and> (b \<in> reject m A p \<longrightarrow> b \<in> reject m A q)
+            \<and> (b \<in> defer m A p \<longrightarrow> b \<in> defer m A q)"
     proof (safe)
       show "electoral_module m"
         using monotone_m
         unfolding defer_lift_invariance_def
         by simp
     next
-      show "finite A"
-        using f_profs
-        by simp
-    next
       show "profile A p"
-        using f_profs
-        by simp
-    next
-      show "finite A"
         using f_profs
         by simp
     next
@@ -848,12 +856,12 @@ next
     qed
   qed
   moreover have "\<forall> x \<in> A - B. mod_contains_result m (m \<parallel>\<^sub>\<up> n) A q x"
-    using alts max_agg_rej_1 monotone_m monotone_n f_profs
+    using alts max_agg_rej_fst_imp_seq_contained monotone_m monotone_n f_profs
     unfolding defer_lift_invariance_def
     by metis
   ultimately have "\<forall> x \<in> A - B. prof_contains_result (m \<parallel>\<^sub>\<up> n) A p q x"
-    using electoral_mod_defer_elem
-    unfolding mod_contains_result_def prof_contains_result_def
+      unfolding mod_contains_result_def mod_contains_result_sym_def
+                prof_contains_result_def
     by simp
   thus ?thesis
     using prof_contains_result_of_comps_for_elems_in_B
@@ -951,36 +959,34 @@ next
     p :: "'a Profile"
   assume
     min_card_two: "1 < card A" and
-    fin_A: "finite A" and
     prof_A: "profile A p"
-  have card_geq_one: "card A \<ge> 1"
-    using min_card_two dual_order.strict_trans2 less_imp_le_nat
-    by blast
+  hence card_geq_one: "card A \<ge> 1"
+    by presburger
+  have fin_A: "finite A"
+    using min_card_two card.infinite not_one_less_zero
+    by metis
   have module: "electoral_module m"
     using non_elec_m
     unfolding non_electing_def
     by simp
   have elec_card_zero: "card (elect m A p) = 0"
-    using fin_A prof_A non_elec_m card_eq_0_iff
+    using prof_A non_elec_m card_eq_0_iff
     unfolding non_electing_def
     by simp
   moreover from card_geq_one
   have def_card_one: "card (defer m A p) = 1"
-    using defers_m_one module fin_A prof_A
+    using defers_m_one module prof_A fin_A
     unfolding defers_def
     by simp
   ultimately have card_reject_m: "card (reject m A p) = card A - 1"
   proof -
-    have "finite A"
-      using fin_A
-      by simp
-    moreover have "well_formed A (elect m A p, reject m A p, defer m A p)"
-      using fin_A prof_A module
+    have "well_formed A (elect m A p, reject m A p, defer m A p)"
+      using prof_A module
       unfolding electoral_module_def
       by simp
-    ultimately have
+    hence
       "card A = card (elect m A p) + card (reject m A p) + card (defer m A p)"
-      using result_count
+      using result_count fin_A
       by blast
     thus ?thesis
       using def_card_one elec_card_zero
@@ -990,7 +996,7 @@ next
     using min_card_two
     by simp
   hence "card (reject n A p) = 2"
-    using fin_A prof_A rejec_n_two
+    using prof_A rejec_n_two fin_A
     unfolding rejects_def
     by blast
   moreover from this
@@ -998,7 +1004,7 @@ next
     using card_reject_m card_geq_one
     by linarith
   ultimately show "card (reject (m \<parallel>\<^sub>\<up> n) A p) = 1"
-    using disj_comp prof_A fin_A card_reject_m par_comp_rej_card
+    using disj_comp prof_A card_reject_m par_comp_rej_card fin_A
     by blast
 qed
 

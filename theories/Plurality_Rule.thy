@@ -103,7 +103,7 @@ qed
 
 subsection \<open>Electing\<close>
 
-lemma plurality_rule_electing_2:
+lemma plurality_rule_elect_non_empty:
   fixes
     A :: "'a set" and
     p :: "'a Profile"
@@ -155,7 +155,7 @@ next
     elect_none: "elect plurality_rule A p = {}" and
     a_in_A: "a \<in> A"
   have "\<forall> A p. (A \<noteq> {} \<and> finite_profile A p) \<longrightarrow> elect plurality_rule A p \<noteq> {}"
-    using plurality_rule_electing_2
+    using plurality_rule_elect_non_empty
     by (metis (no_types))
   hence empty_A: "A = {}"
     using fin_A prof_p elect_none
@@ -167,7 +167,7 @@ qed
 
 subsection \<open>Property\<close>
 
-lemma plurality_rule_inv_mono_2:
+lemma plurality_rule_inv_mono_eq:
   fixes
     A :: "'a set" and
     p :: "'a Profile" and
@@ -187,7 +187,7 @@ proof -
   ultimately have "a \<in> defer plurality A p"
     by blast
   hence "defer plurality A q = defer plurality A p \<or> defer plurality A q = {a}"
-    using lift_a plurality_def_inv_mono_2
+    using lift_a plurality_def_inv_mono_alts
     by metis
   moreover have "elect (elector plurality) A q = defer plurality A q"
     by simp
@@ -215,7 +215,7 @@ next
   assume "a \<in> elect plurality_rule A p \<and> Profile.lifted A p q a"
   thus "elect plurality_rule A q = elect plurality_rule A p \<or>
           elect plurality_rule A q = {a}"
-    using plurality_rule_inv_mono_2
+    using plurality_rule_inv_mono_eq
     by metis
 qed
 

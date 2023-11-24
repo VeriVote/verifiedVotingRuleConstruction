@@ -80,8 +80,8 @@ lemma list_cons_presv_finiteness:
   shows "finite {a#l | a l. a \<in> A \<and> l \<in> S}"
 proof -
   let ?P = "\<lambda> A. finite {a#l | a l. a \<in> A \<and> l \<in> S}"
-  have "\<And> a A'. finite A' \<Longrightarrow> a \<notin> A' \<Longrightarrow> ?P A' \<Longrightarrow> ?P (insert a A')"
-  proof -
+  have "\<forall> a A'. finite A' \<longrightarrow> a \<notin> A' \<longrightarrow> ?P A' \<longrightarrow> ?P (insert a A')"
+  proof (safe)
     fix
       a :: "'a" and
       A' :: "'a set"
@@ -269,16 +269,6 @@ definition limited :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> boo
 
 fun limit_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> 'a Preference_List" where
   "limit_l A l = List.filter (\<lambda> a. a \<in> A) l"
-
-lemma limitedI:
-  fixes
-    l :: "'a Preference_List" and
-    A :: "'a set"
-  assumes "\<And> a b. a \<lesssim>\<^sub>l b \<Longrightarrow> a \<in> A \<and> b \<in> A"
-  shows "limited A l"
-  using assms
-  unfolding limited_def
-  by auto
 
 lemma limited_dest:
   fixes

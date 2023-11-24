@@ -37,8 +37,7 @@ fun alts_\<E> :: "'a Election \<Rightarrow> 'a set" where "alts_\<E> E = fst E"
 fun prof_\<E> :: "'a Election \<Rightarrow> 'a Profile" where "prof_\<E> E = snd E"
 
 text \<open>
-  A profile on a finite set of alternatives A contains only ballots that are
-  linear orders on A.
+  A profile on a set of alternatives A contains only ballots that are linear orders on A.
 \<close>
 
 definition profile :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> bool" where
@@ -48,7 +47,7 @@ lemma profile_set :
   fixes
     A :: "'a set" and
     p :: "'a Profile"
-  shows "profile A p \<equiv> (\<forall> b \<in> (set p). linear_order_on A b)"
+  shows "profile A p \<equiv> (\<forall> b \<in> set p. linear_order_on A b)"
   unfolding profile_def all_set_conv_all_nth
   by simp
 
@@ -533,9 +532,9 @@ subsection \<open>Condorcet Winner\<close>
 
 fun condorcet_winner :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "condorcet_winner A p a =
-      (finite_profile A p \<and>  a \<in> A \<and> (\<forall> x \<in> A - {a}. wins a p x))"
+      (finite_profile A p \<and> a \<in> A \<and> (\<forall> x \<in> A - {a}. wins a p x))"
 
-lemma cond_winner_unique:
+lemma cond_winner_unique_eq:
   fixes
     A :: "'a set" and
     p :: "'a Profile" and
@@ -559,20 +558,7 @@ proof (rule ccontr)
     by simp
 qed
 
-lemma cond_winner_unique_2:
-  fixes
-    A :: "'a set" and
-    p :: "'a Profile" and
-    a :: "'a" and
-    b :: "'a"
-  assumes
-    "condorcet_winner A p a" and
-    "b \<noteq> a"
-  shows "\<not> condorcet_winner A p b"
-  using cond_winner_unique assms
-  by metis
-
-lemma cond_winner_unique_3:
+lemma cond_winner_unique:
   fixes
     A :: "'a set" and
     p :: "'a Profile" and
@@ -583,7 +569,7 @@ proof (safe)
   fix a' :: "'a"
   assume "condorcet_winner A p a'"
   thus "a' = a"
-    using assms cond_winner_unique
+    using assms cond_winner_unique_eq
     by metis
 next
   show "a \<in> A"
@@ -614,8 +600,7 @@ lemma limit_prof_trans:
     p :: "'a Profile"
   assumes
     "B \<subseteq> A" and
-    "C \<subseteq> B" and
-    "finite_profile A p"
+    "C \<subseteq> B"
   shows "limit_profile C p = limit_profile C (limit_profile B p)"
   using assms
   by auto
@@ -626,18 +611,10 @@ lemma limit_profile_sound:
     B :: "'a set" and
     p :: "'a Profile"
   assumes
-    profile: "finite_profile B p" and
+    profile: "profile B p" and
     subset: "A \<subseteq> B"
-  shows "finite_profile A (limit_profile A p)"
-proof (safe)
-  have "finite B \<longrightarrow> A \<subseteq> B \<longrightarrow> finite A"
-    using rev_finite_subset
-    by metis
-  with profile
-  show "finite A"
-    using subset
-    by metis
-next
+  shows "profile A (limit_profile A p)"
+proof (clarsimp)
   have prof_is_lin_ord:
     "\<forall> A' p'.
       (profile (A'::'a set) p' \<longrightarrow> (\<forall> n < length p'. linear_order_on A' (p'!n))) \<and>
@@ -659,7 +636,7 @@ next
   have "n < length p \<longrightarrow> linear_order_on B (p!n)"
     using prof_n_lin_ord
     by simp
-  thus "profile A (limit_profile A p)"
+  thus "profile A (map (limit A) p)"
     using prof_length prof_limit_n limit_prof_simp limit_presv_lin_ord nth_map subset
     by (metis (no_types))
 qed
@@ -675,7 +652,7 @@ subsection \<open>Lifting Property\<close>
 
 definition equiv_prof_except_a :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "equiv_prof_except_a A p p' a \<equiv>
-    finite_profile A p \<and> finite_profile A p' \<and> a \<in> A \<and> length p = length p' \<and>
+    profile A p \<and> profile A p' \<and> a \<in> A \<and> length p = length p' \<and>
       (\<forall> i::nat. i < length p \<longrightarrow> equiv_rel_except_a A (p!i) (p'!i) a)"
 
 text \<open>
@@ -685,8 +662,7 @@ text \<open>
 
 definition lifted :: "'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "lifted A p p' a \<equiv>
-    finite_profile A p \<and> finite_profile A p' \<and>
-      a \<in> A \<and> length p = length p' \<and>
+    profile A p \<and> profile A p' \<and> finite A \<and> a \<in> A \<and> length p = length p' \<and>
       (\<forall> i::nat. i < length p \<and> \<not> Preference_Relation.lifted A (p!i) (p'!i) a \<longrightarrow>
           (p!i) = (p'!i)) \<and>
       (\<exists> i::nat. i < length p \<and> Preference_Relation.lifted A (p!i) (p'!i) a)"
@@ -701,17 +677,7 @@ lemma lifted_imp_equiv_prof_except_a:
   shows "equiv_prof_except_a A p p' a"
 proof (unfold equiv_prof_except_a_def, safe)
   from assms
-  show "finite A"
-    unfolding lifted_def
-    by metis
-next
-  from assms
   show "profile A p"
-    unfolding lifted_def
-    by metis
-next
-  from assms
-  show "finite A"
     unfolding lifted_def
     by metis
 next
@@ -797,13 +763,18 @@ proof (cases)
       by (metis (mono_tags, lifting))
   next
     assume forall_limit_p_q:
-      "\<not> (\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (p'!i)))"
+      "\<not> (\<forall> i::nat. i < length p \<longrightarrow> (limit A (p!i)) = (limit A (p'!i)))" and
+      foo:
+      "\<forall> i < length p.
+        Preference_Relation.lifted A (limit A (p!i)) (limit A (p'!i)) a
+          \<or> limit A (p!i) = limit A (p'!i)"
     let ?p = "limit_profile A p"
     let ?q = "limit_profile A p'"
     have "profile A ?p \<and> profile A ?q"
-      using lifted_a limit_profile_sound subset
-      unfolding lifted_def
-      by metis
+      using lifted_a subset limit_presv_lin_ord limit_prof_presv_size
+            limit_profile.elims nth_map
+      unfolding profile_def lifted_def
+      by (metis (mono_tags, lifting))
     moreover have "length ?p = length ?q"
       using lifted_a
       unfolding lifted_def
@@ -821,7 +792,7 @@ proof (cases)
       unfolding lifted_def
       by metis
     ultimately have "lifted A ?p ?q a"
-      using a_in_A lifted_a rev_finite_subset subset
+      using a_in_A lifted_a subset infinite_super
       unfolding lifted_def
       by (metis (no_types, lifting))
     thus ?thesis

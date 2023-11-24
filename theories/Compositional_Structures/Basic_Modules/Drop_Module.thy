@@ -36,7 +36,7 @@ theorem drop_mod_sound[simp]:
     r :: "'a Preference_Relation" and
     n :: nat
   shows "electoral_module (drop_module n r)"
-proof (intro electoral_modI)
+proof (unfold electoral_module_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile"

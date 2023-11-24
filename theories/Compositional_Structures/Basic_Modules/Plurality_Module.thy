@@ -178,7 +178,7 @@ theorem plurality'_non_electing[simp]: "non_electing plurality'"
 
 subsection \<open>Property\<close>
 
-lemma plurality_def_inv_mono_2:
+lemma plurality_def_inv_mono_alts:
   fixes
     A :: "'a set" and
     p :: "'a Profile" and
@@ -195,7 +195,7 @@ proof -
     "\<forall> b \<in> A.
       \<forall> i::nat. i < length p \<longrightarrow>
         (above (p!i) b = {b} \<longrightarrow> (above (q!i) b = {b} \<or> above (q!i) a = {a}))"
-    using lift_a lifted_above_winner
+    using lift_a lifted_above_winner_alts
     unfolding Profile.lifted_def
     by (metis (no_types, lifting))
   hence "\<forall> i::nat. i < length p \<longrightarrow> (above (p!i) a = {a} \<longrightarrow> above (q!i) a = {a})"
@@ -219,14 +219,14 @@ proof -
   hence
     "\<forall> b \<in> A - {a}.
       \<forall> i::nat. i < length p \<longrightarrow> (above (q!i) a = {a} \<longrightarrow> above (q!i) b \<noteq> {b})"
-    using DiffE above_one_2 lift_a insertCI insert_absorb insert_not_empty sizes
+    using DiffE above_one_eq lift_a insertCI insert_absorb insert_not_empty sizes
     unfolding Profile.lifted_def profile_def
     by metis
   with lifted_winner
   have above_QtoP:
     "\<forall> b \<in> A - {a}.
       \<forall> i::nat. i < length p \<longrightarrow> (above (q!i) b = {b} \<longrightarrow> above (p!i) b = {b})"
-    using lifted_above_winner_3 lift_a
+    using lifted_above_winner_other lift_a
     unfolding Profile.lifted_def
     by metis
   hence "\<forall> b \<in> A - {a}.
@@ -279,7 +279,7 @@ proof -
         unfolding Profile.lifted_def profile_def
         by simp
       ultimately show "b = a"
-        using fin_A above_one_2
+        using fin_A above_one_eq
         by metis
     qed
     ultimately have above_PtoQ:
@@ -401,7 +401,7 @@ next
     a :: "'a"
   assume "a \<in> defer plurality A p \<and> Profile.lifted A p q a"
   thus "defer plurality A q = defer plurality A p \<or> defer plurality A q = {a}"
-    using plurality_def_inv_mono_2
+    using plurality_def_inv_mono_alts
     by metis
 qed
 

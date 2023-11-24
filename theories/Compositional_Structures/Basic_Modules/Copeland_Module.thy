@@ -226,9 +226,7 @@ proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
   fix
     A :: "'a set" and
     p :: "'a Profile"
-  assume
-    "finite A" and
-    "profile A p"
+  assume "profile A p"
   hence "well_formed A (max_eliminator copeland_score A p)"
     using max_elim_sound
     unfolding electoral_module_def
@@ -240,9 +238,7 @@ next
     A :: "'a set" and
     p :: "'a Profile" and
     w :: "'a"
-  assume
-    "condorcet_winner A p w" and
-    "finite A"
+  assume "condorcet_winner A p w"
   moreover have "defer_condorcet_consistency (max_eliminator copeland_score)"
     by (simp add: copeland_score_is_cr)
   moreover have "\<forall> A p. (copeland A p = max_eliminator copeland_score A p)"
