@@ -424,7 +424,7 @@ next
 next
   assume "a \<in> elect n A p"
   thus "a \<in> elect (m \<parallel>\<^sub>\<up> n) A p"
-    using Un_iff combine_ele_rej_def fst_conv maximum_parallel_composition.simps
+    using Un_iff elect_rej_def_combination fst_conv maximum_parallel_composition.simps
           max_aggregator.simps
     unfolding parallel_composition.simps
     by (metis (mono_tags, lifting))
@@ -436,7 +436,8 @@ next
 next
   assume "a \<in> defer n A p"
   moreover have "a \<in> A"
-    using f_prof max_agg_rej_fst_imp_seq_contained mod_contains_result_def module_m rejected
+    using f_prof max_agg_rej_fst_imp_seq_contained module_m rejected
+    unfolding mod_contains_result_def
     by metis
   ultimately show "a \<in> defer (m \<parallel>\<^sub>\<up> n) A p"
     using disjoint_iff_not_equal max_agg_eq_result max_agg_rej_iff_both_reject

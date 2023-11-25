@@ -60,7 +60,7 @@ proof (unfold is_arg_min_def, cases "x \<notin> S", clarsimp)
       hence "g x = f x"
         using x_in_S
         by presburger
-      thus "False"
+      thus False
         using f_eq_g_for_elems_in_S g_y_lt_g_x not_y y_in_S
         by (metis (no_types))
     qed
@@ -194,7 +194,7 @@ proof (induction l, safe, simp)
     elems_pos_in_cons_ls_pos: "\<forall> i < length l'. l'!i \<in> (s#l)!i"
   then obtain t and x where
     l'_cons: "l' = x#t"
-    using length_Cons list.exhaust list.size(3) nat.simps(3)
+    using length_Suc_conv
     by metis
   hence "x \<in> s"
     using elems_pos_in_cons_ls_pos
@@ -401,10 +401,9 @@ next
       "a \<in> A" and
       "(b, c) \<in> pl_\<alpha> (a#(filter (\<lambda> a. a \<in> A) l))"
     thus "b \<in> A"
-      using case_prodD insert_iff is_less_preferred_than_l.elims(2) list.set(2) mem_Collect_eq
-            set_filter
       unfolding pl_\<alpha>_def
-      by (metis (lifting))
+      using case_prodD insert_iff mem_Collect_eq set_filter inter_set_filter IntE
+      by auto
   next
     fix
       b :: "'a" and
@@ -439,10 +438,9 @@ next
         by simp
       ultimately show
         "index (a#(filter (\<lambda> a. a \<in> A) l)) c \<le> index (a#(filter (\<lambda> a. a \<in> A) l)) b"
-        using add_leE add_le_cancel_right case_prodI in_rel_Collect_case_prod_eq
-              index_Cons b_in_A c_in_A set_ConsD is_less_preferred_than_l.elims(1)
-              linorder_le_cases mem_Collect_eq not_one_le_zero
         unfolding pl_\<alpha>_def
+        using add_leE add_le_cancel_right case_prodI c_in_A b_in_A index_Cons set_ConsD
+              in_rel_Collect_case_prod_eq linorder_le_cases mem_Collect_eq not_one_le_zero
         by fastforce
     qed
   qed
@@ -468,16 +466,16 @@ next
       show "index (a#l) c \<le> index (a#l) b"
       proof (unfold index_def, simp, safe)
         assume "a = b"
-        thus "False"
-          using a_not_in_A b_less_c case_prod_conv is_less_preferred_than_l.elims(2)
+        thus False
+          using a_not_in_A b_less_c case_prod_conv is_less_preferred_than_l.elims
                 mem_Collect_eq set_filter wf_a_l
           unfolding pl_\<alpha>_def
           by simp
       next
         show "find_index (\<lambda> x. x = c) l \<le> find_index (\<lambda> x. x = b) l"
-          using b_less_c case_prodD index_def is_less_preferred_than_l.elims(2) mem_Collect_eq
+          using b_less_c case_prodD mem_Collect_eq
           unfolding pl_\<alpha>_def
-          by metis
+          by (simp add: index_def)
       qed
     qed
   next
@@ -504,8 +502,8 @@ next
     next
       assume "index (a#l) c \<le> index (a#l) b"
       thus "index l c \<le> index l b"
-        using a_not_in_l a_not_in_A c_in_A add_le_cancel_right index_Cons index_le_size
-              size_index_conv
+        using a_not_in_l a_not_in_A c_in_A add_le_cancel_right
+              index_Cons index_le_size size_index_conv
         by (metis (no_types, lifting))
     qed
   qed
@@ -593,8 +591,9 @@ lemma above_trans:
     "trans l" and
     "a \<lesssim>\<^sub>l b"
   shows "set (above_l l b) \<subseteq> set (above_l l a)"
-  using assms set_take_subset_set_take add_mono le_numeral_extra(4) rank_l.simps
-  unfolding above_l_def Preference_List.is_less_preferred_than_l.simps
+  using assms set_take_subset_set_take rank_l.simps
+        Suc_le_mono add.commute add_0 add_Suc
+  unfolding above_l_def Preference_List.is_less_preferred_than_l.simps One_nat_def
   by metis
 
 lemma less_preferred_l_rel_equiv:
@@ -610,32 +609,31 @@ theorem above_equiv:
   fixes
     l :: "'a Preference_List" and
     a :: 'a
-  shows "set (above_l l a) = Order_Relation.above (pl_\<alpha> l) a"
+  shows "set (above_l l a) = above (pl_\<alpha> l) a"
 proof (safe)
   fix b :: "'a"
-  assume b_member: "b \<in> set (Preference_List.above_l l a)"
+  assume b_member: "b \<in> set (above_l l a)"
   hence "index l b \<le> index l a"
-    unfolding rank_l.simps
-    using above_l_def Preference_List.rank_l.simps Suc_eq_plus1 Suc_le_eq index_take
-          bot_nat_0.extremum_strict linorder_not_less
-    by metis
+    unfolding rank_l.simps above_l_def
+    using Suc_eq_plus1 Suc_le_eq index_take linorder_not_less
+          bot_nat_0.extremum_strict
+    by (metis (full_types))
   hence "a \<lesssim>\<^sub>l b"
-    using is_less_preferred_than_l.elims(3) rank_l.simps Suc_le_mono add_Suc empty_iff
-          find_index_le_size le_antisym list.set(1) size_index_conv take_0 b_member
-    unfolding One_nat_def index_def above_l_def
+    using Suc_le_mono add_Suc le_antisym take_0 b_member
+          in_set_takeD index_take le0 rank_l.simps
+    unfolding above_l_def is_less_preferred_than_l.simps
     by metis
-  thus "b \<in> Order_Relation.above (pl_\<alpha> l) a"
+  thus "b \<in> above (pl_\<alpha> l) a"
     using less_preferred_l_rel_equiv pref_imp_in_above
     by metis
 next
   fix b :: "'a"
-  assume "b \<in> Order_Relation.above (pl_\<alpha> l) a"
+  assume "b \<in> above (pl_\<alpha> l) a"
   hence "a \<lesssim>\<^sub>l b"
     using pref_imp_in_above less_preferred_l_rel_equiv
     by metis
-  thus "b \<in> set (Preference_List.above_l l a)"
-    unfolding Preference_List.above_l_def Preference_List.is_less_preferred_than_l.simps
-              Preference_List.rank_l.simps
+  thus "b \<in> set (above_l l a)"
+    unfolding above_l_def is_less_preferred_than_l.simps rank_l.simps
     using Suc_eq_plus1 Suc_le_eq index_less_size_conv set_take_if_index le_imp_less_Suc
     by (metis (full_types))
 qed
@@ -645,10 +643,10 @@ theorem rank_equiv:
     l :: "'a Preference_List" and
     a :: "'a"
   assumes "well_formed_l l"
-  shows "rank_l l a = Preference_Relation.rank (pl_\<alpha> l) a"
+  shows "rank_l l a = rank (pl_\<alpha> l) a"
 proof (simp, safe)
   assume "a \<in> set l"
-  moreover have "Order_Relation.above (pl_\<alpha> l) a = set (above_l l a)"
+  moreover have "above (pl_\<alpha> l) a = set (above_l l a)"
     unfolding above_equiv
     by simp
   moreover have "distinct (above_l l a)"
@@ -663,15 +661,15 @@ proof (simp, safe)
     unfolding above_l_def
     using Suc_le_eq
     by (simp add: in_set_member)
-  ultimately show "Suc (index l a) = card (Order_Relation.above (pl_\<alpha> l) a)"
+  ultimately show "Suc (index l a) = card (above (pl_\<alpha> l) a)"
     by simp
 next
   assume "a \<notin> set l"
-  hence "Order_Relation.above (pl_\<alpha> l) a = {}"
-    unfolding Order_Relation.above_def
+  hence "above (pl_\<alpha> l) a = {}"
+    unfolding above_def
     using less_preferred_l_rel_equiv
     by fastforce
-  thus "card (Order_Relation.above (pl_\<alpha> l) a) = 0"
+  thus "card (above (pl_\<alpha> l) a) = 0"
     by fastforce
 qed
 
@@ -680,11 +678,11 @@ lemma lin_ord_equiv:
     A :: "'a set" and
     l :: "'a Preference_List"
   shows "linear_order_on_l A l = linear_order_on A (pl_\<alpha> l)"
-  unfolding pl_\<alpha>_def linear_order_on_l_def linear_order_on_def preorder_on_l_def refl_on_l_def
+  unfolding pl_\<alpha>_def linear_order_on_l_def linear_order_on_def refl_on_l_def
             Relation.trans_def preorder_on_l_def partial_order_on_l_def partial_order_on_def
-            total_on_l_def preorder_on_def refl_on_def trans_def antisym_def total_on_def
-            Preference_List.limited_def is_less_preferred_than_l.simps
-  by (auto simp add: index_size_conv)
+            total_on_l_def preorder_on_def refl_on_def antisym_def total_on_def
+            is_less_preferred_than_l.simps
+  by auto
 
 subsection \<open>First Occurrence Indices\<close>
 
@@ -747,30 +745,21 @@ proof (unfold relation_of_def, safe)
   moreover have "(a \<lesssim>\<^sub>l b) = (a \<preceq>\<^sub>(pl_\<alpha> l) b)"
     using less_preferred_l_rel_equiv
     by (metis (no_types))
-  ultimately have "a \<preceq>\<^sub>(pl_\<alpha> l) b"
-    by presburger
-  thus "(a, b) \<in> pl_\<alpha> l"
+  ultimately show "(a, b) \<in> pl_\<alpha> l"
     by simp
 next
   fix
     a :: "'a" and
     b :: "'a"
-  assume a_b_in_l: "(a, b) \<in> pl_\<alpha> l"
-  thus "a \<in> set l"
-    using is_less_preferred_than.simps is_less_preferred_than_l.elims(2) less_preferred_l_rel_equiv
-    by metis
-  show "b \<in> set l"
-    using a_b_in_l is_less_preferred_than.simps is_less_preferred_than_l.elims(2)
-          less_preferred_l_rel_equiv
-    by (metis (no_types))
-  have "(a \<lesssim>\<^sub>l b) = (a \<preceq>\<^sub>(pl_\<alpha> l) b)"
+  assume "(a, b) \<in> pl_\<alpha> l"
+  thus "a \<lesssim>\<^sub>l b"
     using less_preferred_l_rel_equiv
-    by (metis (no_types))
-  moreover have "a \<preceq>\<^sub>(pl_\<alpha> l) b"
-    using a_b_in_l
-    by simp
-  ultimately show "a \<lesssim>\<^sub>l b"
+    unfolding is_less_preferred_than.simps
     by metis
+  thus
+    "a \<in> set l" and
+    "b \<in> set l"
+    by (simp, simp)
 qed
 
 end

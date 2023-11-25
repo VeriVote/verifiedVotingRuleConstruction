@@ -136,7 +136,7 @@ qed
 
 text \<open>
   For a non-Condorcet winner l, we have:
-  "\<open>card {y \<in> A . wins x p y} = |A| - 1 - 1$\<close>".
+  "\<open>card {y \<in> A . wins x p y} = |A| - 2\<close>".
 \<close>
 
 lemma non_cond_winner_imp_win_count:
@@ -199,10 +199,13 @@ proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
   hence "card {y \<in> A. wins l p y} - card {y \<in> A. wins y p l} \<le> card A - 2"
     using diff_le_self order.trans
     by blast
+  moreover have "finite A"
+    using winner
+    by simp
   moreover have "card A - 2 < card A - 1"
-    using card_0_eq card_Diff_singleton diff_less_mono2 empty_iff finite_Diff insertE
-          insert_Diff l_in_A l_neq_w neq0_conv one_less_numeral_iff semiring_norm(76)
-          winner zero_less_diff
+    using card_0_eq diff_less_mono2 empty_iff l_in_A l_neq_w neq0_conv less_one
+          Suc_1 zero_less_diff add_diff_cancel_left' diff_is_0_eq Suc_eq_plus1
+          card_1_singleton_iff order_less_le singletonD le_zero_eq winner
     unfolding condorcet_winner.simps
     by metis
   ultimately have

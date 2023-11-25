@@ -47,14 +47,16 @@ fun max_eliminator :: "'a Evaluation_Function \<Rightarrow> 'a Electoral_Module"
   "max_eliminator e A p =
     less_eliminator e (Max {e x A p | x. x \<in> A}) A p"
 
-fun leq_eliminator :: "'a Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow> 'a Electoral_Module" where
+fun leq_eliminator :: "'a Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow> 'a Electoral_Module"
+  where
   "leq_eliminator e t A p = elimination_module e t (\<le>) A p"
 
 fun min_eliminator :: "'a Evaluation_Function \<Rightarrow> 'a Electoral_Module" where
   "min_eliminator e A p =
     leq_eliminator e (Min {e x A p | x. x \<in> A}) A p"
 
-fun average :: "'a Evaluation_Function \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow> Threshold_Value" where
+fun average :: "'a Evaluation_Function \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow> Threshold_Value"
+  where
   "average e A p = (\<Sum> x \<in> A. e x A p) div (card A)"
 
 fun less_average_eliminator :: "'a Evaluation_Function \<Rightarrow> 'a Electoral_Module" where
@@ -301,7 +303,7 @@ next
     by fastforce
   hence "a \<notin> reject (max_eliminator e) A p"
     by simp
-  thus "False"
+  thus False
     using rej_a
     by linarith
 next
@@ -324,8 +326,8 @@ next
     "condorcet_winner A p a" and
     "a \<in> elect (max_eliminator e) A p"
   thus "a' \<in> reject (max_eliminator e) A p"
-    using condorcet_winner.elims(2) empty_iff max_elim_non_electing
-    unfolding non_electing_def
+    using empty_iff max_elim_non_electing
+    unfolding condorcet_winner.simps non_electing_def
     by metis
 qed
 

@@ -46,7 +46,7 @@ proof (unfold plurality_rule'.simps plurality'.simps revision_composition.simps,
       card {i. i < length p \<and> above (p!i) b = {b}}" and
     "\<forall> a' \<in> A. card {i. i < length p \<and> above (p!i) a' = {a'}} \<le>
       card {i. i < length p \<and> above (p!i) a = {a}}"
-  thus "False"
+  thus False
     using leD
     by blast
 next

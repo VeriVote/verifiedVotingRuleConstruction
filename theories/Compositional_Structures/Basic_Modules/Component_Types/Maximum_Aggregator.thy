@@ -20,10 +20,10 @@ text \<open>
 subsection \<open>Definition\<close>
 
 fun max_aggregator :: "'a Aggregator" where
-  "max_aggregator A (e1, r1, d1) (e2, r2, d2) =
-    (e1 \<union> e2,
-     A - (e1 \<union> e2 \<union> d1 \<union> d2),
-     (d1 \<union> d2) - (e1 \<union> e2))"
+  "max_aggregator A (e, r, d) (e', r', d') =
+    (e \<union> e',
+     A - (e \<union> e' \<union> d \<union> d'),
+     (d \<union> d') - (e \<union> e'))"
 
 subsection \<open>Auxiliary Lemma\<close>
 

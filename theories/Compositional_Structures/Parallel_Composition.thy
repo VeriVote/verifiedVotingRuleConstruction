@@ -61,7 +61,7 @@ proof (unfold electoral_module_def, safe)
     using par_comp_result_sound
     by (metis (no_types))
   ultimately have "well_formed A (a A (m A p) (n A p))"
-    using combine_ele_rej_def assms par_comp_result_sound
+    using elect_rej_def_combination assms par_comp_result_sound
     by metis
   thus "well_formed A ((m \<parallel>\<^sub>a n) A p)"
     by simp

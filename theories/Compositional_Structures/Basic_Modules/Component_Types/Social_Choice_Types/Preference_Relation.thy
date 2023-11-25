@@ -140,19 +140,23 @@ proof (unfold connex_def limited_def, safe)
     a :: "'a" and
     b :: "'a"
   assume "(a, b) \<in> r"
-  with assms
-  show "a \<in> A"
-    using partial_order_onD(1) order_on_defs(3) refl_on_domain
-    by metis
+  moreover have "refl_on A r"
+    using assms partial_order_onD
+    unfolding linear_order_on_def
+    by safe
+  ultimately show "a \<in> A"
+    by (simp add: refl_on_domain)
 next
   fix
     a :: "'a" and
     b :: "'a"
   assume "(a, b) \<in> r"
-  with assms
-  show "b \<in> A"
-    using partial_order_onD(1) order_on_defs(3) refl_on_domain
-    by metis
+  moreover have "refl_on A r"
+    using assms partial_order_onD
+    unfolding linear_order_on_def
+    by safe
+  ultimately show "b \<in> A"
+    by (simp add: refl_on_domain)
 next
   fix
     a :: "'a" and
@@ -164,8 +168,13 @@ next
   moreover from this
   have "(b, a) \<notin> r"
     by simp
+  moreover from this
+  have "refl_on A r"
+    using assms partial_order_onD
+    unfolding linear_order_on_def
+    by blast
   ultimately have "(a, b) \<in> r"
-    using assms partial_order_onD(1) refl_onD
+    using assms refl_onD
     unfolding linear_order_on_def total_on_def
     by metis
   thus "a \<preceq>\<^sub>r b"
@@ -300,7 +309,8 @@ lemma limit_presv_lin_ord:
     "A \<subseteq> B"
   shows "linear_order_on A (limit A r)"
   using assms connex_antsym_and_trans_imp_lin_ord limit_presv_antisym limit_presv_connex
-        limit_presv_trans lin_ord_imp_connex order_on_defs(1, 2, 3)
+        limit_presv_trans lin_ord_imp_connex
+  unfolding preorder_on_def partial_order_on_def linear_order_on_def
   by metis
 
 lemma limit_presv_prefs:
@@ -541,15 +551,15 @@ proof -
           by metis
         have "\<forall> A'' r''. linear_order_on (A''::'a set) r'' \<longrightarrow> connex A'' r''"
           by (simp add: lin_ord_imp_connex)
-        hence "refl_on A' r'"
+        hence refl_A': "refl_on A' r'"
           using connex_refl lin_ord_r
           by metis
         hence "a \<in> A' \<and> b \<in> A'"
           using refl_A a_pref_r_b
           by simp
         hence b_in_r: "\<forall> a'. a' \<in> A' \<longrightarrow> b = a' \<or> (b, a') \<in> r' \<or> (a', b) \<in> r'"
-          using lin_ord_r order_on_defs(3)
-          unfolding total_on_def
+          using lin_ord_r
+          unfolding linear_order_on_def total_on_def
           by metis
         have b_in_lim_B_r: "(b, b) \<in> limit B r'"
           using alt_b mem_Collect_eq singletonI
@@ -580,9 +590,9 @@ proof -
           using b_wins
           by blast
         moreover have above_b_in_A: "above r' b \<subseteq> A'"
-          using connex_imp_refl is_less_preferred_than.elims(2) lin_ord_imp_connex
-                lin_ord_r pref_imp_in_above refl_on_domain subsetI
-          by metis
+          unfolding above_def
+          using refl_A' refl_A
+          by auto
         ultimately have "above r' b = {b}"
           using alt_b
           unfolding above_def
@@ -613,7 +623,7 @@ proof -
           by auto
         have limit_B: "partial_order_on B (limit B r') \<and> total_on B (limit B r')"
           using lin_ord_subset_A subset_B_card lin_ord_r
-          unfolding order_on_defs(3)
+          unfolding linear_order_on_def
           by metis
         have
           "\<forall> A'' r''.
@@ -811,8 +821,8 @@ proof (unfold rank.simps above_def, clarify)
   hence "(a, b) \<notin> r"
     using lin_ord lin_imp_antisym a_neq_b antisymD
     by metis
-  thus "False"
-    using lin_ord partial_order_onD(1) sets_eq b_in_A
+  thus False
+    using lin_ord partial_order_onD sets_eq b_in_A
     unfolding linear_order_on_def refl_on_def
     by blast
 qed

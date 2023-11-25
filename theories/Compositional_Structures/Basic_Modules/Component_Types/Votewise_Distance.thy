@@ -37,22 +37,19 @@ proof (unfold distance_anonymity_def, safe)
   fix
     A  :: "'a set" and
     A' :: "'a set" and
-    pi :: "nat \<Rightarrow> nat \<Rightarrow> nat" and
+    \<pi> :: "nat \<Rightarrow> nat \<Rightarrow> nat" and
     p  :: "'a Profile" and
     p' :: "'a Profile"
-  let ?z = "zip p p'" and
-      ?lt_len = "\<lambda> i. {..< length i}" and
-      ?pi_len = "\<lambda> i. pi (length i)" and
-      ?c_prod = "case_prod (\<lambda> q q'. d (A, q) (A', q'))"
-  let ?listpi = "\<lambda> q. permute_list (?pi_len q) q"
-  let ?q = "?listpi p" and
-      ?q' = "?listpi p'"
-  assume perm: "\<forall> n. pi n permutes {..< n}"
-  hence listpi_sym: "\<forall> l. ?listpi l <~~> l"
+  let ?len = "\<lambda> i. {..< length i}" and
+      ?len\<^sub>\<pi> = "\<lambda> i. \<pi> (length i)" and
+      ?prod = "case_prod (\<lambda> q q'. d (A, q) (A', q'))"
+  let ?\<pi>\<^sub>l = "\<lambda> q. permute_list (?len\<^sub>\<pi> q) q"
+  assume perm: "\<forall> n. \<pi> n permutes {..< n}"
+  hence sym\<^sub>\<pi>: "\<forall> l. ?\<pi>\<^sub>l l <~~> l"
     using mset_permute_list
     by metis
   show "votewise_distance d n (A, p) (A', p') =
-          votewise_distance d n (A, ?q) (A', ?q')"
+          votewise_distance d n (A, ?\<pi>\<^sub>l p) (A', ?\<pi>\<^sub>l p')"
   proof (cases "length p = length p' \<and> (0 < length p \<or> A = A')")
     case False
     thus ?thesis
@@ -63,18 +60,18 @@ proof (unfold distance_anonymity_def, safe)
     hence "votewise_distance d n (A, p) (A', p') =
             n (map2 (\<lambda> x y. d (A, x) (A', y)) p p')"
       by auto
-    also have "\<dots> = n (?listpi (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
-      using assms listpi_sym
+    also have "\<dots> = n (?\<pi>\<^sub>l (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
+      using assms sym\<^sub>\<pi>
       unfolding symmetry_def
       by (metis (no_types, lifting))
     also have "\<dots> = n (map (case_prod (\<lambda> x y. d (A, x) (A', y)))
-                            (?listpi (zip p p')))"
-      using permute_list_map[of \<open>?pi_len p\<close> ?z ?c_prod] perm True
+                            (?\<pi>\<^sub>l (zip p p')))"
+      using permute_list_map[of \<open>?len\<^sub>\<pi> p\<close> \<open>zip p p'\<close> ?prod] perm True
       by simp
-    also have "\<dots> = n (map2 (\<lambda> x y. d (A, x) (A', y)) (?listpi p) (?listpi p'))"
-      using permute_list_zip[of \<open>?pi_len p\<close> \<open>?lt_len p\<close> p p'] perm True
+    also have "\<dots> = n (map2 (\<lambda> x y. d (A, x) (A', y)) (?\<pi>\<^sub>l p) (?\<pi>\<^sub>l p'))"
+      using permute_list_zip[of \<open>?len\<^sub>\<pi> p\<close> \<open>?len p\<close> p p'] perm True
       by simp
-    also have "\<dots> = votewise_distance d n (A, ?listpi p) (A', ?listpi p')"
+    also have "\<dots> = votewise_distance d n (A, ?\<pi>\<^sub>l p) (A', ?\<pi>\<^sub>l p')"
       using True
       by auto
     finally show ?thesis

@@ -124,7 +124,8 @@ definition indep_of_alt :: "'a Electoral_Module \<Rightarrow> 'a set \<Rightarro
 definition unique_winner_if_profile_non_empty :: "'a Electoral_Module \<Rightarrow> bool" where
   "unique_winner_if_profile_non_empty m \<equiv>
     electoral_module m \<and>
-    (\<forall> A p. A \<noteq> {} \<and> p \<noteq> [] \<and> profile A p \<longrightarrow> (\<exists> a \<in> A. m A p = ({a}, A - {a}, {})))"
+    (\<forall> A p. A \<noteq> {} \<and> p \<noteq> [] \<and> profile A p
+      \<longrightarrow> (\<exists> a \<in> A. m A p = ({a}, A - {a}, {})))"
 
 subsection \<open>Equivalence Definitions\<close>
 
@@ -158,8 +159,8 @@ definition mod_contains_result :: "'a Electoral_Module \<Rightarrow> 'a Electora
     (a \<in> reject m A p \<longrightarrow> a \<in> reject n A p) \<and>
     (a \<in> defer m A p \<longrightarrow> a \<in> defer n A p)"
 
-definition mod_contains_result_sym :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module \<Rightarrow>
-                                      'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
+definition mod_contains_result_sym :: "'a Electoral_Module \<Rightarrow>
+              'a Electoral_Module \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "mod_contains_result_sym m n A p a \<equiv>
     electoral_module m \<and> electoral_module n \<and> profile A p \<and> a \<in> A \<and>
     (a \<in> elect m A p \<longleftrightarrow> a \<in> elect n A p) \<and>
@@ -168,7 +169,7 @@ definition mod_contains_result_sym :: "'a Electoral_Module \<Rightarrow> 'a Elec
 
 subsection \<open>Auxiliary Lemmas\<close>
 
-lemma combine_ele_rej_def:
+lemma elect_rej_def_combination:
   fixes
     m :: "'a Electoral_Module" and
     A :: "'a set" and
@@ -685,11 +686,11 @@ lemma eq_def_and_elect_imp_eq:
   shows "m A p = n A q"
 proof -
   have "reject m A p = A - ((elect m A p) \<union> (defer m A p))"
-    using mod_m prof_p combine_ele_rej_def result_imp_rej
+    using mod_m prof_p elect_rej_def_combination result_imp_rej
     unfolding electoral_module_def
     by metis
   moreover have "reject n A q = A - ((elect n A q) \<union> (defer n A q))"
-    using mod_n prof_q combine_ele_rej_def result_imp_rej
+    using mod_n prof_q elect_rej_def_combination result_imp_rej
     unfolding electoral_module_def
     by metis
   ultimately show ?thesis
@@ -1048,7 +1049,7 @@ next
     unfolding defer_deciding_def
     by fastforce
   hence "m A p = ({}, A - defer m A p, {a})"
-    using elect_empty defer_a combine_ele_rej_def
+    using elect_empty defer_a elect_rej_def_combination
     by metis
   hence "m A p = ({}, A - defer m A p, {c \<in> A. condorcet_winner A p c})"
     using cond_winner_a

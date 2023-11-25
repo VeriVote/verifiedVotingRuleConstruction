@@ -77,8 +77,8 @@ fun score_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Righta
     (if \<K>\<^sub>\<E>_std K a (alts_\<E> E) (length (prof_\<E> E)) = {}
       then \<infinity> else Min (d E ` (\<K>\<^sub>\<E>_std K a (alts_\<E> E) (length (prof_\<E> E)))))"
 
-fun \<R>\<^sub>\<W>_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow>
-                  'a set" where
+fun \<R>\<^sub>\<W>_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow> 'a set \<Rightarrow>
+                  'a Profile \<Rightarrow> 'a set" where
   "\<R>\<^sub>\<W>_std d K A p = arg_min_set (score_std d K (A, p)) A"
 
 fun distance_\<R>_std :: "'a Election Distance \<Rightarrow> 'a Consensus_Class \<Rightarrow>
@@ -128,7 +128,7 @@ proof -
     unfolding inj_on_def
     by metis
   have in_bounds: "\<forall> a \<in> A. ?\<phi> a < card A"
-    using CollectD IntD1 card_seteq inf_sup_ord(2) linorder_le_less_linear fin_A
+    using CollectD IntD1 card_seteq inf_le2 linorder_le_less_linear fin_A
     unfolding underS_def
     by (metis (mono_tags, lifting))
   hence "?\<phi> ` A \<subseteq> {0 ..< card A}"
@@ -179,7 +179,8 @@ proof -
     ultimately have "\<forall> i < card A. ?l!i = ?inv (card A - 1 - i)"
       by presburger
     moreover have
-      "card A - 1 - (card A - 1 - card (underS r a \<inter> A)) = card (underS r a \<inter> A)"
+      "card A - 1 - (card A - 1 - card (underS r a \<inter> A))
+        = card (underS r a \<inter> A)"
       using in_bounds a_in_A
       by auto
     moreover have "?inv (card (underS r a \<inter> A)) = a"
@@ -413,7 +414,7 @@ proof (cases "\<not> finite A", clarsimp)
           assume "(a, b) \<in> pl_\<alpha> l"
           thus "a \<in> set l"
             using Collect_mem_eq case_prod_eta in_rel_Collect_case_prod_eq
-                  is_less_preferred_than_l.elims(2)
+                  is_less_preferred_than_l.simps
             unfolding pl_\<alpha>_def
             by (metis (no_types))
         next
@@ -426,7 +427,7 @@ proof (cases "\<not> finite A", clarsimp)
             unfolding relation_of_def
             by simp
           ultimately show "b \<in> set l"
-            using is_less_preferred_than_l.elims(2)
+            unfolding is_less_preferred_than_l.simps
             by blast
         next
           fix
@@ -474,7 +475,7 @@ proof (cases "\<not> finite A", clarsimp)
             assume "(a, b) \<in> pl_\<alpha> l"
             thus "a \<in> set l"
               using Collect_mem_eq case_prod_eta in_rel_Collect_case_prod_eq
-                    is_less_preferred_than_l.elims(2)
+                    is_less_preferred_than_l.simps
               unfolding pl_\<alpha>_def
               by (metis (no_types))
           next
@@ -487,7 +488,7 @@ proof (cases "\<not> finite A", clarsimp)
               unfolding relation_of_def
               by simp
             ultimately show "b \<in> set l"
-              using is_less_preferred_than_l.elims(2)
+              using is_less_preferred_than_l.simps
               by blast
           next
             fix
@@ -512,22 +513,16 @@ proof (cases "\<not> finite A", clarsimp)
         qed
       qed
       let ?P = "\<lambda> l a b. rank_l l b \<le> rank_l l a"
-      have "\<forall> l a. a \<in> set l \<longrightarrow> ?P l a a"
+      have "\<forall> l. preorder_on (set l) (relation_of (?P l) (set l))"
+        unfolding preorder_on_def refl_on_def Relation.trans_def relation_of_def
+        by (safe, linarith)
+      moreover have "\<forall> l. antisym (relation_of (?P l) (set l))"
+        unfolding antisym_def relation_of_def
         by simp
-      moreover have
-        "\<forall> l a b c.
-          a \<in> set l \<longrightarrow> b \<in> set l \<longrightarrow> c \<in> set l \<longrightarrow>
-              ?P l a b \<longrightarrow> ?P l b c \<longrightarrow> ?P l a c"
-        by simp
-      moreover have
-        "\<forall> l a b. a \<in> set l \<longrightarrow> b \<in> set l \<longrightarrow> ?P l a b \<longrightarrow> ?P l b a \<longrightarrow> a = b"
-        using pos_in_list_yields_pos le_antisym
-        by metis
       ultimately have "\<forall> l. partial_order_on (set l) (relation_of (?P l) (set l))"
-        using partial_order_on_relation_ofI dual_order.refl
-        by (smt (verit, best))
+        unfolding partial_order_on_def
+        by metis
       moreover have set: "\<forall> l. l \<in> permutations_of_set A \<longrightarrow> set l = A"
-        unfolding permutations_of_setD
         by (simp add: permutations_of_setD)
       ultimately have "partial_order_on A (p'!i)"
         using relation_of
@@ -549,14 +544,10 @@ proof (cases "\<not> finite A", clarsimp)
       q :: "'a Profile" and
       p' :: "'a Profile"
     assume
-      prof_perms_eq_set_induct:
-      "profile_permutations (length q) A =
-          {q'. finite_profile A q' \<and> length q' = length q}" and
       len_eq: "length p' = length (r#q)" and
       fin_A: "finite A" and
       prof_p': "profile A p'"
-    have "\<forall> i < length (r#q). linear_order_on A (p'!i)"
-      using prof_p' len_eq
+    hence "\<forall> i < length (r#q). linear_order_on A (p'!i)"
       unfolding profile_def
       by simp
     hence "\<forall> i < length (r#q). p'!i \<in> (pl_\<alpha> ` permutations_of_set A)"
@@ -716,9 +707,9 @@ proof -
           by simp
         hence list_perm_A_empty: "pl_\<alpha> ` permutations_of_set A = {}"
           by simp
-        let ?xs = "replicate (length p) (pl_\<alpha> ` permutations_of_set A)"
+        let ?p = "replicate (length p) (pl_\<alpha> ` permutations_of_set A)"
         from list_perm_A_empty
-        have "\<forall> i < length ?xs. ?xs!i = {}"
+        have "\<forall> i < length ?p. ?p!i = {}"
           by simp
         hence "finite (listset (replicate (length p) (pl_\<alpha> ` permutations_of_set A)))"
           using listset_finiteness finite.emptyI length_replicate nth_replicate
@@ -757,20 +748,20 @@ next
     "profile A p" and
     "profile A q" and
     "p <~~> q"
-  then obtain pi where
-    pi_perm: "pi permutes {..< length p}" and
-    pq: "permute_list pi p = q"
+  then obtain \<pi> where
+    perm\<^sub>\<pi>: "\<pi> permutes {..< length p}" and
+    pq: "permute_list \<pi> p = q"
     using mset_eq_permutation
     by metis
-  let ?listpi = "permute_list pi"
-  let ?pi' = "\<lambda> n. (if n = length p then pi else id)"
-  have perm: "\<forall> n. (?pi' n) permutes {..< n}"
-    using pi_perm
+  let ?\<pi>\<^sub>l = "permute_list \<pi>"
+  let ?\<pi> = "\<lambda> n. (if n = length p then \<pi> else id)"
+  have perm: "\<forall> n. (?\<pi> n) permutes {..< n}"
+    using perm\<^sub>\<pi>
     by simp
-  let ?listpi' = "\<lambda> xs. permute_list (?pi' (length xs)) xs"
+  let ?\<pi>\<^sub>l' = "\<lambda> l. permute_list (?\<pi> (length l)) l"
   let ?m = "distance_\<R> d K"
   let ?P = "\<lambda> a A' p'. (A', p') \<in> \<K>\<^sub>\<E> K a"
-  have "\<forall> a. {(A', p') | A' p'. ?P a A' p'} = {(A', ?listpi' p') | A' p'. ?P a A' p'}"
+  have "\<forall> a. {(A', p') | A' p'. ?P a A' p'} = {(A', ?\<pi>\<^sub>l' p') | A' p'. ?P a A' p'}"
   proof (clarify)
     fix a :: "'a"
     have apply_perm: "\<forall> S x y. x <~~> y \<longrightarrow> ?P a S x \<longrightarrow> ?P a S y"
@@ -801,7 +792,7 @@ next
         by simp
     qed
     show "{(A', p') | A' p'. ?P a A' p'} =
-            {(A', ?listpi' p') | A' p'. ?P a A' p'}" (is "?X = ?Y")
+            {(A', ?\<pi>\<^sub>l' p') | A' p'. ?P a A' p'}" (is "?X = ?Y")
     proof
       show "?X \<subseteq> ?Y"
       proof
@@ -812,25 +803,25 @@ next
         assume consensus_election_E: "E \<in> {(A', p') | A' p'. ?P a A' p'}"
         hence consens_elect_E_inst: "?P a ?A ?p"
           by simp
-        show "E \<in> {(A', ?listpi' p') | A' p'. ?P a A' p'}"
+        show "E \<in> {(A', ?\<pi>\<^sub>l' p') | A' p'. ?P a A' p'}"
         proof (cases "length ?p = length p")
           case True
-          hence "permute_list (inv pi) ?p <~~> ?p"
-            using pi_perm
+          hence "permute_list (inv \<pi>) ?p <~~> ?p"
+            using perm\<^sub>\<pi>
             by (simp add: permutes_inv)
-          hence "?P a ?A (permute_list (inv pi) ?p)"
+          hence "?P a ?A (permute_list (inv \<pi>) ?p)"
             using consens_elect_E_inst apply_perm
             by presburger
-          moreover have "length (permute_list (inv pi) ?p) = length p"
+          moreover have "length (permute_list (inv \<pi>) ?p) = length p"
             using True
             by simp
           ultimately have
-            "(?A, ?listpi (permute_list (inv pi) ?p)) \<in>
-                {(A', ?listpi p') | A' p'. length p' = length p \<and> ?P a A' p'}"
+            "(?A, ?\<pi>\<^sub>l (permute_list (inv \<pi>) ?p)) \<in>
+                {(A', ?\<pi>\<^sub>l p') | A' p'. length p' = length p \<and> ?P a A' p'}"
             by auto
-          also have "permute_list pi (permute_list (inv pi) ?p) = ?p"
-            using permute_list_compose permute_list_id permutes_inv_o(2)
-                  True pi_perm
+          also have "permute_list \<pi> (permute_list (inv \<pi>) ?p) = ?p"
+            using True permute_list_compose permute_list_id perm\<^sub>\<pi> surj_iff
+                  permutes_inv permutes_inv_inv permutes_surj
             by metis
           finally show ?thesis
             by auto
@@ -848,26 +839,26 @@ next
         let
           ?A = "alts_\<E> E" and
           ?r = "prof_\<E> E"
-        assume consensus_elect_permut_E: "E \<in> {(A', ?listpi' p') | A' p'. ?P a A' p'}"
-        hence "\<exists> p'. ?r = ?listpi' p' \<and> ?P a ?A p'"
+        assume consensus_elect_permut_E: "E \<in> {(A', ?\<pi>\<^sub>l' p') | A' p'. ?P a A' p'}"
+        hence "\<exists> p'. ?r = ?\<pi>\<^sub>l' p' \<and> ?P a ?A p'"
           by auto
         then obtain p' where
-          rp': "?r = ?listpi' p'" and
+          rp': "?r = ?\<pi>\<^sub>l' p'" and
           consens_elect_inst: "?P a ?A p'"
           by metis
         show "E \<in> {(A', p') | A' p'. ?P a A' p'}"
         proof (cases "length p' = length p")
           case True
-          have "?r <~~> p'"
-            using pi_perm rp'
+          hence "length ?r = length p"
+            using rp'
+            by simp
+          moreover have "?r <~~> p'"
+            using perm\<^sub>\<pi> rp'
             by simp
           hence "?P a ?A ?r"
             unfolding rp'
             using consens_elect_inst apply_perm
             by presburger
-          moreover have "length ?r = length p"
-            using rp' True
-            by simp
           ultimately show "E \<in> {(A', p') | A' p'. ?P a A' p'}"
             by simp
         next
@@ -880,34 +871,33 @@ next
     qed
   qed
   hence "\<forall> a \<in> A. d (A, q) ` {(A', p') | A' p'. ?P a A' p'}
-             = d (A, q) ` {(A', ?listpi' p') | A' p'. ?P a A' p'}"
+             = d (A, q) ` {(A', ?\<pi>\<^sub>l' p') | A' p'. ?P a A' p'}"
     by (metis (no_types, lifting))
   hence "\<forall> a \<in> A. {d (A, q) (A', p') | A' p'. ?P a A' p'}
-             = {d (A, q) (A', ?listpi' p') | A' p'. ?P a A' p'}"
+             = {d (A, q) (A', ?\<pi>\<^sub>l' p') | A' p'. ?P a A' p'}"
     by blast
   moreover from d_anon
-  have "\<forall> a \<in> A. {d (A, p) (A', p') | A' p'. ?P a A' p'} =
-          {d (A, ?listpi' p) (A', ?listpi' p') | A' p'. ?P a A' p'}"
+  have "\<forall> a \<in> A. {d (A, p) (A', p') | A' p'. ?P a A' p'}
+            = {d (A, ?\<pi>\<^sub>l' p) (A', ?\<pi>\<^sub>l' p') | A' p'. ?P a A' p'}"
   proof (clarify)
     fix a :: "'a"
-    have "?listpi' = (\<lambda> p. permute_list (?pi' (length p)) p)"
+    have "?\<pi>\<^sub>l' = (\<lambda> p. permute_list (?\<pi> (length p)) p)"
       by simp
     from d_anon
-    have anon:
-      "\<And> A' p' A p pi. (\<forall> n. (pi n) permutes {..< n}) \<Longrightarrow>
-        d (A, p) (A', p') =
-          d (A, permute_list (pi (length p)) p)
-            (A', permute_list (pi (length p')) p')"
+    have "\<forall> A' p' \<pi>. (\<forall> n. (\<pi> n) permutes {..< n}) \<longrightarrow>
+            d (A, p) (A', p') =
+              d (A, permute_list (\<pi> (length p)) p)
+                (A', permute_list (\<pi> (length p')) p')"
       unfolding distance_anonymity_def
       by blast
-    show "{d (A, p) (A', p') | A' p'. ?P a A' p'} =
-            {d (A, ?listpi' p) (A', ?listpi' p') | A' p'. ?P a A' p'}"
-      using perm anon[of ?pi' A p]
+    thus "{d (A, p) (A', p') | A' p'. ?P a A' p'} =
+            {d (A, ?\<pi>\<^sub>l' p) (A', ?\<pi>\<^sub>l' p') | A' p'. ?P a A' p'}"
+      using perm
       unfolding distance_anonymity_def
       by simp
   qed
   hence "\<forall> a \<in> A. {d (A, p) (A', p') | A' p'. ?P a A' p'} =
-          {d (A, q) (A', ?listpi' p') | A' p'. ?P a A' p'}"
+          {d (A, q) (A', ?\<pi>\<^sub>l' p') | A' p'. ?P a A' p'}"
     using pq
     by simp
   ultimately have

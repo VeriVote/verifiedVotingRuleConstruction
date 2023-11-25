@@ -149,19 +149,19 @@ proof (unfold consensus_anonymity_def, clarify)
   assume
     perm: "p <~~> q" and
     top_cons_a: "equal_top\<^sub>\<C>' a (A, p)"
-  from perm obtain pi where
-    perm_pi: "pi permutes {..< length p}" and
-    perm_list_q: "permute_list pi p = q"
+  from perm obtain \<pi> where
+    perm\<^sub>\<pi>: "\<pi> permutes {..< length p}" and
+    list_pq\<^sub>\<pi>: "permute_list \<pi> p = q"
     using mset_eq_permutation
     by metis
   have l: "length p = length q"
     using perm perm_length
     by force
-  hence "\<forall> i < length q. pi i < length p"
-    using perm_pi permutes_in_image
+  hence "\<forall> i < length q. \<pi> i < length p"
+    using perm\<^sub>\<pi> permutes_in_image
     by fastforce
-  moreover have "\<forall> i < length q. q!i = p!(pi i)"
-    using perm_list_q
+  moreover have "\<forall> i < length q. q!i = p!(\<pi> i)"
+    using list_pq\<^sub>\<pi>
     unfolding permute_list_def
     by auto
   moreover have winner: "\<forall> i < length p. above (p!i) a = {a}"
@@ -195,19 +195,19 @@ proof (unfold consensus_anonymity_def, clarify)
   assume
     perm: "p <~~> q" and
     equal_votes_pref: "equal_vote\<^sub>\<C>' r (A, p)"
-  from perm obtain pi where
-    perm_pi: "pi permutes {..< length p}" and
-    perm_list_q: "permute_list pi p = q"
+  from perm obtain \<pi> where
+    perm\<^sub>\<pi>: "\<pi> permutes {..< length p}" and
+    list_pq\<^sub>\<pi>: "permute_list \<pi> p = q"
     using mset_eq_permutation
     by metis
   have l: "length p = length q"
     using perm perm_length
     by force
-  hence "\<forall> i < length q. pi i < length p"
-    using perm_pi permutes_in_image
+  hence "\<forall> i < length q. \<pi> i < length p"
+    using perm\<^sub>\<pi> permutes_in_image
     by fastforce
-  moreover have "\<forall> i < length q. q!i = p!(pi i)"
-    using perm_list_q
+  moreover have "\<forall> i < length q. q!i = p!(\<pi> i)"
+    using list_pq\<^sub>\<pi>
     unfolding permute_list_def
     by auto
   moreover have winner: "\<forall> i < length p. p!i = r"

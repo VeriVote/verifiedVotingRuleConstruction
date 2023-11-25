@@ -133,31 +133,32 @@ subsection \<open>Theorems\<close>
 theorem l_one_is_sym: "symmetry l_one"
 proof (unfold symmetry_def, safe)
   fix
-    xs :: "ereal list" and
-    ys :: "ereal list"
-  assume perm: "xs <~~> ys"
-  from perm obtain pi
+    l :: "ereal list" and
+    l' :: "ereal list"
+  assume perm: "l <~~> l'"
+  from perm obtain \<pi>
     where
-      pi_perm: "pi permutes {..< length xs}" and
-      pi_xs_ys: "permute_list pi xs = ys"
+      perm\<^sub>\<pi>: "\<pi> permutes {..< length l}" and
+      l\<^sub>\<pi>: "permute_list \<pi> l = l'"
     using mset_eq_permutation
     by metis
-  hence "(\<Sum> i < length xs. \<bar>ys!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!(pi i)\<bar>)"
+  from perm\<^sub>\<pi> l\<^sub>\<pi>
+  have "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!(\<pi> i)\<bar>)"
     using permute_list_nth
     by fastforce
-  also have "\<dots> = (\<Sum> i < length xs. \<bar>xs!(pi (inv pi i))\<bar>)"
-    using pi_perm permutes_inv_eq f_the_inv_into_f_bij_betw permutes_imp_bij sum.cong
-          sum_over_image_of_bijection
+  also have "\<dots> = (\<Sum> i < length l. \<bar>l!(\<pi> (inv \<pi> i))\<bar>)"
+    using perm\<^sub>\<pi> permutes_inv_eq f_the_inv_into_f_bij_betw permutes_imp_bij
+          sum.cong sum_over_image_of_bijection
     by (smt (verit, ccfv_SIG))
-  also have "\<dots> = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
-    using pi_perm permutes_inv_eq
+  also have "\<dots> = (\<Sum> i < length l. \<bar>l!i\<bar>)"
+    using perm\<^sub>\<pi> permutes_inv_eq
     by metis
-  finally have "(\<Sum> i < length xs. \<bar>ys!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
+  finally have "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!i\<bar>)"
     by simp
-  moreover have "length xs = length ys"
+  moreover have "length l = length l'"
     using perm perm_length
     by metis
-  ultimately show "l_one xs = l_one ys"
+  ultimately show "l_one l = l_one l'"
     using l_one.elims
     by metis
 qed

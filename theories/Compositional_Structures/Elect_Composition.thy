@@ -59,13 +59,15 @@ proof -
     p :: "'a Electoral_Module \<Rightarrow> 'a Profile" where
     "\<forall> m'.
       (\<not> electing m' \<and> electoral_module m' \<longrightarrow> elect m' (A m') (p m') = {})
-      \<and> (electing m' \<longrightarrow> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> elect m' A p \<noteq> {}))"
+      \<and> (electing m'
+          \<longrightarrow> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> elect m' A p \<noteq> {}))"
     using electing_def
     by metis
   moreover have "electoral_module (elector m)"
     by (simp add: module_m)
-  moreover from this have
-    "\<not> electing (elector m) \<longrightarrow> elect (elector m) (A (elector m)) (p (elector m)) \<noteq> {}"
+  moreover from this
+  have "\<not> electing (elector m)
+        \<longrightarrow> elect (elector m) (A (elector m)) (p (elector m)) \<noteq> {}"
     using Un_empty_left boolean_algebra.disj_zero_right fst_conv non_block_m
           result_presv_alts seq_comp_def_then_elect_elec_set sup_bot.eq_neutr_iff
     unfolding elect_module.simps elector.simps electing_def non_blocking_def

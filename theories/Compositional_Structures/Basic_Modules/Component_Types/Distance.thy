@@ -64,7 +64,7 @@ lemma sum_monotone:
     A :: "'a set" and
     f :: "'a \<Rightarrow> int" and
     g :: "'a \<Rightarrow> int"
-  assumes "\<forall> a \<in> A. (f a :: int) \<le> g a"
+  assumes "\<forall> a \<in> A. f a \<le> g a"
   shows "(\<Sum> a \<in> A. f a) \<le> (\<Sum> a \<in> A. g a)"
   using assms
   by (induction A rule: infinite_finite_induct, simp_all)
@@ -74,8 +74,7 @@ lemma distrib:
     A :: "'a set" and
     f :: "'a \<Rightarrow> int" and
     g :: "'a \<Rightarrow> int"
-  shows
-    "(\<Sum> a \<in> A. (f::'a \<Rightarrow> int) a) + (\<Sum> a \<in> A. g a) = (\<Sum> a \<in> A. (f a) + (g a))"
+  shows "(\<Sum> a \<in> A. f a) + (\<Sum> a \<in> A. g a) = (\<Sum> a \<in> A. f a + g a)"
   using sum.distrib
   by metis
 
@@ -153,7 +152,7 @@ subsection \<open>Spearman Distance\<close>
 fun spearman :: "'a Vote Distance" where
   "spearman (A, x) (A', y) =
     (if A = A'
-    then (\<Sum> a \<in> A. abs (int (rank x a) - int (rank y a)))
+    then \<Sum> a \<in> A. abs (int (rank x a) - int (rank y a))
     else \<infinity>)"
 
 lemma spearman_case_inf:
@@ -179,9 +178,9 @@ section \<open>Properties\<close>
 
 definition distance_anonymity :: "'a Election Distance \<Rightarrow> bool" where
   "distance_anonymity d \<equiv>
-    \<forall> A A' pi p p'.
-      (\<forall> n. (pi n) permutes {..< n}) \<longrightarrow>
+    \<forall> A A' \<pi> p p'.
+      (\<forall> n. (\<pi> n) permutes {..< n}) \<longrightarrow>
         d (A, p) (A', p') =
-          d (A, permute_list (pi (length p)) p) (A', permute_list (pi (length p')) p')"
+          d (A, permute_list (\<pi> (length p)) p) (A', permute_list (\<pi> (length p')) p')"
 
 end

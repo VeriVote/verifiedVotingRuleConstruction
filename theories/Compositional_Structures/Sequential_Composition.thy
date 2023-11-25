@@ -362,7 +362,7 @@ next
     by metis
   from ele rej def n_electing_m f_prof
   have res_m: "\<exists> a \<in> A. m A p = ({}, A - {a}, {a})"
-    using Diff_empty combine_ele_rej_def reject_not_elec_or_def
+    using Diff_empty elect_rej_def_combination reject_not_elec_or_def
     unfolding non_electing_def
     by metis
   hence "\<exists> a \<in> A. elect (m \<triangleright> n) A p = elect n {a} (limit_profile {a} p)"
@@ -645,7 +645,8 @@ theorem seq_comp_electing[simp]:
     electing_n: "electing n"
   shows "electing (m \<triangleright> n)"
 proof -
-  have defer_card_eq_one: "\<forall> A p. card A \<ge> 1 \<and> profile A p \<longrightarrow> card (defer m A p) = 1"
+  have defer_card_eq_one:
+    "\<forall> A p. card A \<ge> 1 \<and> profile A p \<longrightarrow> card (defer m A p) = 1"
     using def_one_m card.infinite not_one_le_zero
     unfolding defers_def
     by metis
@@ -1135,7 +1136,7 @@ next
     unfolding defer_condorcet_consistency_def
     by (metis (mono_tags, lifting))
   hence a'_in_rej: "a' \<in> reject m A p"
-    using Diff_iff cw_a not_cw_a' a'_in_elect_seq_m_n condorcet_winner.elims(1)
+    using Diff_iff cw_a not_cw_a' a'_in_elect_seq_m_n condorcet_winner.simps
           elect_in_alts singleton_iff sound_seq_m_n subset_iff
     by (metis (no_types))
   have "\<forall> p' A' p''. p' = (A'::'a set, p''::'a set \<times> 'a set) \<longrightarrow> snd p' = p''"
@@ -1281,8 +1282,8 @@ next
       using dcc_m snd_conv
       by (metis (no_types, lifting))
     hence "defer (m \<triangleright> n) A p = {a}"
-      using cw_a a'_in_def_seq_m_n condorcet_winner.elims(2) empty_iff seq_comp_def_set_bounded
-            sound_m subset_singletonD nb_n
+      using cw_a a'_in_def_seq_m_n condorcet_winner.simps empty_iff
+            seq_comp_def_set_bounded sound_m subset_singletonD nb_n
       unfolding non_blocking_def
       by metis
     thus "a' = a"
@@ -1315,8 +1316,8 @@ next
       using cw_a
       by metis
     ultimately show "a \<in> defer (m \<triangleright> n) A p"
-      using condorcet_winner.elims(2) cw_a electoral_mod_defer_elem empty_iff
-            sound_seq_m_n
+      using cw_a electoral_mod_defer_elem empty_iff
+            sound_seq_m_n condorcet_winner.simps
       by metis
   qed
   have "profile (defer m A p) (limit_profile (defer m A p) p)"
@@ -1332,8 +1333,8 @@ next
     using cw_a defer_eq_a
     by (metis (no_types))
   ultimately have "(m \<triangleright> n) A p = ({}, A - {a}, {a})"
-    using Diff_empty cw_a combine_ele_rej_def condorcet_winner.elims(2)
-          reject_not_elec_or_def sound_seq_m_n
+    using Diff_empty cw_a elect_rej_def_combination
+          reject_not_elec_or_def sound_seq_m_n condorcet_winner.simps
     by (metis (no_types))
   moreover have "{a' \<in> A. condorcet_winner A p a'} = {a}"
     using cw_a cond_winner_unique

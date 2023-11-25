@@ -53,8 +53,8 @@ proof (unfold standard_def, clarify)
       by force
     moreover have
       "(\<Sum> i::nat < min (length p) (length q). ereal_of_enat (\<infinity>)) = \<infinity>"
-      using finite_lessThan sum_Pinfty ereal_of_enat_simps(2) lessThan_iff min.idem
-            False not_gr_zero of_nat_eq_enat
+      using finite_lessThan sum_Pinfty lessThan_iff min.idem
+            False not_gr_zero of_nat_eq_enat ereal_of_enat_simps
       by metis
     ultimately have "l_one (map2 (\<lambda> x y. swap (C, x) (B, y)) p q) = \<infinity>"
       using C_neq_B

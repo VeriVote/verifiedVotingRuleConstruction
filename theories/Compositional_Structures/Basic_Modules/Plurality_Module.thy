@@ -82,7 +82,7 @@ next
       using max_score_contained[where A=A and e="(\<lambda> a. win_count p a)"]
             fin_prof_A nat_less_le
       by blast
-    thus "False"
+    thus False
       using non_empty_A
       by simp
   qed
