@@ -48,11 +48,6 @@ fun score ::
   \<Rightarrow> ('a, 'v) Election \<Rightarrow> 'r \<Rightarrow> ereal" where
     "score d K E w = Inf (d E ` (\<K>\<^sub>\<E> K w))"
 
-fun arg_min_set :: "('b \<Rightarrow> 'a :: ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
-  "arg_min_set f A = Collect (is_arg_min f (\<lambda> a. a \<in> A))"
-(* fun arg_min_set' :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
-   "arg_min_set_' f A = Set.filter (is_arg_min f (\<lambda> a. a \<in> A)) A" *)
-
 fun (in result) \<R>\<^sub>\<W> :: 
 "('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class 
   \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
@@ -135,14 +130,30 @@ where
 
 subsection \<open>Auxiliary Lemmas\<close>
 
-lemma arg_min_subset: 
-  fixes 
-    B :: "'b set" and
-    f :: "('b \<Rightarrow> 'a :: ord)"
-  shows 
-    "arg_min_set f B \<subseteq> B"
-proof (auto, unfold is_arg_min_def, simp) 
+lemma \<K>_els_fin:
+  fixes
+    C :: "('a, 'v, 'r Result) Consensus_Class"
+  shows
+    "\<K>_els C \<subseteq> finite_elections"
+proof
+  fix 
+    E :: "('a,'v) Election"
+  assume 
+    "E \<in> \<K>_els C"
+  hence "finite_election E"
+    unfolding \<K>\<^sub>\<E>.simps
+    by force
+  thus "E \<in> finite_elections"
+    unfolding finite_elections_def
+    by simp
 qed
+
+lemma \<K>_els_univ:
+  fixes
+    C :: "('a, 'v, 'r Result) Consensus_Class"
+  shows
+    "\<K>_els C \<subseteq> UNIV"
+  by simp
 
 lemma list_cons_presv_finiteness:
   fixes

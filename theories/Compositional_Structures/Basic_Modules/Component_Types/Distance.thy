@@ -57,6 +57,20 @@ definition standard :: "('a, 'v) Election Distance \<Rightarrow> bool" where
 
 subsection \<open>Auxiliary Lemmas\<close>
 
+fun arg_min_set :: "('b \<Rightarrow> 'a :: ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
+  "arg_min_set f A = Collect (is_arg_min f (\<lambda> a. a \<in> A))"
+(* fun arg_min_set' :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
+   "arg_min_set_' f A = Set.filter (is_arg_min f (\<lambda> a. a \<in> A)) A" *)
+
+lemma arg_min_subset: 
+  fixes 
+    B :: "'b set" and
+    f :: "('b \<Rightarrow> 'a :: ord)"
+  shows 
+    "arg_min_set f B \<subseteq> B"
+proof (auto, unfold is_arg_min_def, simp) 
+qed
+
 lemma sum_monotone:
   fixes
     A :: "'a set" and
