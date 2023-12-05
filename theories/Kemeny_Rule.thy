@@ -9,6 +9,7 @@ theory Kemeny_Rule
   imports 
     "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance_Rationalization"
     "Compositional_Structures/Basic_Modules/Component_Types/Consensus_Symmetry"
+    "Compositional_Structures/Basic_Modules/Component_Types/Distance_Rationalization_Symmetry"
 begin
 
 text \<open>
@@ -33,18 +34,6 @@ theorem kemeny_rule_sound: "social_choice_result.electoral_module kemeny_rule"
 
 subsection \<open>Anonymity Property\<close>
 
-(*
-
-inv_d: "invariant_dist d (carrier anon_group) finite_elections \<phi>_anon" and
-closed_C: 
-  "rel \<inter> ((\<K>_els C) \<times> finite_elections) \<subseteq> 
-    (rel_induced_by_action (carrier anon_group) \<phi>_anon (\<K>_els C))" and
-inv_C: 
-  "invariant (elect_r \<circ> (on_els (rule_\<K> C))) 
-             (rel_induced_by_action (carrier anon_group) \<phi>_anon (\<K>_els C))"
-
-*)
-
 theorem kemeny_rule_anonymous: "social_choice_result.anonymity kemeny_rule"
 proof (unfold kemeny_rule.simps swap_\<R>.simps)
   let ?swap_dist = "votewise_distance swap l_one"
@@ -61,19 +50,18 @@ qed
 subsection \<open>Neutrality Property\<close>
 
 theorem kemeny_rule_neutral: 
-  "equivariant (on_els kemeny_rule) (carrier neutr_group) UNIV 
-                \<phi>_neutr (\<lambda>g. apply_to_res (\<psi>_neutr_soc_choice g))"
+  "social_choice_properties.neutr_mod valid_elections kemeny_rule"
 proof -
   let ?swap_dist = "votewise_distance swap l_one"
-  have "invariant_dist ?swap_dist (carrier neutr_group) UNIV \<phi>_neutr"
+  have "neutr_dist valid_elections ?swap_dist"
     sorry
-  thus
-    "equivariant (on_els kemeny_rule) (carrier neutr_group) UNIV 
-                  \<phi>_neutr (\<lambda>g. apply_to_res (\<psi>_neutr_soc_choice g))"
-    using strong_unanimity_neutral strong_unanimity_closed_under_neutrality
-          neutral_dist_and_cons_imp_neutral_dr[of ?swap_dist strong_unanimity]
+  thus ?thesis
+    using strong_unanimity_neutral 
+          strong_unanimity_closed_under_neutrality
+          social_choice_properties.neutr_dist_and_cons_imp_neutr_dr[of 
+            ?swap_dist strong_unanimity]
     unfolding kemeny_rule.simps swap_\<R>.simps
-    by (metis (no_types))
+    by blast
 qed
 
 subsection \<open>Datatype Instantiation\<close>

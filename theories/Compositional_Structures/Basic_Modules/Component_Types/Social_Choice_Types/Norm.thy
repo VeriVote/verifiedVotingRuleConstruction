@@ -20,6 +20,7 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
+(* Infinite case? - Norms on sequences instead of lists *)
 type_synonym Norm = "ereal list \<Rightarrow> ereal"
 
 definition norm :: "Norm \<Rightarrow> bool" where

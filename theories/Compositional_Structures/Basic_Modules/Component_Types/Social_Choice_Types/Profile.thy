@@ -57,6 +57,9 @@ definition profile :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profil
 abbreviation finite_profile :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> bool" where
   "finite_profile V A p \<equiv> finite A \<and> finite V \<and> profile V A p"
 
+abbreviation finite_election :: "('a,'v) Election \<Rightarrow> bool" where
+  "finite_election E \<equiv> finite_profile (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E)"
+
 definition finite_elections :: "('a, 'v) Election set" where
   "finite_elections = 
     {el :: ('a, 'v) Election. finite_profile (votrs_\<E> el) (alts_\<E> el) (prof_\<E> el)}"
@@ -142,8 +145,9 @@ lemma rename_surj:
     p :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assumes 
-    bij: "bij \<pi>"
-  shows "\<exists> A' V' p'. finite_profile V' A' p' \<and> (A, V, p) = rename \<pi> (A', V', p')"
+    bij: "bij \<pi>" and
+    prof: "profile V A p"
+  shows "\<exists>A' V' p'. profile V' A' p' \<and> (A, V, p) = rename \<pi> (A', V', p')"
   sorry
 
 text \<open>

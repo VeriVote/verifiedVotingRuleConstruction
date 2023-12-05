@@ -8,7 +8,6 @@ section \<open>Votewise Distance\<close>
 theory Votewise_Distance
   imports "Social_Choice_Types/Norm"
           "Distance"
-          "Symmetry_Properties"
 begin
 
 text \<open>

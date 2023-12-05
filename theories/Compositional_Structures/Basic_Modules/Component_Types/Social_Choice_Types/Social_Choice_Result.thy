@@ -119,6 +119,7 @@ proof (safe)
     by simp
   ultimately show "a \<in> A"
     using UnCI snd_conv
+    unfolding defer_r.simps
     by metis
 qed
 
@@ -142,6 +143,7 @@ proof (safe)
     by simp
   ultimately show "a \<in> A"
     using UnCI assms fst_conv
+    unfolding elect_r.simps
     by metis
 qed
 
@@ -165,6 +167,7 @@ proof (safe)
     by simp
   ultimately show "a \<in> A"
     using UnCI assms fst_conv snd_conv disjoint3.cases
+    unfolding reject_r.simps
     by metis
 qed
 

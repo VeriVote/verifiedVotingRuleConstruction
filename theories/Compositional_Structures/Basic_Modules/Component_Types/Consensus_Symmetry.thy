@@ -1,70 +1,65 @@
 theory Consensus_Symmetry
-  imports Symmetry_Properties
-
+  imports Distance_Rationalization_Symmetry
 begin
 
-section \<open>TODO\<close>
+subsection \<open>Definitions\<close>
+
+subsection \<open>Auxiliary Lemmas\<close>
 
 theorem cons_conjunction_invariant:
   fixes
-    C_set :: "('a,'v) Consensus set" and
-    rel :: "('a,'v) Election rel"
+    \<CC> :: "('a, 'v) Consensus set" and
+    rel :: "('a, 'v) Election rel"
   defines 
-    "C \<equiv> (\<lambda>E. (\<forall>C' \<in> C_set. C' E))"
+    "C \<equiv> (\<lambda>E. (\<forall>C' \<in> \<CC>. C' E))"
   assumes
-    "\<And>C'. C' \<in> C_set \<Longrightarrow> invariant C' rel"
-  shows "invariant C rel"
-proof (unfold invariant_def, standard, standard, standard)
+    "\<And>C'. C' \<in> \<CC> \<Longrightarrow> has_prop C' (Invariance rel)"
+  shows "has_prop C (Invariance rel)"
+proof (unfold has_prop.simps, standard, standard, standard)
   fix
     E :: "('a,'v) Election" and
     E' :: "('a,'v) Election"
   assume
     "(E,E') \<in> rel"
-  hence "\<forall>C' \<in> C_set. C' E = C' E'"
+  hence "\<forall>C' \<in> \<CC>. C' E = C' E'"
     using assms
-    unfolding invariant_def
+    unfolding has_prop.simps
     by blast
   thus "C E = C E'"
     unfolding C_def
     by blast
 qed
 
-section \<open>Neutrality\<close>
-
-abbreviation neutr_rel :: "('a,'v) Election rel"
-  where "neutr_rel \<equiv> (rel_induced_by_action (carrier neutr_group) \<phi>_neutr UNIV)"
+subsection \<open>Neutrality\<close>
 
 lemma nonempty_set\<^sub>\<C>_inv_neutr:
-  "invariant nonempty_set\<^sub>\<C> neutr_rel"
+  "has_prop nonempty_set\<^sub>\<C> (Invariance (neutr_rel valid_elections))"
   sorry
 
 lemma nonempty_profile\<^sub>\<C>_inv_neutr:
-  "invariant nonempty_profile\<^sub>\<C> neutr_rel"
+  "has_prop nonempty_profile\<^sub>\<C> (Invariance (neutr_rel valid_elections))"
   sorry
     
 lemma equal_vote\<^sub>\<C>_inv_neutr:
-  "invariant equal_vote\<^sub>\<C> neutr_rel"
+  "has_prop equal_vote\<^sub>\<C> (Invariance (neutr_rel valid_elections))"
   sorry
 
 lemma strong_unanimity\<^sub>\<C>_inv_neutr: 
-  "invariant strong_unanimity\<^sub>\<C> neutr_rel"
+  "has_prop strong_unanimity\<^sub>\<C> (Invariance (neutr_rel valid_elections))"
   using nonempty_set\<^sub>\<C>_inv_neutr equal_vote\<^sub>\<C>_inv_neutr nonempty_profile\<^sub>\<C>_inv_neutr 
-        cons_conjunction_invariant[of "{nonempty_set\<^sub>\<C>, nonempty_profile\<^sub>\<C>, equal_vote\<^sub>\<C>}" neutr_rel]
+        cons_conjunction_invariant[of 
+          "{nonempty_set\<^sub>\<C>, nonempty_profile\<^sub>\<C>, equal_vote\<^sub>\<C>}" "neutr_rel valid_elections"]
   unfolding strong_unanimity\<^sub>\<C>.simps
-  by auto
+  by fastforce
 
 lemma strong_unanimity_neutral:
-  shows
-      "equivariant (elect_r \<circ> (on_els (rule_\<K> strong_unanimity))) (carrier neutr_group) UNIV 
-                                                    \<phi>_neutr (\<lambda>g. \<lambda>S. \<psi>_neutr_soc_choice g ` S)"
+  shows "social_choice_properties.cons_neutr strong_unanimity"
   sorry
 
 lemma strong_unanimity_closed_under_neutrality:
-  shows 
-      "(rel_induced_by_action (carrier neutr_group) \<phi>_neutr UNIV) \<inter> 
-          ((\<K>_els strong_unanimity) \<times> UNIV) 
-        \<subseteq> (rel_induced_by_action (carrier neutr_group) \<phi>_neutr (\<K>_els strong_unanimity))"
-proof (unfold equivariant_def rel_induced_by_action_def neutr_group_def, safe, simp)
+  "neutr_rel valid_elections \<inter> (\<K>_els strong_unanimity) \<times> valid_elections \<subseteq> 
+    (neutr_rel (\<K>_els strong_unanimity))"
+proof (unfold valid_elections_def neutr_rel.simps rel_induced_by_action.simps, clarify)
   fix
     A :: "'a set" and
     V :: "'b set" and
@@ -72,58 +67,73 @@ proof (unfold equivariant_def rel_induced_by_action_def neutr_group_def, safe, s
     A' :: "'a set" and
     V' :: "'b set" and
     p' :: "('a, 'b) Profile" and
-    x :: "'a \<Rightarrow> 'a" and
+    \<pi> :: "'a \<Rightarrow> 'a" and
     a :: 'a
   assume
+    prof: "on_els profile (A, V, p)" and
     cons: "(A, V, p) \<in> \<K>\<^sub>\<E> strong_unanimity a" and
-    bij: "x \<in> carrier (BijGroup UNIV)" and
-    img: "\<phi>_neutr x (A, V, p) = (A', V', p')"
-  thus "\<exists>x \<in> carrier (BijGroup UNIV). \<phi>_neutr x (A, V, p) = (A', V', p')"
-    by blast
-  from cons have "(A,V,p) \<in> finite_elections"
+    bij: "\<pi> \<in> carrier neutr_group" and
+    img: "\<phi>_neutr \<pi> (A, V, p) = (A', V', p')"
+  hence "(A, V, p) \<in> finite_elections"
     unfolding \<K>\<^sub>\<E>.simps finite_elections_def
     by simp
-  hence "(A',V',p') \<in> finite_elections"
-    using bij img bij_fin_neutr bij_car_el
-    by (metis bij_betw_apply)
-  hence fin': "finite_profile V' A' p'"
+  hence fin': "(A', V', p') \<in> finite_elections"
+    using bij img
+    sorry
+  hence prof': "finite_profile V' A' p'"
     unfolding finite_elections_def
     by simp
-  have "((A,V,p), (A',V',p')) \<in> (rel_induced_by_action (carrier neutr_group) \<phi>_neutr UNIV)"
-    using bij img
-    unfolding rel_induced_by_action_def neutr_group_def
-    by (metis (mono_tags, lifting) CollectI UNIV_I UNIV_Times_UNIV case_prodI)
-  moreover have "strong_unanimity\<^sub>\<C> (A,V,p)"
+  have "((A, V, p), (A', V', p')) \<in> neutr_rel valid_elections"
+    using bij img \<open>(A', V', p') \<in> finite_elections\<close> \<open>(A, V, p) \<in> finite_elections\<close>
+    unfolding neutr_rel.simps rel_induced_by_action.simps neutr_group_def 
+              finite_elections_def valid_elections_def 
+    by blast
+  moreover have "strong_unanimity\<^sub>\<C> (A, V, p)"
     using cons
     unfolding \<K>\<^sub>\<E>.simps strong_unanimity_def
     by simp
-  ultimately have cons': "strong_unanimity\<^sub>\<C> (A',V',p')"
+  ultimately have cons': "strong_unanimity\<^sub>\<C> (A', V', p')"
     using strong_unanimity\<^sub>\<C>_inv_neutr
-    unfolding invariant_def
-    by blast
-  have "elect V' (rule_\<K> strong_unanimity) A' p' = 
-          (elect_r \<circ> on_els (rule_\<K> strong_unanimity)) (\<phi>_neutr x (A, V, p))"
+    by force
+  have "elect (rule_\<K> strong_unanimity) V' A' p' = 
+          (elect_r \<circ> on_els (rule_\<K> strong_unanimity)) (\<phi>_neutr \<pi> (A, V, p))"
     using img
     by simp
   also have 
-    "(elect_r \<circ> on_els (rule_\<K> strong_unanimity)) (\<phi>_neutr x (A, V, p)) = 
-        \<psi>_neutr_soc_choice x ` ((elect_r \<circ> on_els (rule_\<K> strong_unanimity)) (A,V,p))"
-    using strong_unanimity_neutral 
-    unfolding \<K>\<^sub>\<E>.simps equivariant_def neutr_group_def
-    using bij
+    "(elect_r \<circ> on_els (rule_\<K> strong_unanimity)) (\<phi>_neutr \<pi> (A, V, p)) = 
+        \<psi>_neutr_soc_choice \<pi> ` ((elect_r \<circ> on_els (rule_\<K> strong_unanimity)) (A, V, p))"
+    using strong_unanimity_neutral bij rewrite_equivar_ind_by_act[of
+            "elect_r \<circ> on_els (rule_\<K> strong_unanimity)" "carrier neutr_group"
+            valid_elections \<phi>_neutr "set_action \<psi>_neutr_soc_choice"]
+          \<open>(A, V, p) \<in> finite_elections\<close> \<open>(A', V', p') \<in> finite_elections\<close> img
+    unfolding social_choice_properties.cons_neutr.simps set_action.simps 
+              finite_elections_def valid_elections_def
     sorry
-  also have "(elect_r \<circ> on_els (rule_\<K> strong_unanimity)) (A,V,p) = {a}"
+  also have "(elect_r \<circ> on_els (rule_\<K> strong_unanimity)) (A, V, p) = {a}"
     using cons
     unfolding \<K>\<^sub>\<E>.simps
     by simp
-  finally have "elect V' (rule_\<K> strong_unanimity) A' p' = {\<psi>_neutr_soc_choice x a}"
+  finally have "elect (rule_\<K> strong_unanimity) V' A' p' = {\<psi>_neutr_soc_choice \<pi> a}"
     by blast
-  hence "(A',V',p') \<in> \<K>\<^sub>\<E> strong_unanimity (\<psi>_neutr_soc_choice x a)"
+  hence "(A', V', p') \<in> \<K>\<^sub>\<E> strong_unanimity (\<psi>_neutr_soc_choice \<pi> a)"
     unfolding \<K>\<^sub>\<E>.simps strong_unanimity_def consensus_choice.simps
-    using fin' cons'
-    by auto
-  thus "(A',V',p') \<in> \<K>_els strong_unanimity"
+    using cons' fin' prof'
     by simp
+  hence "(A', V', p') \<in> \<K>_els strong_unanimity"
+    by simp
+  hence "((A, V, p), (A', V', p'))
+          \<in> \<Union> (range (\<K>\<^sub>\<E> strong_unanimity)) \<times> \<Union> (range (\<K>\<^sub>\<E> strong_unanimity))"
+    using cons 
+    by blast
+  moreover have "\<exists>\<pi> \<in> carrier neutr_group. \<phi>_neutr \<pi> (A, V, p) = (A', V', p')"
+    using img bij 
+    unfolding neutr_group_def
+    by blast
+  ultimately show
+    "((A, V, p), (A', V', p'))
+          \<in> \<Union> (range (\<K>\<^sub>\<E> strong_unanimity)) \<times> \<Union> (range (\<K>\<^sub>\<E> strong_unanimity)) \<and>
+     (\<exists>\<pi> \<in> carrier neutr_group. \<phi>_neutr \<pi> (A, V, p) = (A', V', p'))"
+    by blast
 qed
 
 section \<open>Homogeneity\<close>

@@ -33,7 +33,7 @@ fun \<K>\<^sub>\<E> ::
 "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> ('a, 'v) Election set" where
   "\<K>\<^sub>\<E> K w =
     {(A, V, p) | A V p. (consensus_\<K> K) (A, V, p) \<and> finite_profile V A p 
-                  \<and> elect V (rule_\<K> K) A p = {w}}" (* use profile instead of finite_profile? *)
+                  \<and> elect (rule_\<K> K) V A p = {w}}" (* use profile instead of finite_profile? *)
 
 abbreviation \<K>_els :: "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> ('a, 'v) Election set" where
   "\<K>_els K \<equiv> \<Union> ((\<K>\<^sub>\<E> K) ` UNIV)"
@@ -100,7 +100,7 @@ fun \<K>\<^sub>\<E>_std ::
 "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> 'a set \<Rightarrow> 'v set \<Rightarrow> ('a, 'v) Election set" where
   "\<K>\<^sub>\<E>_std K w A V =
     (\<lambda> p. (A, V, p)) ` (Set.filter 
-                          (\<lambda> p. (consensus_\<K> K) (A, V, p) \<and> elect V (rule_\<K> K) A p = {w})
+                          (\<lambda> p. (consensus_\<K> K) (A, V, p) \<and> elect (rule_\<K> K) V A p = {w})
                           (all_profiles V A))"
 
 text \<open>
@@ -1127,7 +1127,7 @@ next
         renamed: "(A', V', p') = rename \<pi> (A, V, p)" and
         consensus: "(A, V, p) \<in> \<K>\<^sub>\<E> K w"
       hence cons: "(consensus_\<K> K) (A, V, p) \<and> finite_profile V A p                
-                \<and> elect V (rule_\<K> K) A p = {w}"
+                \<and> elect (rule_\<K> K) V A p = {w}"
         by simp
       hence fin_img: "finite_profile V' A' p'" 
         using renamed bij rename.simps fst_conv rename_finite
@@ -1136,7 +1136,7 @@ next
         using K_anon renamed bij cons
         unfolding consensus_rule_anonymity_def Let_def
         by simp
-      hence "elect V' (rule_\<K> K) A' p' = {w}"
+      hence "elect (rule_\<K> K) V' A' p' = {w}"
         using cons
         by simp
       thus "(A', V', p') \<in> \<K>\<^sub>\<E> K w"
@@ -1172,7 +1172,7 @@ next
       moreover have "?inv \<in> \<K>\<^sub>\<E> K w"
       proof -
         have cons: "(consensus_\<K> K) (A, V, p) \<and> finite_profile V A p                
-                \<and> elect V (rule_\<K> K) A p = {w}"
+                \<and> elect (rule_\<K> K) V A p = {w}"
           using consensus
           by simp
         moreover have bij_inv: "bij (the_inv \<pi>)" 
@@ -1188,7 +1188,7 @@ next
           using K_anon renamed bij cons
           unfolding consensus_rule_anonymity_def Let_def
           by simp
-        hence "elect (fst (snd ?inv)) (rule_\<K> K) (fst ?inv) (snd (snd ?inv)) = {w}"
+        hence "elect (rule_\<K> K) (fst (snd ?inv)) (fst ?inv) (snd (snd ?inv)) = {w}"
           using cons
           by simp
         thus ?thesis

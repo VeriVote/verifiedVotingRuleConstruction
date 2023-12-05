@@ -18,6 +18,5 @@ fun well_formed_welfare :: "'a set \<Rightarrow> ('a Preference_Relation) Result
 fun limit_set_welfare :: 
   "'a set \<Rightarrow> ('a Preference_Relation) set \<Rightarrow> ('a Preference_Relation) set" where 
   "limit_set_welfare A res = {limit A r | r. r \<in> res \<and> linear_order_on A (limit A r)}"
-(* TODO first result assumption does not hold like that *)
 
 end

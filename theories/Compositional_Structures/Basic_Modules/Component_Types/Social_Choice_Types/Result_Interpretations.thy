@@ -16,11 +16,11 @@ text \<open>
 setup Locale_Code.open_block
 
 global_interpretation social_choice_result:
-  result "well_formed_soc_choice" "limit_set_soc_choice" 
+  result well_formed_soc_choice limit_set_soc_choice
 proof (unfold_locales, auto) qed
 
 global_interpretation social_welfare_result:
-  result "well_formed_welfare" "limit_set_welfare"
+  result well_formed_welfare limit_set_welfare
 proof (unfold_locales, safe)
   fix 
     A :: "'a set" and
