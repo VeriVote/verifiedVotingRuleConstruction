@@ -12,12 +12,14 @@ theory Distance
 begin
 
 text \<open>
-  A general distance on a set X is a mapping d : X x X to R union {+\<infinity>} such
-  that for every x, y, z in X the following four conditions are satisfied:
-  - d(x, y) >= 0 (nonnegativity);
-  - d(x, y) = 0 if and only if x = y (identity of indiscernibles);
-  - d(x, y) = d(y, x) (symmetry);
-  - d(x, y) <= d(x, z) + d(z, y) (triangle inequality).
+  A general distance on a set X is a mapping \<open>d: X \<times> X \<mapsto> R \<union> {+\<infinity>}\<close> such
+  that for every \<open>x, y, z\<close> in X, the following four conditions are satisfied:
+  \<^item> \<open>d(x, y) \<ge> 0\<close> (nonnegativity);
+  \<^item> \<open>d(x, y) = 0\<close> if and only if \<open>x = y\<close> (identity of indiscernibles);
+  \<^item> \<open>d(x, y) = d(y, x)\<close> (symmetry);
+  \<^item> \<open>d(x, y) \<le> d(x, z) + d(z, y)\<close> (triangle inequality).
+
+
   Moreover, a mapping that satisfies all but the second conditions is called
   a pseudodistance, whereas a quasidistance needs to satisfy the first three
   conditions (and not necessarily the last one).
@@ -28,18 +30,18 @@ subsection \<open>Definition\<close>
 type_synonym 'a Distance = "'a \<Rightarrow> 'a \<Rightarrow> ereal"
 
 definition distance :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
-  "distance S d \<equiv> \<forall> x y. (x \<in> S \<and> y \<in> S) \<longrightarrow> (d x x = 0 \<and> 0 \<le> d x y)"
+  "distance S d \<equiv> \<forall> x y. x \<in> S \<and> y \<in> S \<longrightarrow> d x x = 0 \<and> 0 \<le> d x y"
 
 subsection \<open>Conditions\<close>
 
 definition symmetric :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
-  "symmetric S d \<equiv> \<forall> x y. (x \<in> S \<and> y \<in> S) \<longrightarrow> d x y = d y x"
+  "symmetric S d \<equiv> \<forall> x y. x \<in> S \<and> y \<in> S \<longrightarrow> d x y = d y x"
 
 definition triangle_ineq :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
-  "triangle_ineq S d \<equiv> \<forall> x y z. (x \<in> S \<and> y \<in> S \<and> z \<in> S) \<longrightarrow> d x z \<le> d x y + d y z"
+  "triangle_ineq S d \<equiv> \<forall> x y z. x \<in> S \<and> y \<in> S \<and> z \<in> S \<longrightarrow> d x z \<le> d x y + d y z"
 
 definition eq_if_zero :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
-  "eq_if_zero S d \<equiv> \<forall> x y. (x \<in> S \<and> y \<in> S) \<longrightarrow> d x y = 0 \<longrightarrow> x = y"
+  "eq_if_zero S d \<equiv> \<forall> x y. x \<in> S \<and> y \<in> S \<longrightarrow> d x y = 0 \<longrightarrow> x = y"
 
 definition vote_distance :: "('a Vote set \<Rightarrow> 'a Vote Distance \<Rightarrow> bool) \<Rightarrow>
                                           'a Vote Distance \<Rightarrow> bool" where
@@ -76,7 +78,7 @@ lemma sum_monotone:
     A :: "'a set" and
     f :: "'a \<Rightarrow> int" and
     g :: "'a \<Rightarrow> int"
-  assumes "\<forall> a \<in> A. (f a :: int) \<le> g a"
+  assumes "\<forall> a \<in> A. f a \<le> g a"
   shows "(\<Sum> a \<in> A. f a) \<le> (\<Sum> a \<in> A. g a)"
   using assms
   by (induction A rule: infinite_finite_induct, simp_all)
@@ -86,7 +88,7 @@ lemma distrib:
     A :: "'a set" and
     f :: "'a \<Rightarrow> int" and
     g :: "'a \<Rightarrow> int"
-  shows "(\<Sum> a \<in> A. (f::'a \<Rightarrow> int) a) + (\<Sum> a \<in> A. g a) = (\<Sum> a \<in> A. (f a) + (g a))"
+  shows "(\<Sum> a \<in> A. f a) + (\<Sum> a \<in> A. g a) = (\<Sum> a \<in> A. f a + g a)"
   using sum.distrib
   by metis
 
@@ -95,8 +97,8 @@ lemma distrib_ereal:
     A :: "'a set" and
     f :: "'a \<Rightarrow> int" and
     g :: "'a \<Rightarrow> int"
-  shows "ereal (real_of_int ((\<Sum> a \<in> A. (f::'a \<Rightarrow> int) a) + (\<Sum> a \<in> A. g a)))
-          = ereal (real_of_int ((\<Sum> a \<in> A. (f a) + (g a))))"
+  shows "ereal (real_of_int ((\<Sum> a \<in> A. (f::'a \<Rightarrow> int) a) + (\<Sum> a \<in> A. g a))) =
+    ereal (real_of_int ((\<Sum> a \<in> A. (f a) + (g a))))"
   using distrib[of f]
   by simp
 
@@ -111,16 +113,18 @@ lemma uneq_ereal:
 
 subsection \<open>Swap Distance\<close>
 
-fun neq_ord :: "'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" where
+fun neq_ord :: "'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
+                  'a \<Rightarrow> 'a \<Rightarrow> bool" where
   "neq_ord r s a b = ((a \<preceq>\<^sub>r b \<and> b \<preceq>\<^sub>s a) \<or> (b \<preceq>\<^sub>r a \<and> a \<preceq>\<^sub>s b))"
 
-fun pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
-                                      ('a \<times> 'a) set" where
+fun pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow>
+                                'a Preference_Relation \<Rightarrow> ('a \<times> 'a) set" where
   "pairwise_disagreements A r s = {(a, b) \<in> A \<times> A. a \<noteq> b \<and> neq_ord r s a b}"
 
-fun pairwise_disagreements' :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
-                                      ('a \<times> 'a) set" where
-  "pairwise_disagreements' A r s = Set.filter (\<lambda> (a, b). a \<noteq> b \<and> neq_ord r s a b) (A \<times> A)"
+fun pairwise_disagreements' :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow>
+                                'a Preference_Relation \<Rightarrow> ('a \<times> 'a) set" where
+  "pairwise_disagreements' A r s =
+      Set.filter (\<lambda> (a, b). a \<noteq> b \<and> neq_ord r s a b) (A \<times> A)"
 
 lemma set_eq_filter:
   fixes
@@ -162,7 +166,7 @@ subsection \<open>Spearman Distance\<close>
 fun spearman :: "'a Vote Distance" where
   "spearman (A, x) (A', y) =
     (if A = A'
-    then (\<Sum> a \<in> A. abs (int (rank x a) - int (rank y a)))
+    then \<Sum> a \<in> A. abs (int (rank x a) - int (rank y a))
     else \<infinity>)"
 
 lemma spearman_case_inf:
@@ -179,7 +183,8 @@ lemma spearman_case_fin:
     x :: "'a Vote" and
     y :: "'a Vote"
   assumes "alts_\<V> x = alts_\<V> y"
-  shows "spearman x y = (\<Sum> a \<in> alts_\<V> x. abs (int (rank (pref_\<V> x) a) - int (rank (pref_\<V> y) a)))"
+  shows "spearman x y =
+    (\<Sum> a \<in> alts_\<V> x. abs (int (rank (pref_\<V> x) a) - int (rank (pref_\<V> y) a)))"
   using assms
   by (induction rule: spearman.induct, simp)
 

@@ -12,7 +12,10 @@ theory Votewise_Distance_Rationalization
 begin
 
 text \<open>
-  TODO
+  A votewise distance rationalization of a voting rule is its distance
+  rationalization with a distance function that depends on the submitted votes
+  in a simple and a transparent manner by using a distance on individual orders
+  and combining the components with a norm on R to n.
 \<close>
 
 subsection \<open>Common Rationalizations\<close>

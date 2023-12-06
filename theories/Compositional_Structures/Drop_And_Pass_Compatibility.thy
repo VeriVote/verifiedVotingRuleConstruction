@@ -57,7 +57,7 @@ next
   hence "card {a \<in> A. card (above (limit A r) a) \<le> 0} = 0"
     using card.empty
     by (metis (full_types))
-  thus "card (reject V (drop_module 0 r) A p) = 0"
+  thus "card (reject (drop_module 0 r) V A p) = 0"
     by simp
 qed
 
@@ -174,9 +174,9 @@ next
     "{a \<in> A. rank (limit A r) a \<in> {1..n}} = {a \<in> A. rank (limit A r) a \<le> n}"
     using geq_1 
     by auto
-  also have "... = reject V (drop_module n r) A p"
+  also have "... = reject (drop_module n r) V A p"
     by simp
-  finally show "card (reject V (drop_module n r) A p) = n"
+  finally show "card (reject (drop_module n r) V A p) = n"
     by blast
 qed
 
@@ -200,49 +200,48 @@ next
     by simp
 next
   fix A :: "'a set" and V :: "'b set"
-  assume fin_A: "finite A" and fin_V: "finite V"
   have "linear_order_on A (limit A r)" 
     using assms limit_presv_lin_ord 
     by blast
-  hence "finite_profile V A (\<lambda>v. (limit A r))"
-    using fin_A fin_V profile_def 
+  hence "profile V A (\<lambda>v. (limit A r))"
+    using profile_def 
     by blast
   then obtain p :: "('a, 'b) Profile" where
-    "finite_profile V A p"
+    "profile V A p"
     by blast
   show
-    "\<exists>B\<subseteq>A. (\<forall>a\<in>B. indep_of_alt V (drop_module n r) A a \<and>
-                         (\<forall>p. finite_profile V A p \<longrightarrow> a \<in> reject V (drop_module n r) A p)) \<and>
-            (\<forall>a\<in>A - B. indep_of_alt V (pass_module n r) A a \<and>
-                      (\<forall>p. finite_profile V A p \<longrightarrow> a \<in> reject V (pass_module n r) A p))"
+    "\<exists>B\<subseteq>A. (\<forall>a\<in>B. indep_of_alt (drop_module n r) V A a \<and>
+                         (\<forall>p. profile V A p \<longrightarrow> a \<in> reject (drop_module n r) V A p)) \<and>
+            (\<forall>a\<in>A - B. indep_of_alt (pass_module n r) V A a \<and>
+                      (\<forall>p. profile V A p \<longrightarrow> a \<in> reject (pass_module n r) V A p))"
   proof
     have same_A:
-      "\<forall> p q. (finite_profile V A p \<and> finite_profile V A q) \<longrightarrow>
-        reject V (drop_module n r) A p = reject V (drop_module n r) A q"
+      "\<forall> p q. (profile V A p \<and> profile V A q) \<longrightarrow>
+        reject (drop_module n r) V A p = reject (drop_module n r) V A q"
       by auto
-    let ?A = "reject V (drop_module n r) A p"
+    let ?A = "reject (drop_module n r) V A p"
     have "?A \<subseteq> A"
       by auto
-    moreover have "\<forall> a \<in> ?A. indep_of_alt V (drop_module n r) A a"
+    moreover have "\<forall> a \<in> ?A. indep_of_alt (drop_module n r) V A a"
       using assms
       unfolding indep_of_alt_def
       by simp
     moreover have
-      "\<forall> a \<in> ?A. \<forall> p. finite_profile V A p \<longrightarrow> a \<in> reject V (drop_module n r) A p"
+      "\<forall> a \<in> ?A. \<forall> p. profile V A p \<longrightarrow> a \<in> reject (drop_module n r) V A p"
       by auto
-    moreover have "\<forall> a \<in> A - ?A. indep_of_alt V (pass_module n r) A a"
+    moreover have "\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) V A a"
       using assms
       unfolding indep_of_alt_def
       by simp
     moreover have
-      "\<forall> a \<in> A - ?A. \<forall> p. finite_profile V A p \<longrightarrow> a \<in> reject V (pass_module n r) A p"
+      "\<forall> a \<in> A - ?A. \<forall> p. profile V A p \<longrightarrow> a \<in> reject (pass_module n r) V A p"
       by auto
     ultimately show
       "?A \<subseteq> A \<and>
-        (\<forall> a \<in> ?A. indep_of_alt V (drop_module n r) A a \<and>
-          (\<forall> p. finite_profile V A p \<longrightarrow> a \<in> reject V (drop_module n r) A p)) \<and>
-        (\<forall> a \<in> A - ?A. indep_of_alt V (pass_module n r) A a \<and>
-          (\<forall> p. finite_profile V A p \<longrightarrow> a \<in> reject V (pass_module n r) A p))"
+        (\<forall> a \<in> ?A. indep_of_alt (drop_module n r) V A a \<and>
+          (\<forall> p. profile V A p \<longrightarrow> a \<in> reject (drop_module n r) V A p)) \<and>
+        (\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) V A a \<and>
+          (\<forall> p. profile V A p \<longrightarrow> a \<in> reject (pass_module n r) V A p))"
       by simp
   qed
 qed

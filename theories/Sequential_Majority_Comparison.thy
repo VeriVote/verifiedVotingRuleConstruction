@@ -54,11 +54,9 @@ proof (unfold social_choice_result.electoral_module_def, simp, safe, simp_all)
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    "finite A" and
-    "finite V" and
     "profile V A p" and
-    "x' \<in> reject V (?smc) A p" and
-    "x' \<in> elect V (?smc) A p"
+    "x' \<in> reject (?smc) V A p" and
+    "x' \<in> elect (?smc) V A p"
   thus False
     using IntI drop_mod_sound emptyE loop_comp_sound max_agg_sound assms
           par_comp_sound pass_mod_sound plurality_rule_sound rev_comp_sound
@@ -77,11 +75,9 @@ next
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    "finite A" and
-    "finite V" and
     "profile V A p" and
-    "x' \<in> reject V (?smc) A p" and
-    "x' \<in> defer V (?smc) A p"
+    "x' \<in> reject (?smc) V A p" and
+    "x' \<in> defer (?smc) V A p"
   thus False
     using IntI assms result_disj emptyE drop_mod_sound loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
@@ -100,10 +96,8 @@ next
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    "finite A" and
-    "finite V" and
     "profile V A p" and
-      "x' \<in> elect V (?smc) A p"
+    "x' \<in> elect (?smc) V A p"
   thus "x' \<in> A"
     using drop_mod_sound elect_in_alts in_mono assms loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
@@ -122,10 +116,8 @@ next
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    "finite A" and
-    "finite V" and
     "profile V A p" and
-    "x' \<in> defer V (?smc) A p"
+    "x' \<in> defer (?smc) V A p"
   thus "x' \<in> A"
     using drop_mod_sound defer_in_alts in_mono assms loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
@@ -144,16 +136,14 @@ next
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    fin_A: "finite A" and
-    fin_V: "finite V" and
     prof_A: "profile V A p" and
-    reject_x': "x' \<in> reject V (?smc) A p"
+    reject_x': "x' \<in> reject (?smc) V A p"
   have "social_choice_result.electoral_module (plurality_rule\<down>)"
     by simp
   moreover have "social_choice_result.electoral_module (drop_module 2 x)"
     by simp
   ultimately show "x' \<in> A"
-    using reject_x' fin_A prof_A in_mono assms reject_in_alts loop_comp_sound
+    using reject_x' prof_A in_mono assms reject_in_alts loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound seq_comp_sound
     sorry
 next
@@ -169,13 +159,11 @@ next
        ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
          drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
   assume
-    "finite A" and
-    "finite V" and
     "profile V A p" and
     "x' \<in> A" and
-    "x' \<notin> defer V (?smc) A p" and
-    "x' \<notin> reject V (?smc) A p"
-  thus "x' \<in> elect V (?smc) A p"
+    "x' \<notin> defer (?smc) V A p" and
+    "x' \<notin> reject (?smc) V A p"
+  thus "x' \<in> elect (?smc) V A p"
     using assms electoral_mod_defer_elem drop_mod_sound loop_comp_sound
           max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
           rev_comp_sound seq_comp_sound
@@ -214,7 +202,8 @@ proof -
     using assms pass_one_mod_def_one
     by simp
   have 20000: "non_blocking (plurality_rule\<down>)"
-    using electing_def plurality_rule_electing_2 plurality_rule_sound rev_comp_non_blocking
+    using electing_def plurality_rule_sound rev_comp_non_blocking
+          elector_electing plurality_mod_non_blocking plurality_rule.simps plurality_sound
     by metis
   have 0020: "disjoint_compatibility ?pass2 ?drop2"
     using assms
@@ -306,8 +295,8 @@ proof -
     using assms
     by simp (* dl_inv_imp_def_mono pass_mod_dl_inv *)
   have 20000: "non_blocking (plurality_rule\<down>)"
-    using rev_comp_non_blocking  electing_def plurality_rule_electing_2 
-          plurality_rule_sound rev_comp_non_blocking
+    using electing_def plurality_rule_sound rev_comp_non_blocking
+          elector_electing plurality_mod_non_blocking plurality_rule.simps plurality_sound
     by metis
   have 0000: "defer_lift_invariance ?pass2"
     using assms pass_mod_dl_inv

@@ -35,88 +35,6 @@ fun average :: "('a, 'v) Evaluation_Function \<Rightarrow> 'v set \<Rightarrow>
   "average e V A p = (let sum = (\<Sum> x \<in> A. e V x A p) in 
                       (if (sum = infinity) then (infinity) 
                        else ((the_enat sum) div (card A))))"
-(* export_code average in Haskell *)
-
-subsection \<open>General Auxiliary Lemmas\<close>
-
-lemma score_bounded:
-  fixes
-    e :: "'a \<Rightarrow> nat" and
-    A :: "'a set" and
-    a :: "'a"
-  assumes
-    a_in_A: "a \<in> A" and
-    fin_A: "finite A"
-  shows "e a \<le> Max {e x | x. x \<in> A}"
-proof -
-  have "e a \<in> {e x |x. x \<in> A}"
-    using a_in_A
-    by blast
-  thus ?thesis
-    using fin_A Max_ge
-    by simp
-qed
-
-lemma max_score_contained:
-  fixes
-    e :: "'a \<Rightarrow> nat" and
-    A :: "'a set" and
-    a :: "'a"
-  assumes
-    A_not_empty: "A \<noteq> {}" and
-    fin_A: "finite A"
-  shows "\<exists> b \<in> A. e b = Max {e x | x. x \<in> A}"
-proof -
-  have "finite {e x | x. x \<in> A}"
-    using fin_A
-    by simp
-  hence "Max {e x | x. x \<in> A} \<in> {e x | x. x \<in> A}"
-    using A_not_empty Max_in
-    by blast
-  thus ?thesis
-    by auto
-qed
-
-lemma elimset_in_alts:
-  fixes
-    e :: "('a, 'v) Evaluation_Function" and
-    t :: "Threshold_Value" and
-    r :: "Threshold_Relation" and
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile"
-  shows "elimination_set e t r V A p \<subseteq> A"
-  unfolding elimination_set.simps
-  by safe
-
-subsection \<open>General Inference Rules\<close>
-
-lemma cr_eval_imp_dcc_max_elim_helper:
-  fixes
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    e :: "('a, 'v) Evaluation_Function" and
-    a :: "'a"
-  assumes
-    "finite_profile V A p" and
-    "condorcet_rating e" and
-    "condorcet_winner V A p a"
-  shows "elimination_set e (Max {e V b A p | b. b \<in> A}) (<) V A p = A - {a}"
-proof (safe, simp_all, safe)
-  assume "e V a A p < Max {e V b A p | b. b \<in> A}"
-  thus False
-    using cond_winner_imp_max_eval_val assms
-    by fastforce
-next
-  fix a' :: "'a"
-  assume
-    "a' \<in> A" and
-    "\<not> e V a' A p < Max {e V b A p | b. b \<in> A}"
-  thus "a' = a"
-    using non_cond_winner_not_max_eval assms
-    by (metis (mono_tags, lifting))
-qed
 
 (* Social Choice Specific Results *)
 
@@ -496,13 +414,13 @@ next
     a :: "'a"
   assume
     c_win: "condorcet_winner V A p a" and
-    rej_a: "a \<in> reject V (max_eliminator e) A p"
+    rej_a: "a \<in> reject (max_eliminator e) V A p"
   have "e V a A p = Max {e V b A p | b. b \<in> A}"
     using c_win cond_winner_imp_max_eval_val assms
     by fastforce
-  hence "a \<notin> reject V (max_eliminator e) A p"
+  hence "a \<notin> reject (max_eliminator e) V A p"
     by simp
-  thus "False"
+  thus False
     using rej_a
     by linarith
 next
@@ -511,8 +429,8 @@ next
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
     a :: "'a"
-  assume "a \<in> elect V (max_eliminator e) A p"
-  moreover have "a \<notin> elect V (max_eliminator e) A p"
+  assume "a \<in> elect (max_eliminator e) V A p"
+  moreover have "a \<notin> elect (max_eliminator e) V A p"
     by simp
   ultimately show False
     by linarith
@@ -525,8 +443,8 @@ next
     a' :: "'a"
   assume
     "condorcet_winner V A p a" and
-    "a \<in> elect V (max_eliminator e) A p"
-  thus "a' \<in> reject V (max_eliminator e) A p"
+    "a \<in> elect (max_eliminator e) V A p"
+  thus "a' \<in> reject (max_eliminator e) V A p"
     using condorcet_winner.elims(2) empty_iff max_elim_non_electing
     unfolding non_electing_def
     by metis
@@ -548,21 +466,19 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
     p :: "('a, 'v) Profile" and
     a :: "'a"
   assume
-    winner: "condorcet_winner V A p a" and
-    finite_C: "finite A" and
-    finite_V: "finite V"
+    winner: "condorcet_winner V A p a"
   hence profile: "finite_profile V A p"
     by simp
   let ?trsh = "Max {e V b A p | b. b \<in> A}"
   show
     "max_eliminator e V A p =
       ({},
-        A - defer V (max_eliminator e) A p,
+        A - defer (max_eliminator e) V A p,
         {b \<in> A. condorcet_winner V A p b})"
   proof (cases "elimination_set e (?trsh) (<) V A p \<noteq> A")
     have elim_set: "(elimination_set e ?trsh (<) V A p) = A - {a}"
-      using profile assms winner cr_eval_imp_dcc_max_elim_helper
-      by (metis (mono_tags, lifting))
+      using profile assms winner cr_eval_imp_ccomp_max_elim
+      sorry
     case True
     hence
       "max_eliminator e V A p =
@@ -573,14 +489,14 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
     also have "... = ({}, A - {a}, {a})"
       using elim_set winner
       by auto
-    also have "... = ({},A - defer V (max_eliminator e) A p, {a})"
+    also have "... = ({},A - defer (max_eliminator e) V A p, {a})"
       using calculation
       by simp
     also have
       "... = ({},
-              A - defer V (max_eliminator e) A p,
+              A - defer (max_eliminator e) V A p,
               {b \<in> A. condorcet_winner V A p b})"
-      using cond_winner_unique_3 winner Collect_cong
+      using cond_winner_unique winner Collect_cong
       by (metis (no_types, lifting))
     finally show ?thesis
       using winner

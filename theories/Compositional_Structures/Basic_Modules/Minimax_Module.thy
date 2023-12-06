@@ -189,29 +189,22 @@ qed
 theorem minimax_is_dcc: "defer_condorcet_consistency minimax"
 proof (unfold defer_condorcet_consistency_def social_choice_result.electoral_module_def, safe)
   fix
-    A :: "'b set" and 
-    V :: "'a set" and 
+    A :: "'b set" and
+    V :: "'a set" and
     p :: "('b, 'a) Profile"
-  assume
-    finA: "finite A" and
-    finV: "finite A" and
-    profA: "profile V A p"
-  have "well_formed_soc_choice A (
-          ((max_eliminator minimax_score)::('b, 'a, 'b Result) Electoral_Module) V A p)"
-    using finA finV max_elim_sound par_comp_result_sound profA
-    by auto
+  assume "profile V A p"
+  hence "well_formed_soc_choice A (max_eliminator minimax_score V A p)"
+    using max_elim_sound par_comp_result_sound
+    by metis
   thus "well_formed_soc_choice A (minimax V A p)"
     by simp
 next
   fix
-    A :: "'b set" and 
-    V :: "'a set" and 
-    p :: "('b, 'a) Profile" and 
-    w :: 'b
-  assume
-    cwin_w: "condorcet_winner V A p w" and
-    fin_A: "finite A" and
-    fin_V: "finite V"
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile" and
+    w :: "'b"
+  assume cwin_w: "condorcet_winner V A p w"
   have max_mmaxscore_dcc:
     "defer_condorcet_consistency ((max_eliminator minimax_score)
                                     ::('b, 'a, 'b Result) Electoral_Module)"
@@ -220,15 +213,15 @@ next
   hence
     "max_eliminator minimax_score V A p =
       ({},
-       A - defer V (max_eliminator minimax_score) A p,
+       A - defer (max_eliminator minimax_score) V A p,
        {a \<in> A. condorcet_winner V A p a})"
-    using cwin_w fin_A fin_V
+    using cwin_w
     unfolding defer_condorcet_consistency_def
     by blast
   thus
     "minimax V A p =
       ({},
-       A - defer V minimax A p,
+       A - defer minimax V A p,
        {d \<in> A. condorcet_winner V A p d})"
     by simp
 qed

@@ -22,6 +22,193 @@ type_synonym 'a Preference_List = "'a list"
 abbreviation well_formed_l :: "'a Preference_List \<Rightarrow> bool" where
   "well_formed_l l \<equiv> distinct l"
 
+subsection \<open>Auxiliary Lemmas About Lists\<close>
+
+lemma is_arg_min_equal:
+  fixes
+    f :: "'a \<Rightarrow> 'b::ord" and
+    g :: "'a \<Rightarrow> 'b" and
+    S :: "'a set" and
+    x :: 'a
+  assumes "\<forall> x \<in> S. f x = g x"
+  shows "is_arg_min f (\<lambda> s. s \<in> S) x = is_arg_min g (\<lambda> s. s \<in> S) x"
+proof (unfold is_arg_min_def, cases "x \<notin> S", clarsimp)
+  case x_in_S: False
+  thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
+  proof (cases "\<exists> y. (\<lambda> s. s \<in> S) y \<and> f y < f x")
+    case y: True
+    then obtain y :: 'a where
+      "(\<lambda> s. s \<in> S) y \<and> f y < f x"
+      by metis
+    hence "(\<lambda> s. s \<in> S) y \<and> g y < g x"
+      using x_in_S assms
+      by metis
+    thus ?thesis
+      using y
+      by metis
+  next
+    case not_y: False
+    have "\<not> (\<exists> y. (\<lambda> s. s \<in> S) y \<and> g y < g x)"
+    proof (safe)
+      fix  y :: "'a"
+      assume
+        y_in_S: "y \<in> S" and
+        g_y_lt_g_x: "g y < g x"
+      have f_eq_g_for_elems_in_S: "\<forall> a. a \<in> S \<longrightarrow> f a = g a"
+        using assms
+        by simp
+      hence "g x = f x"
+        using x_in_S
+        by presburger
+      thus False
+        using f_eq_g_for_elems_in_S g_y_lt_g_x not_y y_in_S
+        by (metis (no_types))
+    qed
+    thus ?thesis
+      using x_in_S not_y
+      by simp
+  qed
+qed
+
+lemma list_cons_presv_finiteness:
+  fixes
+    A :: "'a set" and
+    S :: "'a list set"
+  assumes
+    fin_A: "finite A" and
+    fin_B: "finite S"
+  shows "finite {a#l | a l. a \<in> A \<and> l \<in> S}"
+proof -
+  let ?P = "\<lambda> A. finite {a#l | a l. a \<in> A \<and> l \<in> S}"
+  have "\<forall> a A'. finite A' \<longrightarrow> a \<notin> A' \<longrightarrow> ?P A' \<longrightarrow> ?P (insert a A')"
+  proof (safe)
+    fix
+      a :: "'a" and
+      A' :: "'a set"
+    assume "finite {a#l | a l. a \<in> A' \<and> l \<in> S}"
+    moreover have
+      "{a'#l | a' l. a' \<in> insert a A' \<and> l \<in> S} =
+          {a#l | a l. a \<in> A' \<and> l \<in> S} \<union> {a#l | l. l \<in> S}"
+      by blast
+    moreover have "finite {a#l | l. l \<in> S}"
+      using fin_B
+      by simp
+    ultimately have "finite {a'#l | a' l. a' \<in> insert a A' \<and> l \<in> S}"
+      by simp
+    thus "?P (insert a A')"
+      by simp
+  qed
+  moreover have "?P {}"
+    by simp
+  ultimately show "?P A"
+    using finite_induct[of A ?P] fin_A
+    by simp
+qed
+
+lemma listset_finiteness:
+  fixes l :: "'a set list"
+  assumes "\<forall> i::nat. i < length l \<longrightarrow> finite (l!i)"
+  shows "finite (listset l)"
+  using assms
+proof (induct l, simp)
+  case (Cons a l)
+  fix
+    a :: "'a set" and
+    l :: "'a set list"
+  assume
+    elems_fin_then_set_fin: "\<forall> i::nat < length l. finite (l!i) \<Longrightarrow> finite (listset l)" and
+    fin_all_elems: "\<forall> i::nat < length (a#l). finite ((a#l)!i)"
+  hence "finite a"
+    by auto
+  moreover from fin_all_elems
+  have "\<forall> i < length l. finite (l!i)"
+    by auto
+  hence "finite (listset l)"
+    using elems_fin_then_set_fin
+    by simp
+  ultimately have "finite {a'#l' | a' l'. a' \<in> a \<and> l' \<in> (listset l)}"
+    using list_cons_presv_finiteness
+    by auto
+  thus "finite (listset (a#l))"
+    by (simp add: set_Cons_def)
+qed
+
+lemma all_ls_elems_same_len:
+  fixes l :: "'a set list"
+  shows "\<forall> l'::('a list). l' \<in> listset l \<longrightarrow> length l' = length l"
+proof (induct l, simp)
+  case (Cons a l)
+  fix
+    a :: "'a set" and
+    l :: "'a set list"
+  assume "\<forall> l'. l' \<in> listset l \<longrightarrow> length l' = length l"
+  moreover have
+    "\<forall> a' l'::('a set list). listset (a'#l') = {b#m | b m. b \<in> a' \<and> m \<in> listset l'}"
+    by (simp add: set_Cons_def)
+  ultimately show "\<forall> l'. l' \<in> listset (a#l) \<longrightarrow> length l' = length (a#l)"
+    using local.Cons
+    by force
+qed
+
+lemma all_ls_elems_in_ls_set:
+  fixes l :: "'a set list"
+  shows "\<forall> l' i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i"
+proof (induct l, simp, safe)
+  case (Cons a l)
+  fix
+    a :: "'a set" and
+    l :: "'a set list" and
+    l' :: "'a list" and
+    i :: nat
+  assume elems_in_set_then_elems_pos:
+    "\<forall> l' i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i" and
+    l_prime_in_set_a_l: "l' \<in> listset (a#l)" and
+    i_lt_len_l_prime: "i < length l'"
+  have "l' \<in> set_Cons a (listset l)"
+    using l_prime_in_set_a_l
+    by simp
+  hence "l' \<in> {m. \<exists> b m'. m = b#m' \<and> b \<in> a \<and> m' \<in> (listset l)}"
+    unfolding set_Cons_def
+    by simp
+  hence "\<exists> b m. l' = b#m \<and> b \<in> a \<and> m \<in> (listset l)"
+    by simp
+  thus "l'!i \<in> (a#l)!i"
+    using elems_in_set_then_elems_pos i_lt_len_l_prime nth_Cons_Suc
+          Suc_less_eq gr0_conv_Suc length_Cons nth_non_equal_first_eq
+    by metis
+qed
+
+lemma all_ls_in_ls_set:
+  fixes l :: "'a set list"
+  shows "\<forall> l'. length l' = length l \<and> (\<forall> i < length l'. l'!i \<in> l!i) \<longrightarrow> l' \<in> listset l"
+proof (induction l, safe, simp)
+  case (Cons a l)
+  fix
+    l :: "'a set list" and
+    l' :: "'a list" and
+    s :: "'a set"
+  assume
+    all_ls_in_ls_set_induct:
+    "\<forall> m. length m = length l \<and> (\<forall> i < length m. m!i \<in> l!i) \<longrightarrow> m \<in> listset l" and
+    len_eq: "length l' = length (s#l)" and
+    elems_pos_in_cons_ls_pos: "\<forall> i < length l'. l'!i \<in> (s#l)!i"
+  then obtain t and x where
+    l'_cons: "l' = x#t"
+    using length_Suc_conv
+    by metis
+  hence "x \<in> s"
+    using elems_pos_in_cons_ls_pos
+    by force
+  moreover have "t \<in> listset l"
+    using l'_cons all_ls_in_ls_set_induct len_eq diff_Suc_1 diff_Suc_eq_diff_pred
+          elems_pos_in_cons_ls_pos length_Cons nth_Cons_Suc zero_less_diff
+    by metis
+  ultimately show "l' \<in> listset (s#l)"
+    using l'_cons
+    unfolding listset_def set_Cons_def
+    by simp
+qed
+
 subsection \<open>Ranking\<close>
 
 text \<open>
@@ -82,16 +269,6 @@ definition limited :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> boo
 
 fun limit_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> 'a Preference_List" where
   "limit_l A l = List.filter (\<lambda> a. a \<in> A) l"
-
-lemma limitedI:
-  fixes
-    l :: "'a Preference_List" and
-    A :: "'a set"
-  assumes "\<And> a b. a \<lesssim>\<^sub>l b \<Longrightarrow> a \<in> A \<and> b \<in> A"
-  shows "limited A l"
-  using assms
-  unfolding limited_def
-  by auto
 
 lemma limited_dest:
   fixes
@@ -224,10 +401,9 @@ next
       "a \<in> A" and
       "(b, c) \<in> pl_\<alpha> (a#(filter (\<lambda> a. a \<in> A) l))"
     thus "b \<in> A"
-      using case_prodD insert_iff is_less_preferred_than_l.elims(2) list.set(2) mem_Collect_eq
-            set_filter
       unfolding pl_\<alpha>_def
-      by (metis (lifting))
+      using case_prodD insert_iff mem_Collect_eq set_filter inter_set_filter IntE
+      by auto
   next
     fix
       b :: "'a" and
@@ -262,10 +438,9 @@ next
         by simp
       ultimately show
         "index (a#(filter (\<lambda> a. a \<in> A) l)) c \<le> index (a#(filter (\<lambda> a. a \<in> A) l)) b"
-        using add_leE add_le_cancel_right case_prodI in_rel_Collect_case_prod_eq
-              index_Cons b_in_A c_in_A set_ConsD is_less_preferred_than_l.elims(1)
-              linorder_le_cases mem_Collect_eq not_one_le_zero
         unfolding pl_\<alpha>_def
+        using add_leE add_le_cancel_right case_prodI c_in_A b_in_A index_Cons set_ConsD
+              in_rel_Collect_case_prod_eq linorder_le_cases mem_Collect_eq not_one_le_zero
         by fastforce
     qed
   qed
@@ -291,16 +466,16 @@ next
       show "index (a#l) c \<le> index (a#l) b"
       proof (unfold index_def, simp, safe)
         assume "a = b"
-        thus "False"
-          using a_not_in_A b_less_c case_prod_conv is_less_preferred_than_l.elims(2)
+        thus False
+          using a_not_in_A b_less_c case_prod_conv is_less_preferred_than_l.elims
                 mem_Collect_eq set_filter wf_a_l
           unfolding pl_\<alpha>_def
           by simp
       next
         show "find_index (\<lambda> x. x = c) l \<le> find_index (\<lambda> x. x = b) l"
-          using b_less_c case_prodD index_def is_less_preferred_than_l.elims(2) mem_Collect_eq
+          using b_less_c case_prodD mem_Collect_eq
           unfolding pl_\<alpha>_def
-          by metis
+          by (simp add: index_def)
       qed
     qed
   next
@@ -327,8 +502,8 @@ next
     next
       assume "index (a#l) c \<le> index (a#l) b"
       thus "index l c \<le> index l b"
-        using a_not_in_l a_not_in_A c_in_A add_le_cancel_right index_Cons index_le_size
-              size_index_conv
+        using a_not_in_l a_not_in_A c_in_A add_le_cancel_right
+              index_Cons index_le_size size_index_conv
         by (metis (no_types, lifting))
     qed
   qed
@@ -343,7 +518,7 @@ definition refl_on_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> b
   "refl_on_l A l \<equiv> (\<forall> a. a \<in> set l \<longrightarrow> a \<in> A) \<and> (\<forall> a \<in> A. a \<lesssim>\<^sub>l a)"
 
 definition trans :: "'a Preference_List \<Rightarrow> bool" where
-  "trans l \<equiv> \<forall> (a, b, c) \<in> (set l \<times> set l \<times> set l). a \<lesssim>\<^sub>l b \<and> b \<lesssim>\<^sub>l c \<longrightarrow> a \<lesssim>\<^sub>l c"
+  "trans l \<equiv> \<forall> (a, b, c) \<in> set l \<times> set l \<times> set l. a \<lesssim>\<^sub>l b \<and> b \<lesssim>\<^sub>l c \<longrightarrow> a \<lesssim>\<^sub>l c"
 
 definition preorder_on_l :: "'a set \<Rightarrow> 'a Preference_List \<Rightarrow> bool" where
   "preorder_on_l A l \<equiv> refl_on_l A l \<and> trans l"
@@ -416,8 +591,9 @@ lemma above_trans:
     "trans l" and
     "a \<lesssim>\<^sub>l b"
   shows "set (above_l l b) \<subseteq> set (above_l l a)"
-  using assms set_take_subset_set_take add_mono le_numeral_extra(4) rank_l.simps
-  unfolding above_l_def Preference_List.is_less_preferred_than_l.simps
+  using assms set_take_subset_set_take rank_l.simps
+        Suc_le_mono add.commute add_0 add_Suc
+  unfolding above_l_def Preference_List.is_less_preferred_than_l.simps One_nat_def
   by metis
 
 lemma less_preferred_l_rel_equiv:
@@ -433,32 +609,31 @@ theorem above_equiv:
   fixes
     l :: "'a Preference_List" and
     a :: 'a
-  shows "set (above_l l a) = Order_Relation.above (pl_\<alpha> l) a"
+  shows "set (above_l l a) = above (pl_\<alpha> l) a"
 proof (safe)
   fix b :: "'a"
-  assume b_member: "b \<in> set (Preference_List.above_l l a)"
+  assume b_member: "b \<in> set (above_l l a)"
   hence "index l b \<le> index l a"
-    unfolding rank_l.simps
-    using above_l_def Preference_List.rank_l.simps Suc_eq_plus1 Suc_le_eq index_take
-          bot_nat_0.extremum_strict linorder_not_less
-    by metis
+    unfolding rank_l.simps above_l_def
+    using Suc_eq_plus1 Suc_le_eq index_take linorder_not_less
+          bot_nat_0.extremum_strict
+    by (metis (full_types))
   hence "a \<lesssim>\<^sub>l b"
-    using is_less_preferred_than_l.elims(3) rank_l.simps Suc_le_mono add_Suc empty_iff
-          find_index_le_size le_antisym list.set(1) size_index_conv take_0 b_member
-    unfolding One_nat_def index_def above_l_def
+    using Suc_le_mono add_Suc le_antisym take_0 b_member
+          in_set_takeD index_take le0 rank_l.simps
+    unfolding above_l_def is_less_preferred_than_l.simps
     by metis
-  thus "b \<in> Order_Relation.above (pl_\<alpha> l) a"
+  thus "b \<in> above (pl_\<alpha> l) a"
     using less_preferred_l_rel_equiv pref_imp_in_above
     by metis
 next
   fix b :: "'a"
-  assume "b \<in> Order_Relation.above (pl_\<alpha> l) a"
+  assume "b \<in> above (pl_\<alpha> l) a"
   hence "a \<lesssim>\<^sub>l b"
     using pref_imp_in_above less_preferred_l_rel_equiv
     by metis
-  thus "b \<in> set (Preference_List.above_l l a)"
-    unfolding Preference_List.above_l_def Preference_List.is_less_preferred_than_l.simps
-              Preference_List.rank_l.simps
+  thus "b \<in> set (above_l l a)"
+    unfolding above_l_def is_less_preferred_than_l.simps rank_l.simps
     using Suc_eq_plus1 Suc_le_eq index_less_size_conv set_take_if_index le_imp_less_Suc
     by (metis (full_types))
 qed
@@ -468,10 +643,10 @@ theorem rank_equiv:
     l :: "'a Preference_List" and
     a :: "'a"
   assumes "well_formed_l l"
-  shows "rank_l l a = Preference_Relation.rank (pl_\<alpha> l) a"
+  shows "rank_l l a = rank (pl_\<alpha> l) a"
 proof (simp, safe)
   assume "a \<in> set l"
-  moreover have "Order_Relation.above (pl_\<alpha> l) a = set (above_l l a)"
+  moreover have "above (pl_\<alpha> l) a = set (above_l l a)"
     unfolding above_equiv
     by simp
   moreover have "distinct (above_l l a)"
@@ -486,15 +661,15 @@ proof (simp, safe)
     unfolding above_l_def
     using Suc_le_eq
     by (simp add: in_set_member)
-  ultimately show "Suc (index l a) = card (Order_Relation.above (pl_\<alpha> l) a)"
+  ultimately show "Suc (index l a) = card (above (pl_\<alpha> l) a)"
     by simp
 next
   assume "a \<notin> set l"
-  hence "Order_Relation.above (pl_\<alpha> l) a = {}"
-    unfolding Order_Relation.above_def
+  hence "above (pl_\<alpha> l) a = {}"
+    unfolding above_def
     using less_preferred_l_rel_equiv
     by fastforce
-  thus "card (Order_Relation.above (pl_\<alpha> l) a) = 0"
+  thus "card (above (pl_\<alpha> l) a) = 0"
     by fastforce
 qed
 
@@ -503,11 +678,11 @@ lemma lin_ord_equiv:
     A :: "'a set" and
     l :: "'a Preference_List"
   shows "linear_order_on_l A l = linear_order_on A (pl_\<alpha> l)"
-  unfolding pl_\<alpha>_def linear_order_on_l_def linear_order_on_def preorder_on_l_def refl_on_l_def
+  unfolding pl_\<alpha>_def linear_order_on_l_def linear_order_on_def refl_on_l_def
             Relation.trans_def preorder_on_l_def partial_order_on_l_def partial_order_on_def
-            total_on_l_def preorder_on_def refl_on_def trans_def antisym_def total_on_def
-            Preference_List.limited_def is_less_preferred_than_l.simps
-  by (auto simp add: index_size_conv)
+            total_on_l_def preorder_on_def refl_on_def antisym_def total_on_def
+            is_less_preferred_than_l.simps
+  by auto
 
 subsection \<open>First Occurrence Indices\<close>
 
@@ -570,30 +745,21 @@ proof (unfold relation_of_def, safe)
   moreover have "(a \<lesssim>\<^sub>l b) = (a \<preceq>\<^sub>(pl_\<alpha> l) b)"
     using less_preferred_l_rel_equiv
     by (metis (no_types))
-  ultimately have "a \<preceq>\<^sub>(pl_\<alpha> l) b"
-    by presburger
-  thus "(a, b) \<in> pl_\<alpha> l"
+  ultimately show "(a, b) \<in> pl_\<alpha> l"
     by simp
 next
   fix
     a :: "'a" and
     b :: "'a"
-  assume a_b_in_l: "(a, b) \<in> pl_\<alpha> l"
-  thus "a \<in> set l"
-    using is_less_preferred_than.simps is_less_preferred_than_l.elims(2) less_preferred_l_rel_equiv
-    by metis
-  show "b \<in> set l"
-    using a_b_in_l is_less_preferred_than.simps is_less_preferred_than_l.elims(2)
-          less_preferred_l_rel_equiv
-    by (metis (no_types))
-  have "(a \<lesssim>\<^sub>l b) = (a \<preceq>\<^sub>(pl_\<alpha> l) b)"
+  assume "(a, b) \<in> pl_\<alpha> l"
+  thus "a \<lesssim>\<^sub>l b"
     using less_preferred_l_rel_equiv
-    by (metis (no_types))
-  moreover have "a \<preceq>\<^sub>(pl_\<alpha> l) b"
-    using a_b_in_l
-    by simp
-  ultimately show "a \<lesssim>\<^sub>l b"
+    unfolding is_less_preferred_than.simps
     by metis
+  thus
+    "a \<in> set l" and
+    "b \<in> set l"
+    by (simp, simp)
 qed
 
 end

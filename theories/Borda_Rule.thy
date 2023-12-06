@@ -44,7 +44,7 @@ subsection \<open>Anonymity Property\<close>
 theorem borda_rule\<^sub>\<R>_anonymous: "social_choice_result.anonymity borda_rule\<^sub>\<R>"
 proof (unfold borda_rule\<^sub>\<R>.simps swap_\<R>.simps)
   let ?swap_dist = "votewise_distance swap l_one"
-  from l_one_is_symm
+  from l_one_is_sym
   have "distance_anonymity ?swap_dist"
     using symmetric_norm_imp_distance_anonymous[of l_one]
     by simp

@@ -678,8 +678,14 @@ subsection \<open>Condorcet Winner\<close>
 fun condorcet_winner :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "condorcet_winner V A p a =
       (finite_profile V A p \<and> a \<in> A \<and> (\<forall> x \<in> A - {a}. wins V a p x))"
+(* 
+Could this be defined via 
+  "for all b \<noteq> a there is an injective map 
+    from ballots where b wins to ballots where a wins" 
+instead of prefer_count for infinite voter sets? 
+*)
 
-lemma cond_winner_unique:
+lemma cond_winner_unique_eq:
   fixes
     V :: "'v set" and
     A :: "'a set" and
@@ -704,21 +710,7 @@ proof (rule ccontr)
     by simp
 qed
 
-lemma cond_winner_unique_2:
-  fixes
-    V :: "'v set" and
-    A :: "'a set" and
-    p :: "('a, 'v) Profile" and
-    a :: "'a" and
-    b :: "'a"
-  assumes
-    "condorcet_winner V A p a" and
-    "b \<noteq> a"
-  shows "\<not> condorcet_winner V A p b"
-  using cond_winner_unique assms
-  by metis
-
-lemma cond_winner_unique_3:
+lemma cond_winner_unique:
   fixes
     A :: "'a set" and
     p :: "('a, 'v) Profile" and
@@ -729,7 +721,7 @@ proof (safe)
   fix a' :: "'a"
   assume "condorcet_winner V A p a'"
   thus "a' = a"
-    using assms cond_winner_unique
+    using assms cond_winner_unique_eq
     by metis
 next
   show "a \<in> A"
@@ -741,6 +733,20 @@ next
     using assms
     by presburger
 qed
+
+lemma cond_winner_unique_2:
+  fixes
+    V :: "'v set" and
+    A :: "'a set" and
+    p :: "('a, 'v) Profile" and
+    a :: "'a" and
+    b :: "'a"
+  assumes
+    "condorcet_winner V A p a" and
+    "b \<noteq> a"
+  shows "\<not> condorcet_winner V A p b"
+  using cond_winner_unique_eq assms
+  by metis
 
 subsection \<open>Limited Profile\<close>
 
@@ -774,34 +780,24 @@ lemma limit_profile_sound:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    profile: "finite_profile V B p" and
+    profile: "profile V B p" and
     subset: "A \<subseteq> B"
-  shows "finite_profile V A (limit_profile A p)"
-proof (safe)
-  have finA: "finite B \<longrightarrow> A \<subseteq> B \<longrightarrow> finite A"
-    using rev_finite_subset
-    by metis
-  with profile
-  show "finite A"
-    using subset
-    by metis
-next
-  show finV: "finite V" using profile by auto
-next
+  shows "profile V A (limit_profile A p)"
+proof -
   have "\<forall> v \<in> V. linear_order_on A (limit A (p v))"
     by (metis profile profile_def subset limit_presv_lin_ord)
   hence "\<forall> v \<in> V. linear_order_on A ((limit_profile A p) v)"
     by simp
-  thus "profile V A (limit_profile A p)"
-    using profile_def 
+  thus ?thesis
+    using profile_def
     by auto
 qed
 
 (* have limit_prof_simp: "limit_profile A p = map (limit A) p"
     by simp
   obtain n :: nat where
-    prof_limit_n: "(n < length (limit_profile A p) \<longrightarrow>
-            linear_order_on A (limit_profile A p!n)) \<longrightarrow> profile A (limit_profile A p)"
+    prof_limit_n: "n < length (limit_profile A p) \<longrightarrow>
+            linear_order_on A (limit_profile A p!n) \<longrightarrow> profile A (limit_profile A p)"
     using prof_is_lin_ord
     by metis
   have prof_n_lin_ord: "\<forall> n < length p. linear_order_on B (p!n)"

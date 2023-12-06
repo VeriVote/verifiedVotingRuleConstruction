@@ -11,11 +11,9 @@ theory Consensus
 begin
 
 text \<open>
-  An election is a consensus election if the votes are, in some sense, unanimous.
-  For example all voters may agree on the top-ranked alternative in a 
-  unanimous election.
-  In a strongly unanimous consensus election, all voters agree on a 
-  complete ranking of the alternatives.
+  An election consisting of a set of alternatives and preferential votes for each voter (a profile)
+  is a consensus if it has an undisputed winner reflecting a certain concept of fairness in the
+  society.
 \<close>
 
 subsection \<open>Definition\<close>
@@ -81,7 +79,7 @@ definition consensus_anonymity :: "('a, 'v) Consensus \<Rightarrow> bool" where
     (\<forall> A V p \<pi>::('v \<Rightarrow> 'v). 
         bij \<pi> \<longrightarrow>
           (let (A', V', q) = (rename \<pi> (A, V, p)) in
-            finite_profile V A p \<longrightarrow> finite_profile V' A' q 
+            profile V A p \<longrightarrow> profile V' A' q 
             \<longrightarrow> c (A, V, p) \<longrightarrow> c (A', V', q)))"
 
 subsection \<open>Auxiliary Lemmas\<close>
@@ -105,20 +103,15 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
     bij: "bij \<pi>" and
-    fin_A: "finite A" and
-    fin_V: "finite V" and
     prof: "profile V A p" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
     c1: "c1 (A, V, p)" and
     c2: "c2 (A, V, p)"
-  have fin: "finite_profile V A p"
-    using fin_A fin_V prof
-    by simp
-  hence "finite_profile V' A' q"
-    using rename_finite renamed bij fst_conv rename.simps
+  hence "profile V' A' q"
+    using rename_sound renamed bij fst_conv rename.simps
     by metis
   thus "c1 (A', V', q) \<and> c2 (A', V', q)"
-    using bij renamed c1 c2 assms fin
+    using bij renamed c1 c2 assms prof
     unfolding consensus_anonymity_def
     by auto
 qed
@@ -174,11 +167,9 @@ proof (unfold consensus_anonymity_def Let_def, safe)
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
     bij: "bij \<pi>" and
-    fin_C: "finite A" and
-    fin_V: "finite V" and
+    cond_b: "b (A, V, p)" and
     prof_p: "profile V A p" and
-    renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
-    cond_b: "b (A, V, p)"
+    renamed: "rename \<pi> (A, V, p) = (A', V', q)"
   have "\<exists> x. b' x (A, V, p)"
     using cond_b general_cond_b
     by simp
@@ -188,12 +179,13 @@ proof (unfold consensus_anonymity_def Let_def, safe)
   moreover have "consensus_anonymity (b' x)" 
     using all_cond_anon
     by simp
-  moreover have "finite_profile V A p" 
-    using fin_V fin_C prof_p
-    by simp
+  moreover have "profile V' A' q" 
+    using prof_p renamed bij rename_sound
+    by fastforce
   ultimately have "b' x (A', V', q)"
-    using bij renamed cons_anon_invariant
-    by blast
+    using all_cond_anon bij prof_p renamed
+    unfolding consensus_anonymity_def
+    by auto
   hence "\<exists> x. b' x (A', V', q)"
     by metis
   thus "b (A', V', q)"
@@ -219,13 +211,11 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
     bij: "bij \<pi>" and
-    fin_C: "finite A" and
-    fin_V: "finite V" and
     prof_p: "profile V A p" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
     not_empty_p: "nonempty_profile\<^sub>\<C> (A, V, p)"
   have "card V = card V'"
-    using renamed bij fin_V rename.simps Pair_inject 
+    using renamed bij rename.simps Pair_inject 
           bij_betw_same_card bij_betw_subset top_greatest
     by (metis (mono_tags, lifting))
   thus "nonempty_profile\<^sub>\<C> (A', V', q)"
@@ -248,8 +238,6 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
     bij: "bij \<pi>" and
-    fin_C: "finite A" and
-    fin_V: "finite V" and
     prof_p: "profile V A p" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)" and 
     top_cons_a: "equal_top\<^sub>\<C>' a (A, V, p)"
@@ -293,8 +281,6 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
     bij: "bij \<pi>" and
-    fin_C: "finite A" and
-    fin_V: "finite V" and
     prof_p: "profile V A p" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)" and 
     eq_vote: "equal_vote\<^sub>\<C>' r (A, V, p)"

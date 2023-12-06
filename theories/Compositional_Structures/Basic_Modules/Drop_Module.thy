@@ -37,12 +37,12 @@ theorem drop_mod_sound[simp]:
     r :: "'a Preference_Relation" and
     n :: nat
   shows "social_choice_result.electoral_module (drop_module n r)"
-proof (intro social_choice_result.electoral_modI)
+proof (unfold social_choice_result.electoral_module_def, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
-  assume "finite_profile V A p"
+  assume "profile V A p"
   let ?mod = "drop_module n r"
   have "\<forall> a \<in> A. a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<or>
                   a \<in> {x \<in> A. rank (limit A r) x > n}"

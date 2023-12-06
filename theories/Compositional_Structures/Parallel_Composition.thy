@@ -49,8 +49,6 @@ proof (unfold social_choice_result.electoral_module_def, safe)
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assume
-    "finite A" and
-    "finite V" and
     "profile V A p"
   moreover have
     "\<forall> a'. aggregator a' =
@@ -66,8 +64,8 @@ proof (unfold social_choice_result.electoral_module_def, safe)
     using par_comp_result_sound
     by (metis (no_types))
   ultimately have "well_formed_soc_choice A (a A (m V A p) (n V A p))"
-    using combine_ele_rej_def assms
-    by metis
+    using elect_rej_def_combination assms
+    by (metis par_comp_result_sound)
   thus "well_formed_soc_choice A ((m \<parallel>\<^sub>a n) V A p)"
     by simp
 qed
@@ -112,10 +110,8 @@ next
     p :: "('a, 'v) Profile" and
     w :: "'a"
   assume
-    fin_A: "finite A" and 
-    fin_V: "finite V" and
     prof_A: "profile V A p" and
-    w_wins: "w \<in> elect V (m \<parallel>\<^sub>a n) A p"
+    w_wins: "w \<in> elect (m \<parallel>\<^sub>a n) V A p"
   have emod_m: "social_choice_result.electoral_module m"
     using non_electing_m
     unfolding non_electing_def
@@ -156,15 +152,15 @@ next
     using conservative
     by presburger
   hence "let c = (a A (m V A p) (n V A p)) in
-          (elect_r c \<subseteq> ((elect V m A p) \<union> (elect V n A p)))"
-    using emod_m emod_n fin_A fin_V par_comp_result_sound
+          (elect_r c \<subseteq> ((elect m V A p) \<union> (elect n V A p)))"
+    using emod_m emod_n par_comp_result_sound
           prod.collapse prof_A
     by metis
-  hence "w \<in> ((elect V m A p) \<union> (elect V n A p))"
+  hence "w \<in> ((elect m V A p) \<union> (elect n V A p))"
     using w_wins
     by auto
   thus "w \<in> {}"
-    using sup_bot_right fin_A fin_V prof_A
+    using sup_bot_right prof_A
           non_electing_m non_electing_n
     unfolding non_electing_def
     by (metis (no_types, lifting))

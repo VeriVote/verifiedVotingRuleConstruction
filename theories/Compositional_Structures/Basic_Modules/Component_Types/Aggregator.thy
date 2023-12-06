@@ -29,24 +29,24 @@ type_synonym 'a Aggregator = "'a set \<Rightarrow> 'a Result \<Rightarrow> 'a Re
 
 definition aggregator :: "'a Aggregator \<Rightarrow> bool" where
   "aggregator agg \<equiv>
-    \<forall> A e1 e2 d1 d2 r1 r2.
-      (well_formed_soc_choice A (e1, r1, d1) \<and> well_formed_soc_choice A (e2, r2, d2)) \<longrightarrow>
-      well_formed_soc_choice A (agg A (e1, r1, d1) (e2, r2, d2))"
+    \<forall> A e e' d d' r r'.
+      (well_formed_soc_choice A (e, r, d) \<and> well_formed_soc_choice A (e', r', d')) \<longrightarrow>
+      well_formed_soc_choice A (agg A (e, r, d) (e', r', d'))"
 
 subsection \<open>Properties\<close>
 
 definition agg_commutative :: "'a Aggregator \<Rightarrow> bool" where
   "agg_commutative agg \<equiv>
-    aggregator agg \<and> (\<forall> A e1 e2 d1 d2 r1 r2.
-      agg A (e1, r1, d1) (e2, r2, d2) = agg A (e2, r2, d2) (e1, r1, d1))"
+    aggregator agg \<and> (\<forall> A e e' d d' r r'.
+      agg A (e, r, d) (e', r', d') = agg A (e', r', d') (e, r, d))"
 
 definition agg_conservative :: "'a Aggregator \<Rightarrow> bool" where
   "agg_conservative agg \<equiv>
     aggregator agg \<and>
-    (\<forall> A e1 e2 d1 d2 r1 r2.
-      ((well_formed_soc_choice A (e1, r1, d1) \<and> well_formed_soc_choice A (e2, r2, d2)) \<longrightarrow>
-        elect_r (agg A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (e1 \<union> e2) \<and>
-        reject_r (agg A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (r1 \<union> r2) \<and>
-        defer_r (agg A (e1, r1, d1) (e2, r2, d2)) \<subseteq> (d1 \<union> d2)))"
+    (\<forall> A e e' d d' r r'.
+      ((well_formed_soc_choice A (e, r, d) \<and> well_formed_soc_choice A (e', r', d')) \<longrightarrow>
+        elect_r (agg A (e, r, d) (e', r', d')) \<subseteq> (e \<union> e') \<and>
+        reject_r (agg A (e, r, d) (e', r', d')) \<subseteq> (r \<union> r') \<and>
+        defer_r (agg A (e, r, d) (e', r', d')) \<subseteq> (d \<union> d')))"
 
 end

@@ -10,8 +10,8 @@ theory Elect_First_Module
 begin
 
 text \<open>
-  Elects the maximal elements of the first voter's preferences.
-  Requires the existence of a "first voter".
+  The elect first module elects the alternative that is most preferred on the first ballot and
+  rejects all other alternatives.
 \<close>
 
 subsection \<open>Definition\<close>
@@ -38,7 +38,8 @@ proof (intro social_choice_result.electoral_modI)
   hence "set_equals_partition A (elect_first_module V A p)"
     by simp
   moreover have
-    "\<forall> a \<in> A. (a \<notin> {a' \<in> A.  above (p (least V)) a' = {a'}} \<or> a \<notin> {a' \<in> A. above (p (least V)) a' \<noteq> {a'}})"
+    "\<forall> a \<in> A. (a \<notin> {a' \<in> A.  above (p (least V)) a' = {a'}} \<or> 
+                a \<notin> {a' \<in> A. above (p (least V)) a' \<noteq> {a'}})"
     by simp
   hence "{a \<in> A. above (p (least V)) a = {a}} \<inter> {a \<in> A. above (p (least V)) a \<noteq> {a}} = {}"
     by blast

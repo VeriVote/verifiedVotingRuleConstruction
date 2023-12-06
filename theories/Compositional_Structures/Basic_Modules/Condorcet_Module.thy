@@ -52,15 +52,12 @@ proof (unfold condorcet_rating_def, safe)
     c_win: "condorcet_winner V A p w" and
     l_neq_w: "l \<noteq> w"
   have "\<not> condorcet_winner V A p l"
-    using cond_winner_unique c_win l_neq_w
+    using cond_winner_unique_eq c_win l_neq_w
     by metis
-  hence zero_score: "condorcet_score V l A p = 0"
-    by simp
-  moreover have one_score: "condorcet_score V w A p = 1"
-    using c_win
-    by auto
-  ultimately show "condorcet_score V l A p < condorcet_score V w A p"
-    by (metis one_score zero_less_one zero_score)
+  thus "condorcet_score V l A p < condorcet_score V w A p"
+    using c_win zero_less_one
+    unfolding condorcet_score.simps
+    by (metis (full_types))
 qed
 
 theorem condorcet_is_dcc: "defer_condorcet_consistency condorcet"
@@ -70,8 +67,6 @@ proof (unfold defer_condorcet_consistency_def social_choice_result.electoral_mod
     V :: "'a set" and
     p :: "('b, 'a) Profile"
   assume
-    "finite A" and
-    "finite V" and
     "profile V A p"
   hence "well_formed_soc_choice A (max_eliminator condorcet_score V A p)"
     using max_elim_sound
@@ -84,23 +79,21 @@ next
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
-    a :: "'b"
+    a :: 'b
   assume
-    c_win_w: "condorcet_winner V A p a" and
-    fin_A: "finite A" and
-    fin_V: "finite V"
+    c_win_w: "condorcet_winner V A p a"
   let ?m = "(max_eliminator condorcet_score)::(('b, 'a, 'b Result) Electoral_Module)"
   have "defer_condorcet_consistency ?m"
     using cr_eval_imp_dcc_max_elim
     by (simp add: condorcet_score_is_condorcet_rating)
   hence "?m V A p =
-          ({}, A - defer V ?m A p, {b \<in> A. condorcet_winner V A p b})"
-    using fin_A fin_V c_win_w
+          ({}, A - defer ?m V A p, {b \<in> A. condorcet_winner V A p b})"
+    using c_win_w
     unfolding defer_condorcet_consistency_def
-    by blast
+    by (metis (no_types))
   thus "condorcet V A p =
           ({},
-          A - defer V condorcet A p,
+          A - defer condorcet V A p,
           {d \<in> A. condorcet_winner V A p d})"
     by simp
 qed

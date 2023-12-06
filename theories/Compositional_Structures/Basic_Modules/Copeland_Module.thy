@@ -67,7 +67,8 @@ theorem copeland_only_voters_vote: "only_voters_vote copeland"
 subsection \<open>Lemmas\<close>
 
 text \<open>
-  For a Condorcet winner w, we have: "card {y in A . wins x p y} = |A| - 1".
+  For a Condorcet winner w, we have:
+    "\<open>{card y \<in> A . wins x p y} = |A| - 1\<close>".
 \<close>
 
 lemma cond_winner_imp_win_count:
@@ -125,7 +126,8 @@ proof -
 qed
 
 text \<open>
-  For a Condorcet winner w, we have: "card {y in A . wins y p x} = 0".
+  For a Condorcet winner w, we have:
+    "\<open>card {y \<in> A . wins y p x = 0\<close>".
 \<close>
 
 lemma cond_winner_imp_loss_count:
@@ -166,7 +168,7 @@ qed
 
 text \<open>
   For a non-Condorcet winner l, we have:
-  "card {y in A . wins x p y} <= |A| - 1 - 1".
+  "\<open>card {y \<in> A . wins x p y} = |A| - 2\<close>".
 \<close>
 
 lemma non_cond_winner_imp_win_count:
@@ -232,9 +234,9 @@ proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
     using diff_le_self order.trans
     by simp
   moreover have "card A - 2 < card A - 1"
-    using card_0_eq card_Diff_singleton diff_less_mono2 empty_iff finite_Diff insertE
-          insert_Diff l_in_A l_neq_w neq0_conv one_less_numeral_iff semiring_norm(76)
-          winner zero_less_diff
+    using card_0_eq diff_less_mono2 empty_iff l_in_A l_neq_w neq0_conv less_one
+          Suc_1 zero_less_diff add_diff_cancel_left' diff_is_0_eq Suc_eq_plus1
+          card_1_singleton_iff order_less_le singletonD le_zero_eq winner
     unfolding condorcet_winner.simps
     by metis
   ultimately have
@@ -257,14 +259,12 @@ qed
 theorem copeland_is_dcc: "defer_condorcet_consistency copeland"
 proof (unfold defer_condorcet_consistency_def social_choice_result.electoral_module_def, safe)
   fix
-    A :: "'b set" and 
+    A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile"
-  assume
-    "finite A" and
-    "finite V" and
-    "profile V A p"
-  hence "well_formed_soc_choice A (max_eliminator copeland_score V A p)"
+  assume "profile V A p"
+  hence 
+    "well_formed_soc_choice A (max_eliminator copeland_score V A p)"
     using max_elim_sound
     unfolding social_choice_result.electoral_module_def
     by metis
@@ -277,18 +277,18 @@ next
     p :: "('b, 'v) Profile" and 
     w :: 'b
   assume
-    "condorcet_winner V A p w" and
-    "finite A" and
-    "finite V"
+    "condorcet_winner V A p w"
   moreover have "defer_condorcet_consistency (max_eliminator copeland_score)"
     by (simp add: copeland_score_is_cr)
-  moreover have "\<forall> A V p. (copeland V A p = max_eliminator copeland_score V A p)"
+  ultimately have "max_eliminator copeland_score V A p = 
+    ({}, A - defer (max_eliminator copeland_score) V A p, {d \<in> A. condorcet_winner V A p d})"
+    unfolding defer_condorcet_consistency_def
+    by (metis (no_types))
+  moreover have "copeland V A p = max_eliminator copeland_score V A p"
     by simp
   ultimately show
-    "copeland V A p = ({}, A - defer V copeland A p, {d \<in> A. condorcet_winner V A p d})"
-    using Collect_cong
-    unfolding defer_condorcet_consistency_def
-    by (metis (no_types, lifting))
+    "copeland V A p = ({}, A - defer copeland V A p, {d \<in> A. condorcet_winner V A p d})"
+    by metis
 qed
 
 end

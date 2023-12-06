@@ -223,7 +223,7 @@ theorem plurality'_non_electing[simp]: "non_electing plurality'"
 
 subsection \<open>Property\<close>
 
-lemma plurality_def_inv_mono_2:
+lemma plurality_def_inv_mono_alts:
   fixes
     A :: "'a set" and
     V :: "'v set" and
@@ -231,16 +231,16 @@ lemma plurality_def_inv_mono_2:
     q :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
-    defer_a: "a \<in> defer V plurality A p" and
+    defer_a: "a \<in> defer plurality V A p" and
     lift_a: "lifted V A p q a"
-  shows "defer V plurality A q = defer V plurality A p \<or> defer V plurality A q = {a}"
+  shows "defer plurality V A q = defer plurality V A p \<or> defer plurality V A q = {a}"
 proof -
   have set_disj: "\<forall> b c. (b::'a) \<notin> {c} \<or> b = c"
     by force
   have lifted_winner:
     "\<forall> b \<in> A.
       \<forall> i \<in> V. (above (p i) b = {b} \<longrightarrow> (above (q i) b = {b} \<or> above (q i) a = {a}))"
-    using lift_a lifted_above_winner
+    using lift_a lifted_above_winner_alts
     unfolding Profile.lifted_def
     by metis
   hence "\<forall> i \<in> V. (above (p i) a = {a} \<longrightarrow> above (q i) a = {a})"
@@ -263,14 +263,14 @@ proof -
   hence
     "\<forall> b \<in> A - {a}.
       \<forall> i \<in> V. (above (q i) a = {a} \<longrightarrow> above (q i) b \<noteq> {b})"
-    using DiffE above_one_2 lift_a insertCI insert_absorb insert_not_empty
+    using DiffE above_one lift_a insertCI insert_absorb insert_not_empty
     unfolding Profile.lifted_def profile_def
     by metis
   with lifted_winner
   have above_QtoP:
     "\<forall> b \<in> A - {a}.
       \<forall> i \<in> V. (above (q i) b = {b} \<longrightarrow> above (p i) b = {b})"
-    using lifted_above_winner_3 lift_a
+    using lifted_above_winner_other lift_a
     unfolding Profile.lifted_def
     by metis
   hence "\<forall> b \<in> A - {a}.
@@ -278,7 +278,7 @@ proof -
     by (simp add: Collect_mono)
   hence win_count_other: "\<forall> b \<in> A - {a}. win_count V p b \<ge> win_count V q b"
     by (simp add: card_mono)
-  show "defer V plurality A q = defer V plurality A p \<or> defer V plurality A q = {a}"
+  show "defer plurality V A q = defer plurality V A p \<or> defer plurality V A q = {a}"
   proof (cases)
     assume "win_count V p a = win_count V q a"
     hence "card {i \<in> V. above (p i) a = {a}} = card {i \<in> V. above (q i) a = {a}}"
@@ -320,7 +320,7 @@ proof -
         unfolding Profile.lifted_def profile_def
         by simp
       ultimately show "b = a"
-        using fin_A above_one_2
+        using fin_A above_one_eq
         by metis
     qed
     ultimately have above_PtoQ:
@@ -343,9 +343,9 @@ proof -
     hence "{b \<in> A. \<forall> c \<in> A. win_count V p c \<le> win_count V p b} =
               {b \<in> A. \<forall> c \<in> A. win_count V q c \<le> win_count V q b}"
       by auto
-    hence "defer V plurality' A q = defer V plurality' A p \<or> defer V plurality' A q = {a}"
+    hence "defer plurality' V A q = defer plurality' V A p \<or> defer plurality' V A q = {a}"
       by simp
-    hence "defer V plurality A q = defer V plurality A p \<or> defer V plurality A q = {a}"
+    hence "defer plurality V A q = defer plurality V A p \<or> defer plurality V A q = {a}"
       using plurality_mod_elim_equiv empty_not_insert insert_absorb lift_a
       unfolding Profile.lifted_def
       by (metis (no_types, opaque_lifting))
@@ -356,7 +356,7 @@ proof -
     hence strict_less: "win_count V p a < win_count V q a"
       using win_count_a
       by simp
-    have "a \<in> defer V plurality A p"
+    have "a \<in> defer plurality V A p"
       using defer_a plurality.elims
       by (metis (no_types))
     moreover have non_empty_A: "A \<noteq> {}"
@@ -366,7 +366,7 @@ proof -
       using lift_a
       unfolding Profile.lifted_def
       by simp
-    ultimately have "a \<in> defer V plurality' A p"
+    ultimately have "a \<in> defer plurality' V A p"
       using plurality_mod_elim_equiv
       by metis
     hence a_in_win_p: "a \<in> {b \<in> A. \<forall> c \<in> A. win_count V p c \<le> win_count V p b}"
@@ -383,15 +383,15 @@ proof -
       by metis
     hence "\<forall> b \<in> A - {a}. b \<notin> {c \<in> A. \<forall> b \<in> A. win_count V q b \<le> win_count V q c}"
       by blast
-    hence "\<forall> b \<in> A - {a}. b \<notin> defer V plurality' A q"
+    hence "\<forall> b \<in> A - {a}. b \<notin> defer plurality' V A q"
       by simp
-    hence "\<forall> b \<in> A - {a}. b \<notin> defer V plurality A q"
+    hence "\<forall> b \<in> A - {a}. b \<notin> defer plurality V A q"
       using lift_a non_empty_A plurality_mod_elim_equiv
       unfolding Profile.lifted_def
       by (metis (no_types, lifting))
-    hence "\<forall> b \<in> A - {a}. b \<notin> defer V plurality A q"
+    hence "\<forall> b \<in> A - {a}. b \<notin> defer plurality V A q"
       by simp
-    moreover have "a \<in> defer V plurality A q"
+    moreover have "a \<in> defer plurality V A q"
     proof -
       have "\<forall> b \<in> A - {a}. win_count V q b \<le> win_count V q a"
         using less less_imp_le
@@ -405,16 +405,16 @@ proof -
         by simp
       ultimately have "a \<in> {b \<in> A. \<forall> c \<in> A. win_count V q c \<le> win_count V q b}"
         by simp
-      hence "a \<in> defer V plurality' A q"
+      hence "a \<in> defer plurality' V A q"
         by simp
-      hence "a \<in> defer V plurality A q"
+      hence "a \<in> defer plurality V A q"
         using plurality_mod_elim_equiv non_empty_A fin_A lift_a non_empty_A
         unfolding Profile.lifted_def
         by (metis (no_types))
       thus ?thesis
         by simp
     qed
-    moreover have "defer V plurality A q \<subseteq> A"
+    moreover have "defer plurality V A q \<subseteq> A"
       by simp
     ultimately show ?thesis
       by blast
@@ -439,11 +439,10 @@ next
     p :: "('b, 'a) Profile" and 
     q :: "('b, 'a) Profile" and
     a :: 'b
-  assume "a \<in> snd (snd (plurality V A p)) \<and> Profile.lifted V A p q a"
-  hence "defer V plurality A q = defer V plurality A p \<or> defer V plurality A q = {a}"
-    using plurality_def_inv_mono_2
-    by metis
-  thus "snd (snd (plurality V A q)) = snd (snd (plurality V A p)) \<or> snd (snd (plurality V A q)) = {a}"
+  assume "a \<in> defer plurality V A p \<and> Profile.lifted V A p q a"
+  hence "defer plurality V A q = defer plurality V A p \<or> defer plurality V A q = {a}"
+    by (meson plurality_def_inv_mono_alts)
+  thus "defer plurality V A q = defer plurality V A p \<or> defer plurality V A q = {a}"
     by auto
 qed
 

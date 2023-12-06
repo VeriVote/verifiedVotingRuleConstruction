@@ -40,7 +40,7 @@ text \<open>
 \<close>
 
 definition profile_l :: "'a set \<Rightarrow> 'a Profile_List \<Rightarrow> bool" where
-  "profile_l A p \<equiv> (\<forall> i < length p. ballot_on A (p!i))"
+  "profile_l A p \<equiv> \<forall> i < length p. ballot_on A (p!i)"
 
 lemma refinement:
   fixes
@@ -61,7 +61,8 @@ lemma refinement:
     unfolding profile_l_def
     by simp
   ultimately show "linear_order_on A ((pl_to_pr_\<alpha> p)!i)"
-    using lin_ord_equiv length_map nth_map pl_to_pr_\<alpha>.simps
+    using lin_ord_equiv length_map nth_map
+    unfolding pl_to_pr_\<alpha>.simps
     by metis
 qed*)
 

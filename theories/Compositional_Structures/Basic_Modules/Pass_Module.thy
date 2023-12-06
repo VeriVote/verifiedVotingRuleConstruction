@@ -34,7 +34,7 @@ theorem pass_mod_sound[simp]:
     r :: "'a Preference_Relation" and
     n :: nat
   shows "social_choice_result.electoral_module (pass_module n r)"
-proof (intro social_choice_result.electoral_modI)
+proof (unfold social_choice_result.electoral_module_def, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -81,24 +81,24 @@ next
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    a :: "'a"
+    a :: 'a
   assume
     fin_A: "finite A" and
-    rej_pass_A: "reject V (pass_module n r) A p = A" and
+    rej_pass_A: "reject (pass_module n r) V A p = A" and
     a_in_A: "a \<in> A"
-  moreover have "linear_order_on A (limit A r)"
+  moreover have lin: "linear_order_on A (limit A r)"
     using limit_presv_lin_ord order top_greatest
     by metis
   moreover have
-    "\<exists> b \<in> A. above (limit A r) b = {b} \<and>
-      (\<forall> c \<in> A. above (limit A r) c = {c} \<longrightarrow> c = b)"
-    using calculation above_one
+    "\<exists> b \<in> A. above (limit A r) b = {b}
+      \<and> (\<forall> c \<in> A. above (limit A r) c = {c} \<longrightarrow> c = b)"
+    using fin_A a_in_A lin above_one
     by blast
-  ultimately have "{b \<in> A. rank (limit A r) b > n} \<noteq> A"
-    using Suc_leI g0_n leD mem_Collect_eq above_rank
+  moreover have "{b \<in> A. rank (limit A r) b > n} \<noteq> A"
+    using Suc_leI g0_n leD mem_Collect_eq above_rank calculation
     unfolding One_nat_def
     by (metis (no_types, lifting))
-  hence "reject V (pass_module n r) A p \<noteq> A"
+  hence "reject (pass_module n r) V A p \<noteq> A"
     by simp
   thus "a \<in> {}"
     using rej_pass_A
@@ -175,7 +175,7 @@ next
   hence "card {a \<in> A. rank (limit A r) a \<le> 0} = 0"
     using card.empty
     by metis
-  thus "card (defer V (pass_module 0 r) A p) = 0"
+  thus "card (defer (pass_module 0 r) V A p) = 0"
     by simp
 qed
 
@@ -203,7 +203,7 @@ next
     card_pos: "1 \<le> card A" and
     finite_A: "finite A" and
     prof_A: "profile V A p"
-  show "card (defer V (pass_module 1 r) A p) = 1"
+  show "card (defer (pass_module 1 r) V A p) = 1"
   proof -
     have "A \<noteq> {}"
       using card_pos
@@ -265,7 +265,7 @@ next
         ultimately have "rank (limit A r) a = 1"
           by simp
         hence "{a} = above (limit A r) a"
-          using a_above_a lin_ord_on_A rank_one_2
+          using a_above_a lin_ord_on_A rank_one_imp_above_one
           by metis
         hence "a = w"
           using w_unique
@@ -278,7 +278,7 @@ next
       thus ?thesis
         by simp
     qed
-    thus "card (defer V (pass_module 1 r) A p) = 1"
+    thus "card (defer (pass_module 1 r) V A p) = 1"
       by simp
   qed
 qed
@@ -297,10 +297,10 @@ next
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assume
-    min_2_card: "2 \<le> card A" and
+    min_card_two: "2 \<le> card A" and
     fin_A: "finite A" and
     prof_A: "profile V A p"
-  from min_2_card
+  from min_card_two
   have not_empty_A: "A \<noteq> {}"
     by auto
   moreover have limit_A_order: "linear_order_on A (limit A r)"
@@ -308,32 +308,30 @@ next
     by auto
   ultimately obtain a where
     "above (limit A r) a = {a}"
-    using above_one min_2_card fin_A prof_A
+    using above_one min_card_two fin_A prof_A
     by blast
   hence "\<forall> b \<in> A. let q = limit A r in (b \<preceq>\<^sub>q a)"
-    using limit_A_order pref_imp_in_above empty_iff insert_iff insert_subset above_presv_limit
-          assms connex_def lin_ord_imp_connex
+    using limit_A_order pref_imp_in_above empty_iff lin_ord_imp_connex
+          insert_iff insert_subset above_presv_limit assms
+    unfolding connex_def
     by metis
   hence a_best: "\<forall> b \<in> A. (b, a) \<in> limit A r"
     by simp
   hence a_above: "\<forall> b \<in> A. a \<in> above (limit A r) b"
     unfolding above_def
     by simp
-  from a_above
-  have "a \<in> {a \<in> A. rank (limit A r) a \<le> 2}"
-    using CollectI Suc_leI not_empty_A a_above card_UNIV_bool card_eq_0_iff card_insert_disjoint
-          empty_iff fin_A finite.emptyI insert_iff limit_A_order above_one UNIV_bool
-          nat.simps(3) zero_less_Suc One_nat_def above_rank
+  hence "a \<in> {a \<in> A. rank (limit A r) a \<le> 2}"
+    using CollectI not_empty_A empty_iff fin_A insert_iff limit_A_order
+          above_one above_rank one_le_numeral
     by (metis (no_types, lifting))
-  hence a_in_defer: "a \<in> defer V (pass_module 2 r) A p"
+  hence a_in_defer: "a \<in> defer (pass_module 2 r) V A p"
     by simp
   have "finite (A - {a})"
     using fin_A
     by simp
   moreover have A_not_only_a: "A - {a} \<noteq> {}"
-    using min_2_card Diff_empty Diff_idemp Diff_insert0 One_nat_def not_empty_A
-          card.insert_remove card_eq_0_iff finite.emptyI insert_Diff numeral_le_one_iff
-          semiring_norm(69) card.empty
+    using Diff_empty Diff_idemp Diff_insert0 not_empty_A insert_Diff finite.emptyI
+          card.insert_remove card.empty min_card_two Suc_n_not_le_n numeral_2_eq_2
     by metis
   moreover have limit_A_without_a_order:
     "linear_order_on (A - {a}) (limit (A - {a}) r)"
@@ -344,16 +342,17 @@ next
     using above_one
     by metis
   hence "\<forall> c \<in> A - {a}. let q = limit (A - {a}) r in (c \<preceq>\<^sub>q b)"
-    using limit_A_without_a_order pref_imp_in_above empty_iff insert_iff insert_subset
-          above_presv_limit assms connex_def lin_ord_imp_connex
+    using limit_A_without_a_order pref_imp_in_above empty_iff lin_ord_imp_connex
+          insert_iff insert_subset above_presv_limit assms
+    unfolding connex_def
     by metis
   hence b_in_limit: "\<forall> c \<in> A - {a}. (c, b) \<in> limit (A - {a}) r"
     by simp
   hence b_best: "\<forall> c \<in> A - {a}. (c, b) \<in> limit A r"
     by auto
-  hence c_not_above_b: "\<forall> c \<in> A - {a, b}. c \<notin> above (limit A r) b"
-    using b Diff_iff Diff_insert2 above_presv_limit insert_subset assms limit_presv_above
-          limit_presv_above_2
+  hence "\<forall> c \<in> A - {a, b}. c \<notin> above (limit A r) b"
+    using b Diff_iff Diff_insert2 above_presv_limit insert_subset
+          assms limit_presv_above limit_rel_presv_above
     by metis
   moreover have above_subset: "above (limit A r) b \<subseteq> A"
     using above_presv_limit assms
@@ -368,12 +367,11 @@ next
   hence card_above_b_eq_two: "rank (limit A r) b = 2"
     using A_not_only_a b_in_limit
     by auto
-  hence b_in_defer: "b \<in> defer V (pass_module 2 r) A p"
+  hence b_in_defer: "b \<in> defer (pass_module 2 r) V A p"
     using b_above_b above_subset
     by auto
-  from b_best
   have b_above: "\<forall> c \<in> A - {a}. b \<in> above (limit A r) c"
-    using mem_Collect_eq
+    using b_best mem_Collect_eq
     unfolding above_def
     by metis
   have "connex A (limit A r)"
@@ -385,8 +383,8 @@ next
     using a_above b_above
     by auto
   moreover have "\<forall> c \<in> A - {a, b}. card {a, b, c} = 3"
-    using DiffE Suc_1 above_b_eq_ab card_above_b_eq_two above_subset card_insert_disjoint
-          fin_A finite_subset insert_commute numeral_3_eq_3
+    using DiffE Suc_1 above_b_eq_ab card_above_b_eq_two above_subset fin_A
+          card_insert_disjoint finite_subset insert_commute numeral_3_eq_3
     unfolding One_nat_def rank.simps
     by metis
   ultimately have "\<forall> c \<in> A - {a, b}. rank (limit A r) c \<ge> 3"
@@ -394,18 +392,19 @@ next
     unfolding rank.simps
     by metis
   hence "\<forall> c \<in> A - {a, b}. rank (limit A r) c > 2"
-    using less_le_trans numeral_less_iff order_refl semiring_norm(79)
+    using Suc_le_eq Suc_1 numeral_3_eq_3
+    unfolding One_nat_def
     by metis
-  hence "\<forall> c \<in> A - {a, b}. c \<notin> defer V (pass_module 2 r) A p"
+  hence "\<forall> c \<in> A - {a, b}. c \<notin> defer (pass_module 2 r) V A p"
     by (simp add: not_le)
-  moreover have "defer V (pass_module 2 r) A p \<subseteq> A"
+  moreover have "defer (pass_module 2 r) V A p \<subseteq> A"
     by auto
-  ultimately have "defer V (pass_module 2 r) A p \<subseteq> {a, b}"
+  ultimately have "defer (pass_module 2 r) V A p \<subseteq> {a, b}"
     by blast
-  hence "defer V (pass_module 2 r) A p = {a, b}"
+  hence "defer (pass_module 2 r) V A p = {a, b}"
     using a_in_defer b_in_defer
     by fastforce
-  thus "card (defer V (pass_module 2 r) A p) = 2"
+  thus "card (defer (pass_module 2 r) V A p) = 2"
     using above_b_eq_ab card_above_b_eq_two
     unfolding rank.simps
     by presburger

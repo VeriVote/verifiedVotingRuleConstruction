@@ -18,12 +18,11 @@ text \<open>
 
 locale result_properties = result +
   fixes
-    \<psi>_neutr :: "('a \<Rightarrow> 'a, 'b) binary_fun" and
-    \<psi>_rev :: "('a \<Rightarrow> 'a, 'b) binary_fun"
-  assumes 
+    \<psi>_neutr :: "('a \<Rightarrow> 'a, 'b) binary_fun"
+  assumes
     act_neutr: "group_action neutr_group UNIV \<psi>_neutr" and
-    well_formed_res_neutr: 
-      "has_prop (\<lambda>E. limit_set (alts_\<E> E) UNIV) 
+    well_formed_res_neutr:
+      "has_prop (\<lambda>(E::('a, 'c) Election). limit_set (alts_\<E> E) UNIV) 
                 (equivar_ind_by_act (carrier neutr_group) 
                     valid_elections \<phi>_neutr (set_action \<psi>_neutr))"
 

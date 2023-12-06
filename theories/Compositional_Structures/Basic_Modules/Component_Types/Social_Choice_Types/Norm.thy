@@ -11,11 +11,11 @@ theory Norm
 begin
 
 text \<open>
-  A norm on R to n is a mapping N: R to n on R that has the following properties:
-  - positive scalability: N(a * u) = |a| * N(u) for all u in R to n and all a in R;
-  - positive semidefiniteness: N(u) >= 0 for all u in R to n, and N(u) = 0 if and
-    only if u = (0, 0, . . . , 0);
-  - triangle inequality: N(u + v) <= N(u) + N(v) for all u,v in R to n.
+  A norm on R to n is a mapping \<open>N: R \<mapsto> n\<close> on R that has the following properties:
+  \<^item> positive scalability: \<open>N(a * u) = |a| * N(u)\<close> for all u in R to n and all a in R;
+  \<^item> positive semidefiniteness: \<open>N(u) \<ge> 0\<close> for all u in R to n, and \<open>N(u) = 0\<close> if
+    and only if \<open>u = (0, 0, \<dots>, 0)\<close>;
+  \<^item> triangle inequality: \<open>N(u + v) \<le> N(u) + N(v)\<close> for all u and v in R to n.
 \<close>
 
 subsection \<open>Definition\<close>
@@ -87,7 +87,8 @@ next
   have "\<forall> f A A'. bij_betw f (A::'a set) (A'::'b set) = (inj_on f A \<and> f ` A = A')"
     unfolding bij_betw_def
     by simp
-  hence inv_without_a: "\<forall> a' \<in> (A' - {f a}). the_inv_into (A - {a}) f a' = the_inv_into A f a'"
+  hence inv_without_a:
+    "\<forall> a' \<in> A' - {f a}. the_inv_into (A - {a}) f a' = the_inv_into A f a'"
     using inj_on_A A'_sub_fa
     by (simp add: inj_on_diff the_inv_into_f_eq)
   have card_without_a: "card (A - {a}) = x"
@@ -106,7 +107,8 @@ next
   also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into A f a')) + g a"
     using inv_without_a
     by simp
-  also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into A f a')) + g (the_inv_into A f (f a))"
+  also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into A f a')) +
+                    g (the_inv_into A f (f a))"
     using a_in_A bij_A_A'
     by (simp add: bij_betw_imp_inj_on the_inv_into_f_f)
   also have "\<dots> = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"
@@ -129,34 +131,35 @@ definition symmetry :: "Norm \<Rightarrow> bool" where
 
 subsection \<open>Theorems\<close>
 
-theorem l_one_is_symm: "symmetry l_one"
+theorem l_one_is_sym: "symmetry l_one"
 proof (unfold symmetry_def, safe)
   fix
-    xs :: "ereal list" and
-    ys :: "ereal list"
-  assume perm: "xs <~~> ys"
-  from perm obtain pi
+    l :: "ereal list" and
+    l' :: "ereal list"
+  assume perm: "l <~~> l'"
+  from perm obtain \<pi>
     where
-      pi_perm: "pi permutes {..< length xs}" and
-      pi_xs_ys: "permute_list pi xs = ys"
+      perm\<^sub>\<pi>: "\<pi> permutes {..< length l}" and
+      l\<^sub>\<pi>: "permute_list \<pi> l = l'"
     using mset_eq_permutation
     by metis
-  hence "(\<Sum> i < length xs. \<bar>ys!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!(pi i)\<bar>)"
+  from perm\<^sub>\<pi> l\<^sub>\<pi>
+  have "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!(\<pi> i)\<bar>)"
     using permute_list_nth
     by fastforce
-  also have "\<dots> = (\<Sum> i < length xs. \<bar>xs!(pi (inv pi i))\<bar>)"
-    using pi_perm permutes_inv_eq f_the_inv_into_f_bij_betw permutes_imp_bij sum.cong
-          sum_over_image_of_bijection
+  also have "\<dots> = (\<Sum> i < length l. \<bar>l!(\<pi> (inv \<pi> i))\<bar>)"
+    using perm\<^sub>\<pi> permutes_inv_eq f_the_inv_into_f_bij_betw permutes_imp_bij
+          sum.cong sum_over_image_of_bijection
     by (smt (verit, ccfv_SIG))
-  also have "\<dots> = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
-    using pi_perm permutes_inv_eq
+  also have "\<dots> = (\<Sum> i < length l. \<bar>l!i\<bar>)"
+    using perm\<^sub>\<pi> permutes_inv_eq
     by metis
-  finally have "(\<Sum> i < length xs. \<bar>ys!i\<bar>) = (\<Sum> i < length xs. \<bar>xs!i\<bar>)"
+  finally have "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!i\<bar>)"
     by simp
-  moreover have "length xs = length ys"
+  moreover have "length l = length l'"
     using perm perm_length
     by metis
-  ultimately show "l_one xs = l_one ys"
+  ultimately show "l_one l = l_one l'"
     using l_one.elims
     by metis
 qed

@@ -10,7 +10,7 @@ text \<open>
 
 lemma electoral_module_soc_choice_code_lemma: 
   "social_choice_result.electoral_module m
-    \<equiv> \<forall> A V p. finite_profile V A p \<longrightarrow> well_formed_soc_choice A (m V A p)"
+    \<equiv> \<forall> A V p. profile V A p \<longrightarrow> well_formed_soc_choice A (m V A p)"
   by (rule social_choice_result.electoral_module_def)
 
 lemma \<R>\<^sub>\<W>_soc_choice_code_lemma: 

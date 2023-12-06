@@ -69,13 +69,13 @@ text \<open>
 fun (in result) limit_res :: "'a set \<Rightarrow> 'r Result \<Rightarrow> 'r Result" where
   "limit_res A (e, r, d) = (limit_set A e, limit_set A r, limit_set A d)"
 
-fun elect_r :: "'r Result \<Rightarrow> 'r set" where
-  "elect_r r = fst r"
+abbreviation elect_r :: "'r Result \<Rightarrow> 'r set" where
+  "elect_r r \<equiv> fst r"
 
-fun reject_r :: "'r Result \<Rightarrow> 'r set" where
-  "reject_r r = fst (snd r)"
+abbreviation reject_r :: "'r Result \<Rightarrow> 'r set" where
+  "reject_r r \<equiv> fst (snd r)"
 
-fun defer_r :: "'r Result \<Rightarrow> 'r set" where
-  "defer_r r = snd (snd r)"
+abbreviation defer_r :: "'r Result \<Rightarrow> 'r set" where
+  "defer_r r \<equiv> snd (snd r)"
 
 end

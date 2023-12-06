@@ -48,7 +48,7 @@ proof (unfold plurality_rule'.simps plurality'.simps revision_composition.simps,
       card {i. i \<in> V \<and> above (p i) b = {b}}" and
     "\<forall> a' \<in> A. card {i. i \<in> V \<and> above (p i) a' = {a'}} \<le>
       card {i. i \<in> V \<and> above (p i) a = {a}}"
-  thus "False"
+  thus False
     using leD
     by blast
 next
@@ -120,7 +120,7 @@ qed
 
 subsection \<open>Electing\<close>
 
-lemma plurality_rule_electing_2:
+lemma plurality_rule_elect_non_empty:
   fixes
     A :: "'a set" and
     V :: "'v set" and
@@ -128,9 +128,9 @@ lemma plurality_rule_electing_2:
   assumes
     A_non_empty: "A \<noteq> {}" and
     fin_prof_A: "finite_profile V A p"
-  shows "elect V plurality_rule A p \<noteq> {}"
+  shows "elect plurality_rule V A p \<noteq> {}"
 proof
-  assume plurality_elect_none: "elect V plurality_rule A p = {}"
+  assume plurality_elect_none: "elect plurality_rule V A p = {}"
   obtain max where
     max: "max = Max (win_count V p ` A)"
     by simp
@@ -146,7 +146,7 @@ proof
     by simp
   ultimately have "a \<in> {a' \<in> A. \<forall> c \<in> A. win_count V p c \<le> win_count V p a'}"
     by blast
-  hence "a \<in> elect V plurality_rule A p"
+  hence "a \<in> elect plurality_rule V A p"
     sorry
   thus False
     using plurality_elect_none all_not_in_conv
@@ -172,10 +172,10 @@ next
     fin_A: "finite A" and
     fin_V: "finite V" and
     prof_p: "profile V A p" and
-    elect_none: "elect V plurality_rule A p = {}" and
+    elect_none: "elect plurality_rule V A p = {}" and
     a_in_A: "a \<in> A"
-  have "\<forall> V A p. (A \<noteq> {} \<and> finite_profile V A p) \<longrightarrow> elect V plurality_rule A p \<noteq> {}"
-    using plurality_rule_electing_2
+  have "\<forall> A V p. A \<noteq> {} \<and> finite_profile V A p \<longrightarrow> elect plurality_rule V A p \<noteq> {}"
+    using plurality_rule_elect_non_empty
     by (metis (no_types))
   hence empty_A: "A = {}"
     using fin_A fin_V prof_p elect_none
@@ -187,7 +187,7 @@ qed
 
 subsection \<open>Property\<close>
 
-lemma plurality_rule_inv_mono_2:
+lemma plurality_rule_inv_mono_eq:
   fixes
     A :: "'a set" and
     V :: "'v set" and
@@ -195,26 +195,26 @@ lemma plurality_rule_inv_mono_2:
     q :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
-    elect_a: "a \<in> elect V plurality_rule A p" and
+    elect_a: "a \<in> elect plurality_rule V A p" and
     lift_a: "lifted V A p q a"
-  shows "elect V plurality_rule A q = elect V plurality_rule A p \<or>
-          elect V plurality_rule A q = {a}"
+  shows "elect plurality_rule V A q = elect plurality_rule V A p \<or>
+          elect plurality_rule V A q = {a}"
 proof -
-  have "a \<in> elect V (elector plurality) A p"
+  have "a \<in> elect (elector plurality) V A p"
     using elect_a
     by simp
-  moreover have eq_p: "elect V (elector plurality) A p = defer V plurality A p"
+  moreover have eq_p: "elect (elector plurality) V A p = defer plurality V A p"
     by simp
-  ultimately have "a \<in> defer V plurality A p"
+  ultimately have "a \<in> defer plurality V A p"
     by blast
-  hence "defer V plurality A q = defer V plurality A p \<or> defer V plurality A q = {a}"
-    using lift_a plurality_def_inv_mono_2
+  hence "defer plurality V A q = defer plurality V A p \<or> defer plurality V A q = {a}"
+    using lift_a plurality_def_inv_mono_alts
     by metis
-  moreover have "elect V (elector plurality) A q = defer V plurality A q"
+  moreover have "elect (elector plurality) V A q = defer plurality V A q"
     by simp
   ultimately show
-    "elect V plurality_rule A q = elect V plurality_rule A p \<or>
-      elect V plurality_rule A q = {a}"
+    "elect plurality_rule V A q = elect plurality_rule V A p \<or>
+      elect plurality_rule V A q = {a}"
     using eq_p
     by simp
 qed
@@ -234,10 +234,10 @@ next
     p :: "('b, 'a) Profile" and
     q :: "('b, 'a) Profile" and
     a :: "'b"
-  assume "a \<in> elect V plurality_rule A p \<and> Profile.lifted V A p q a"
-  thus "elect V plurality_rule A q = elect V plurality_rule A p \<or>
-          elect V plurality_rule A q = {a}"
-    using plurality_rule_inv_mono_2
+  assume "a \<in> elect plurality_rule V A p \<and> Profile.lifted V A p q a"
+  thus "elect plurality_rule V A q = elect plurality_rule V A p \<or>
+          elect plurality_rule V A q = {a}"
+    using plurality_rule_inv_mono_eq
     by metis
 qed
 
