@@ -48,7 +48,7 @@ abbreviation prof_\<E> :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Profile" whe
 text \<open>
   A profile on a set of alternatives A and a voter set V consists of ballots
   that are linear orders on A for all voters in V.
-  A finite profile is one where V and A are finite.
+  A finite profile is one with finitely many alternatives and voters.
 \<close>
 
 definition profile :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> bool" where
@@ -63,6 +63,9 @@ abbreviation finite_election :: "('a,'v) Election \<Rightarrow> bool" where
 definition finite_elections :: "('a, 'v) Election set" where
   "finite_elections = 
     {el :: ('a, 'v) Election. finite_profile (votrs_\<E> el) (alts_\<E> el) (prof_\<E> el)}"
+
+definition valid_elections :: "('a,'v) Election set" where
+  "valid_elections = {E. profile (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E)}"
 
 text \<open>
   A common action of interest on elections is renaming the voters, 
@@ -123,33 +126,114 @@ proof (safe)
     by metis
 qed
 
-lemma rename_inj: 
-   fixes
+lemma rename_inv:
+  fixes
+    \<pi> :: "'v \<Rightarrow> 'v" and
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    A' :: "'a set" and
-    V' :: "'v set" and
-    p' :: "('a, 'v) Profile" and
+    p :: "('a, 'v) Profile"
+  assumes
+    "bij \<pi>"
+  shows
+    "rename \<pi> (rename (the_inv \<pi>) (A, V, p)) = (A, V, p)"
+proof -
+  have "rename \<pi> (rename (the_inv \<pi>) (A, V, p)) = 
+    (A, \<pi> ` (the_inv \<pi>) ` V, p \<circ> (the_inv (the_inv \<pi>)) \<circ> (the_inv \<pi>))"
+    by simp
+  moreover have "\<pi> ` (the_inv \<pi>) ` V = V"
+    using assms
+    by (simp add: f_the_inv_into_f_bij_betw image_comp)
+  moreover have "(the_inv (the_inv \<pi>)) = \<pi>"
+    using assms bij_betw_def inj_on_the_inv_into surj_def surj_imp_inv_eq the_inv_f_f
+    by (metis (mono_tags, opaque_lifting))
+  moreover have "\<pi> \<circ> (the_inv \<pi>) = id"
+    using assms f_the_inv_into_f_bij_betw 
+    by fastforce
+  ultimately show "rename \<pi> (rename (the_inv \<pi>) (A, V, p)) = (A, V, p)"
+    by (simp add: rewriteR_comp_comp)     
+qed
+    
+lemma rename_inj: 
+  fixes
     \<pi> :: "'v \<Rightarrow> 'v"
   assumes 
-    ineq: "(A, V, p) \<noteq> (A', V', p')" and
     bij: "bij \<pi>"
-  shows "rename \<pi> (A, V, p) \<noteq> rename \<pi> (A', V', p')"
-  sorry
+  shows "inj (rename \<pi>)"
+proof (unfold inj_def, clarsimp)
+  fix
+    V :: "'v set" and V' :: "'v set" and
+    p :: "('a, 'v) Profile" and p' :: "('a, 'v) Profile"
+  assume
+    eq_V: "\<pi> ` V = \<pi> ` V'" and
+    "p \<circ> the_inv \<pi> = p' \<circ> the_inv \<pi>"
+  hence "p \<circ> the_inv \<pi> \<circ> \<pi> = p' \<circ> the_inv \<pi> \<circ> \<pi>"
+    by simp
+  hence "p = p'"
+    using \<open>bij \<pi>\<close>
+    by (metis bij_betw_the_inv_into bij_is_surj surj_fun_eq)
+  moreover have "V = V'"
+    using \<open>bij \<pi>\<close> eq_V
+    by (simp add: bij_betw_imp_inj_on inj_image_eq_iff)
+  ultimately show "V = V' \<and> p = p'"
+    by blast
+qed
 
 lemma rename_surj:
   fixes
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assumes 
-    bij: "bij \<pi>" and
-    prof: "profile V A p"
-  shows "\<exists>A' V' p'. profile V' A' p' \<and> (A, V, p) = rename \<pi> (A', V', p')"
-  sorry
-
+    "bij \<pi>"
+  shows 
+    on_valid_els: "rename \<pi> ` valid_elections = valid_elections" and
+    on_finite_els: "rename \<pi> ` finite_elections = finite_elections"
+proof (safe)
+  fix
+    A :: "'a set" and A' :: "'a set" and 
+    V :: "'v set" and V' :: "'v set" and
+    p :: "('a, 'v) Profile" and p' :: "('a, 'v) Profile"
+  assume
+    valid: "(A, V, p) \<in> valid_elections"
+  have "bij (the_inv \<pi>)"
+    using \<open>bij \<pi>\<close> bij_betw_the_inv_into
+    by blast
+  hence 
+    "rename (the_inv \<pi>) (A, V, p) \<in> valid_elections"
+    using rename_sound valid
+    unfolding valid_elections_def
+    by fastforce
+  thus "(A, V, p) \<in> rename \<pi> ` valid_elections"
+    using assms image_eqI rename_inv[of \<pi> A V p]
+    by metis
+  assume "(A', V', p') = rename \<pi> (A, V, p)"
+  thus "(A', V', p') \<in> valid_elections"
+    using rename_sound valid assms
+    unfolding valid_elections_def
+    by fastforce
+next
+  fix
+    A :: "'b set" and A' :: "'b set" and 
+    V :: "'v set" and V' :: "'v set" and
+    p :: "('b, 'v) Profile" and p' :: "('b, 'v) Profile"
+  assume
+    finite: "(A, V, p) \<in> finite_elections"
+  have "bij (the_inv \<pi>)"
+    using \<open>bij \<pi>\<close> bij_betw_the_inv_into
+    by blast
+  hence 
+    "rename (the_inv \<pi>) (A, V, p) \<in> finite_elections"
+    using rename_finite finite
+    unfolding finite_elections_def
+    by fastforce
+  thus "(A, V, p) \<in> rename \<pi> ` finite_elections"
+    using assms image_eqI rename_inv[of \<pi> A V p]
+    by metis
+  assume "(A', V', p') = rename \<pi> (A, V, p)"
+  thus "(A', V', p') \<in> finite_elections"
+    using rename_sound finite assms
+    unfolding finite_elections_def
+    by fastforce
+qed
+   
 text \<open>
   A profile on a voter set that has a natural order can be viewed as a list of ballots.
 \<close>
@@ -468,11 +552,11 @@ text \<open>
 
 fun win_count :: "'v set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> enat" where
   "win_count V p a = (if (finite V) 
-    then card {v\<in>V. above (p v) a = {a}} else infinity)"
+    then card {v \<in> V. above (p v) a = {a}} else infinity)"
 
 fun prefer_count :: "'v set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> enat" where
   "prefer_count V p x y = (if (finite V)
-      then card {v\<in>V. (let r = (p v) in (y \<preceq>\<^sub>r x))} else infinity)"
+      then card {v \<in> V. (let r = (p v) in (y \<preceq>\<^sub>r x))} else infinity)"
 
 lemma pref_count_voter_set_card:
   fixes 
@@ -579,7 +663,7 @@ proof (cases)
     by simp
   hence "card V - (prefer_count V p b c) + (prefer_count V p c a) \<le> 
           card V - (prefer_count V p c a) + (prefer_count V p c a)"
-    using pref_count_b_eq pref_count_ineq 
+    using pref_count_b_eq pref_count_ineq
     by auto
   hence "card V + (prefer_count V p c a) \<le> card V + (prefer_count V p b c)"
     using nat1 nat2 finV smaller

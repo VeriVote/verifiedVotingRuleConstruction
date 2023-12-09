@@ -28,7 +28,7 @@ type_synonym ('a, 'v) Electoral_Set = "'v set \<Rightarrow> 'a set \<Rightarrow>
 
 fun elimination_set :: "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow>
                             Threshold_Relation \<Rightarrow> ('a, 'v) Electoral_Set" where
- "elimination_set e t r V A p = {a \<in> A . r (e V a A p) t }"
+ "elimination_set e t r V A p = {a \<in> A . r (e V a A p) t}"
 
 fun average :: "('a, 'v) Evaluation_Function \<Rightarrow> 'v set \<Rightarrow>
   'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> Threshold_Value" where
@@ -467,7 +467,7 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
     a :: "'a"
   assume
     winner: "condorcet_winner V A p a"
-  hence profile: "finite_profile V A p"
+  hence f_prof: "finite_profile V A p"
     by simp
   let ?trsh = "Max {e V b A p | b. b \<in> A}"
   show
@@ -476,9 +476,16 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
         A - defer (max_eliminator e) V A p,
         {b \<in> A. condorcet_winner V A p b})"
   proof (cases "elimination_set e (?trsh) (<) V A p \<noteq> A")
-    have elim_set: "(elimination_set e ?trsh (<) V A p) = A - {a}"
-      using profile assms winner cr_eval_imp_ccomp_max_elim
-      sorry
+    have "e V a A p = Max {e V x A p | x. x \<in> A}"
+      using winner assms cond_winner_imp_max_eval_val
+      by fastforce
+    hence "\<forall>b \<in> A. b \<noteq> a \<longleftrightarrow> b \<in> {c \<in> A. e V c A p < Max {e V b A p |b. b \<in> A}}"
+      using winner assms mem_Collect_eq linorder_neq_iff
+      unfolding condorcet_rating_def
+      by (metis (mono_tags, lifting))   
+    hence elim_set: "(elimination_set e ?trsh (<) V A p) = A - {a}"
+      unfolding elimination_set.simps
+      by blast
     case True
     hence
       "max_eliminator e V A p =

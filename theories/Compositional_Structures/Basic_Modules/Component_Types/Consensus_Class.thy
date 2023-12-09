@@ -112,10 +112,14 @@ proof (unfold well_formed_def, safe)
               zero_less_Suc
         unfolding profile_def
         by metis
+      hence "(a \<in> above (p (least V)) a' \<or> a' \<in> above (p (least V)) a) \<and>
+        (a \<in> above (p' (least V')) a' \<or> a' \<in> above (p' (least V')) a)"
+        using \<open>a' \<in> A\<close> a'_neq_a eq_top_p
+        unfolding above_def linear_order_on_def total_on_def
+        by auto
       hence "(above (p (least V)) a = {a} \<and> above (p (least V)) a' = {a'} \<longrightarrow> a = a') \<and>
              (above (p' (least V')) a = {a} \<and> above (p' (least V')) a' = {a'} \<longrightarrow> a = a')"
-        using a'_neq_a
-        sorry
+        by auto
       thus ?thesis
         using bot_nat_0.not_eq_extremum card_0_eq cond_Ap cond_Ap' 
               enumerate.simps(1) enumerate_in_set equal_top\<^sub>\<C>'.simps 
@@ -245,10 +249,10 @@ proof (unfold consensus_rule_anonymity_def Let_def, safe)
     unfolding consensus_anonymity_def
     by fastforce
   moreover have "\<beta> (A', V', q)"
-    using beta'_anon beta_Ap beta_sat ex_anon_cons_imp_cons_anonymous bij 
-          prof_p renamed beta'_anon cons_anon_invariant
+    using beta'_anon beta_Ap beta_sat ex_anon_cons_imp_cons_anonymous[of \<beta> \<beta>'] bij 
+          prof_p renamed beta'_anon cons_anon_invariant[of \<beta> \<pi> V A p A' V' q]
     unfolding consensus_anonymity_def
-    sorry
+    by blast
   ultimately show em_cond_perm: 
     "consensus_\<K> (consensus_choice (\<lambda> E. \<alpha> E \<and> \<beta> E) m) (A', V', q)"
     using beta_Ap beta_sat ex_anon_cons_imp_cons_anonymous bij

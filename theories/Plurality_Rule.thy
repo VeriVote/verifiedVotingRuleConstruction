@@ -86,7 +86,8 @@ lemma plurality_elim_equiv:
     p :: "('a, 'v) Profile"
   assumes
     "A \<noteq> {}" and
-    "finite_profile V A p"
+    "finite A" and
+    "profile V A p"
   shows "plurality V A p = (plurality_rule'\<down>) V A p"
   using assms plurality_mod_elim_equiv plurality_revision_equiv
   by (metis (full_types))
@@ -146,8 +147,16 @@ proof
     by simp
   ultimately have "a \<in> {a' \<in> A. \<forall> c \<in> A. win_count V p c \<le> win_count V p a'}"
     by blast
+  hence "a \<in> elect plurality_rule' V A p"
+    by simp
+  moreover have "elect plurality_rule' V A p = defer plurality V A p"
+    using plurality_elim_equiv fin_prof_A A_non_empty snd_conv
+    unfolding revision_composition.simps
+    by metis
+  ultimately have "a \<in> defer plurality V A p"  
+    by blast
   hence "a \<in> elect plurality_rule V A p"
-    sorry
+    by simp
   thus False
     using plurality_elect_none all_not_in_conv
     by metis

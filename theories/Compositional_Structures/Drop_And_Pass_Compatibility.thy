@@ -36,7 +36,6 @@ next
     p :: "('a, 'v) Profile"
   assume
     fin_A: "finite A" and
-    fin_V: "finite V" and
     prof_A: "profile V A p"
   have "connex UNIV r"
     using assms lin_ord_imp_connex
@@ -80,8 +79,7 @@ next
   assume 
     card_n: "n \<le> card A" and
     fin_A: "finite A" and
-    "finite V" and
-    "profile V A p"
+    prof: "profile V A p"
   let ?inv_rank = "the_inv_into A (rank (limit A r))"
   have lin_ord_limit: "linear_order_on A (limit A r)"
     using assms limit_presv_lin_ord

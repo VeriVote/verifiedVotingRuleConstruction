@@ -90,18 +90,17 @@ next
     x :: "'a"
   assume
     fin_A: "finite A" and
-    fin_V: "finite V" and
     prof_A: "profile V A p" and
     no_elect: "A - elect m V A p = A" and
     x_in_A: "x \<in> A"
   from no_elect have non_elect:
     "non_electing m"
-    using assms prof_A x_in_A fin_A fin_V empty_iff
+    using assms prof_A x_in_A fin_A empty_iff
           Diff_disjoint Int_absorb2 elect_in_alts
     unfolding electing_def
     by (metis (no_types, lifting))
   show False
-    using non_elect assms empty_iff fin_A fin_V prof_A x_in_A
+    using non_elect assms empty_iff fin_A prof_A x_in_A
     unfolding electing_def non_electing_def
     by (metis (no_types, lifting))
 qed

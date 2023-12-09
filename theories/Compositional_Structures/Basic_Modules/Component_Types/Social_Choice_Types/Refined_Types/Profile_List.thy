@@ -24,7 +24,7 @@ text \<open>
   Abstraction from profile list to profile.
 \<close>
 
-fun pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> ('a,nat) Profile" where
+fun pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> ('a, nat) Profile" where
   "pl_to_pr_\<alpha> pl = (\<lambda> n. if (n < length pl \<and> n \<ge> 0) 
                          then (map (Preference_List.pl_\<alpha>) pl)!n
                          else {})"

@@ -436,11 +436,12 @@ next
     by (metis (no_types))
 next
   assume "a \<in> elect n V A p"
-  thus "a \<in> elect (m \<parallel>\<^sub>\<up> n) V A p"
-    using Un_iff elect_rej_def_combination fst_conv maximum_parallel_composition.simps
-          max_aggregator.simps
-    unfolding parallel_composition.simps
-    sorry
+  thus "a \<in> elect (m \<parallel>\<^sub>\<up> n) V A p" 
+    using parallel_composition.simps[of m n max_aggregator V A p] 
+          max_aggregator.simps[of 
+            A "elect m V A p" "reject m V A p" "defer m V A p"
+            "elect n V A p" "reject n V A p" "defer n V A p"]
+    by simp
 next
   assume "a \<in> reject n V A p"
   thus "a \<in> reject (m \<parallel>\<^sub>\<up> n) V A p"
@@ -516,7 +517,7 @@ lemma max_agg_rej_intersect:
   assumes
     "social_choice_result.electoral_module m" and
     "social_choice_result.electoral_module n" and
-    "finite_profile V A p"
+    "profile V A p" and "finite A"
   shows "reject (m \<parallel>\<^sub>\<up> n) V A p = (reject m V A p) \<inter> (reject n V A p)"
 proof -
   have "A = (elect m V A p) \<union> (reject m V A p) \<union> (defer m V A p) \<and>
@@ -908,22 +909,23 @@ lemma par_comp_rej_card:
     c :: nat
   assumes
     compatible: "disjoint_compatibility m n" and
-    f_prof: "finite_profile V A p" and
+    prof: "profile V A p" and
+    fin_A: "finite A" and
     reject_sum: "card (reject m V A p) + card (reject n V A p) = card A + c"
   shows "card (reject (m \<parallel>\<^sub>\<up> n) V A p) = c"
 proof -
   obtain B where
     alt_set: "B \<subseteq> A \<and>
          (\<forall> a \<in> B. indep_of_alt m V A a \<and>
-            (\<forall> q. finite_profile V A q \<longrightarrow> a \<in> reject m V A q)) \<and>
+            (\<forall> q. profile V A q \<longrightarrow> a \<in> reject m V A q)) \<and>
          (\<forall> a \<in> A - B. indep_of_alt n V A a \<and>
-            (\<forall> q. finite_profile V A q \<longrightarrow> a \<in> reject n V A q))"
-    using compatible f_prof
+            (\<forall> q. profile V A q \<longrightarrow> a \<in> reject n V A q))"
+    using compatible prof
     unfolding disjoint_compatibility_def
     by metis
   have reject_representation:
     "reject (m \<parallel>\<^sub>\<up> n) V A p = (reject m V A p) \<inter> (reject n V A p)"
-    using f_prof compatible max_agg_rej_intersect
+    using prof fin_A compatible max_agg_rej_intersect
     unfolding disjoint_compatibility_def
     by metis
   have "social_choice_result.electoral_module m \<and> social_choice_result.electoral_module n"
@@ -931,9 +933,9 @@ proof -
     unfolding disjoint_compatibility_def
     by simp
   hence subsets: "(reject m V A p) \<subseteq> A \<and> (reject n V A p) \<subseteq> A"
-    by (simp add: f_prof reject_in_alts)
+    by (simp add: prof reject_in_alts)
   hence "finite (reject m V A p) \<and> finite (reject n V A p)"
-    using rev_finite_subset f_prof
+    using rev_finite_subset prof fin_A
     by metis
   hence card_difference:
     "card (reject (m \<parallel>\<^sub>\<up> n) V A p) =
@@ -941,7 +943,7 @@ proof -
     using card_Un_Int reject_representation reject_sum
     by fastforce
   have "\<forall> a \<in> A. a \<in> (reject m V A p) \<or> a \<in> (reject n V A p)"
-    using alt_set f_prof
+    using alt_set prof fin_A
     by blast
   hence "A = reject m V A p \<union> reject n V A p"
     using subsets
@@ -1004,7 +1006,7 @@ next
   have def_card_one: "card (defer m V A p) = 1"
     using defers_m_one module prof fin_A
     unfolding defers_def
-    sorry
+    by blast
   ultimately have card_reject_m: "card (reject m V A p) = card A - 1"
   proof -
     have "well_formed_soc_choice A (elect m V A p, reject m V A p, defer m V A p)"
@@ -1025,14 +1027,14 @@ next
   hence "card (reject n V A p) = 2"
     using prof rejec_n_two fin_A
     unfolding rejects_def
-    sorry
+    by blast
   moreover from this
   have "card (reject m V A p) + card (reject n V A p) = card A + 1"
     using card_reject_m card_geq_one
     by linarith
   ultimately show "card (reject (m \<parallel>\<^sub>\<up> n) V A p) = 1"
     using disj_comp prof card_reject_m par_comp_rej_card fin_A
-    sorry
+    by blast
 qed
 
 end

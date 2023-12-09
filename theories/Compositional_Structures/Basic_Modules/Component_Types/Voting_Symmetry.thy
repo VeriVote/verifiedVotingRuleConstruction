@@ -18,9 +18,6 @@ text \<open>
   Note that we do not assume finiteness of voter or alternative sets by default.
 \<close>
 
-definition valid_elections :: "('a,'v) Election set" where
-  "valid_elections = {E. profile (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E)}"
-
 fun (in result) results_closed_under_rel :: "('a,'v) Election rel \<Rightarrow> bool" where
   "results_closed_under_rel r = 
     (\<forall> (E, E') \<in> r. limit_set (alts_\<E> E) UNIV = limit_set (alts_\<E> E') UNIV)"
@@ -123,18 +120,12 @@ proof (unfold group_action_def group_hom_def anon_group_def group_hom_axioms_def
     hence bij: "bij \<pi>"
       using rewrite_carrier
       by blast
-    hence "valid_elections \<subseteq> rename \<pi> ` valid_elections"
-      using rename_surj[of \<pi>]
-      unfolding valid_elections_def
-      by (metis (mono_tags, lifting) fst_conv image_eqI 
-                mem_Collect_eq prod.collapse snd_conv subsetI)
-    moreover have "rename \<pi> ` valid_elections \<subseteq> valid_elections"
-      using bij rename_sound
-      unfolding valid_elections_def
-      by fastforce
+    hence "rename \<pi> ` valid_elections = valid_elections"
+      using rename_surj bij
+      by blast
     moreover have "inj_on (rename \<pi>) valid_elections"
-      using rename_inj bij
-      by (metis (mono_tags, opaque_lifting) inj_onCI rename.elims)
+      using rename_inj bij subset_inj_on 
+      by blast
     ultimately have "bij_betw (rename \<pi>) valid_elections valid_elections"
       unfolding bij_betw_def
       by blast

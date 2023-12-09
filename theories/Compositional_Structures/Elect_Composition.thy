@@ -57,18 +57,18 @@ theorem elector_electing[simp]:
 proof -
   have "\<forall> m'.
         (\<not> electing m' \<or> social_choice_result.electoral_module m' \<and>
-          (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite_profile V' A' p') 
+          (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') 
             \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
           (electing m' \<or> \<not> social_choice_result.electoral_module m' 
-            \<or> (\<exists> A V p. (A \<noteq> {} \<and> finite_profile V A p \<and> elect m' V A p = {})))"
+            \<or> (\<exists> A V p. (A \<noteq> {} \<and> finite A \<and> profile V A p \<and> elect m' V A p = {})))"
     unfolding electing_def
     by blast
   hence "\<forall> m'.
         (\<not> electing m' \<or> social_choice_result.electoral_module m' \<and>
-          (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite_profile V' A' p') 
+          (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') 
             \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
         (\<exists> A V p. (electing m' \<or> \<not> social_choice_result.electoral_module m' \<or> A \<noteq> {} \<and> 
-          finite_profile V A p \<and> elect m' V A p = {}))"
+          finite A \<and> profile V A p \<and> elect m' V A p = {}))"
     by simp
   then obtain
     A :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set" and
@@ -77,10 +77,10 @@ proof -
     electing_mod:
      "\<forall> m'::('a, 'v, 'a Result) Electoral_Module.
       (\<not> electing m' \<or> social_choice_result.electoral_module m' \<and>
-        (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite_profile V' A' p') 
+        (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') 
           \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
         (electing m' \<or> \<not> social_choice_result.electoral_module m' \<or> A m' \<noteq> {} \<and> 
-        finite_profile (V m') (A m') (p m') \<and> elect m' (V m') (A m') (p m') = {})"
+        finite (A m') \<and> profile (V m') (A m') (p m') \<and> elect m' (V m') (A m') (p m') = {})"
     by metis
   moreover have non_block: 
     "non_blocking (elect_module::'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a Result)"
@@ -96,15 +96,14 @@ proof -
   have "\<forall> s. (elect_r s, r s, d s) = s"
     by simp
   moreover from this
-  have "profile (V (elector m)) (A (elector m)) (p (elector m)) \<and> finite (A (elector m))
-          \<and> finite (V (elector m))  \<longrightarrow>
+  have "profile (V (elector m)) (A (elector m)) (p (elector m)) \<and> finite (A (elector m))  \<longrightarrow>
           d (elector m (V (elector m)) (A (elector m)) (p (elector m))) = {}"
     by simp
   moreover have "social_choice_result.electoral_module (elector m)"
     using elector_sound module_m
     by simp
   moreover from electing_mod result
-  have "finite (A (elector m)) \<and> finite (V (elector m)) \<and> 
+  have "finite (A (elector m)) \<and> 
           profile (V (elector m)) (A (elector m)) (p (elector m)) \<and>
           elect (elector m) (V (elector m)) (A (elector m)) (p (elector m)) = {} \<and>
           d (elector m (V (elector m)) (A (elector m)) (p (elector m))) = {} \<and>

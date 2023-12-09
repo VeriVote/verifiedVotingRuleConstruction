@@ -201,7 +201,7 @@ text \<open>
 definition defers :: "nat \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "defers n m \<equiv>
     social_choice_result.electoral_module m \<and>
-      (\<forall> A V p. (card A \<ge> n \<and> finite_profile V A p) \<longrightarrow> card (defer m V A p) = n)"
+      (\<forall> A V p. (card A \<ge> n \<and> finite A \<and> profile V A p) \<longrightarrow> card (defer m V A p) = n)"
 
 text \<open>
   "rejects n" is true for all electoral modules that reject exactly
@@ -211,7 +211,7 @@ text \<open>
 definition rejects :: "nat \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "rejects n m \<equiv>
     social_choice_result.electoral_module m \<and>
-      (\<forall> A V p. (card A \<ge> n \<and> finite_profile V A p) \<longrightarrow> card (reject m V A p) = n)"
+      (\<forall> A V p. (card A \<ge> n \<and> finite A \<and> profile V A p) \<longrightarrow> card (reject m V A p) = n)"
 
 text \<open>
   As opposed to "rejects", "eliminates" allows to stop rejecting if no
@@ -541,7 +541,7 @@ lemma upper_card_bounds_for_result:
     p :: "('a, 'v) Profile"
   assumes
     "social_choice_result.electoral_module m" and
-    "finite_profile V A p"
+    "profile V A p" and "finite A"
   shows
     upper_card_bound_for_elect: "card (elect m V A p) \<le> card A" and
     upper_card_bound_for_reject: "card (reject m V A p) \<le> card A" and
@@ -856,7 +856,7 @@ text \<open>
 definition non_blocking :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "non_blocking m \<equiv>
     social_choice_result.electoral_module m \<and>
-      (\<forall> A V p. ((A \<noteq> {} \<and> finite_profile V A p) \<longrightarrow> reject m V A p \<noteq> A))"
+      (\<forall> A V p. ((A \<noteq> {} \<and> finite A \<and> profile V A p) \<longrightarrow> reject m V A p \<noteq> A))"
 
 subsection \<open>Electing\<close>
 
@@ -868,7 +868,7 @@ text \<open>
 definition electing :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "electing m \<equiv>
     social_choice_result.electoral_module m \<and>
-      (\<forall> A V p. (A \<noteq> {} \<and> finite_profile V A p) \<longrightarrow> elect m V A p \<noteq> {})"
+      (\<forall> A V p. (A \<noteq> {} \<and> finite A \<and> profile V A p) \<longrightarrow> elect m V A p \<noteq> {})"
 
 lemma electing_for_only_alt:
   fixes
@@ -879,7 +879,6 @@ lemma electing_for_only_alt:
   assumes
     one_alt: "card A = 1" and
     electing: "electing m" and
-    finV: "finite V" and
     prof: "profile V A p"
   shows "elect m V A p = A"
 proof (safe)
@@ -900,7 +899,7 @@ next
   assume "a \<in> A"
   thus "a \<in> elect m V A p"
     using electing prof one_alt One_nat_def Suc_leI card_seteq card_gt_0_iff
-          elect_in_alts infinite_super lessI finV
+          elect_in_alts infinite_super lessI
     unfolding electing_def
     by metis
 qed
@@ -923,12 +922,11 @@ next
   assume
     "profile V A p" and
     "finite A" and
-    "finite V" and
     "reject m V A p = A" and
     "a \<in> A"
   moreover have
     "social_choice_result.electoral_module m \<and>
-      (\<forall> A V q. A \<noteq> {} \<and> finite_profile V A q \<longrightarrow> elect m V A q \<noteq> {})"
+      (\<forall> A V q. A \<noteq> {} \<and> finite A \<and> profile V A q \<longrightarrow> elect m V A q \<noteq> {})"
     using assms
     unfolding electing_def
     by metis

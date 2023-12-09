@@ -129,21 +129,16 @@ lemma cons_anon_invariant:
   assumes 
     anon: "consensus_anonymity c" and
     bij: "bij \<pi>" and
-    fin_C: "finite A" and
-    fin_V: "finite V" and
     prof_p: "profile V A p" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
     cond_c: "c (A, V, p)"
   shows "c (A', V', q)"
 proof -
-  have "finite_profile V A p"
-    using fin_V fin_C prof_p
-    by auto
-  moreover have "finite_profile V' A' q" 
-    using renamed rename_finite bij calculation
+  have "profile V' A' q"
+    using rename_sound bij renamed prof_p 
     by fastforce
-  ultimately show ?thesis
-    using anon cond_c renamed rename_finite bij \<open>finite_profile V A p\<close>
+  thus ?thesis
+    using anon cond_c renamed rename_finite bij prof_p
     unfolding consensus_anonymity_def Let_def
     by auto
 qed

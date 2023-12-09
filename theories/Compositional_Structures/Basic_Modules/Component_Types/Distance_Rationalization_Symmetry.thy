@@ -187,19 +187,6 @@ qed
 
 subsection \<open>Invariance\<close>
 
-(*
-fixes
-    f :: "'x \<Rightarrow> 'y" and
-    domain\<^sub>f :: "'x set" and
-    d :: "'x Distance" and
-    rel :: "'x rel" and
-    img :: "'y set"
-  assumes
-    r_refl: "restr_refl_on domain\<^sub>f rel" and
-    tot_invar_d: "totally_invariant_dist d rel"
-  shows "has_prop (minimizer f domain\<^sub>f d img) (Invariance rel)"
-*)
-
 theorem (in result) tot_invar_dist_imp_invar_dr_rule:
   fixes
     d :: "('a, 'v) Election Distance" and

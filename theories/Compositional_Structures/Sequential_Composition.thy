@@ -512,21 +512,6 @@ lemma seq_comp_elim_one_red_def_set:
   unfolding sequential_composition.simps
   by metis
 
-lemma seq_comp_def_set_sound:
-  fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile"
-  assumes
-    "social_choice_result.electoral_module m" and
-    "social_choice_result.electoral_module n" and
-    "profile V A p"
-  shows "defer (m \<triangleright> n) V A p \<subseteq> defer m V A p"
-  using assms seq_comp_def_set_bounded
-  by simp
-
 lemma seq_comp_def_set_trans:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
@@ -592,13 +577,13 @@ proof -
     assume
       emod_reject_m:
       "social_choice_result.electoral_module m \<and>
-        (\<forall> A V p. A \<noteq> {} \<and> finite_profile V A p \<longrightarrow> reject m V A p \<noteq> A)" and
+        (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> reject m V A p \<noteq> A)" and
       emod_reject_n:
       "social_choice_result.electoral_module n \<and>
-        (\<forall> A V p. A \<noteq> {} \<and> finite_profile V A p \<longrightarrow> reject n V A p \<noteq> A)"
+        (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> reject n V A p \<noteq> A)"
     show
       "social_choice_result.electoral_module (m \<triangleright> n) \<and>
-        (\<forall> A V p. A \<noteq> {} \<and> finite_profile V A p \<longrightarrow> reject (m \<triangleright> n) V A p \<noteq> A)"
+        (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> reject (m \<triangleright> n) V A p \<noteq> A)"
     proof (safe)
       show "social_choice_result.electoral_module (m \<triangleright> n)"
         using emod_reject_m emod_reject_n
@@ -611,12 +596,12 @@ proof -
         x :: "'a"
       assume
         fin_A: "finite A" and
-        fin_V: "finite V" and
         prof_A: "profile V A p" and
         rej_mn: "reject (m \<triangleright> n) V A p = A" and
         x_in_A: "x \<in> A"
-      from emod_reject_m fin_A prof_A fin_V
-      have fin_defer: "finite_profile V (defer m V A p) (limit_profile (defer m V A p) p)"
+      from emod_reject_m fin_A prof_A
+      have fin_defer: 
+        "finite (defer m V A p) \<and> profile V (defer m V A p) (limit_profile (defer m V A p) p)"
         using def_presv_prof defer_in_alts finite_subset
         by (metis (no_types))
       from emod_reject_m emod_reject_n fin_A prof_A
@@ -632,7 +617,7 @@ proof -
         by metis
       from emod_reject_n emod_reject_m fin_A prof_A
       have "elect (m \<triangleright> n) V A p \<union> defer (m \<triangleright> n) V A p = A - reject (m \<triangleright> n) V A p"
-        using elec_and_def_not_rej seq_comp_sound fin_V
+        using elec_and_def_not_rej seq_comp_sound
         by metis
       hence elect_def_disj:
         "elect n V (defer m V A p) (limit_profile (defer m V A p) p) \<union>
@@ -713,28 +698,28 @@ theorem seq_comp_electing[simp]:
   shows "electing (m \<triangleright> n)"
 proof -
   have defer_card_eq_one:
-    "\<forall> A V p. (card A \<ge> 1 \<and> finite V \<and> profile V A p) \<longrightarrow> card (defer m V A p) = 1"
-    using def_one_m card.infinite not_one_le_zero
+    "\<forall> A V p. (card A \<ge> 1 \<and> finite A \<and> profile V A p) \<longrightarrow> card (defer m V A p) = 1"
+    using def_one_m
     unfolding defers_def
     by metis
   hence def_m1_not_empty:
-    "\<forall> A V p. (A \<noteq> {} \<and> finite_profile V A p) \<longrightarrow> defer m V A p \<noteq> {}"
+    "\<forall> A V p. (A \<noteq> {} \<and> finite A \<and> profile V A p) \<longrightarrow> defer m V A p \<noteq> {}"
     using One_nat_def Suc_leI card_eq_0_iff card_gt_0_iff zero_neq_one
     by metis
   thus ?thesis
   proof -
     have "\<forall> m'.
           (\<not> electing m' \<or> social_choice_result.electoral_module m' \<and>
-              (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite_profile V' A' p') \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
+              (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
           (electing m' \<or> \<not> social_choice_result.electoral_module m' \<or> 
-              (\<exists> A V p. (A \<noteq> {} \<and> finite_profile V A p \<and> elect m' V A p = {})))"
+              (\<exists> A V p. (A \<noteq> {} \<and> finite A \<and> profile V A p \<and> elect m' V A p = {})))"
       unfolding electing_def
       by blast
     hence "\<forall> m'.
           (\<not> electing m' \<or> social_choice_result.electoral_module m' \<and>
-              (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite_profile V' A' p') \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
+              (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
           (\<exists> A V p. (electing m' \<or> \<not> social_choice_result.electoral_module m' \<or> A \<noteq> {} \<and> 
-              finite_profile V A p \<and> elect m' V A p = {}))"
+              finite A \<and> profile V A p \<and> elect m' V A p = {}))"
       by simp
     then obtain
       A :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set" and
@@ -743,26 +728,26 @@ proof -
       f_mod:
        "\<forall> m'::('a, 'v, 'a Result) Electoral_Module.
         (\<not> electing m' \<or> social_choice_result.electoral_module m' \<and>
-          (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite_profile V' A' p') 
+          (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') 
             \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
           (electing m' \<or> \<not> social_choice_result.electoral_module m' \<or> A m' \<noteq> {} \<and> 
-          finite_profile (V m') (A m') (p m') \<and> elect m' (V m') (A m') (p m') = {})"
+          finite (A m') \<and> profile (V m') (A m') (p m') \<and> elect m' (V m') (A m') (p m') = {})"
       by metis
     hence f_elect:
       "social_choice_result.electoral_module n \<and>
-        (\<forall> A V p. (A \<noteq> {} \<and> finite A \<and> finite V \<and> profile V A p) \<longrightarrow> elect n V A p \<noteq> {})"
+        (\<forall> A V p. (A \<noteq> {} \<and> finite A \<and> profile V A p) \<longrightarrow> elect n V A p \<noteq> {})"
       using electing_n
       unfolding electing_def
       by metis
     have def_card_one:
       "social_choice_result.electoral_module m \<and>
-        (\<forall> A V p. (1 \<le> card A \<and> finite V \<and> profile V A p) \<longrightarrow> card (defer m V A p) = 1)"
+        (\<forall> A V p. (1 \<le> card A \<and> finite A \<and> profile V A p) \<longrightarrow> card (defer m V A p) = 1)"
       using def_one_m defer_card_eq_one
       unfolding defers_def
       by blast
     hence "social_choice_result.electoral_module (m \<triangleright> n)"
       using f_elect seq_comp_sound
-      by metis
+      by metis   
     with f_mod f_elect def_card_one
     show ?thesis
       using seq_comp_def_then_elect_elec_set def_presv_prof defer_in_alts
@@ -944,40 +929,39 @@ next
   assume
     pos_card: "1 \<le> card A" and
     fin_A: "finite A" and
-    fin_V: "finite V" and
     prof_A: "profile V A p"
   from pos_card
   have "A \<noteq> {}"
     by auto
   with fin_A prof_A
   have "reject m V A p \<noteq> A"
-    using non_blocking_m fin_V
+    using non_blocking_m
     unfolding non_blocking_def
     by simp
   hence "\<exists> a. a \<in> A \<and> a \<notin> reject m V A p"
-    using non_electing_m reject_in_alts fin_A prof_A fin_V
-          card_seteq infinite_super subsetI upper_card_bounds_for_result
+    using non_electing_m reject_in_alts fin_A prof_A
+          card_seteq infinite_super subsetI upper_card_bound_for_reject
     unfolding non_electing_def
     by metis
   hence "defer m V A p \<noteq> {}"
-    using electoral_mod_defer_elem empty_iff non_electing_m fin_A prof_A fin_V
+    using electoral_mod_defer_elem empty_iff non_electing_m fin_A prof_A
     unfolding non_electing_def
     by (metis (no_types))
   hence "card (defer m V A p) \<ge> 1"
-    using Suc_leI card_gt_0_iff fin_A prof_A fin_V 
+    using Suc_leI card_gt_0_iff fin_A prof_A
           non_blocking_m defer_in_alts infinite_super
     unfolding One_nat_def non_blocking_def
     by metis
   moreover have
     "\<forall> i m'. defers i m' =
       (social_choice_result.electoral_module m' \<and>
-        (\<forall> A' V' p'. (i \<le> card A' \<and> finite A' \<and> finite V' \<and> profile V' A' p') \<longrightarrow>
+        (\<forall> A' V' p'. (i \<le> card A' \<and> finite A' \<and> profile V' A' p') \<longrightarrow>
             card (defer m' V' A' p') = i))"
     unfolding defers_def
     by simp
   ultimately have
     "card (defer n V (defer m V A p) (limit_profile (defer m V A p) p)) = 1"
-    using def_one_n fin_A prof_A fin_V non_blocking_m def_presv_prof
+    using def_one_n fin_A prof_A non_blocking_m def_presv_prof
           card.infinite not_one_le_zero
     unfolding non_blocking_def
     by metis
@@ -1026,9 +1010,9 @@ next
   obtain A where rej_A:
     "A \<subseteq> S \<and>
       (\<forall> a \<in> A.
-        indep_of_alt m V S a \<and> (\<forall> p. finite_profile V S p \<longrightarrow> a \<in> reject m V S p)) \<and>
+        indep_of_alt m V S a \<and> (\<forall> p. profile V S p \<longrightarrow> a \<in> reject m V S p)) \<and>
       (\<forall> a \<in> S - A.
-        indep_of_alt n V S a \<and> (\<forall> p. finite_profile V S p \<longrightarrow> a \<in> reject n V S p))"
+        indep_of_alt n V S a \<and> (\<forall> p. profile V S p \<longrightarrow> a \<in> reject n V S p))"
     using compatible
     unfolding disjoint_compatibility_def
     by (metis (no_types, lifting))
@@ -1061,11 +1045,16 @@ next
         using compatible defer_in_alts
         unfolding disjoint_compatibility_def
         by metis
-      hence "\<forall> v \<in> V. limit_profile (defer m V S p) p v = limit_profile (defer m V S q) q v"
-        using rej_A DiffD2 a_in_A lifting_equiv_p_q compatible defer_not_elec_or_rej
-              profiles negl_diff_imp_eq_limit_prof
-        unfolding disjoint_compatibility_def eq_def
-        sorry
+      moreover have "a \<notin> defer m V S q"
+        using a_in_A compatible defer_not_elec_or_rej[of m V A p]
+              profiles rej_A IntI emptyE result_disj
+        unfolding disjoint_compatibility_def 
+        by metis
+      ultimately have 
+        "\<forall> v \<in> V. limit_profile (defer m V S p) p v = limit_profile (defer m V S q) q v"
+        using lifting_equiv_p_q negl_diff_imp_eq_limit_prof[of V S p q a "defer m V S q"]
+        unfolding eq_def limit_profile.simps
+        by blast
       with eq_def
       have "m' V (defer m V S p) (limit_profile (defer m V S p) p) =
               m' V (defer m V S q) (limit_profile (defer m V S q) q)"
@@ -1084,7 +1073,7 @@ next
       "\<forall> a' \<in> A. \<forall> p'. profile V S p' \<longrightarrow> a' \<in> reject (m \<triangleright> m') V S p'"
       using rej_A UnI1 prod.sel
       unfolding sequential_composition.simps
-      sorry
+      by metis
     ultimately show
       "A \<subseteq> S \<and>
         (\<forall> a' \<in> A. indep_of_alt (m \<triangleright> m') V S a' \<and>
@@ -1092,7 +1081,7 @@ next
         (\<forall> a' \<in> S - A. indep_of_alt n V S a' \<and>
           (\<forall> p'. profile V S p' \<longrightarrow> a' \<in> reject n V S p'))"
       using rej_A indep_of_alt_def modules
-      sorry
+      by (metis (no_types, lifting))
   qed
 qed
 
