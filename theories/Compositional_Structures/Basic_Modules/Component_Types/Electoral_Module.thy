@@ -14,6 +14,7 @@ theory Electoral_Module
   imports "Social_Choice_Types/Profile"
           "Social_Choice_Types/Result_Interpretations"
           "HOL-Combinatorics.List_Permutation"
+          "Social_Choice_Types/Property_Interpretations"
 begin
 
 text \<open>
@@ -45,8 +46,9 @@ text \<open>
 
 type_synonym ('a, 'v, 'r) Electoral_Module = "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r"
 
-abbreviation on_els :: "('a, 'v, 'r) Electoral_Module \<Rightarrow> (('a,'v) Election \<Rightarrow> 'r)" where
-  "on_els m \<equiv> (\<lambda>E. m (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E))"
+abbreviation fun\<^sub>\<E> :: 
+  "('v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r) \<Rightarrow> (('a, 'v) Election \<Rightarrow> 'r)" where
+  "fun\<^sub>\<E> m \<equiv> (\<lambda>E. m (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E))"
 
 text \<open>
   The next three functions take an electoral module and turn it into a
@@ -93,16 +95,11 @@ lemma (in result) electoral_modI:
 
 subsection \<open>Properties\<close>
 
-subsubsection \<open>Homogeneity\<close>
-
-definition (in result) homogeneity :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
-  "homogeneity m \<equiv>
-    let count = \<lambda>r V p. card {v \<in> V. p v = r} in
-    electoral_module m \<and>
-      (\<forall> A V V' p p' n. (n > 0 \<longrightarrow> finite_profile V A p
-                        \<longrightarrow> (\<forall>r::('a Preference_Relation). count r V' p' = n * (count r V p))
-                        \<longrightarrow> finite_profile V' A p'
-                        \<longrightarrow> m V A p = m V' A p'))"
+text \<open>
+  We only require voting rules to behave a specific way on admissible elections,
+  i.e. elections that are valid profiles (= votes are linear orders on the alternatives).
+  Note that we do not assume finiteness of voter or alternative sets by default.
+\<close>
 
 subsubsection \<open>Anonymity\<close>
 
@@ -118,7 +115,40 @@ definition (in result) anonymity :: "('a, 'v, ('r Result)) Electoral_Module \<Ri
       (\<forall> A V p \<pi>::('v \<Rightarrow> 'v). 
         bij \<pi> \<longrightarrow> (let (A', V', q) = (rename \<pi> (A, V, p)) in
             finite_profile V A p \<and> finite_profile V' A' q \<longrightarrow> m V A p = m V' A' q))"
-      
+
+text \<open>
+  Anonymity can alternatively be described as invariance 
+  under the voter permutation group acting on elections 
+  via the rename function.
+\<close>
+
+fun anonymity' :: 
+  "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'r) Electoral_Module \<Rightarrow> bool" where
+  "anonymity' X m = satisfies (fun\<^sub>\<E> m) (Invariance (anonymity\<^sub>\<R> X))"
+
+subsubsection \<open>Homogeneity\<close>
+
+text \<open>
+  A voting rule is homogeneous if copying an election does not change the result.
+  For ordered voter types and finite elections, we use the notion of copying ballot 
+  lists to define copying an election.
+  The more general definition of homogeneity for unordered voter types already 
+  implies anonymity.
+\<close>
+
+definition (in result) homogeneity :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity m \<equiv>
+    let count = \<lambda>r V p. card {v \<in> V. p v = r} in
+    electoral_module m \<and>
+      (\<forall> A V V' p p' n. (n > 0 \<longrightarrow> finite_profile V A p
+                        \<longrightarrow> (\<forall>r::('a Preference_Relation). count r V' p' = n * (count r V p))
+                        \<longrightarrow> finite_profile V' A p'
+                        \<longrightarrow> m V A p = m V' A p'))"
+
+fun homogeneity' :: 
+  "('a, nat) Election set \<Rightarrow> ('a, nat, 'b Result) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity' X m = satisfies (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R> X))"
+
 lemma (in result) hom_imp_anon: 
   "homogeneity m \<Longrightarrow> anonymity m"
 proof (unfold anonymity_def  Let_def, safe)
@@ -186,6 +216,32 @@ next
     using \<open>A' = A\<close> 
     by fastforce
 qed
+
+subsubsection \<open>Neutrality\<close>
+
+text \<open>
+  Neutrality is equivariance under consistent renaming of 
+  candidates in the candidate set and election results.
+\<close>
+
+fun (in result_properties) neutrality :: 
+  "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
+  "neutrality X m = satisfies (fun\<^sub>\<E> m) 
+    (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) X \<phi>_neutr (result_action \<psi>_neutr))"
+
+subsection \<open>Reversal Symmetry of Social Welfare Rules\<close>
+
+text \<open>
+  A social welfare rule is reversal symmetric if reversing all voters' preferences
+  reverses the result rankings as well.
+\<close>
+
+definition reversal_symmetry :: 
+  "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'a rel Result) Electoral_Module \<Rightarrow> bool" where
+  "reversal_symmetry X m = satisfies (fun\<^sub>\<E> m)
+    (equivar_ind_by_act (carrier reversal\<^sub>\<G>) X \<phi>_rev (result_action \<psi>_rev))"
+
+subsection \<open>Social Choice Modules\<close>
 
 text \<open>
   The following results require electoral modules to return social choice results, 

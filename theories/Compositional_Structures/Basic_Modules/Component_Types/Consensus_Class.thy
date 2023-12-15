@@ -31,6 +31,23 @@ fun rule_\<K> :: "('a, 'v, 'r) Consensus_Class \<Rightarrow> ('a, 'v, 'r) Electo
 
 subsection \<open>Consensus Choice\<close>
 
+
+
+text \<open>
+  Returns those consensus elections on a given alternative and voter set
+  from a given consensus that are mapped to the given unique winner by a 
+  given consensus rule.
+\<close>
+
+fun \<K>\<^sub>\<E> :: 
+"('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> ('a, 'v) Election set" where
+  "\<K>\<^sub>\<E> K w =
+    {(A, V, p) | A V p. (consensus_\<K> K) (A, V, p) \<and> finite_profile V A p 
+                  \<and> elect (rule_\<K> K) V A p = {w}}" (* use profile instead of finite_profile? *)
+
+abbreviation \<K>_els :: "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> ('a, 'v) Election set" where
+  "\<K>_els K \<equiv> \<Union> ((\<K>\<^sub>\<E> K) ` UNIV)"
+
 text \<open>
   A consensus class is deemed well-formed if the result of its mapping is completely
   determined by its consensus, the elected set of the electoral module's result.
@@ -209,7 +226,84 @@ definition consensus_rule_anonymity :: "('a, 'v, 'r) Consensus_Class \<Rightarro
             \<longrightarrow> consensus_\<K> c (A, V, p) 
             \<longrightarrow> (consensus_\<K> c (A', V', q) \<and> (rule_\<K> c V A p = rule_\<K> c V' A' q))))"
 
+fun consensus_rule_anonymity' :: "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> bool" where
+  "consensus_rule_anonymity' C = 
+    satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (Invariance (anonymity\<^sub>\<R> (\<K>_els C)))"
+
+fun (in result_properties) consensus_rule_neutrality :: 
+  "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'b Result) Consensus_Class \<Rightarrow> bool" where
+  "consensus_rule_neutrality X C = satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
+    (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) X \<phi>_neutr (set_action \<psi>_neutr))"
+
 subsection \<open>Inference Rules\<close>
+
+lemma consensus_choice_equivar:
+  fixes
+    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    c :: "('a, 'v) Consensus" and
+    G :: "'x set" and
+    X :: "('a, 'v) Election set" and
+    \<phi> :: "('x, ('a, 'v) Election) binary_fun" and
+    \<psi> :: "('x, 'a) binary_fun" and
+    f :: "'a Result \<Rightarrow> 'a set"
+  defines
+    "equivar \<equiv> equivar_ind_by_act G X \<phi> (set_action \<psi>)"
+  assumes
+    equivar_m: "satisfies (f \<circ> fun\<^sub>\<E> m) equivar" and
+    equivar_defer: "satisfies (f \<circ> fun\<^sub>\<E> defer_module) equivar" and
+    \<comment> \<open>Could be generalized to arbitrary modules instead of defer_module\<close>
+    invar_cons: "satisfies c (Invariance (rel_induced_by_action G X \<phi>))"
+  shows
+    "satisfies (f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) 
+              (equivar_ind_by_act G X \<phi> (set_action \<psi>))"
+proof (simp only: rewrite_equivar_ind_by_act, standard, standard, standard)
+  fix
+    E :: "('a, 'v) Election" and
+    g :: 'x
+  assume
+    "g \<in> G" and "E \<in> X" and "\<phi> g E \<in> X"
+  show "(f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) (\<phi> g E) =
+           set_action \<psi> g ((f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) E)"
+  proof (cases "c E")
+    case True
+    hence "c (\<phi> g E)"
+      using invar_cons rewrite_invar_ind_by_act \<open>g \<in> G\<close> \<open>\<phi> g E \<in> X\<close> \<open>E \<in> X\<close>
+      by metis
+    hence "(f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) (\<phi> g E) =
+      (f \<circ> fun\<^sub>\<E> m) (\<phi> g E)"
+      by simp
+    also have "(f \<circ> fun\<^sub>\<E> m) (\<phi> g E) = 
+      set_action \<psi> g ((f \<circ> fun\<^sub>\<E> m) E)"
+      using equivar_m \<open>E \<in> X\<close> \<open>\<phi> g E \<in> X\<close> \<open>g \<in> G\<close> rewrite_equivar_ind_by_act
+      unfolding equivar_def
+      by (metis (mono_tags, lifting))
+    also have "(f \<circ> fun\<^sub>\<E> m) E = 
+      (f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) E"
+      using \<open>E \<in> X\<close> \<open>g \<in> G\<close> invar_cons
+      by (simp add: True)
+    finally show ?thesis 
+      by simp
+  next
+    case False  
+    hence "\<not> c (\<phi> g E)"
+      using invar_cons rewrite_invar_ind_by_act \<open>g \<in> G\<close> \<open>\<phi> g E \<in> X\<close> \<open>E \<in> X\<close>
+      by metis
+    hence "(f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) (\<phi> g E) =
+      (f \<circ> fun\<^sub>\<E> defer_module) (\<phi> g E)"
+      by simp
+    also have "(f \<circ> fun\<^sub>\<E> defer_module) (\<phi> g E) = 
+      set_action \<psi> g ((f \<circ> fun\<^sub>\<E> defer_module) E)"
+      using equivar_defer \<open>E \<in> X\<close> \<open>\<phi> g E \<in> X\<close> \<open>g \<in> G\<close> rewrite_equivar_ind_by_act
+      unfolding equivar_def
+      by (metis (mono_tags, lifting))
+    also have "(f \<circ> fun\<^sub>\<E> defer_module) E = 
+      (f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) E"
+      using \<open>E \<in> X\<close> \<open>g \<in> G\<close> invar_cons
+      by (simp add: False)
+    finally show ?thesis 
+      by simp
+  qed
+qed
 
 lemma consensus_choice_anonymous:
   fixes
@@ -339,6 +433,245 @@ proof (unfold strong_unanimity_def)
   ultimately show 
     "consensus_rule_anonymity (consensus_choice strong_unanimity\<^sub>\<C> elect_first_module)"
     by (rule HOL.back_subst)
+qed
+
+subsubsection \<open>Neutrality\<close>
+
+lemma defer_winners_equivar:
+  fixes
+    G :: "'x set" and
+    X :: "('a, 'v) Election set" and
+    \<phi> :: "('x, ('a, 'v) Election) binary_fun" and
+    \<psi> :: "('x, 'a) binary_fun"
+  shows
+    "satisfies (elect_r \<circ> fun\<^sub>\<E> defer_module) 
+              (equivar_ind_by_act G X \<phi> (set_action \<psi>))"
+  using rewrite_equivar_ind_by_act
+  by fastforce
+
+lemma elect_first_winners_neutral:
+  shows
+    "satisfies (elect_r \<circ> fun\<^sub>\<E> elect_first_module)
+              (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) 
+                valid_elections
+                \<phi>_neutr (set_action \<psi>_neutr\<^sub>\<c>))"
+proof (simp only: rewrite_equivar_ind_by_act, clarify)
+  fix
+    A :: "'a set" and
+    V :: "'v::wellorder set" and
+    p :: "('a, 'v) Profile" and
+    \<pi> :: "'a \<Rightarrow> 'a"
+  assume
+    bij: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
+    valid: "(A, V, p) \<in> valid_elections"
+  hence "bij \<pi>"
+    unfolding neutrality\<^sub>\<G>_def
+    using rewrite_carrier
+    by blast
+  hence inv: "\<forall>a. a = \<pi> (the_inv \<pi> a)"
+    by (simp add: f_the_inv_into_f_bij_betw)
+  from bij valid have 
+    "(elect_r \<circ> fun\<^sub>\<E> elect_first_module) (\<phi>_neutr \<pi> (A, V, p)) = 
+      {a \<in> \<pi> ` A. above (rel_rename \<pi> (p (least V))) a = {a}}"
+    by simp
+  moreover have 
+    "{a \<in> \<pi> ` A. above (rel_rename \<pi> (p (least V))) a = {a}} = 
+      {a \<in> \<pi> ` A. {b. (a, b) \<in> {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p (least V)}} = {a}}"
+    by (simp add: above_def)
+  ultimately have elect_simp:
+    "(elect_r \<circ> fun\<^sub>\<E> elect_first_module) (\<phi>_neutr \<pi> (A, V, p)) = 
+      {a \<in> \<pi> ` A. {b. (a, b) \<in> {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p (least V)}} = {a}}"
+    by simp
+  have "\<forall>a \<in> \<pi> ` A. {b. (a, b) \<in> {(\<pi> x, \<pi> y) | x y. (x, y) \<in> p (least V)}} =
+    {\<pi> b | b. (a, \<pi> b) \<in> {(\<pi> x, \<pi> y) | x y. (x, y) \<in> p (least V)}}"
+    by blast
+  moreover have "\<forall>a \<in> \<pi> ` A. 
+    {\<pi> b | b. (a, \<pi> b) \<in> {(\<pi> x, \<pi> y) | x y. (x, y) \<in> p (least V)}} =
+    {\<pi> b | b. (\<pi> (the_inv \<pi> a), \<pi> b) \<in> {(\<pi> x, \<pi> y) | x y. (x, y) \<in> p (least V)}}"
+    using \<open>bij \<pi>\<close>
+    by (simp add: f_the_inv_into_f_bij_betw)
+  moreover have "\<forall>a \<in> \<pi> ` A. \<forall>b. 
+    ((\<pi> (the_inv \<pi> a), \<pi> b) \<in> {(\<pi> x, \<pi> y) | x y. (x, y) \<in> p (least V)}) = 
+    ((the_inv \<pi> a, b) \<in> {(x, y) | x y. (x, y) \<in> p (least V)})"
+    using \<open>bij \<pi>\<close> rel_rename_helper[of \<pi>]
+    by auto
+  moreover have "{(x, y) | x y. (x, y) \<in> p (least V)} = p (least V)"
+    by simp
+  ultimately have 
+    "\<forall>a \<in> \<pi> ` A. ({b. (a, b) \<in> {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p (least V)}} = {a}) =
+       ({\<pi> b | b. (the_inv \<pi> a, b) \<in> p (least V)} = {a})"
+    by force
+  hence 
+    "{a \<in> \<pi> ` A. {b. (a, b) \<in> {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p (least V)}} = {a}} = 
+      {a \<in> \<pi> ` A. {\<pi> b | b. (the_inv \<pi> a, b) \<in> p (least V)} = {a}}"
+    by auto
+  hence "(elect_r \<circ> fun\<^sub>\<E> elect_first_module) (\<phi>_neutr \<pi> (A, V, p)) = 
+    {a \<in> \<pi> ` A. {\<pi> b | b. (the_inv \<pi> a, b) \<in> p (least V)} = {a}}"
+    using elect_simp
+    by simp
+  also have "{a \<in> \<pi> ` A. {\<pi> b | b. (the_inv \<pi> a, b) \<in> p (least V)} = {a}} =
+    {\<pi> a | a. a \<in> A \<and> {\<pi> b | b. (a, b) \<in> p (least V)} = {\<pi> a}}"
+    using \<open>bij \<pi>\<close> inv bij_is_inj the_inv_f_f 
+    by fastforce
+  also have "{\<pi> a | a. a \<in> A \<and> {\<pi> b | b. (a, b) \<in> p (least V)} = {\<pi> a}} =
+    \<pi> ` {a \<in> A. {\<pi> b | b. (a, b) \<in> p (least V)} = {\<pi> a}}"
+    by blast
+  also have "\<pi> ` {a \<in> A. {\<pi> b | b. (a, b) \<in> p (least V)} = {\<pi> a}} =
+    \<pi> ` {a \<in> A. \<pi> ` {b | b. (a, b) \<in> p (least V)} = \<pi> ` {a}}"
+    by blast
+  finally have
+    "(elect_r \<circ> fun\<^sub>\<E> elect_first_module) (\<phi>_neutr \<pi> (A, V, p)) =
+      \<pi> ` {a \<in> A. \<pi> ` (above (p (least V)) a) = \<pi> ` {a}}"
+    unfolding above_def
+    by simp
+  moreover have 
+    "\<forall>a. (\<pi> ` (above (p (least V)) a) = \<pi> ` {a}) = 
+      (the_inv \<pi> ` \<pi> ` above (p (least V)) a = the_inv \<pi> ` \<pi> ` {a})"
+    by (metis \<open>bij \<pi>\<close> bij_betw_the_inv_into bij_def inj_image_eq_iff)
+  moreover have 
+    "\<forall>a. (the_inv \<pi> ` \<pi> ` above (p (least V)) a = the_inv \<pi> ` \<pi> ` {a}) =
+      (above (p (least V)) a = {a})"
+    by (metis \<open>bij \<pi>\<close> bij_betw_imp_inj_on bij_betw_the_inv_into inj_image_eq_iff)
+  ultimately have 
+    "(elect_r \<circ> fun\<^sub>\<E> elect_first_module) (\<phi>_neutr \<pi> (A, V, p)) =
+      \<pi> ` {a \<in> A. above (p (least V)) a = {a}}"
+    by presburger
+  moreover have "elect elect_first_module V A p = {a \<in> A. above (p (least V)) a = {a}}"
+    by simp
+  moreover have
+    "set_action \<psi>_neutr\<^sub>\<c> \<pi> 
+                ((elect_r \<circ> fun\<^sub>\<E> elect_first_module) (A, V, p)) =
+      \<pi> ` (elect elect_first_module V A p)"
+    by auto
+  ultimately show
+    "(elect_r \<circ> fun\<^sub>\<E> elect_first_module) (\<phi>_neutr \<pi> (A, V, p)) =
+      set_action \<psi>_neutr\<^sub>\<c> \<pi> 
+                 ((elect_r \<circ> fun\<^sub>\<E> elect_first_module) (A, V, p))"
+    by blast
+qed  
+
+lemma strong_unanimity_neutral:
+  defines
+    "domain \<equiv> valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
+  shows "social_choice_properties.consensus_rule_neutrality domain strong_unanimity"
+proof -
+  have "consensus_neutrality domain strong_unanimity\<^sub>\<C>"
+    using strong_unanimity\<^sub>\<C>_neutral invar_under_subset_rel
+    unfolding domain_def
+    by simp
+  moreover have 
+    "satisfies (elect_r \<circ> fun\<^sub>\<E> elect_first_module)
+              (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) 
+                domain \<phi>_neutr (set_action \<psi>_neutr\<^sub>\<c>))"
+    using elect_first_winners_neutral 
+    unfolding domain_def equivar_ind_by_act_def
+    using equivar_under_subset
+    by blast            
+  ultimately show ?thesis
+    using elect_first_winners_neutral
+          defer_winners_equivar[of "carrier neutrality\<^sub>\<G>" domain \<phi>_neutr \<psi>_neutr\<^sub>\<c>]    
+          consensus_choice_equivar[of 
+            elect_r elect_first_module "carrier neutrality\<^sub>\<G>" domain
+            \<phi>_neutr \<psi>_neutr\<^sub>\<c> strong_unanimity\<^sub>\<C>]
+  unfolding consensus_neutrality.simps strong_unanimity_def neutrality\<^sub>\<R>.simps
+            social_choice_properties.consensus_rule_neutrality.simps domain_def
+  by blast
+qed
+  
+lemma strong_unanimity_closed_under_neutrality:
+  "neutrality\<^sub>\<R> valid_elections \<inter> (\<K>_els strong_unanimity) \<times> valid_elections \<subseteq> 
+    (neutrality\<^sub>\<R> (\<K>_els strong_unanimity))"
+proof (unfold valid_elections_def neutrality\<^sub>\<R>.simps rel_induced_by_action.simps, clarify)
+  fix
+    A :: "'a set" and
+    V :: "'b set" and
+    p :: "('a, 'b) Profile" and
+    A' :: "'a set" and
+    V' :: "'b set" and
+    p' :: "('a, 'b) Profile" and
+    \<pi> :: "'a \<Rightarrow> 'a" and
+    a :: 'a
+  assume
+    prof: "fun\<^sub>\<E> profile (A, V, p)" and
+    cons: "(A, V, p) \<in> \<K>\<^sub>\<E> strong_unanimity a" and
+    bij: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
+    img: "\<phi>_neutr \<pi> (A, V, p) = (A', V', p')"
+  hence fin: "(A, V, p) \<in> finite_elections"
+    unfolding \<K>\<^sub>\<E>.simps finite_elections_def
+    by simp
+  hence valid': "(A', V', p') \<in> valid_elections"
+    using bij img CollectI \<phi>_neutr_act.group_action_axioms group_action.element_image prof
+    unfolding finite_elections_def valid_elections_def
+    by (metis (mono_tags, lifting))
+  moreover have "V' = V \<and> A' = \<pi> ` A"
+    using img fin valid_elections_def CollectI alts_rename.elims 
+          extensional_continuation.simps fstI prof sndI
+    unfolding \<phi>_neutr.simps
+    by (metis (no_types, lifting))
+  ultimately have prof': "finite_profile V' A' p'"
+    using fin bij CollectD finite_elections_def finite_imageI fst_eqD snd_eqD
+    unfolding valid_elections_def neutrality\<^sub>\<G>_def
+    by (metis (no_types, lifting))   
+  have "((A, V, p), (A', V', p')) \<in> neutrality\<^sub>\<R> valid_elections"
+    using bij img fin valid'
+    unfolding neutrality\<^sub>\<R>.simps rel_induced_by_action.simps neutrality\<^sub>\<G>_def 
+              finite_elections_def valid_elections_def 
+    by blast
+  moreover have unanimous: "(A, V, p) \<in> valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
+    using cons fin
+    unfolding \<K>\<^sub>\<E>.simps strong_unanimity_def valid_elections_def
+    by simp
+  ultimately have unanimous': "(A', V', p') \<in> valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
+    using strong_unanimity\<^sub>\<C>_neutral
+    by force
+  have rewrite:
+    "\<forall>\<pi> \<in> carrier neutrality\<^sub>\<G>. 
+      \<phi>_neutr \<pi> (A, V, p) \<in> valid_elections \<inter> Collect strong_unanimity\<^sub>\<C> \<longrightarrow>
+        (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (\<phi>_neutr \<pi> (A, V, p)) =
+          set_action \<psi>_neutr\<^sub>\<c> \<pi> 
+            ((elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (A, V, p))"
+    using strong_unanimity_neutral unanimous
+          rewrite_equivar_ind_by_act[of
+            "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)"
+            "carrier neutrality\<^sub>\<G>" "valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>" \<phi>_neutr
+            "set_action \<psi>_neutr\<^sub>\<c>"]
+    unfolding social_choice_properties.consensus_rule_neutrality.simps
+    by blast
+  have "elect (rule_\<K> strong_unanimity) V' A' p' = 
+          (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (\<phi>_neutr \<pi> (A, V, p))"
+    using img
+    by simp
+  also have 
+    "(elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (\<phi>_neutr \<pi> (A, V, p)) =
+      set_action \<psi>_neutr\<^sub>\<c> \<pi> 
+        ((elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (A, V, p))"
+    using bij img unanimous' rewrite
+    by fastforce   
+  also have "(elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (A, V, p) = {a}"
+    using cons
+    unfolding \<K>\<^sub>\<E>.simps
+    by simp
+  finally have "elect (rule_\<K> strong_unanimity) V' A' p' = {\<psi>_neutr\<^sub>\<c> \<pi> a}"
+    by simp
+  hence "(A', V', p') \<in> \<K>\<^sub>\<E> strong_unanimity (\<psi>_neutr\<^sub>\<c> \<pi> a)"
+    unfolding \<K>\<^sub>\<E>.simps strong_unanimity_def consensus_choice.simps
+    using unanimous' prof'
+    by simp
+  hence "(A', V', p') \<in> \<K>_els strong_unanimity"
+    by simp
+  hence "((A, V, p), (A', V', p'))
+          \<in> \<Union> (range (\<K>\<^sub>\<E> strong_unanimity)) \<times> \<Union> (range (\<K>\<^sub>\<E> strong_unanimity))"
+    using cons 
+    by blast
+  moreover have "\<exists>\<pi> \<in> carrier neutrality\<^sub>\<G>. \<phi>_neutr \<pi> (A, V, p) = (A', V', p')"
+    using img bij 
+    unfolding neutrality\<^sub>\<G>_def
+    by blast
+  ultimately show
+    "((A, V, p), (A', V', p'))
+          \<in> \<Union> (range (\<K>\<^sub>\<E> strong_unanimity)) \<times> \<Union> (range (\<K>\<^sub>\<E> strong_unanimity)) \<and>
+     (\<exists>\<pi> \<in> carrier neutrality\<^sub>\<G>. \<phi>_neutr \<pi> (A, V, p) = (A', V', p'))"
+    by blast
 qed
 
 end

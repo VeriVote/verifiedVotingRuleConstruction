@@ -8,6 +8,7 @@ section \<open>Consensus\<close>
 theory Consensus
   imports "HOL-Combinatorics.List_Permutation"
           "Social_Choice_Types/Profile"
+          "Social_Choice_Types/Property_Interpretations"
 begin
 
 text \<open>
@@ -71,7 +72,6 @@ text \<open>
 fun strong_unanimity\<^sub>\<C> :: "('a, 'v) Consensus" where
   "strong_unanimity\<^sub>\<C> c = (nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C> c)"
 
-
 subsection \<open>Properties\<close>
 
 definition consensus_anonymity :: "('a, 'v) Consensus \<Rightarrow> bool" where
@@ -81,6 +81,9 @@ definition consensus_anonymity :: "('a, 'v) Consensus \<Rightarrow> bool" where
           (let (A', V', q) = (rename \<pi> (A, V, p)) in
             profile V A p \<longrightarrow> profile V' A' q 
             \<longrightarrow> c (A, V, p) \<longrightarrow> c (A', V', q)))"
+
+fun consensus_neutrality :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Consensus \<Rightarrow> bool" where
+  "consensus_neutrality X c = satisfies c (Invariance (neutrality\<^sub>\<R> X))"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -114,6 +117,30 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     using bij renamed c1 c2 assms prof
     unfolding consensus_anonymity_def
     by auto
+qed
+
+theorem cons_conjunction_invariant:
+  fixes
+    \<CC> :: "('a, 'v) Consensus set" and
+    rel :: "('a, 'v) Election rel"
+  defines 
+    "C \<equiv> (\<lambda>E. (\<forall>C' \<in> \<CC>. C' E))"
+  assumes
+    "\<And>C'. C' \<in> \<CC> \<Longrightarrow> satisfies C' (Invariance rel)"
+  shows "satisfies C (Invariance rel)"
+proof (unfold satisfies.simps, standard, standard, standard)
+  fix
+    E :: "('a,'v) Election" and
+    E' :: "('a,'v) Election"
+  assume
+    "(E,E') \<in> rel"
+  hence "\<forall>C' \<in> \<CC>. C' E = C' E'"
+    using assms
+    unfolding satisfies.simps
+    by blast
+  thus "C E = C E'"
+    unfolding C_def
+    by blast
 qed
 
 lemma cons_anon_invariant:
@@ -189,6 +216,8 @@ proof (unfold consensus_anonymity_def Let_def, safe)
 qed
 
 subsection \<open>Theorems\<close>
+
+subsubsection \<open>Anonymity\<close>
 
 lemma nonempty_set_cons_anonymous: "consensus_anonymity nonempty_set\<^sub>\<C>"
   unfolding consensus_anonymity_def
@@ -300,5 +329,63 @@ lemma eq_vote_cons_anonymous: "consensus_anonymity equal_vote\<^sub>\<C>"
   unfolding equal_vote\<^sub>\<C>.simps
   using eq_vote_cons'_anonymous ex_anon_cons_imp_cons_anonymous
   by blast
+
+subsubsection \<open>Neutrality\<close>
+
+lemma nonempty_set\<^sub>\<C>_neutral:               
+  "consensus_neutrality valid_elections nonempty_set\<^sub>\<C>"
+proof (simp, unfold valid_elections_def, safe) qed
+
+lemma nonempty_profile\<^sub>\<C>_neutral:
+  "consensus_neutrality valid_elections nonempty_profile\<^sub>\<C>"
+proof (simp, unfold valid_elections_def, safe) qed
+    
+lemma equal_vote\<^sub>\<C>_neutral:
+  "consensus_neutrality valid_elections equal_vote\<^sub>\<C>"
+proof (simp, unfold valid_elections_def, clarsimp, safe)
+  fix
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    \<pi> :: "'a \<Rightarrow> 'a" and
+    r :: "'a rel"
+  show
+    "\<forall>v \<in> V. p v = r \<Longrightarrow> \<exists>r. \<forall>v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r"
+    by simp
+  assume
+    bij: "\<pi> \<in> carrier neutrality\<^sub>\<G>"
+  hence
+    "bij \<pi>"
+    unfolding neutrality\<^sub>\<G>_def
+    using rewrite_carrier
+    by blast
+  hence "\<forall>a. the_inv \<pi> (\<pi> a) = a"
+    by (simp add: bij_is_inj the_inv_f_f)
+  moreover have
+    "\<forall>v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r \<Longrightarrow> 
+      \<forall>v \<in> V. {(the_inv \<pi> (\<pi> a), the_inv \<pi> (\<pi> b)) | a b. (a, b) \<in> p v} = 
+              {(the_inv \<pi> a, the_inv \<pi> b) | a b. (a, b) \<in> r}"
+    by fastforce
+  ultimately have
+    "\<forall>v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r \<Longrightarrow> 
+      \<forall>v \<in> V. {(a, b) | a b. (a, b) \<in> p v} = 
+              {(the_inv \<pi> a, the_inv \<pi> b) | a b. (a, b) \<in> r}"
+    by auto
+  hence 
+    "\<forall>v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r \<Longrightarrow> 
+          \<forall>v \<in> V. p v = {(the_inv \<pi> a, the_inv \<pi> b) | a b. (a, b) \<in> r}"
+    by simp
+  thus
+    "\<forall>v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r \<Longrightarrow> \<exists>r. \<forall>v \<in> V. p v = r"
+    by simp
+qed
+
+lemma strong_unanimity\<^sub>\<C>_neutral: 
+  "consensus_neutrality valid_elections strong_unanimity\<^sub>\<C>"
+  using nonempty_set\<^sub>\<C>_neutral equal_vote\<^sub>\<C>_neutral nonempty_profile\<^sub>\<C>_neutral
+        cons_conjunction_invariant[of 
+          "{nonempty_set\<^sub>\<C>, nonempty_profile\<^sub>\<C>, equal_vote\<^sub>\<C>}" "neutrality\<^sub>\<R> valid_elections"]
+  unfolding strong_unanimity\<^sub>\<C>.simps
+  by fastforce
 
 end

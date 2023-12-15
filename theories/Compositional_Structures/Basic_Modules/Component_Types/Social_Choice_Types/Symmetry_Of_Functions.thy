@@ -1,7 +1,7 @@
 section \<open>Function Symmetry Properties\<close>
 
 theory Symmetry_Of_Functions
-  imports Distance
+  imports "HOL.Equiv_Relations"
           "HOL-Algebra.Bij"
           "HOL-Algebra.Group_Action"
           "HOL-Algebra.Generated_Groups"
@@ -14,12 +14,10 @@ type_synonym ('x, 'y) binary_fun = "'x \<Rightarrow> 'y \<Rightarrow> 'y"
 fun extensional_continuation :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightarrow> ('x \<Rightarrow> 'y)" where
   "extensional_continuation f S = (\<lambda>x. if (x \<in> S) then (f x) else undefined)"
 
+fun preimg :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightarrow> 'y \<Rightarrow> 'x set" where
+  "preimg f X y = {x \<in> X. f x = y}"
+
 text \<open>Relations\<close>
-
-fun sym_on :: "'a set \<Rightarrow> 'a rel \<Rightarrow> bool" where
-  "sym_on A r = (\<forall>x \<in> A. \<forall>y \<in> A. (x, y) \<in> r \<longrightarrow> (y, x) \<in> r)"
-
-abbreviation sym :: "'a rel \<Rightarrow> bool" where "sym r \<equiv> sym_on UNIV r"
 
 fun restr_refl_on :: "'a set \<Rightarrow> 'a rel \<Rightarrow> bool" where
   "restr_refl_on A r = (\<forall> a \<in> A. (a,a) \<in> r)"
@@ -33,32 +31,14 @@ fun product_rel :: "'x rel \<Rightarrow> ('x * 'x) rel" where
 fun equivariance_rel :: "'x set \<Rightarrow> 'y set \<Rightarrow> ('x,'y) binary_fun \<Rightarrow> ('y * 'y) rel" where
   "equivariance_rel X Y \<phi> = {((a,b), (c,d)). (a,b) \<in> Y \<times> Y \<and> (\<exists>x \<in> X. c = \<phi> x a \<and> d = \<phi> x b)}"
 
-fun set_closed_under_rel :: "('a,'v) Election set \<Rightarrow> ('a, 'v) Election rel \<Rightarrow> bool" where
-  "set_closed_under_rel X r = (\<forall> E E'. (E,E') \<in> r \<longrightarrow> E \<in> X \<longrightarrow> E' \<in> X)"
-
-fun uncurried_dist :: "'x Distance \<Rightarrow> ('x * 'x \<Rightarrow> ereal)" where
-  "uncurried_dist d = (\<lambda>pair. d (fst pair) (snd pair))"
+fun set_closed_under_rel :: "'x set \<Rightarrow> 'x rel \<Rightarrow> bool" where
+  "set_closed_under_rel X r = (\<forall> x y. (x, y) \<in> r \<longrightarrow> x \<in> X \<longrightarrow> y \<in> X)"
 
 fun set_to_set_set :: "'x set \<Rightarrow> 'x set set" where
   "set_to_set_set X = {{x} | x. x \<in> X}"
 
 fun set_action :: "('x, 'r) binary_fun \<Rightarrow> ('x, 'r set) binary_fun" where
   "set_action \<psi> x = image (\<psi> x)"
-
-subsection \<open>Minimizer function\<close>
-
-fun preimg :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightarrow> 'y \<Rightarrow> 'x set" where
-  "preimg f X y = {x \<in> X. f x = y}"
-
-fun inf_dist :: "'x Distance \<Rightarrow> 'x set \<Rightarrow> 'x \<Rightarrow> ereal" where
-  "inf_dist d X a = Inf (d a ` X)"
-
-fun closest_preimg_dist :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightarrow> 'x Distance \<Rightarrow> 'x \<Rightarrow> 'y \<Rightarrow> ereal" where
-  "closest_preimg_dist f domain\<^sub>f d x y = inf_dist d (preimg f domain\<^sub>f y) x"
-
-fun minimizer :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightarrow> 'x Distance \<Rightarrow> 'y set \<Rightarrow> 'x \<Rightarrow> 'y set" where
-  "minimizer f domain\<^sub>f d Y x = arg_min_set (closest_preimg_dist f domain\<^sub>f d x) Y"
-(* arg_min instead of arg_min_set? *)
 
 subsection \<open>Invariance and Equivariance\<close>
 
@@ -71,24 +51,14 @@ datatype ('x,'y) property =
   Invariance "'x rel" |
   Equivariance "'x set" "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set"
 
-fun has_prop :: "('x \<Rightarrow> 'y) \<Rightarrow> ('x, 'y) property \<Rightarrow> bool" where
-  "has_prop f (Invariance r) = (\<forall>a. \<forall>b. (a,b) \<in> r \<longrightarrow> f a = f b)" |
-  "has_prop f (Equivariance X Act) = 
+fun satisfies :: "('x \<Rightarrow> 'y) \<Rightarrow> ('x, 'y) property \<Rightarrow> bool" where
+  "satisfies f (Invariance r) = (\<forall>a. \<forall>b. ((a, b) \<in> r \<longrightarrow> f a = f b))" |
+  "satisfies f (Equivariance X Act) = 
     (\<forall>(\<phi>, \<psi>) \<in> Act. \<forall>x \<in> X. \<phi> x \<in> X \<longrightarrow> f (\<phi> x) = \<psi> (f x))"
 
 definition equivar_ind_by_act :: 
   "'z set \<Rightarrow> 'x set \<Rightarrow> ('z, 'x) binary_fun \<Rightarrow> ('z, 'y) binary_fun \<Rightarrow> ('x,'y) property" where
   "equivar_ind_by_act Param X \<phi> \<psi> = Equivariance X {(\<phi> g, \<psi> g) | g. g \<in> Param}"
-
-subsection \<open>Invariance of Distances\<close>
-
-fun totally_invariant_dist :: 
-  "'x Distance \<Rightarrow> 'x rel \<Rightarrow> bool" where
-  "totally_invariant_dist d rel = has_prop (uncurried_dist d) (Invariance (product_rel rel))"
-
-fun invariant_dist :: 
-  "'y Distance \<Rightarrow> 'x set \<Rightarrow> 'y set \<Rightarrow> ('x, 'y) binary_fun \<Rightarrow> bool" where
-  "invariant_dist d X Y \<phi> = has_prop (uncurried_dist d) (Invariance (equivariance_rel X Y \<phi>))"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -101,8 +71,8 @@ theorem rewrite_invar_as_equivar:
     G :: "'z set" and
     \<phi> :: "('z, 'x) binary_fun"
   shows
-    "has_prop f (Invariance (rel_induced_by_action G X \<phi>)) =
-      has_prop f (equivar_ind_by_act G X \<phi> (\<lambda>g. id))"
+    "satisfies f (Invariance (rel_induced_by_action G X \<phi>)) =
+      satisfies f (equivar_ind_by_act G X \<phi> (\<lambda>g. id))"
 proof (unfold equivar_ind_by_act_def, simp, safe)
   fix
     x :: 'x and g :: 'z
@@ -135,13 +105,13 @@ lemma rewrite_invar_ind_by_act [intro?]:
     X :: "'x set" and
     \<phi> :: "('z, 'x) binary_fun"
   shows 
-    "has_prop f (Invariance (rel_induced_by_action G X \<phi>)) = 
+    "satisfies f (Invariance (rel_induced_by_action G X \<phi>)) = 
       (\<forall>a \<in> X. \<forall>g \<in> G. \<phi> g a \<in> X \<longrightarrow> f a = f (\<phi> g a))"
 proof (safe)
   fix
     a :: 'x and g :: 'z
   assume
-    invar: "has_prop f (Invariance (rel_induced_by_action G X \<phi>))" and
+    invar: "satisfies f (Invariance (rel_induced_by_action G X \<phi>))" and
     "a \<in> X" and "g \<in> G" and "\<phi> g a \<in> X"
   hence "(a, \<phi> g a) \<in> rel_induced_by_action G X \<phi>"
     unfolding rel_induced_by_action.simps
@@ -157,7 +127,7 @@ next
   hence "\<forall>(a,b) \<in> rel_induced_by_action G X \<phi>. f a = f b"
     using invar
     by fastforce
-  thus "has_prop f (Invariance (rel_induced_by_action G X \<phi>))"
+  thus "satisfies f (Invariance (rel_induced_by_action G X \<phi>))"
     by simp
 qed
 
@@ -169,55 +139,10 @@ lemma rewrite_equivar_ind_by_act [intro?]:
     \<phi> :: "('z, 'x) binary_fun" and
     \<psi> :: "('z, 'y) binary_fun"
   shows
-    "has_prop f (equivar_ind_by_act G X \<phi> \<psi>) = 
+    "satisfies f (equivar_ind_by_act G X \<phi> \<psi>) = 
       (\<forall>g \<in> G. \<forall>x \<in> X. \<phi> g x \<in> X \<longrightarrow> f (\<phi> g x) = \<psi> g (f x))"
   unfolding equivar_ind_by_act_def
   by auto
-
-lemma rewrite_arg_min_set:
-  fixes
-    f :: "'x \<Rightarrow> 'y::linorder" and
-    X :: "'x set"
-  shows
-    "arg_min_set f X = \<Union>(preimg f X ` {y \<in> (f ` X). \<forall>z \<in> f ` X. y \<le> z})"
-proof (safe)
-  fix
-    x :: 'x
-  assume 
-    arg_min: "x \<in> arg_min_set f X"
-  hence "is_arg_min f (\<lambda>a. a \<in> X) x"
-    by simp
-  hence "\<forall>x' \<in> X. f x' \<ge> f x"
-    by (simp add: is_arg_min_linorder)
-  hence "\<forall>z \<in> f ` X. f x \<le> z"
-    by blast
-  moreover have "f x \<in> f ` X"
-    using arg_min
-    by (simp add: is_arg_min_linorder)
-  ultimately have "f x \<in> {y \<in> f ` X. \<forall>z \<in> f ` X. y \<le> z}"
-    by blast
-  moreover have "x \<in> preimg f X (f x)"
-    using arg_min
-    by (simp add: is_arg_min_linorder)
-  ultimately show "x \<in> \<Union>(preimg f X ` {y \<in> (f ` X). \<forall>z \<in> f ` X. y \<le> z})"
-    by blast
-next
-  fix
-    x :: 'x and x' :: 'x and b :: 'x
-  assume
-    same_img: "x \<in> preimg f X (f x')" and
-    min: "\<forall>z \<in> f ` X. f x' \<le> z"
-  hence "f x = f x'"
-    by simp
-  hence "\<forall>z \<in> f ` X. f x \<le> z"
-    using min
-    by simp
-  moreover have "x \<in> X"
-    using same_img
-    by simp
-  ultimately show "x \<in> arg_min_set f X"
-    by (simp add: is_arg_min_linorder)
-qed
 
 lemma rewrite_grp_act_img:
   fixes
@@ -292,64 +217,6 @@ next
     by (simp add: restrict_def)
 qed
 
-lemma rewrite_totally_invariant_dist:
-  fixes
-    d :: "'x Distance" and
-    r :: "'x rel"
-  shows "totally_invariant_dist d r = (\<forall> (x, y) \<in> r. \<forall> (a, b) \<in> r. d x a = d y b)"
-proof (safe)
-  fix 
-    a :: 'x and b :: 'x and x :: 'x and y :: 'x
-  assume 
-    inv: "totally_invariant_dist d r" and
-    "(a, b) \<in> r" and "(x, y) \<in> r"
-  hence "((x,a), (y,b)) \<in> product_rel r"
-    by simp
-  thus "d x a = d y b" 
-    using inv
-    by simp
-next
-  show "\<forall>(x, y)\<in>r. \<forall>(a, b)\<in>r. d x a = d y b \<Longrightarrow> totally_invariant_dist d r"
-  proof (unfold totally_invariant_dist.simps has_prop.simps product_rel.simps, safe)
-    fix 
-      a :: 'x  and b :: 'x and x :: 'x and y :: 'x
-    assume 
-      "\<forall>(x, y)\<in>r. \<forall>(a, b)\<in>r. d x a = d y b" and
-      "(fst (x, a), fst (y, b)) \<in> r" and " (snd (x, a), snd (y, b)) \<in> r"
-    thus "uncurried_dist d (x, a) = uncurried_dist d (y, b)"
-      unfolding uncurried_dist.simps
-      by blast
-  qed
-qed
-
-lemma rewrite_invariant_dist:
-  fixes
-    d :: "'y Distance" and
-    X :: "'x set" and
-    Y :: "'y set" and
-    \<phi> :: "('x,'y) binary_fun"
-  shows "invariant_dist d X Y \<phi> = (\<forall> x \<in> X. \<forall> y \<in> Y. \<forall> z \<in> Y. d y z = d (\<phi> x y) (\<phi> x z))"
-proof (safe)
-  fix x :: 'x and y :: 'y and z :: 'y
-  assume
-    "x \<in> X" and "y \<in> Y" and "z \<in> Y" and
-    "invariant_dist d X Y \<phi>"
-  thus "d y z = d (\<phi> x y) (\<phi> x z)"
-    by fastforce
-next
-  show "\<forall>x\<in>X. \<forall>y\<in>Y. \<forall>z\<in>Y. d y z = d (\<phi> x y) (\<phi> x z) \<Longrightarrow> invariant_dist d X Y \<phi>"
-  proof (unfold invariant_dist.simps has_prop.simps equivariance_rel.simps, safe)
-    fix x :: 'x and a :: 'y and b :: 'y
-    assume 
-      "\<forall>x\<in>X. \<forall>y\<in>Y. \<forall>z\<in>Y. d y z = d (\<phi> x y) (\<phi> x z)" and 
-      "x \<in> X" and "a \<in> Y" and "b \<in> Y"
-    hence "d a b = d (\<phi> x a) (\<phi> x b)" 
-      by blast
-    thus "uncurried_dist d (a, b) = uncurried_dist d (\<phi> x a, \<phi> x b)"
-      by simp
-  qed
-qed
-
 lemma extensional_univ:
   "extensional_continuation f UNIV = f"
   unfolding If_def
@@ -374,10 +241,10 @@ theorem invar_generating_system_imp_invar:
     X :: "'x set" and
     \<phi> :: "('z, 'x) binary_fun"
   assumes
-    invar: "has_prop f (Invariance (rel_induced_by_action H X \<phi>))" and
+    invar: "satisfies f (Invariance (rel_induced_by_action H X \<phi>))" and
     grp_act: "group_action G X \<phi>" and gen: "carrier G = generate G H"
-  shows "has_prop f (Invariance (rel_induced_by_action (carrier G) X \<phi>))"
-proof (unfold has_prop.simps rel_induced_by_action.simps, safe)
+  shows "satisfies f (Invariance (rel_induced_by_action (carrier G) X \<phi>))"
+proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
   fix
     x :: 'x and g :: 'z
   assume
@@ -402,7 +269,7 @@ proof (unfold has_prop.simps rel_induced_by_action.simps, safe)
       by fastforce
     thus ?case 
       using invar
-      unfolding has_prop.simps
+      unfolding satisfies.simps
       by blast
   next
     case (inv g)
@@ -442,57 +309,49 @@ proof (unfold has_prop.simps rel_induced_by_action.simps, safe)
     by blast
 qed
 
+lemma equivar_under_subset:
+  fixes
+    f :: "'x \<Rightarrow> 'y" and
+    G :: "'z set" and
+    X :: "'x set" and
+    Y :: "'x set" and
+    Act :: "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set"
+  assumes
+    "satisfies f (Equivariance X Act)" and
+    "Y \<subseteq> X"
+  shows
+    "satisfies f (Equivariance Y Act)"
+  using assms
+  unfolding satisfies.simps
+  by blast
+
+lemma equivar_under_subset':
+  fixes
+    f :: "'x \<Rightarrow> 'y" and
+    G :: "'z set" and
+    X :: "'x set" and
+    Act :: "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set" and
+    Act' :: "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set"
+  assumes
+    "satisfies f (Equivariance X Act)" and
+    "Act' \<subseteq> Act"
+  shows
+    "satisfies f (Equivariance X Act')"
+  using assms
+  unfolding satisfies.simps
+  by blast
+
 lemma invar_under_subset_rel:
   fixes
     f :: "'x \<Rightarrow> 'y" and
     rel' :: "'x rel"
   assumes
     subset: "rel' \<subseteq> rel" and
-    invar: "has_prop f (Invariance rel)"
+    invar: "satisfies f (Invariance rel)"
   shows
-    "has_prop f (Invariance rel')"
-  using assms has_prop.simps
+    "satisfies f (Invariance rel')"
+  using assms satisfies.simps
   by auto
-
-lemma invar_dist_image:
-  fixes
-    d :: "'y Distance" and
-    G :: "'x monoid" and
-    Y :: "'y set" and
-    Y' :: "'y set" and
-    \<phi> :: "('x, 'y) binary_fun" and
-    y :: 'y and
-    g :: 'x
-  assumes
-    invar_d: "invariant_dist d (carrier G) Y \<phi>" and 
-    "Y' \<subseteq> Y" and grp_act: "group_action G Y \<phi>" and
-    "g \<in> carrier G" and "y \<in> Y"
-  shows
-    "d (\<phi> g y) ` (\<phi> g) ` Y' = d y ` Y'"
-proof (safe)
-  fix 
-    y' :: 'y
-  assume
-    "y' \<in> Y'"
-  hence "((y, y'), ((\<phi> g y), (\<phi> g y'))) \<in> equivariance_rel (carrier G) Y \<phi>"
-    using \<open>Y' \<subseteq> Y\<close> \<open>y \<in> Y\<close> \<open>g \<in> carrier G\<close>
-    unfolding equivariance_rel.simps
-    by blast
-  hence eq_dist: "uncurried_dist d ((\<phi> g y), (\<phi> g y')) = uncurried_dist d (y, y')"
-    using invar_d
-    unfolding invariant_dist.simps
-    by fastforce
-  thus "d (\<phi> g y) (\<phi> g y') \<in> d y ` Y'"
-    using \<open>y' \<in> Y'\<close>
-    by simp
-  have "\<phi> g y' \<in> \<phi> g ` Y'"
-    using \<open>y' \<in> Y'\<close>
-    by simp
-  thus "d y y' \<in> d (\<phi> g y) ` \<phi> g ` Y'"
-    using eq_dist 
-    unfolding uncurried_dist.simps
-    by (simp add: rev_image_eqI)
-qed
 
 theorem equivar_preimg:
   fixes
@@ -511,7 +370,7 @@ theorem equivar_preimg:
     grp_act: "group_action G X \<phi>" and grp_act_res: "group_action G UNIV \<psi>" and
     "domain\<^sub>f \<subseteq> X" and closed_domain: "rel \<inter> (domain\<^sub>f \<times> X) \<subseteq> restr_rel" and
     (* Could the closed_domain requirement be weakened? *)
-    equivar_f: "has_prop f equivar_prop" and
+    equivar_f: "satisfies f equivar_prop" and
     grp_el: "g \<in> carrier G"
   shows "\<forall>y. preimg f domain\<^sub>f (\<psi> g y) = (\<phi> g) ` (preimg f domain\<^sub>f y)"
 proof (safe)
@@ -544,7 +403,7 @@ proof (safe)
     by auto
   ultimately have "f x' = \<psi> (inv\<^bsub>G\<^esub> g) (f x)"
     using domain equivar_f img
-    unfolding equivar_prop_def equivar_ind_by_act_def has_prop.simps
+    unfolding equivar_prop_def equivar_ind_by_act_def satisfies.simps
     by blast
   also have "f x = \<psi> g y"
     using preimg_el
@@ -650,10 +509,10 @@ lemma invar_comp:
     g :: "'y \<Rightarrow> 'z" and
     rel :: "'x rel"
   assumes
-    invar: "has_prop f (Invariance rel)"
+    invar: "satisfies f (Invariance rel)"
   shows
-    "has_prop (g \<circ> f) (Invariance rel)"
-  using assms has_prop.simps
+    "satisfies (g \<circ> f) (Invariance rel)"
+  using assms satisfies.simps
   by auto
 
 lemma equivar_comp:
@@ -669,10 +528,10 @@ lemma equivar_comp:
       {(\<phi>, \<psi>). \<exists>\<psi>' :: 'y \<Rightarrow> 'y. (\<phi>, \<psi>') \<in> Act_f \<and> (\<psi>', \<psi>) \<in> Act_g \<and> \<psi>' ` f ` X \<subseteq> Y}"
   assumes
     "f ` X \<subseteq> Y" and
-    "has_prop f (Equivariance X Act_f)" and
-    "has_prop g (Equivariance Y Act_g)"
+    "satisfies f (Equivariance X Act_f)" and
+    "satisfies g (Equivariance Y Act_g)"
   shows 
-    "has_prop (g \<circ> f) (Equivariance X transitive_acts)"
+    "satisfies (g \<circ> f) (Equivariance X transitive_acts)"
 proof (unfold transitive_acts_def, simp, safe)
   fix
     \<phi> :: "'x \<Rightarrow> 'x" and \<psi>' :: "'y \<Rightarrow> 'y" and \<psi> :: "'z \<Rightarrow> 'z" and x :: 'x
@@ -704,19 +563,24 @@ lemma equivar_ind_by_act_comp:
     \<psi> :: "('w, 'z) binary_fun"
   assumes
     "f ` X \<subseteq> Y" and "\<forall>g \<in> G. \<psi>' g ` f ` X \<subseteq> Y" and
-    "has_prop f (equivar_ind_by_act G X \<phi> \<psi>')" and
-    "has_prop g (equivar_ind_by_act G Y \<psi>' \<psi>)"
-  shows "has_prop (g \<circ> f) (equivar_ind_by_act G X \<phi> \<psi>)"
+    "satisfies f (equivar_ind_by_act G X \<phi> \<psi>')" and
+    "satisfies g (equivar_ind_by_act G Y \<psi>' \<psi>)"
+  shows "satisfies (g \<circ> f) (equivar_ind_by_act G X \<phi> \<psi>)"
 proof -
   let ?Act_f = "{(\<phi> g, \<psi>' g) | g. g \<in> G}" and
       ?Act_g = "{(\<psi>' g, \<psi> g) | g. g \<in> G}"
-  have 
-    "{(\<phi>, \<psi>). \<exists>\<psi>' :: 'y \<Rightarrow> 'y. (\<phi>, \<psi>') \<in> ?Act_f \<and> (\<psi>', \<psi>) \<in> ?Act_g \<and> \<psi>' ` f ` X \<subseteq> Y} =
-      {(\<phi> g, \<psi> g) | g. g \<in> G}"
-    sorry
-  hence "has_prop (g \<circ> f) (Equivariance X {(\<phi> g, \<psi> g) | g. g \<in> G})"
-    using assms equivar_comp[of f X Y ?Act_f g ?Act_g] 
-    by (metis equivar_ind_by_act_def)
+  have "\<forall>g \<in> G. (\<phi> g, \<psi>' g) \<in> {(\<phi> g, \<psi>' g) |g. g \<in> G} \<and>
+                  (\<psi>' g, \<psi> g) \<in> {(\<psi>' g, \<psi> g) |g. g \<in> G} \<and> \<psi>' g ` f ` X \<subseteq> Y"
+    using assms
+    by auto
+  hence
+    "{(\<phi> g, \<psi> g) | g. g \<in> G} \<subseteq>
+      {(\<phi>, \<psi>). \<exists>\<psi>'. (\<phi>, \<psi>') \<in> ?Act_f \<and> (\<psi>', \<psi>) \<in> ?Act_g \<and> \<psi>' ` f ` X \<subseteq> Y}"
+    by blast   
+  hence "satisfies (g \<circ> f) (Equivariance X {(\<phi> g, \<psi> g) | g. g \<in> G})"
+    using assms equivar_comp[of f X Y ?Act_f g ?Act_g] equivar_under_subset'
+    unfolding equivar_ind_by_act_def
+    by (metis (no_types, lifting))
   thus ?thesis
     unfolding equivar_ind_by_act_def
     by blast
@@ -731,10 +595,10 @@ lemma equivar_set_minus:
     \<phi> :: "('z, 'x) binary_fun" and
     \<psi> :: "('z, 'y) binary_fun"
   assumes
-    "has_prop f (equivar_ind_by_act G X \<phi> (set_action \<psi>))" and 
-    "has_prop h (equivar_ind_by_act G X \<phi> (set_action \<psi>))" and
+    "satisfies f (equivar_ind_by_act G X \<phi> (set_action \<psi>))" and 
+    "satisfies h (equivar_ind_by_act G X \<phi> (set_action \<psi>))" and
     "\<forall>g \<in> G. bij (\<psi> g)"
-  shows "has_prop (\<lambda>x. f x - h x) (equivar_ind_by_act G X \<phi> (set_action \<psi>))"
+  shows "satisfies (\<lambda>x. f x - h x) (equivar_ind_by_act G X \<phi> (set_action \<psi>))"
 proof -
   have "\<forall>g \<in> G. \<forall>x \<in> X. \<phi> g x \<in> X \<longrightarrow> f (\<phi> g x) = \<psi> g ` (f x)"
     using assms
@@ -760,7 +624,7 @@ lemma equivar_union_under_img_act:
     G :: "'z set" and
     \<phi> :: "('z, 'x) binary_fun"
   shows
-    "has_prop \<Union> (equivar_ind_by_act G UNIV 
+    "satisfies \<Union> (equivar_ind_by_act G UNIV 
               (set_action (set_action \<phi>)) (set_action \<phi>))"
 proof (unfold equivar_ind_by_act_def, clarsimp, safe)
   fix
@@ -894,10 +758,10 @@ lemma invar_param_fun:
     f :: "'x \<Rightarrow> ('x \<Rightarrow> 'y)" and
     rel :: "'x rel"
   assumes
-    param_invar: "\<forall>x. has_prop (f x) (Invariance rel)" and
-    invar: "has_prop f (Invariance rel)"
+    param_invar: "\<forall>x. satisfies (f x) (Invariance rel)" and
+    invar: "satisfies f (Invariance rel)"
   shows
-    "has_prop (\<lambda>x. f x x) (Invariance rel)"
+    "satisfies (\<lambda>x. f x x) (Invariance rel)"
   using invar param_invar 
   by auto
 
@@ -1039,243 +903,6 @@ next
     by metis
   thus "\<phi>_img (g \<otimes>\<^bsub>G\<^esub> h) = \<phi>_img g \<otimes>\<^bsub>BijGroup (Pow Y)\<^esub> \<phi>_img h"
     by blast
-qed
-
-subsection \<open>Equivariance\<close>
-
-theorem grp_act_invar_dist_and_equivar_f_imp_equivar_minimizer:
-  fixes
-    f :: "'x \<Rightarrow> 'y" and
-    domain\<^sub>f :: "'x set" and
-    d :: "'x Distance" and
-    img :: "'x \<Rightarrow> 'y set" and
-    X :: "'x set" and
-    G :: "'z monoid" and
-    \<phi> :: "('z, 'x) binary_fun" and
-    \<psi> :: "('z, 'y) binary_fun"
-  defines
-    "rel \<equiv> rel_induced_by_action (carrier G) X \<phi>" and
-    "restr_rel \<equiv> rel_induced_by_action (carrier G) domain\<^sub>f \<phi>" and
-    "equivar_prop \<equiv> equivar_ind_by_act (carrier G) domain\<^sub>f \<phi> \<psi>" and
-    "equivar_prop_global_set_valued \<equiv> equivar_ind_by_act (carrier G) X \<phi> (set_action \<psi>)"
-  assumes        
-    grp_act: "group_action G X \<phi>" and grp_act_res: "group_action G UNIV \<psi>" and
-    "domain\<^sub>f \<subseteq> X" and closed_domain: "rel \<inter> (domain\<^sub>f \<times> X) \<subseteq> restr_rel" and
-    (* Could the closed_domain requirement be weakened? *)
-    equivar_img: "has_prop img equivar_prop_global_set_valued" and
-    invar_d: "invariant_dist d (carrier G) X \<phi>" and
-    equivar_f: "has_prop f equivar_prop"
-  shows 
-    "has_prop (\<lambda>x. minimizer f domain\<^sub>f d (img x) x) equivar_prop_global_set_valued"
-proof (unfold equivar_prop_global_set_valued_def equivar_ind_by_act_def, 
-        simp del: arg_min_set.simps, clarify)
-  fix    
-    x :: 'x and g :: 'z
-  assume
-    grp_el: "g \<in> carrier G" and "x \<in> X" and img_X: "\<phi> g x \<in> X"
-  let ?x' = "\<phi> g x"
-  let ?c = "closest_preimg_dist f domain\<^sub>f d x" and
-      ?c' = "closest_preimg_dist f domain\<^sub>f d ?x'"
-  have "\<forall>y. preimg f domain\<^sub>f y \<subseteq> X"
-    using \<open>domain\<^sub>f \<subseteq> X\<close>
-    by auto
-  hence invar_dist_img: 
-    "\<forall>y. d x ` (preimg f domain\<^sub>f y) = d ?x' ` (\<phi> g ` (preimg f domain\<^sub>f y))"
-    using \<open>x \<in> X\<close> grp_el invar_dist_image invar_d grp_act
-    by metis
-  have "\<forall>y. preimg f domain\<^sub>f (\<psi> g y) = (\<phi> g) ` (preimg f domain\<^sub>f y)"
-    using equivar_preimg[of G X \<phi> \<psi> domain\<^sub>f f g] assms grp_el 
-    by fastforce
-  \<comment> \<open>We want to apply lemma rewrite_arg_min_set to show that the arg_min_set for
-    ?x' is the image of the arg_min_set for ?x under \<psi> g, thus showing equivariance
-    of the minimizer function.\<close>
-  hence "\<forall>y. d ?x' ` preimg f domain\<^sub>f (\<psi> g y) = d ?x' ` (\<phi> g) ` (preimg f domain\<^sub>f y)"
-    by presburger
-  hence "\<forall>y. Inf (d ?x' ` preimg f domain\<^sub>f (\<psi> g y)) = Inf (d x ` preimg f domain\<^sub>f y)"
-    by (metis invar_dist_img)
-  hence
-    "\<forall>y. inf_dist d (preimg f domain\<^sub>f (\<psi> g y)) ?x' = inf_dist d (preimg f domain\<^sub>f y) x"
-    by simp
-  hence
-    "\<forall>y. closest_preimg_dist f domain\<^sub>f d ?x' (\<psi> g y)
-          = closest_preimg_dist f domain\<^sub>f d x y"
-    by simp
-  hence comp:
-    "closest_preimg_dist f domain\<^sub>f d x = (closest_preimg_dist f domain\<^sub>f d ?x') \<circ> (\<psi> g)"
-    by auto
-  hence "\<forall> Y \<alpha>. preimg ?c' (\<psi> g ` Y) \<alpha> = \<psi> g ` preimg ?c Y \<alpha>"
-    using preimg_comp
-    by auto
-  hence 
-    "\<forall> Y A. {preimg ?c' (\<psi> g ` Y) \<alpha> | \<alpha>. \<alpha> \<in> A} = {\<psi> g ` preimg ?c Y \<alpha> | \<alpha>. \<alpha> \<in> A}"
-    by simp
-  moreover have "\<forall> Y A. {\<psi> g ` preimg ?c Y \<alpha> | \<alpha>. \<alpha> \<in> A} = {\<psi> g ` \<beta> | \<beta>. \<beta> \<in> preimg ?c Y ` A}"
-    by blast
-  moreover have "\<forall> Y A. preimg ?c' (\<psi> g ` Y) ` A = {preimg ?c' (\<psi> g ` Y) \<alpha> | \<alpha>. \<alpha> \<in> A}"
-    by blast
-  ultimately have
-    "\<forall> Y A. preimg ?c' (\<psi> g ` Y) ` A = {\<psi> g ` \<alpha> | \<alpha>. \<alpha> \<in> preimg ?c Y ` A}"
-    by simp
-  hence "\<forall> Y A. \<Union>(preimg ?c' (\<psi> g ` Y) ` A) = \<Union>{\<psi> g ` \<alpha> | \<alpha>. \<alpha> \<in> preimg ?c Y ` A}"      
-    by simp
-  moreover have 
-    "\<forall> Y A. \<Union>{\<psi> g ` \<alpha> | \<alpha>. \<alpha> \<in> preimg ?c Y ` A} = \<psi> g ` \<Union>(preimg ?c Y ` A)"
-    by blast
-  ultimately have eq_preimg_unions:
-    "\<forall> Y A. \<Union>(preimg ?c' (\<psi> g ` Y) ` A) = \<psi> g ` \<Union>(preimg ?c Y ` A)"    
-    by simp
-  have "\<forall> Y. ?c' ` \<psi> g ` Y = ?c ` Y"
-    using comp
-    by (simp add: image_comp)
-  hence
-    "\<forall> Y. {\<alpha> \<in> ?c ` Y. \<forall>\<beta> \<in> ?c ` Y. \<alpha> \<le> \<beta>} =
-            {\<alpha> \<in> ?c' ` \<psi> g ` Y. \<forall>\<beta> \<in> ?c' ` \<psi> g ` Y. \<alpha> \<le> \<beta>}"
-    by simp
-  hence
-    "\<forall> Y. arg_min_set (closest_preimg_dist f domain\<^sub>f d ?x') (\<psi> g ` Y) = 
-            (\<psi> g) ` (arg_min_set (closest_preimg_dist f domain\<^sub>f d x) Y)"
-    using rewrite_arg_min_set[of ?c'] rewrite_arg_min_set[of ?c] eq_preimg_unions
-    by presburger
-  moreover have "img (\<phi> g x) = \<psi> g ` img x"
-    using equivar_img \<open>x \<in> X\<close> grp_el img_X rewrite_equivar_ind_by_act
-    unfolding equivar_prop_global_set_valued_def set_action.simps
-    by metis
-  ultimately show
-    "arg_min_set (closest_preimg_dist f domain\<^sub>f d (\<phi> g x)) (img (\<phi> g x)) =
-       \<psi> g ` arg_min_set (closest_preimg_dist f domain\<^sub>f d x) (img x)"
-    by presburger
-qed
-
-subsection \<open>Invariance\<close>
-
-lemma closest_dist_invar_under_refl_rel_and_tot_invar_dist:
-  fixes
-    f :: "'x \<Rightarrow> 'y" and
-    domain\<^sub>f :: "'x set" and
-    d :: "'x Distance" and
-    rel :: "'x rel"
-  assumes
-    r_refl: "restr_refl_on domain\<^sub>f rel" and
-    tot_invar_d: "totally_invariant_dist d rel"
-  shows "has_prop (closest_preimg_dist f domain\<^sub>f d) (Invariance rel)"
-proof (simp, safe, standard)
-  fix
-    a :: 'x and
-    b :: 'x and
-    y :: 'y
-  assume 
-    rel: "(a,b) \<in> rel"
-  have "\<forall> c \<in> domain\<^sub>f. (c,c) \<in> rel"
-    using r_refl 
-    by (simp add: refl_onD)
-  hence "\<forall> c \<in> domain\<^sub>f. d a c = d b c"
-    using rel tot_invar_d
-    unfolding rewrite_totally_invariant_dist
-    by blast
-  thus "closest_preimg_dist f domain\<^sub>f d a y = closest_preimg_dist f domain\<^sub>f d b y"
-    by simp
-qed
-
-lemma minimizer_invar_under_refl_rel_and_tot_invar_dist:
- fixes
-    f :: "'x \<Rightarrow> 'y" and
-    domain\<^sub>f :: "'x set" and
-    d :: "'x Distance" and
-    rel :: "'x rel" and
-    img :: "'y set"
-  assumes
-    r_refl: "restr_refl_on domain\<^sub>f rel" and
-    tot_invar_d: "totally_invariant_dist d rel"
-  shows "has_prop (minimizer f domain\<^sub>f d img) (Invariance rel)"
-proof -
-  have "has_prop (closest_preimg_dist f domain\<^sub>f d) (Invariance rel)"
-    using r_refl tot_invar_d
-    by (rule closest_dist_invar_under_refl_rel_and_tot_invar_dist)
-  moreover have "minimizer f domain\<^sub>f d img = 
-    (\<lambda>x. arg_min_set x img) \<circ> (closest_preimg_dist f domain\<^sub>f d)"
-    unfolding comp_def
-    by auto
-  ultimately show ?thesis
-    using invar_comp
-    by simp
-qed
-
-theorem monoid_tot_invar_dist_imp_invar_minimizer:
-  fixes
-    f :: "'x \<Rightarrow> 'y" and
-    domain\<^sub>f :: "'x set" and
-    d :: "'x Distance" and
-    img :: "'y set" and
-    X :: "'x set" and
-    G :: "'z monoid" and
-    \<phi> :: "('z, 'x) binary_fun"
-  defines
-    "rel \<equiv> rel_induced_by_action (carrier G) X \<phi>"
-  assumes        
-    hom: "\<phi> \<in> hom G (map_monoid X)" and
-    one: "\<phi> \<one>\<^bsub>G\<^esub> = \<one>\<^bsub>map_monoid X\<^esub>" and
-    "monoid G" and "domain\<^sub>f \<subseteq> X" and
-    tot_invar_d: "totally_invariant_dist d rel"
-  shows "has_prop (minimizer f domain\<^sub>f d img) (Invariance rel)"
-proof -
-  have "refl_on X rel" 
-    using \<open>monoid G\<close> hom one rel_induced_by_monoid_action_refl 
-    unfolding rel_def 
-    by blast
-  hence "restr_refl_on domain\<^sub>f rel"
-    using \<open>domain\<^sub>f \<subseteq> X\<close>
-    by (simp add: refl_on_def subset_eq)
-  thus ?thesis
-    using tot_invar_d
-    by (rule minimizer_invar_under_refl_rel_and_tot_invar_dist)
-qed
-
-theorem grp_act_invar_dist_and_invar_f_imp_invar_minimizer:
-  fixes
-    f :: "'x \<Rightarrow> 'y" and
-    domain\<^sub>f :: "'x set" and
-    d :: "'x Distance" and
-    img :: "'y set" and
-    X :: "'x set" and
-    G :: "'z monoid" and
-    \<phi> :: "('z, 'x) binary_fun"
-  defines
-    "rel \<equiv> rel_induced_by_action (carrier G) X \<phi>" and
-    "restr_rel \<equiv> rel_induced_by_action (carrier G) domain\<^sub>f \<phi>"
-  assumes        
-    grp_act: "group_action G X \<phi>" and "domain\<^sub>f \<subseteq> X" and
-    closed_domain: "rel \<inter> (domain\<^sub>f \<times> X) \<subseteq> restr_rel" and 
-    (* Could the closed_domain requirement be weakened? *)
-    invar_d: "invariant_dist d (carrier G) X \<phi>" and
-    invar_f: "has_prop f (Invariance restr_rel)"
-  shows "has_prop (minimizer f domain\<^sub>f d img) (Invariance rel)"
-proof -
-  let ?\<psi> = "\<lambda>g. id" and ?img = "\<lambda>x. img"
-  have "has_prop f (equivar_ind_by_act (carrier G) domain\<^sub>f \<phi> ?\<psi>)"
-    using invar_f rewrite_invar_as_equivar
-    unfolding restr_rel_def 
-    by blast
-  moreover have "group_action G UNIV ?\<psi>"
-    using const_id_is_grp_act grp_act
-    unfolding group_action_def group_hom_def
-    by blast
-  moreover have 
-    "has_prop ?img (equivar_ind_by_act (carrier G) X \<phi> (set_action ?\<psi>))"
-    unfolding equivar_ind_by_act_def
-    by fastforce
-  ultimately have
-    "has_prop (\<lambda>x. minimizer f domain\<^sub>f d (?img x) x)
-              (equivar_ind_by_act (carrier G) X \<phi> (set_action ?\<psi>))"
-    using assms 
-          grp_act_invar_dist_and_equivar_f_imp_equivar_minimizer[of G X \<phi> ?\<psi> domain\<^sub>f ?img d f]
-    by blast
-  hence "has_prop (minimizer f domain\<^sub>f d img)
-                  (equivar_ind_by_act (carrier G) X \<phi> (set_action ?\<psi>))"
-    by blast
-  thus ?thesis
-    unfolding rel_def set_action.simps
-    using rewrite_invar_as_equivar 
-    by (metis image_id)
 qed
   
 end

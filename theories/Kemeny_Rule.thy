@@ -8,7 +8,6 @@ section \<open>Kemeny Rule\<close>
 theory Kemeny_Rule
   imports 
     "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance_Rationalization"
-    "Compositional_Structures/Basic_Modules/Component_Types/Consensus_Symmetry"
     "Compositional_Structures/Basic_Modules/Component_Types/Distance_Rationalization_Symmetry"
 begin
 
@@ -49,14 +48,30 @@ qed
 
 subsection \<open>Neutrality Property\<close>
 
+lemma swap_dist_neutral:
+  "distance_neutrality valid_elections (votewise_distance swap l_one)"
+  using neutral_dist_imp_neutral_votewise_dist swap_neutral
+  by blast
+
 theorem kemeny_rule_neutral: 
-  "social_choice_properties.neutr_mod valid_elections kemeny_rule"
+  "social_choice_properties.neutrality valid_elections kemeny_rule"
 proof -
   let ?swap_dist = "votewise_distance swap l_one"
-  have "neutr_dist valid_elections ?swap_dist"
-    sorry
+  have "\<K>_els strong_unanimity \<subseteq> valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
+    unfolding valid_elections_def \<K>\<^sub>\<E>.simps strong_unanimity_def
+    by force
+  hence
+    "social_choice_properties.consensus_rule_neutrality (\<K>_els strong_unanimity) strong_unanimity"
+    using strong_unanimity_neutral
+    unfolding social_choice_properties.consensus_rule_neutrality.simps equivar_ind_by_act_def
+    using equivar_under_subset[of 
+            "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)"
+            "valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>" 
+            "{(\<phi>_neutr g, set_action \<psi>_neutr\<^sub>\<c> g) |g. g \<in> carrier neutrality\<^sub>\<G>}"
+            "\<K>_els strong_unanimity"]
+    by blast
   thus ?thesis
-    using strong_unanimity_neutral 
+    using strong_unanimity_neutral swap_dist_neutral
           strong_unanimity_closed_under_neutrality
           social_choice_properties.neutr_dist_and_cons_imp_neutr_dr[of 
             ?swap_dist strong_unanimity]

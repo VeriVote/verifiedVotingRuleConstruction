@@ -24,21 +24,6 @@ text \<open>
 subsection \<open>Definitions\<close>
 
 text \<open>
-  Returns those consensus elections on a given alternative and voter set
-  from a given consensus that are mapped to the given unique winner by a 
-  given consensus rule.
-\<close>
-
-fun \<K>\<^sub>\<E> :: 
-"('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> ('a, 'v) Election set" where
-  "\<K>\<^sub>\<E> K w =
-    {(A, V, p) | A V p. (consensus_\<K> K) (A, V, p) \<and> finite_profile V A p 
-                  \<and> elect (rule_\<K> K) V A p = {w}}" (* use profile instead of finite_profile? *)
-
-abbreviation \<K>_els :: "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> ('a, 'v) Election set" where
-  "\<K>_els K \<equiv> \<Union> ((\<K>\<^sub>\<E> K) ` UNIV)"
-
-text \<open>
   Returns the distance of the given election to the preimage of the given unique winner
   under the given consensus elections and consensus rule.
 \<close>

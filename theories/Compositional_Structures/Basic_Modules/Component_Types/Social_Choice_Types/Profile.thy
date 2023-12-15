@@ -67,6 +67,8 @@ definition finite_elections :: "('a, 'v) Election set" where
 definition valid_elections :: "('a,'v) Election set" where
   "valid_elections = {E. profile (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E)}"
 
+subsection \<open>Voter Permutations\<close>
+
 text \<open>
   A common action of interest on elections is renaming the voters, 
   e.g. when talking about anonymity.
@@ -233,6 +235,8 @@ next
     unfolding finite_elections_def
     by fastforce
 qed
+
+subsection \<open>List Representation for Ordered Voter Types\<close>
    
 text \<open>
   A profile on a voter set that has a natural order can be viewed as a list of ballots.
@@ -242,6 +246,41 @@ fun list_of_preferences :: "'v list \<Rightarrow> ('a, 'v) Profile
                               \<Rightarrow> ('a Preference_Relation) list" where
   "list_of_preferences [] p = []" |
   "list_of_preferences (x#xs) p = (p x)#(list_of_preferences xs p)"
+
+fun to_list :: "'v::linorder set \<Rightarrow> ('a, 'v) Profile 
+                  \<Rightarrow> ('a Preference_Relation) list" where
+  "to_list V p = (if (finite V) 
+                    then (list_of_preferences (sorted_list_of_set V) p)
+                    else [])"
+
+lemma map2_helper:
+  fixes
+    f :: "'x \<Rightarrow> 'y \<Rightarrow> 'z" and 
+    g :: "'x \<Rightarrow> 'x" and
+    h :: "'y \<Rightarrow> 'y" and
+    l1 :: "'x list" and 
+    l2 :: "'y list"
+  shows
+    "map2 f (map g l1) (map h l2) = map2 (\<lambda>x y. f (g x) (h y)) l1 l2"
+proof -
+  have "map2 f (map g l1) (map h l2) = map (\<lambda>(x, y). f x y) (zip (map g l1) (map h l2))"
+    by simp
+  moreover have "map (\<lambda>(x, y). f x y) (zip (map g l1) (map h l2)) = 
+    map (\<lambda>(x, y). f x y) (map (\<lambda> (x, y). (g x, h y)) (zip l1 l2))"
+    using zip_map_map
+    by metis
+  moreover have "map (\<lambda>(x, y). f x y) (map (\<lambda> (x, y). (g x, h y)) (zip l1 l2)) =
+    map ((\<lambda>(x, y). f x y) \<circ> (\<lambda> (x, y). (g x, h y))) (zip l1 l2)"
+    by simp
+  moreover have "map ((\<lambda>(x, y). f x y) \<circ> (\<lambda> (x, y). (g x, h y))) (zip l1 l2) =
+    map (\<lambda>(x, y). f (g x) (h y)) (zip l1 l2)"
+    by auto
+  moreover have "map (\<lambda>(x, y). f (g x) (h y)) (zip l1 l2) = map2 (\<lambda>x y. f (g x) (h y)) l1 l2"
+    by simp
+  ultimately show
+    "map2 f (map g l1) (map h l2) = map2 (\<lambda>x y. f (g x) (h y)) l1 l2"
+    by simp
+qed
 
 lemma list_of_pref_simps: 
   shows length_inv: "length (list_of_preferences l p) = length l" and
@@ -290,12 +329,6 @@ next
   qed
 qed
 
-fun to_list :: "'v::linorder set \<Rightarrow> ('a, 'v) Profile 
-                  \<Rightarrow> ('a Preference_Relation) list" where
-  "to_list V p = (if (finite V) 
-                    then (list_of_preferences (sorted_list_of_set V) p)
-                    else [])"
-
 lemma to_list_simp: 
   fixes 
     i :: nat and
@@ -310,6 +343,37 @@ proof -
   also have "... = p ((sorted_list_of_set V)!i)"
     by (simp add: assms index)
   finally show ?thesis by auto
+qed
+
+lemma to_list_comp:
+  fixes 
+    V :: "'v::linorder set" and
+    p :: "('a, 'v) Profile" and
+    f :: "'a rel \<Rightarrow> 'a rel"
+  shows "to_list V (f \<circ> p) = map f (to_list V p)"
+proof -
+  have "\<forall>i < card V. (to_list V (f \<circ> p))!i = (f \<circ> p) ((sorted_list_of_set V)!i)"
+    using to_list_simp
+    by blast
+  moreover have 
+    "\<forall>i < card V. (f \<circ> p) ((sorted_list_of_set V)!i) = (map (f \<circ> p) (sorted_list_of_set V))!i"
+    unfolding map_def
+    by simp
+  moreover have 
+    "\<forall>i < card V. (map (f \<circ> p) (sorted_list_of_set V))!i =
+      (map f (map p (sorted_list_of_set V)))!i"
+    by simp
+  moreover have "map p (sorted_list_of_set V) = to_list V p"
+    using to_list_simp
+    by (simp add: index length_inv list_eq_iff_nth_eq)
+  ultimately have "\<forall>i < card V. (to_list V (f \<circ> p))!i = (map f (to_list V p))!i"
+    by auto
+  moreover have "length (map f (to_list V p)) = card V"
+    by (simp add: length_inv)
+  moreover have "length (to_list V (f \<circ> p)) = card V" 
+    by (simp add: length_inv)
+  ultimately show ?thesis
+    by (simp add: nth_equalityI)
 qed
 
 lemma set_card_upper_bound: 

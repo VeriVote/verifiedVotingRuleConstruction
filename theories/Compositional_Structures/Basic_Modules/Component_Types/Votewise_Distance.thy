@@ -301,4 +301,91 @@ proof (unfold distance_anonymity_def, safe)
   qed
 qed
 
+lemma neutral_dist_imp_neutral_votewise_dist:
+  fixes
+    d :: "'a Vote Distance" and
+    n :: Norm
+  defines
+    "vote_action \<equiv> (\<lambda>\<pi> (A, q). (\<pi> ` A, rel_rename \<pi> q))"
+  assumes
+    invar: "invariant_dist d (carrier neutrality\<^sub>\<G>) UNIV vote_action"
+  shows
+    "distance_neutrality valid_elections (votewise_distance d n)"
+proof (unfold distance_neutrality.simps, 
+        simp only: rewrite_invariant_dist, 
+        safe)
+  fix
+    A :: "'a set" and
+    A' :: "'a set" and
+    V :: "'v::linorder set" and
+    V' :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    p' :: "('a, 'v) Profile" and
+    \<pi> :: "'a \<Rightarrow> 'a"
+  assume
+    carrier: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
+    valid: "(A, V, p) \<in> valid_elections" and
+    valid': "(A', V', p') \<in> valid_elections"
+  hence bij: "bij \<pi>"
+    unfolding neutrality\<^sub>\<G>_def
+    using rewrite_carrier
+    by blast
+  thus "votewise_distance d n (A, V, p) (A', V', p') =
+          votewise_distance d n (\<phi>_neutr \<pi> (A, V, p)) (\<phi>_neutr \<pi> (A', V', p'))"
+  proof (cases "(finite V) \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')")
+    case True
+    hence "(finite V) \<and> V = V' \<and> (V \<noteq> {} \<or> \<pi> ` A = \<pi> ` A')"
+      by auto
+    hence "votewise_distance d n (\<phi>_neutr \<pi> (A, V, p)) (\<phi>_neutr \<pi> (A', V', p')) = 
+      n (map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q')) 
+        (to_list V (rel_rename \<pi> \<circ> p)) (to_list V' (rel_rename \<pi> \<circ> p')))"
+      using valid valid'
+      unfolding \<phi>_neutr.simps
+      by auto
+    also have 
+      "(map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q')) 
+        (to_list V (rel_rename \<pi> \<circ> p)) (to_list V' (rel_rename \<pi> \<circ> p'))) =
+       (map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q')) 
+        (map (rel_rename \<pi>) (to_list V p)) (map (rel_rename \<pi>) (to_list V' p')))"
+      using to_list_comp
+      by metis
+    also have 
+      "(map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q')) 
+        (map (rel_rename \<pi>) (to_list V p)) (map (rel_rename \<pi>) (to_list V' p'))) =
+       (map2 (\<lambda> q q'. d (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q')) 
+        (to_list V p) (to_list V' p'))"
+      using map2_helper
+      by blast
+    also have 
+      "(\<lambda> q q'. d (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q')) =
+        (\<lambda> q q'. d (A, q) (A', q'))"
+      using invar carrier UNIV_I case_prod_conv
+            rewrite_invariant_dist[of 
+              d "carrier neutrality\<^sub>\<G>" UNIV vote_action]
+      unfolding vote_action_def
+      by (metis (no_types, lifting))
+    finally have "votewise_distance d n (\<phi>_neutr \<pi> (A, V, p)) (\<phi>_neutr \<pi> (A', V', p')) = 
+      n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
+      by simp
+    also have "votewise_distance d n (A, V, p) (A', V', p') =
+      n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
+      using True
+      by auto
+    finally show ?thesis by simp
+  next
+    case False
+    hence "\<not> (finite V \<and> V = V' \<and> (V \<noteq> {} \<or> \<pi> ` A = \<pi> ` A'))"
+      using bij bij_is_inj inj_image_eq_iff
+      by meson
+    hence "votewise_distance d n (\<phi>_neutr \<pi> (A, V, p)) (\<phi>_neutr \<pi> (A', V', p')) = \<infinity>"
+      using valid valid'
+      unfolding \<phi>_neutr.simps
+      by auto
+    also have "votewise_distance d n (A, V, p) (A', V', p') = \<infinity>"
+      using False
+      by auto
+    finally show ?thesis by simp
+  qed
+qed
+
 end
