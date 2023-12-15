@@ -12,7 +12,7 @@ theory Profile
   imports Preference_Relation
           "HOL.Finite_Set"
           "HOL-Library.Extended_Nat"
-"HOL-Combinatorics.List_Permutation"
+          "HOL-Combinatorics.List_Permutation"
 begin
 
 text \<open>

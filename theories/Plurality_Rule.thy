@@ -128,7 +128,8 @@ lemma plurality_rule_elect_non_empty:
     p :: "('a, 'v) Profile"
   assumes
     A_non_empty: "A \<noteq> {}" and
-    fin_prof_A: "finite_profile V A p"
+    prof_A: "profile V A p" and
+    fin_A: "finite A"
   shows "elect plurality_rule V A p \<noteq> {}"
 proof
   assume plurality_elect_none: "elect plurality_rule V A p = {}"
@@ -137,10 +138,10 @@ proof
     by simp
   then obtain a where
     max_a: "win_count V p a = max \<and> a \<in> A"
-    using Max_in A_non_empty fin_prof_A empty_is_image finite_imageI imageE
+    using Max_in A_non_empty fin_A prof_A empty_is_image finite_imageI imageE
     by (metis (no_types, lifting))
   hence "\<forall> a' \<in> A. win_count V p a' \<le> win_count V p a"
-    using fin_prof_A max
+    using fin_A prof_A max
     by simp
   moreover have "a \<in> A"
     using max_a
@@ -150,7 +151,7 @@ proof
   hence "a \<in> elect plurality_rule' V A p"
     by simp
   moreover have "elect plurality_rule' V A p = defer plurality V A p"
-    using plurality_elim_equiv fin_prof_A A_non_empty snd_conv
+    using plurality_elim_equiv fin_A prof_A A_non_empty snd_conv
     unfolding revision_composition.simps
     by metis
   ultimately have "a \<in> defer plurality V A p"  
@@ -179,15 +180,14 @@ next
     a :: "'b"
   assume
     fin_A: "finite A" and
-    fin_V: "finite V" and
     prof_p: "profile V A p" and
     elect_none: "elect plurality_rule V A p = {}" and
     a_in_A: "a \<in> A"
-  have "\<forall> A V p. A \<noteq> {} \<and> finite_profile V A p \<longrightarrow> elect plurality_rule V A p \<noteq> {}"
+  have "\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> elect plurality_rule V A p \<noteq> {}"
     using plurality_rule_elect_non_empty
     by (metis (no_types))
   hence empty_A: "A = {}"
-    using fin_A fin_V prof_p elect_none
+    using fin_A prof_p elect_none
     by (metis (no_types))
   thus "a \<in> {}"
     using a_in_A
