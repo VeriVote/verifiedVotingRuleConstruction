@@ -25,6 +25,17 @@ theorem pass_to_election_quotient:
   using invariance_is_congruence pass_to_quotient assms
   by blast
 
+subsection \<open>Anonymity\<close>
+
+
+subsection \<open>Anonymity + Homogeneity\<close>
+
+lemma (in result) anon_hom_equiv_homogeneity:
+  fixes
+    m :: "('a, 'v, 'r Result) Electoral_Module"
+  shows
+    "homogeneity m \<longleftrightarrow> m respects (anon_hom\<^sub>\<R> (fixed_alt_elections UNIV))"
+
 
 
 
