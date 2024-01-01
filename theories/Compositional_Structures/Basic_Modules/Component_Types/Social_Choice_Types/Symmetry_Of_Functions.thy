@@ -19,11 +19,14 @@ fun preimg :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightarrow> 'y \<Rig
 
 text \<open>Relations\<close>
 
-fun restr_refl_on :: "'a set \<Rightarrow> 'a rel \<Rightarrow> bool" where
-  "restr_refl_on A r = (\<forall> a \<in> A. (a,a) \<in> r)"
+fun restr_rel :: "'x rel \<Rightarrow> 'x set \<Rightarrow> 'x set \<Rightarrow> 'x rel" where
+  "restr_rel r F S = r \<inter> F \<times> S"
+
+fun closed_under_restr_rel :: "'x rel \<Rightarrow> 'x set \<Rightarrow> 'x set \<Rightarrow> bool" where
+  "closed_under_restr_rel r X Y = ((restr_rel r Y X) `` Y \<subseteq> Y)"
 
 fun rel_induced_by_action :: "'x set \<Rightarrow> 'y set \<Rightarrow> ('x, 'y) binary_fun \<Rightarrow> 'y rel" where
-  "rel_induced_by_action X Y \<phi> = {(y1, y2) \<in> Y \<times> Y. \<exists> x \<in> X. \<phi> x y1 = y2}"
+  "rel_induced_by_action X Y \<phi> = {(y1, y2) \<in> Y \<times> Y. \<exists>x \<in> X. \<phi> x y1 = y2}"
 
 fun product_rel :: "'x rel \<Rightarrow> ('x * 'x) rel" where
   "product_rel r = {(pair1, pair2). (fst pair1, fst pair2) \<in> r \<and> (snd pair1, snd pair2) \<in> r}"
@@ -34,8 +37,8 @@ fun equivariance_rel :: "'x set \<Rightarrow> 'y set \<Rightarrow> ('x,'y) binar
 fun set_closed_under_rel :: "'x set \<Rightarrow> 'x rel \<Rightarrow> bool" where
   "set_closed_under_rel X r = (\<forall> x y. (x, y) \<in> r \<longrightarrow> x \<in> X \<longrightarrow> y \<in> X)"
 
-fun set_to_set_set :: "'x set \<Rightarrow> 'x set set" where
-  "set_to_set_set X = {{x} | x. x \<in> X}"
+fun singleton_set_system :: "'x set \<Rightarrow> 'x set set" where
+  "singleton_set_system X = {{x} | x. x \<in> X}"
 
 fun set_action :: "('x, 'r) binary_fun \<Rightarrow> ('x, 'r set) binary_fun" where
   "set_action \<psi> x = image (\<psi> x)"
@@ -47,7 +50,7 @@ text \<open>
   Invariance means that related preimages have identical images and equivariance.
 \<close>
 
-datatype ('x,'y) property = 
+datatype ('x, 'y) property = 
   Invariance "'x rel" |
   Equivariance "'x set" "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set"
 
@@ -222,6 +225,19 @@ lemma extensional_univ:
   unfolding If_def
   by simp
 
+lemma extensional_continuation_subset:
+  fixes
+    f :: "'x \<Rightarrow> 'y" and
+    X :: "'x set" and
+    Y :: "'x set"
+  assumes
+    "Y \<subseteq> X"
+  shows
+    "\<forall>y \<in> Y. extensional_continuation f X y = extensional_continuation f Y y"
+  unfolding extensional_continuation.simps
+  using assms
+  by (simp add: subset_iff)
+
 subsubsection \<open>Invariance and Equivariance\<close>
 
 text \<open>
@@ -341,6 +357,21 @@ lemma equivar_under_subset':
   unfolding satisfies.simps
   by blast
 
+lemma equivar_ind_by_act_coincide:
+  fixes
+    X :: "'x set" and
+    Y :: "'y set" and
+    f :: "'y \<Rightarrow> 'z" and
+    \<phi> :: "('x, 'y) binary_fun" and
+    \<phi>' :: "('x, 'y) binary_fun" and
+    \<psi> :: "('x, 'z) binary_fun"
+  assumes
+    "\<forall>x \<in> X. \<forall>y \<in> Y. \<phi> x y = \<phi>' x y"
+  shows
+    "satisfies f (equivar_ind_by_act X Y \<phi> \<psi>) = satisfies f (equivar_ind_by_act X Y \<phi>' \<psi>)"
+  using assms
+  by (auto simp add: rewrite_equivar_ind_by_act)
+
 lemma invar_under_subset_rel:
   fixes
     f :: "'x \<Rightarrow> 'y" and
@@ -363,13 +394,13 @@ theorem equivar_preimg:
     \<psi> :: "('z, 'y) binary_fun" and
     g :: 'z
   defines
-    "rel \<equiv> rel_induced_by_action (carrier G) X \<phi>" and
-    "restr_rel \<equiv> rel_induced_by_action (carrier G) domain\<^sub>f \<phi>" and
     "equivar_prop \<equiv> equivar_ind_by_act (carrier G) domain\<^sub>f \<phi> \<psi>"
   assumes        
-    grp_act: "group_action G X \<phi>" and grp_act_res: "group_action G UNIV \<psi>" and
-    "domain\<^sub>f \<subseteq> X" and closed_domain: "rel \<inter> (domain\<^sub>f \<times> X) \<subseteq> restr_rel" and
-    (* Could the closed_domain requirement be weakened? *)
+    grp_act: "group_action G X \<phi>" and 
+    grp_act_res: "group_action G UNIV \<psi>" and
+    "domain\<^sub>f \<subseteq> X" and 
+    closed_domain: (* Could the closed_domain requirement be weakened? *)
+      "closed_under_restr_rel (rel_induced_by_action (carrier G) X \<phi>) X domain\<^sub>f" and
     equivar_f: "satisfies f equivar_prop" and
     grp_el: "g \<in> carrier G"
   shows "\<forall>y. preimg f domain\<^sub>f (\<psi> g y) = (\<phi> g) ` (preimg f domain\<^sub>f y)"
@@ -390,13 +421,15 @@ proof (safe)
   hence "x' \<in> X"
     using \<open>domain\<^sub>f \<subseteq> X\<close> grp_act grp_el_inv preimg_el img grp_act.element_image 
     by auto
-  hence "(x, x') \<in> rel \<inter> (domain\<^sub>f \<times> X)"
-    unfolding rel_def
+  hence "(x, x') \<in> (rel_induced_by_action (carrier G) X \<phi>) \<inter> (domain\<^sub>f \<times> X)"
+    using img preimg_el domain grp_el_inv
+    by auto
+  hence "x' \<in> ((rel_induced_by_action (carrier G) X \<phi>) \<inter> (domain\<^sub>f \<times> X)) `` domain\<^sub>f"
     using img preimg_el domain grp_el_inv
     by auto
   hence domain': "x' \<in> domain\<^sub>f"
     using closed_domain
-    unfolding restr_rel_def rel_induced_by_action.simps
+    unfolding closed_under_restr_rel.simps restr_rel.simps
     by auto
   moreover have "(\<phi> (inv\<^bsub>G\<^esub> g), \<psi> (inv\<^bsub>G\<^esub> g)) \<in> {(\<phi> g, \<psi> g) | g. g \<in> carrier G}"
     using grp_el_inv
@@ -432,13 +465,12 @@ next
   hence "\<phi> g x \<in> X"
     using grp_el
     by (meson group_action.element_image grp_act)
-  hence "(x, \<phi> g x) \<in> rel \<inter> domain\<^sub>f \<times> X"
-    unfolding rel_def
+  hence "(x, \<phi> g x) \<in> (rel_induced_by_action (carrier G) X \<phi>) \<inter> (domain\<^sub>f \<times> X) \<inter> domain\<^sub>f \<times> X"
     using grp_el domain
     by auto
   hence "\<phi> g x \<in> domain\<^sub>f"
     using closed_domain
-    unfolding restr_rel_def
+    unfolding closed_under_restr_rel.simps restr_rel.simps
     by auto
   moreover have "(\<phi> g, \<psi> g) \<in> {(\<phi> g, \<psi> g) |g. g \<in> carrier G}"
     using grp_el
@@ -641,20 +673,20 @@ proof (unfold equivar_ind_by_act_def, clarsimp, safe)
     by blast
 qed
 
-lemma un_left_inv_set_to_set_set:
-  "\<Union> \<circ> set_to_set_set = id"
+lemma un_left_inv_singleton_set_system:
+  "\<Union> \<circ> singleton_set_system = id"
 proof
   fix
     X :: "'x set"
-  have "(\<Union> \<circ> set_to_set_set) X = {x. \<exists>x' \<in> set_to_set_set X. x \<in> x'}"
+  have "(\<Union> \<circ> singleton_set_system) X = {x. \<exists>x' \<in> singleton_set_system X. x \<in> x'}"
     by auto
-  also have "{x. \<exists>x' \<in> set_to_set_set X. x \<in> x'} = {x. {x} \<in> set_to_set_set X}"
+  also have "{x. \<exists>x' \<in> singleton_set_system X. x \<in> x'} = {x. {x} \<in> singleton_set_system X}"
     by auto
-  also have "{x. {x} \<in> set_to_set_set X} = {x. {x} \<in> {{x} | x. x \<in> X}}"
+  also have "{x. {x} \<in> singleton_set_system X} = {x. {x} \<in> {{x} | x. x \<in> X}}"
     by simp
   also have "{x. {x} \<in> {{x} | x. x \<in> X}} = {x. x \<in> X}"
     by simp
-  finally show "(\<Union> \<circ> set_to_set_set) X = id X"
+  finally show "(\<Union> \<circ> singleton_set_system) X = id X"
     by simp
 qed
 
@@ -773,6 +805,20 @@ lemma monoid_map_monoid:
     X :: "'x set"
   shows "monoid (map_monoid X)"
   unfolding monoid_def map_monoid_def
+  by auto
+
+lemma rel_induced_by_action_coincide:
+  fixes
+    X :: "'x set" and
+    Y :: "'y set" and
+    \<phi> :: "('x, 'y) binary_fun" and
+    \<phi>' :: "('x, 'y) binary_fun"
+  assumes
+    "\<forall>x \<in> X. \<forall>y \<in> Y. \<phi> x y = \<phi>' x y"
+  shows
+    "rel_induced_by_action X Y \<phi> = rel_induced_by_action X Y \<phi>'"
+  unfolding extensional_continuation.simps
+  using assms
   by auto
 
 lemma rel_induced_by_monoid_action_refl:

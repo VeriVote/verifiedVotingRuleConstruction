@@ -54,30 +54,13 @@ lemma swap_dist_neutral:
   by blast
 
 theorem kemeny_rule_neutral: 
-  "social_choice_properties.neutrality valid_elections kemeny_rule"
-proof -
-  let ?swap_dist = "votewise_distance swap l_one"
-  have "\<K>_els strong_unanimity \<subseteq> valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
-    unfolding valid_elections_def \<K>\<^sub>\<E>.simps strong_unanimity_def
-    by force
-  hence
-    "social_choice_properties.consensus_rule_neutrality (\<K>_els strong_unanimity) strong_unanimity"
-    using strong_unanimity_neutral
-    unfolding social_choice_properties.consensus_rule_neutrality.simps equivar_ind_by_act_def
-    using equivar_under_subset[of 
-            "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)"
-            "valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>" 
-            "{(\<phi>_neutr g, set_action \<psi>_neutr\<^sub>\<c> g) |g. g \<in> carrier neutrality\<^sub>\<G>}"
-            "\<K>_els strong_unanimity"]
-    by blast
-  thus ?thesis
-    using strong_unanimity_neutral swap_dist_neutral
-          strong_unanimity_closed_under_neutrality
-          social_choice_properties.neutr_dist_and_cons_imp_neutr_dr[of 
-            ?swap_dist strong_unanimity]
-    unfolding kemeny_rule.simps swap_\<R>.simps
-    by blast
-qed
+  "social_choice_properties.neutrality valid_elections kemeny_rule"  
+  using strong_unanimity_neutral' swap_dist_neutral
+        strong_unanimity_closed_under_neutrality
+        social_choice_properties.neutr_dist_and_cons_imp_neutr_dr[of 
+          "votewise_distance swap l_one" strong_unanimity]
+  unfolding kemeny_rule.simps swap_\<R>.simps
+  by blast
 
 subsection \<open>Datatype Instantiation\<close>
 

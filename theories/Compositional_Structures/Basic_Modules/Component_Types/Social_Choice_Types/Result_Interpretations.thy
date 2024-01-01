@@ -8,9 +8,9 @@ theory Result_Interpretations
 begin
 
 text \<open>
-  Interpretations of the result locale are placed inside a Locale_Code block 
+  Interpretations of the result locale are placed inside a Locale-Code block 
   in order to enable code generation of later definitions in the locale.
-  Those definitions need to be added via a Locale_Code block as well.
+  Those definitions need to be added via a Locale-Code block as well.
 \<close>
 
 setup Locale_Code.open_block
@@ -18,6 +18,10 @@ setup Locale_Code.open_block
 global_interpretation social_choice_result:
   result well_formed_soc_choice limit_set_soc_choice
 proof (unfold_locales, auto) qed
+
+global_interpretation committee_result:
+  result "\<lambda>A r. set_equals_partition (Pow A) r \<and> disjoint3 r" "\<lambda>A R. {r \<inter> A |r. r \<in> R}"
+proof (unfold_locales, safe, auto) qed
 
 global_interpretation social_welfare_result:
   result well_formed_welfare limit_set_welfare

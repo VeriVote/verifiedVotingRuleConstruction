@@ -14,7 +14,7 @@ begin
 text \<open>
   An election consisting of a set of alternatives and preferential votes for each voter (a profile)
   is a consensus if it has an undisputed winner reflecting a certain concept of fairness in the
-  society.
+  society.        
 \<close>
 
 subsection \<open>Definition\<close>

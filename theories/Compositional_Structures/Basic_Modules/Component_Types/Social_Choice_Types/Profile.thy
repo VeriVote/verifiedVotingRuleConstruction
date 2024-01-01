@@ -60,12 +60,24 @@ abbreviation finite_profile :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, '
 abbreviation finite_election :: "('a,'v) Election \<Rightarrow> bool" where
   "finite_election E \<equiv> finite_profile (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E)"
 
+definition finite_voter_elections :: "('a, 'v) Election set" where
+  "finite_voter_elections = 
+    {el :: ('a, 'v) Election. finite (votrs_\<E> el)}"
+
 definition finite_elections :: "('a, 'v) Election set" where
   "finite_elections = 
     {el :: ('a, 'v) Election. finite_profile (votrs_\<E> el) (alts_\<E> el) (prof_\<E> el)}"
 
 definition valid_elections :: "('a,'v) Election set" where
   "valid_elections = {E. profile (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E)}"
+
+fun fixed_alt_elections :: "'a set \<Rightarrow> ('a, 'v) Election set" where
+  "fixed_alt_elections A = {E. alts_\<E> E = A \<and> finite (votrs_\<E> E)} \<inter> valid_elections"
+
+\<comment> \<open>Counts the occurrences of a ballot in an election, 
+    i.e. how many voters chose that exact ballot.\<close>
+fun vote_count :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election \<Rightarrow> nat" where
+  "vote_count p E = card {v \<in> (votrs_\<E> E). (prof_\<E> E) v = p}"
 
 subsection \<open>Voter Permutations\<close>
 

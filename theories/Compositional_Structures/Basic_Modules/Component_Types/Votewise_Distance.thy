@@ -14,7 +14,7 @@ text \<open>
   Votewise distances are a natural class of distances on elections
   which depend on the submitted votes in a simple and transparent manner.
   They are formed by using any distance d on individual orders and combining
-  the components with a norm on \<real>^n.
+  the components with a norm on $\mathbb{R}^n$.
 \<close>
 
 subsection \<open>Definition\<close>
@@ -331,14 +331,17 @@ proof (unfold distance_neutrality.simps,
     using rewrite_carrier
     by blast
   thus "votewise_distance d n (A, V, p) (A', V', p') =
-          votewise_distance d n (\<phi>_neutr \<pi> (A, V, p)) (\<phi>_neutr \<pi> (A', V', p'))"
+          votewise_distance d n 
+            (\<phi>_neutr valid_elections \<pi> (A, V, p)) (\<phi>_neutr valid_elections \<pi> (A', V', p'))"
   proof (cases "(finite V) \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')")
     case True
     hence "(finite V) \<and> V = V' \<and> (V \<noteq> {} \<or> \<pi> ` A = \<pi> ` A')"
       by auto
-    hence "votewise_distance d n (\<phi>_neutr \<pi> (A, V, p)) (\<phi>_neutr \<pi> (A', V', p')) = 
-      n (map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q')) 
-        (to_list V (rel_rename \<pi> \<circ> p)) (to_list V' (rel_rename \<pi> \<circ> p')))"
+    hence 
+      "votewise_distance d n 
+          (\<phi>_neutr valid_elections \<pi> (A, V, p)) (\<phi>_neutr valid_elections \<pi> (A', V', p')) = 
+        n (map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q')) 
+          (to_list V (rel_rename \<pi> \<circ> p)) (to_list V' (rel_rename \<pi> \<circ> p')))"
       using valid valid'
       unfolding \<phi>_neutr.simps
       by auto
@@ -364,8 +367,10 @@ proof (unfold distance_neutrality.simps,
               d "carrier neutrality\<^sub>\<G>" UNIV vote_action]
       unfolding vote_action_def
       by (metis (no_types, lifting))
-    finally have "votewise_distance d n (\<phi>_neutr \<pi> (A, V, p)) (\<phi>_neutr \<pi> (A', V', p')) = 
-      n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
+    finally have 
+      "votewise_distance d n 
+        (\<phi>_neutr valid_elections \<pi> (A, V, p)) (\<phi>_neutr valid_elections \<pi> (A', V', p')) = 
+          n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
       by simp
     also have "votewise_distance d n (A, V, p) (A', V', p') =
       n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
@@ -377,7 +382,9 @@ proof (unfold distance_neutrality.simps,
     hence "\<not> (finite V \<and> V = V' \<and> (V \<noteq> {} \<or> \<pi> ` A = \<pi> ` A'))"
       using bij bij_is_inj inj_image_eq_iff
       by meson
-    hence "votewise_distance d n (\<phi>_neutr \<pi> (A, V, p)) (\<phi>_neutr \<pi> (A', V', p')) = \<infinity>"
+    hence 
+      "votewise_distance d n 
+        (\<phi>_neutr valid_elections \<pi> (A, V, p)) (\<phi>_neutr valid_elections \<pi> (A', V', p')) = \<infinity>"
       using valid valid'
       unfolding \<phi>_neutr.simps
       by auto

@@ -136,87 +136,59 @@ text \<open>
   implies anonymity.
 \<close>
 
-definition (in result) homogeneity :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
-  "homogeneity m \<equiv>
-    let count = \<lambda>r V p. card {v \<in> V. p v = r} in
-    electoral_module m \<and>
-      (\<forall> A V V' p p' n. (n > 0 \<longrightarrow> finite_profile V A p
-                        \<longrightarrow> (\<forall>r::('a Preference_Relation). count r V' p' = n * (count r V p))
-                        \<longrightarrow> finite_profile V' A p'
-                        \<longrightarrow> m V A p = m V' A p'))"
+
+fun (in result) homogeneity :: 
+  "('a, 'v) Election set \<Rightarrow> ('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity X m = satisfies (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R> X))"
+\<comment> \<open>This does not require any specific behaviour on infinite voter sets... 
+    Might make sense to extend the definition to that case somehow.\<close>
 
 fun homogeneity' :: 
-  "('a, nat) Election set \<Rightarrow> ('a, nat, 'b Result) Electoral_Module \<Rightarrow> bool" where
-  "homogeneity' X m = satisfies (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R> X))"
+  "('a, 'v::linorder) Election set \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity' X m = satisfies (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R>' X))"
 
 lemma (in result) hom_imp_anon: 
-  "homogeneity m \<Longrightarrow> anonymity m"
-proof (unfold anonymity_def  Let_def, safe)
-  fix
-    m :: "('a, 'v, ('r Result)) Electoral_Module"
-  assume
-    "homogeneity m"
-  thus "electoral_module m"
-    using homogeneity_def 
-    by fastforce
-next
+  fixes
+    X :: "('a, 'v) Election set"
+  assumes
+    "homogeneity X m" and
+    "\<forall>E \<in> X. finite (votrs_\<E> E)"
+  shows
+    "anonymity' X m"
+proof (unfold anonymity'.simps satisfies.simps, standard, standard, standard)
   fix 
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'c set" and
-    V' :: "'c set" and
-    p :: "('a, 'c) Profile" and
-    p' :: "('a, 'c) Profile" and
-    \<pi> :: "'c \<Rightarrow> 'c" and
-    m :: "('a, 'c, ('r Result)) Electoral_Module"
+    E :: "('a, 'v) Election" and
+    E' :: "('a, 'v) Election"
   assume
-    hom:  "homogeneity m" and
-    bij: "bij \<pi>" and
-    rn: "rename \<pi> (A, V, p) = (A', V', p')" and
-    fin_A: "finite A" and
-    fin_V: "finite V" and
-    prof: "profile V A p"
-  hence "finite_profile V A p" by simp
-  moreover have "finite_profile V' A' p'" 
-    using rn rename.simps fin_A fin_V prof bij
-          prod.inject rename_finite
-    by metis
-  moreover have "A' = A" 
-    using rn
+    rel: "(E, E') \<in> anonymity\<^sub>\<R> X"
+  hence "E \<in> X \<and> E' \<in> X"
+    unfolding anonymity\<^sub>\<R>.simps rel_induced_by_action.simps
+    by blast
+  moreover with this have fin: "finite (votrs_\<E> E) \<and> finite (votrs_\<E> E')"
+    using assms
     by simp
-  ultimately have 
-    "\<forall>n. n > 0 \<longrightarrow> ((\<forall>r. card {v \<in> V'. p' v = r} = n * card {v \<in> V. p v = r}) \<longrightarrow> 
-          m V A p = m V' A p')"
-    using hom
-    unfolding homogeneity_def Let_def
-    by auto
-  hence "(\<forall>r. card {v \<in> V'. p' v = r} = card {v \<in> V. p v = r}) \<longrightarrow> 
-          m V A p = m V' A p'"
-    by auto
-  moreover have "\<forall>r. card {v \<in> V'. p' v = r} = card {v \<in> V. p v = r}"
-  proof (clarify)
-    fix
-      r :: "'a Preference_Relation"
-    have "\<forall>v \<in> {v \<in> V'. p' v = r}. p ((the_inv \<pi>) v) = r"
-      using bij rn rename.simps
-      by auto
-    hence "\<forall>v \<in> {v \<in> V'. p' v = r}. \<exists>x \<in>  {v \<in> V. p v = r}. \<pi> x = v"
-      using the_inv_f_f
-      sorry
-    hence "\<pi> ` {v \<in> V. p v = r} = {v \<in> V'. p' v = r}" sorry
-    moreover have "inj_on \<pi> {v \<in> V. p v = r}"
-      using bij bij_is_inj injD inj_onI
-      by (metis (mono_tags, lifting))
-    ultimately have "bij_betw \<pi> {v \<in> V. p v = r} {v \<in> V'. p' v = r}"
-      by (simp add: bij_betw_def)
-    thus "card {v \<in> V'. p' v = r} = card {v \<in> V. p v = r}"
-      by (simp add: bij_betw_same_card)
-  qed
-  ultimately show "m V A p = m V' A' p'"
-    using \<open>A' = A\<close> 
-    by fastforce
+  moreover with this have "\<forall>r. vote_count r E = 1 * (vote_count r E')"
+    using anon_rel_vote_count rel
+    by (metis mult_1)
+  moreover with fin have "alts_\<E> E = alts_\<E> E'"
+    using anon_rel_vote_count rel
+    by blast
+  ultimately show
+    "fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
+    using assms zero_less_one
+    unfolding homogeneity.simps satisfies.simps homogeneity\<^sub>\<R>.simps
+    by blast
 qed
 
+lemma (in result) hom_equiv_anon_hom':
+  fixes
+    X :: "('a, 'v::linorder) Election set"
+  assumes
+    "\<forall>E \<in> X. finite (votrs_\<E> E)"
+  shows
+    "homogeneity X m = (anonymity' X m \<and> homogeneity' X m)"
+  sorry
+  
 subsubsection \<open>Neutrality\<close>
 
 text \<open>
@@ -227,7 +199,7 @@ text \<open>
 fun (in result_properties) neutrality :: 
   "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
   "neutrality X m = satisfies (fun\<^sub>\<E> m) 
-    (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) X \<phi>_neutr (result_action \<psi>_neutr))"
+    (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) X (\<phi>_neutr X) (result_action \<psi>_neutr))"
 
 subsection \<open>Reversal Symmetry of Social Welfare Rules\<close>
 
@@ -239,14 +211,14 @@ text \<open>
 definition reversal_symmetry :: 
   "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'a rel Result) Electoral_Module \<Rightarrow> bool" where
   "reversal_symmetry X m = satisfies (fun\<^sub>\<E> m)
-    (equivar_ind_by_act (carrier reversal\<^sub>\<G>) X \<phi>_rev (result_action \<psi>_rev))"
+    (equivar_ind_by_act (carrier reversal\<^sub>\<G>) X (\<phi>_rev X) (result_action \<psi>_rev))"
 
 subsection \<open>Social Choice Modules\<close>
 
 text \<open>
   The following results require electoral modules to return social choice results, 
   i.e. sets of elected, rejected and deferred alternatives.
-  In order to export code, we use the hack provided by Locale_Code.
+  In order to export code, we use the hack provided by Locale-Code.
 \<close>
 
 text \<open>

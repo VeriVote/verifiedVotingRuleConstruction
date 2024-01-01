@@ -218,18 +218,23 @@ definition distance_anonymity :: "('a, 'v) Election Distance \<Rightarrow> bool"
           (d (rename \<pi> (A, V, p))) (rename \<pi> (A', V', p')))"
 
 fun distance_anonymity' :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
-  "distance_anonymity' X d = invariant_dist d (carrier anonymity\<^sub>\<G>) X \<phi>_anon"
+  "distance_anonymity' X d = invariant_dist d (carrier anonymity\<^sub>\<G>) X (\<phi>_anon X)"
 
 fun distance_neutrality ::
   "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
-  "distance_neutrality X d = invariant_dist d (carrier neutrality\<^sub>\<G>) X \<phi>_neutr"
+  "distance_neutrality X d = invariant_dist d (carrier neutrality\<^sub>\<G>) X (\<phi>_neutr X)"
 
 fun distance_reversal_symmetry :: 
   "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
-  "distance_reversal_symmetry X d = invariant_dist d (carrier reversal\<^sub>\<G>) X \<phi>_rev"
+  "distance_reversal_symmetry X d = invariant_dist d (carrier reversal\<^sub>\<G>) X (\<phi>_rev X)"
 
-definition distance_homogeneity' :: "('a, nat) Election Distance \<Rightarrow> bool" where
-  "distance_homogeneity' d = totally_invariant_dist d (homogeneity\<^sub>\<R> finite_elections)"
+definition distance_homogeneity' :: 
+  "('a, 'v::linorder) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
+  "distance_homogeneity' X d = totally_invariant_dist d (homogeneity\<^sub>\<R>' X)"
+
+definition distance_homogeneity :: 
+  "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
+  "distance_homogeneity X d = totally_invariant_dist d (homogeneity\<^sub>\<R> X)"
 
 subsubsection \<open>Auxiliary Lemmas\<close>
 

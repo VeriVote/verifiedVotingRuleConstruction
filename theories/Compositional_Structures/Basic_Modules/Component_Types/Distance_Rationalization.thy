@@ -24,7 +24,7 @@ text \<open>
 subsection \<open>Definitions\<close>
 
 text \<open>
-  Returns the distance of the given election to the preimage of the given unique winner
+  Returns the distance of an election to the preimage of a unique winner
   under the given consensus elections and consensus rule.
 \<close>
 

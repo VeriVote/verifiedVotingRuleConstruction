@@ -23,7 +23,7 @@ locale result_properties = result +
     well_formed_res_neutr:
       "satisfies (\<lambda>(E::('a, 'c) Election). limit_set (alts_\<E> E) UNIV) 
                 (equivar_ind_by_act (carrier neutrality\<^sub>\<G>)
-                    valid_elections \<phi>_neutr (set_action \<psi>_neutr))"
+                    valid_elections (\<phi>_neutr valid_elections) (set_action \<psi>_neutr))"
 
 sublocale result_properties \<subseteq> result by (rule result_axioms)
 
