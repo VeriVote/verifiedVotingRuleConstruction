@@ -19,6 +19,31 @@ fun lin_ord_of_list :: "'x list \<Rightarrow> 'x rel" where
 
 subsection \<open>Auxiliary Lemmas\<close>
 
+lemma fst_ind_geq_minus_one:
+  fixes
+    l :: "'x list" and
+    x :: 'x
+  shows
+    "fst_ind l x \<ge> -1"
+proof (induction l arbitrary: x, simp)
+  fix
+    a :: 'x and
+    l :: "'x list" and
+    x :: 'x
+  assume
+    ge: "\<And>x. -1 \<le> fst_ind l x"
+  moreover have "fst_ind (a # l) x \<in> {-1, 0, 1 + fst_ind l x}"
+    unfolding fst_ind.simps Let_def
+    by simp
+  moreover have
+    "\<forall>\<alpha> \<in> {-1, 0, 1 + fst_ind l x}. \<alpha> \<ge> -1"
+    using ge add_le_same_cancel2 dual_order.trans 
+          insertE le_minus_iff neg_equal_zero nle_le not_one_le_zero singletonD
+    by metis
+  ultimately show "-1 \<le> fst_ind (a # l) x"
+    by blast
+qed
+
 lemma fst_ind_is_fst_ind:
   fixes
     l :: "'x list" and
@@ -27,38 +52,167 @@ lemma fst_ind_is_fst_ind:
     minus_one_no_el: "i = fst_ind l x \<longrightarrow> (i = -1 \<longleftrightarrow> x \<notin> set l)" and
     nonneg_fst_ind: "i = fst_ind l x \<longrightarrow> 
       (x \<in> set l \<longleftrightarrow> i \<ge> 0 \<and> l!(nat i) = x \<and> (\<forall>j < nat i. l!j \<noteq> x))"
-proof (induction l arbitrary: i, simp, clarify)
-  have "(0 \<le> fst_ind [] x) = False"
+proof (induction l arbitrary: i, simp, safe)
+  assume
+    "x \<in> set []"
+  hence "False"
     by simp
-  hence "False = 
-    (0 \<le> fst_ind [] x \<and> [] ! nat (fst_ind [] x) = x \<and> (\<forall>j<nat (fst_ind [] x). [] ! j \<noteq> x))"
+  thus "0 \<le> fst_ind [] x"
     by simp
+  show "[] ! nat (fst_ind [] x) = x"
+    using \<open>False\<close>
+    by simp
+next
+  fix
+    i :: nat
+  assume
+    "[] ! i \<in> set []"
+  thus "False"
+    by simp
+next
+  fix
+    i :: nat
+  assume
+    "0 \<le> fst_ind [] x"
+  hence "False"
+    by simp
+  thus "x \<in> set []"
+    by simp
+next
+  {
+    fix
+      a :: 'x and
+      i :: nat and
+      l :: "'x list"
+    assume
+      hyp: "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
+      hyp': 
+        "\<And>i. i = fst_ind l x \<longrightarrow> 
+          (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))" and
+      minus_one: "fst_ind (a # l) x = - 1" and "x \<in> set (a # l)"
+    hence "x = a \<or> x \<in> set l"
+      by simp
+    hence "fst_ind (a # l) x = 0 \<or> fst_ind l x \<noteq> -1"
+      using hyp'
+      by auto
+    hence "fst_ind (a # l) x = 0 \<or> fst_ind (a # l) x = 1 + fst_ind l x"
+      by auto
+    moreover have "fst_ind l x \<ge> -1"
+      using fst_ind_geq_minus_one
+      by fastforce
+    ultimately have "fst_ind (a # l) x \<ge> 0"
+      by linarith
+    thus "False"
+      using minus_one
+      by simp
+  }
+  note ind_minus_one =
+  \<open>
+    \<And>a l i.
+      (\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)) \<Longrightarrow>
+      (\<And>i. i = fst_ind l x \<longrightarrow> (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))) \<Longrightarrow>
+      fst_ind (a # l) x = - 1 \<Longrightarrow> x \<in> set (a # l) \<Longrightarrow> False
+  \<close>
+  fix
+    a :: 'x and
+    i :: nat and
+    l :: "'x list"
+  assume
+    hyp: "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
+    hyp': 
+      "\<And>i. i = fst_ind l x \<longrightarrow> 
+        (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))" and
+    "x \<in> set (a # l)"
+  hence "fst_ind (a # l) x \<noteq> -1"
+    using ind_minus_one
+    by blast
   thus
-    "(x \<in> set []) =
-         (0 \<le> fst_ind [] x \<and> [] ! nat (fst_ind [] x) = x \<and> (\<forall>j<nat (fst_ind [] x). [] ! j \<noteq> x))"
+    "0 \<le> fst_ind (a # l) x"
+    using fst_ind_geq_minus_one[of "a # l" x]
     by simp
 next
   fix
     a :: 'x and
-    i :: int and
+    i :: nat and
     l :: "'x list"
   assume
-    "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
-    "\<And>i. i = fst_ind l x \<longrightarrow> (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))"
-  thus "i = fst_ind (a # l) x \<longrightarrow> (i = - 1) = (x \<notin> set (a # l))"
-    sorry
+    hyp: "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
+    hyp': 
+      "\<And>i. i = fst_ind l x \<longrightarrow> 
+        (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))" and
+    "x \<notin> set (a # l)"
+  hence "x \<noteq> a \<and> x \<notin> set l"
+    by simp
+  hence "x \<noteq> a \<and> fst_ind l x = -1"
+    using hyp
+    by blast
+  thus "fst_ind (a # l) x = -1"
+    by auto
 next
   fix
     a :: 'x and
-    i :: int and
+    i :: nat and
     l :: "'x list"
   assume
-    "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
-    "\<And>i. i = fst_ind l x \<longrightarrow> (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))"
-  thus
-    "i = fst_ind (a # l) x \<longrightarrow>
-       (x \<in> set (a # l)) = (0 \<le> i \<and> (a # l) ! nat i = x \<and> (\<forall>j<nat i. (a # l) ! j \<noteq> x))"
-    sorry
+    hyp: "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
+    hyp': 
+      "\<And>i. i = fst_ind l x \<longrightarrow> 
+        (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))" and
+    "x \<in> set (a # l)"
+  hence "x = a \<or> x \<in> set l"
+    by simp
+  hence 
+    "(x = a \<and> fst_ind (a # l) x = 0) \<or> (x \<noteq> a \<and> x \<in> set l \<and> fst_ind (a # l) x = 1 + fst_ind l x)"
+    using hyp
+    by auto
+  moreover from hyp' have "x \<in> set l \<longrightarrow> l ! nat (fst_ind l x) = x"
+    by simp
+  moreover have "l ! nat (fst_ind l x) = x \<longrightarrow> (a # l) ! (nat (fst_ind l x) + 1) = x"
+    by auto
+  ultimately show "(a # l) ! nat (fst_ind (a # l) x) = x"
+    by (metis Suc_eq_plus1 Suc_nat_eq_nat_zadd1 hyp' nat_zero_as_int nth_Cons_0)
+next
+  fix
+    a :: 'x and
+    i :: nat and
+    j :: nat and
+    l :: "'x list"
+  assume
+    hyp: "\<And>i. i = fst_ind l ((a # l) ! j) \<longrightarrow> (i = - 1) = ((a # l) ! j \<notin> set l)" and
+    hyp': 
+      "\<And>i. i = fst_ind l ((a # l) ! j) \<longrightarrow>
+             ((a # l) ! j \<in> set l) =
+             (0 \<le> i \<and> l ! nat i = (a # l) ! j \<and> (\<forall>ja<nat i. l ! ja \<noteq> (a # l) ! j))" and
+    j_el: "(a # l) ! j \<in> set (a # l)" and "x = (a # l) ! j" and
+    less: "j < nat (fst_ind (a # l) ((a # l) ! j))" 
+  hence "x = a \<or> x \<in> set l"
+    by simp
+  hence "fst_ind (a # l) x = 0 \<or> (j > 0 \<and> fst_ind (a # l) x = 1 + fst_ind l x)"
+    using hyp' \<open>x = (a # l) ! j\<close> 
+    by force
+  hence "False \<or> (j > 0 \<and> j < 1 + fst_ind l x \<and> l ! (j - 1) = x)"
+    using less j_el \<open>x = (a # l) ! j\<close> zless_nat_eq_int_zless 
+    by auto
+  hence "j - 1 \<ge> 0 \<and> j - 1 < fst_ind l x \<and> l ! (j - 1) = x"
+    by (simp add: of_nat_diff)
+  thus "False"
+    using hyp' hyp \<open>x = (a # l) ! j\<close> less_nat_zero_code zless_nat_eq_int_zless
+    by auto
+next
+  fix
+    a :: 'x and
+    i :: nat and
+    l :: "'x list"
+  assume
+    hyp: "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
+    "0 \<le> fst_ind (a # l) x"
+  hence "x = a \<or> fst_ind l x \<noteq> -1"
+    by fastforce
+  hence "x = a \<or> x \<in> set l"
+    using hyp
+    by blast
+  thus "x \<in> set (a # l)"
+    by simp
 qed
 
 lemma fst_ind_inj:
@@ -543,6 +697,10 @@ proof (unfold bij_betw_def inj_on_def, standard, standard, standard, standard)
   moreover from subset_fixed_alts \<open>E \<in> X\<close> \<open>E' \<in> Y\<close> have
     "(E, E') \<in> (fixed_alt_elections UNIV) \<times> (fixed_alt_elections UNIV)"
     by blast
+  moreover from this have 
+    "(\<forall>v. v \<notin> votrs_\<E> E \<longrightarrow> prof_\<E> E v = {}) \<and> (\<forall>v. v \<notin> votrs_\<E> E' \<longrightarrow> prof_\<E> E' v = {})"
+    unfolding fixed_alt_elections.simps
+    by force
   ultimately have
     "(E, E') \<in> anonymity\<^sub>\<R> (fixed_alt_elections UNIV)"
     using eq_alts vote_count_anon_rel
@@ -648,15 +806,19 @@ next
       by auto
     ultimately have "\<forall>v \<in> V. \<exists>!i. v \<in> X i"
       by auto
-    then obtain p :: "'v \<Rightarrow> 'a Preference_Relation" where
-      p_X: "\<forall>v \<in> V. v \<in> X (p v)" and p_disj: "\<forall>v \<in> V. \<forall>i. i \<noteq> p v \<longrightarrow> v \<notin> X i"
+    then obtain p' :: "'v \<Rightarrow> 'a Preference_Relation" where
+      p_X: "\<forall>v \<in> V. v \<in> X (p' v)" and 
+      p_disj: "\<forall>v \<in> V. \<forall>i. i \<noteq> p' v \<longrightarrow> v \<notin> X i"
       by metis
+    then obtain p :: "'v \<Rightarrow> 'a Preference_Relation" where
+      p_def: "p = (\<lambda>v. if v \<in> V then p' v else {})"
+      by simp
     hence lin_ord: "\<forall>v \<in> V. linear_order (p v)"
-      using def_X
+      using def_X p_X p_disj
       by fastforce
     hence valid:
       "(UNIV, V, p) \<in> fixed_alt_elections UNIV"
-      using \<open>finite V\<close>
+      using \<open>finite V\<close> p_def
       unfolding fixed_alt_elections.simps valid_elections_def profile_def
       by auto
     hence
@@ -675,8 +837,8 @@ next
             {vote_count i (UNIV, V, p)}"
       by blast
     have "\<forall>i. \<forall>v \<in> V. p v = i \<longleftrightarrow> v \<in> X i"
-      using p_X p_disj
-      by blast
+      using p_X p_disj p_def
+      by auto
     hence "\<forall>i. {v \<in> V. p v = i} = {v \<in> V. v \<in> X i}"
       by blast
     moreover have "\<forall>i. X i \<subseteq> V"

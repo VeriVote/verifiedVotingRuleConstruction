@@ -39,6 +39,9 @@ type_synonym ('a, 'v) Profile = "'v \<Rightarrow> ('a Preference_Relation)"
 
 type_synonym ('a, 'v) Election = "'a set \<times> 'v set \<times> ('a, 'v) Profile"
 
+fun election_equality :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Election \<Rightarrow> bool" where
+  "election_equality (A, V, p) (A', V', p') = (A = A' \<and> V = V' \<and> (\<forall>v \<in> V. p v = p' v))"
+
 abbreviation alts_\<E> :: "('a, 'v) Election \<Rightarrow> 'a set" where "alts_\<E> E \<equiv> fst E"
 
 abbreviation votrs_\<E> :: "('a, 'v) Election \<Rightarrow> 'v set" where "votrs_\<E> E \<equiv> fst (snd E)"
@@ -71,8 +74,11 @@ definition finite_elections :: "('a, 'v) Election set" where
 definition valid_elections :: "('a,'v) Election set" where
   "valid_elections = {E. profile (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E)}"
 
+\<comment> \<open>Elections with fixed alternatives, 
+    finite voters and a default value for the profile value on non-voters.\<close>
 fun fixed_alt_elections :: "'a set \<Rightarrow> ('a, 'v) Election set" where
-  "fixed_alt_elections A = {E. alts_\<E> E = A \<and> finite (votrs_\<E> E)} \<inter> valid_elections"
+  "fixed_alt_elections A = valid_elections \<inter>
+    {E. alts_\<E> E = A \<and> finite (votrs_\<E> E) \<and> (\<forall>v. v \<notin> votrs_\<E> E \<longrightarrow> prof_\<E> E v = {})}"
 
 \<comment> \<open>Counts the occurrences of a ballot in an election, 
     i.e. how many voters chose that exact ballot.\<close>
