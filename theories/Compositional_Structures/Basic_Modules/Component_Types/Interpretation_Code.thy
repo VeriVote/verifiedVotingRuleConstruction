@@ -35,6 +35,15 @@ lemma distance_\<R>_std_soc_choice_code_lemma:
     (limit_set_soc_choice A UNIV) - social_choice_result.\<R>\<^sub>\<W>_std d K V A p, {})"
   by (rule social_choice_result.distance_\<R>_std.simps)
 
+lemma anonymity_soc_choice_code_lemma:
+  "social_choice_result.anonymity =
+    (\<lambda>m. social_choice_result.electoral_module m \<and>
+      (\<forall> A V p \<pi>::('v \<Rightarrow> 'v). 
+        bij \<pi> \<longrightarrow> (let (A', V', q) = (rename \<pi> (A, V, p)) in
+            finite_profile V A p \<and> finite_profile V' A' q \<longrightarrow> m V A p = m V' A' q)))"
+  unfolding social_choice_result.anonymity_def
+  by simp
+
 
 text \<open>
   Declarations for replacing interpreted abstract functions from locales 
@@ -46,6 +55,7 @@ declare [[lc_add "social_choice_result.\<R>\<^sub>\<W>" \<R>\<^sub>\<W>_soc_choi
 declare [[lc_add "social_choice_result.\<R>\<^sub>\<W>_std" \<R>\<^sub>\<W>_std_soc_choice_code_lemma]]
 declare [[lc_add "social_choice_result.distance_\<R>" distance_\<R>_soc_choice_code_lemma]]
 declare [[lc_add "social_choice_result.distance_\<R>_std" distance_\<R>_std_soc_choice_code_lemma]]
+declare [[lc_add "social_choice_result.anonymity" anonymity_soc_choice_code_lemma]]
 
 
 text \<open>
@@ -56,7 +66,13 @@ definition "\<R>\<^sub>\<W>_soc_choice_code = social_choice_result.\<R>\<^sub>\<
 definition "\<R>\<^sub>\<W>_std_soc_choice_code = social_choice_result.\<R>\<^sub>\<W>_std"
 definition "distance_\<R>_soc_choice_code = social_choice_result.distance_\<R>"
 definition "distance_\<R>_std_soc_choice_code = social_choice_result.distance_\<R>_std"
-definition "electoral_module_soc_choice_code = social_choice_result.electoral_module" 
+definition "electoral_module_soc_choice_code = social_choice_result.electoral_module"
+definition "anonymity_soc_choice_code = social_choice_result.anonymity"
 
 setup Locale_Code.close_block
+
+export_code electoral_module_soc_choice_code in Haskell
+export_code \<R>\<^sub>\<W>_std_soc_choice_code in Haskell
+export_code distance_\<R>_std_soc_choice_code in Haskell
+export_code anonymity_soc_choice_code in Haskell
 end

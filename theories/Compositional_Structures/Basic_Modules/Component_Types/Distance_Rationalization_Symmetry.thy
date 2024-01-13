@@ -213,7 +213,7 @@ proof (simp, safe, standard)
     by simp
 qed
 
-lemma minimizer_invar_under_refl_rel_and_tot_invar_dist:
+lemma refl_rel_and_tot_invar_dist_imp_invar_minimizer:
  fixes
     f :: "'x \<Rightarrow> 'y" and
     domain\<^sub>f :: "'x set" and
@@ -264,7 +264,7 @@ proof -
     by (simp add: refl_on_def subset_eq)
   thus ?thesis
     using tot_invar_d
-    by (rule minimizer_invar_under_refl_rel_and_tot_invar_dist)
+    by (rule refl_rel_and_tot_invar_dist_imp_invar_minimizer)
 qed
 
 theorem grp_act_invar_dist_and_invar_f_imp_invar_minimizer:
@@ -492,7 +492,7 @@ proof -
                                     (singleton_set_system (limit_set (alts_\<E> E) UNIV))))"
   have "\<forall>E. satisfies (?min E) (Invariance rel)"
     using r_refl tot_invar_d invar_comp 
-          minimizer_invar_under_refl_rel_and_tot_invar_dist[of 
+          refl_rel_and_tot_invar_dist_imp_invar_minimizer[of 
             "\<K>_els C" rel d "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)"]
     by blast
   moreover have "satisfies ?min (Invariance rel)"
@@ -752,6 +752,42 @@ proof -
           invar_dist_equivar_cons_imp_equivar_dr_rule[of 
           neutrality\<^sub>\<G> valid_elections "\<phi>_neutr valid_elections" \<psi>_neutr C d]
     unfolding distance_neutrality.simps neutrality.simps neutrality\<^sub>\<R>.simps
+    by blast
+qed
+
+theorem reversal_sym_dist_and_cons_imp_reversal_sym_dr:
+  fixes
+    d :: "('a, 'c) Election Distance" and
+    C :: "('a, 'c, 'a rel Result) Consensus_Class"
+  assumes
+    rev_sym_d: "distance_reversal_symmetry valid_elections d" and
+    rev_sym_C: "consensus_rule_reversal_symmetry (\<K>_els C) C" and
+    closed_C:
+      "closed_under_restr_rel (reversal\<^sub>\<R> valid_elections) valid_elections (\<K>_els C)"
+  shows "reversal_symmetry valid_elections (social_welfare_result.distance_\<R> d C)"
+proof -
+  have 
+    "\<forall>\<pi>. \<forall>E \<in> \<K>_els C. \<phi>_rev valid_elections \<pi> E = \<phi>_rev (\<K>_els C) \<pi> E"
+    using cons_domain_valid[of C]
+    unfolding \<phi>_rev.simps
+    by (meson extensional_continuation_subset)
+  hence
+    "satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
+     (equivar_ind_by_act (carrier reversal\<^sub>\<G>) (\<K>_els C) 
+       (\<phi>_rev valid_elections) (set_action \<psi>_rev))"
+    using rev_sym_C
+          equivar_ind_by_act_coincide[of
+            "carrier reversal\<^sub>\<G>" "\<K>_els C" "\<phi>_rev (\<K>_els C)" 
+            "\<phi>_rev valid_elections" "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)"]
+    unfolding consensus_rule_reversal_symmetry.simps
+    by (metis (no_types, lifting))
+  thus ?thesis
+    using cons_domain_valid[of C] rev_sym_d closed_C
+          \<phi>_rev_act.group_action_axioms \<psi>_rev_act.group_action_axioms
+          \<phi>_\<psi>_rev_well_formed
+          social_welfare_result.invar_dist_equivar_cons_imp_equivar_dr_rule[of 
+          reversal\<^sub>\<G> valid_elections "\<phi>_rev valid_elections" \<psi>_rev C d]
+    unfolding distance_reversal_symmetry.simps reversal_symmetry_def reversal\<^sub>\<R>.simps
     by blast
 qed
 

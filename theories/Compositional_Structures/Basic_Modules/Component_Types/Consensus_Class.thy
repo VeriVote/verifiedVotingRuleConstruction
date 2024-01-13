@@ -270,6 +270,11 @@ fun (in result_properties) consensus_rule_neutrality ::
   "consensus_rule_neutrality X C = satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
     (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) X (\<phi>_neutr X) (set_action \<psi>_neutr))"
 
+fun consensus_rule_reversal_symmetry :: 
+  "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'a rel Result) Consensus_Class \<Rightarrow> bool" where
+  "consensus_rule_reversal_symmetry X C = satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
+    (equivar_ind_by_act (carrier reversal\<^sub>\<G>) X (\<phi>_rev X) (set_action \<psi>_rev))"
+
 subsection \<open>Inference Rules\<close>
 
 lemma consensus_choice_equivar:

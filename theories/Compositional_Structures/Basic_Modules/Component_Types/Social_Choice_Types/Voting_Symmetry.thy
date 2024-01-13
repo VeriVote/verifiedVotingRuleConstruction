@@ -85,7 +85,7 @@ fun \<phi>_rev :: "('a, 'v) Election set \<Rightarrow> ('a rel \<Rightarrow> 'a 
 fun \<psi>_rev :: "('a rel \<Rightarrow> 'a rel, 'a rel) binary_fun" where
   "\<psi>_rev \<phi> r = \<phi> r"
 
-definition reversal\<^sub>\<R> :: "('a, 'v) Election set \<Rightarrow>  ('a, 'v) Election rel" where
+fun reversal\<^sub>\<R> :: "('a, 'v) Election set \<Rightarrow>  ('a, 'v) Election rel" where
   "reversal\<^sub>\<R> X = rel_induced_by_action (carrier reversal\<^sub>\<G>) X (\<phi>_rev X)"
 
 subsection \<open>Auxiliary Lemmas\<close>
@@ -1622,8 +1622,6 @@ lemma (in result) well_formed_res_homogeneity':
   by simp
 
 subsection \<open>Reversal Symmetry Lemmas\<close>
-
-subsubsection \<open>Auxiliary Lemmas\<close>
 
 lemma rev_rev_id:
   "rev_rel \<circ> rev_rel = id"
