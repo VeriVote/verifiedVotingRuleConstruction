@@ -46,6 +46,7 @@ session Verified_Voting_Rule_Construction = HOL +
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Symmetry_Of_Functions"
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Property_Interpretations"
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Voting_Symmetry"
+    "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Quotient_Type_Election"
   (* "Refined Data Types" *)
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Refined_Types/Preference_List"
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Refined_Types/Profile_List"
@@ -53,6 +54,7 @@ session Verified_Voting_Rule_Construction = HOL +
     "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Relation_Quotients"
     "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Election_Quotients"
     "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Quotient_Modules"
+    "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Quotient_Distance_Rationalization"
   (* "Component Types" *)
     "Compositional_Structures/Basic_Modules/Component_Types/Distance"
     "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance"

@@ -85,6 +85,40 @@ fun fixed_alt_elections :: "'a set \<Rightarrow> ('a, 'v) Election set" where
 fun vote_count :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election \<Rightarrow> nat" where
   "vote_count p E = card {v \<in> (votrs_\<E> E). (prof_\<E> E) v = p}"
 
+subsection \<open>Vote Count\<close>
+
+lemma vote_count_sum:
+  fixes
+    E :: "('a, 'v) Election"
+  assumes
+    "finite (votrs_\<E> E)"
+  shows
+    "sum (\<lambda>p. vote_count p E) UNIV = card (votrs_\<E> E)"
+proof (simp)
+  have "\<forall>p. finite {v \<in> votrs_\<E> E. prof_\<E> E v = p}"
+    using assms
+    by force
+  moreover have
+    "disjoint {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV}"
+    unfolding disjoint_def
+    by blast
+  moreover have
+    "votrs_\<E> E = \<Union>{{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV}"
+    using Union_eq[of "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV}"]
+    by blast
+  ultimately have
+    "card (votrs_\<E> E) = sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV}"
+    using card_Union_disjoint[of "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV}"]
+    by auto
+  also have
+    "sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV} = 
+      (\<Sum>p \<in> UNIV. card {v \<in> votrs_\<E> E. prof_\<E> E v = p})"
+    sorry
+  finally show 
+    "(\<Sum>p \<in> UNIV. card {v \<in> votrs_\<E> E. prof_\<E> E v = p}) = card (votrs_\<E> E)"
+    by simp
+qed
+
 subsection \<open>Voter Permutations\<close>
 
 text \<open>
@@ -622,7 +656,7 @@ next
         using in_bnds eq_length Collect_cong card_eq 
         by auto
     qed
-qed
+  qed
   
 subsection \<open>Preference Counts and Comparisons\<close>
 

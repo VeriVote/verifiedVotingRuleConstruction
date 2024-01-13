@@ -25,7 +25,7 @@ text \<open>
   For a given function f on sets and a mapping from elements to sets, 
   we define a function on the set element type that maps each element to the
   image of its corresponding set under f.
-  A natural mapping is from elements to their classes under a relation (rel_cls).
+  A natural mapping is from elements to their classes under a relation (rel cls).
 \<close>
 fun inv_\<pi>\<^sub>\<Q> :: "('x \<Rightarrow> 'x set) \<Rightarrow> ('x set \<Rightarrow> 'y) \<Rightarrow> ('x \<Rightarrow> 'y)" where
   "inv_\<pi>\<^sub>\<Q> cls f x = f (cls x)"
