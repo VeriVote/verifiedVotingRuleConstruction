@@ -1,349 +1,14 @@
+section \<open>Quotients of Equivalence Relations on Election Sets\<close>
+
 theory Election_Quotients
   imports Relation_Quotients
-          "../Social_Choice_Types/Property_Interpretations"
+          "../Social_Choice_Types/Voting_Symmetry"
+          "../Social_Choice_Types/Ordered_Relation"
           "HOL-Library.Extended_Real"
           "HOL-Analysis.Cartesian_Euclidean_Space"
-          "HOL-Combinatorics.Multiset_Permutations"
 begin
-(*"HOL-Analysis.Simplex_Content" *)
-subsection \<open>Auxiliary Definitions\<close>
-
-fun fst_ind :: "'x list \<Rightarrow> 'x \<Rightarrow> int" where
-  "fst_ind [] x = -1" |
-  "fst_ind (y#xs) x = 
-    (if (y = x) then 0 else 
-      (let fst_ind' = fst_ind xs x in (if fst_ind' = -1 then -1 else 1 + fst_ind')))"
-
-fun lin_ord_of_list :: "'x list \<Rightarrow> 'x rel" where
-    "lin_ord_of_list l = {(x, y) \<in> set l \<times> set l. fst_ind l x \<le> fst_ind l y}"
 
 subsection \<open>Auxiliary Lemmas\<close>
-
-lemma fst_ind_geq_minus_one:
-  fixes
-    l :: "'x list" and
-    x :: 'x
-  shows
-    "fst_ind l x \<ge> -1"
-proof (induction l arbitrary: x, simp)
-  fix
-    a :: 'x and
-    l :: "'x list" and
-    x :: 'x
-  assume
-    ge: "\<And>x. -1 \<le> fst_ind l x"
-  moreover have "fst_ind (a # l) x \<in> {-1, 0, 1 + fst_ind l x}"
-    unfolding fst_ind.simps Let_def
-    by simp
-  moreover have
-    "\<forall>\<alpha> \<in> {-1, 0, 1 + fst_ind l x}. \<alpha> \<ge> -1"
-    using ge add_le_same_cancel2 dual_order.trans 
-          insertE le_minus_iff neg_equal_zero nle_le not_one_le_zero singletonD
-    by metis
-  ultimately show "-1 \<le> fst_ind (a # l) x"
-    by blast
-qed
-
-lemma fst_ind_is_fst_ind:
-  fixes
-    l :: "'x list" and
-    x :: 'x and i :: int
-  shows
-    minus_one_no_el: "i = fst_ind l x \<longrightarrow> (i = -1 \<longleftrightarrow> x \<notin> set l)" and
-    nonneg_fst_ind: "i = fst_ind l x \<longrightarrow> 
-      (x \<in> set l \<longleftrightarrow> i \<ge> 0 \<and> l!(nat i) = x \<and> (\<forall>j < nat i. l!j \<noteq> x))"
-proof (induction l arbitrary: i, simp, safe)
-  assume
-    "x \<in> set []"
-  hence "False"
-    by simp
-  thus "0 \<le> fst_ind [] x"
-    by simp
-  show "[] ! nat (fst_ind [] x) = x"
-    using \<open>False\<close>
-    by simp
-next
-  fix
-    i :: nat
-  assume
-    "[] ! i \<in> set []"
-  thus "False"
-    by simp
-next
-  fix
-    i :: nat
-  assume
-    "0 \<le> fst_ind [] x"
-  hence "False"
-    by simp
-  thus "x \<in> set []"
-    by simp
-next
-  {
-    fix
-      a :: 'x and
-      i :: nat and
-      l :: "'x list"
-    assume
-      hyp: "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
-      hyp': 
-        "\<And>i. i = fst_ind l x \<longrightarrow> 
-          (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))" and
-      minus_one: "fst_ind (a # l) x = - 1" and "x \<in> set (a # l)"
-    hence "x = a \<or> x \<in> set l"
-      by simp
-    hence "fst_ind (a # l) x = 0 \<or> fst_ind l x \<noteq> -1"
-      using hyp'
-      by auto
-    hence "fst_ind (a # l) x = 0 \<or> fst_ind (a # l) x = 1 + fst_ind l x"
-      by auto
-    moreover have "fst_ind l x \<ge> -1"
-      using fst_ind_geq_minus_one
-      by fastforce
-    ultimately have "fst_ind (a # l) x \<ge> 0"
-      by linarith
-    thus "False"
-      using minus_one
-      by simp
-  }
-  note ind_minus_one =
-  \<open>
-    \<And>a l i.
-      (\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)) \<Longrightarrow>
-      (\<And>i. i = fst_ind l x \<longrightarrow> (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))) \<Longrightarrow>
-      fst_ind (a # l) x = - 1 \<Longrightarrow> x \<in> set (a # l) \<Longrightarrow> False
-  \<close>
-  fix
-    a :: 'x and
-    i :: nat and
-    l :: "'x list"
-  assume
-    hyp: "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
-    hyp': 
-      "\<And>i. i = fst_ind l x \<longrightarrow> 
-        (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))" and
-    "x \<in> set (a # l)"
-  hence "fst_ind (a # l) x \<noteq> -1"
-    using ind_minus_one
-    by blast
-  thus
-    "0 \<le> fst_ind (a # l) x"
-    using fst_ind_geq_minus_one[of "a # l" x]
-    by simp
-next
-  fix
-    a :: 'x and
-    i :: nat and
-    l :: "'x list"
-  assume
-    hyp: "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
-    hyp': 
-      "\<And>i. i = fst_ind l x \<longrightarrow> 
-        (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))" and
-    "x \<notin> set (a # l)"
-  hence "x \<noteq> a \<and> x \<notin> set l"
-    by simp
-  hence "x \<noteq> a \<and> fst_ind l x = -1"
-    using hyp
-    by blast
-  thus "fst_ind (a # l) x = -1"
-    by auto
-next
-  fix
-    a :: 'x and
-    i :: nat and
-    l :: "'x list"
-  assume
-    hyp: "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
-    hyp': 
-      "\<And>i. i = fst_ind l x \<longrightarrow> 
-        (x \<in> set l) = (0 \<le> i \<and> l ! nat i = x \<and> (\<forall>j<nat i. l ! j \<noteq> x))" and
-    "x \<in> set (a # l)"
-  hence "x = a \<or> x \<in> set l"
-    by simp
-  hence 
-    "(x = a \<and> fst_ind (a # l) x = 0) \<or> (x \<noteq> a \<and> x \<in> set l \<and> fst_ind (a # l) x = 1 + fst_ind l x)"
-    using hyp
-    by auto
-  moreover from hyp' have "x \<in> set l \<longrightarrow> l ! nat (fst_ind l x) = x"
-    by simp
-  moreover have "l ! nat (fst_ind l x) = x \<longrightarrow> (a # l) ! (nat (fst_ind l x) + 1) = x"
-    by auto
-  ultimately show "(a # l) ! nat (fst_ind (a # l) x) = x"
-    by (metis Suc_eq_plus1 Suc_nat_eq_nat_zadd1 hyp' nat_zero_as_int nth_Cons_0)
-next
-  fix
-    a :: 'x and
-    i :: nat and
-    j :: nat and
-    l :: "'x list"
-  assume
-    hyp: "\<And>i. i = fst_ind l ((a # l) ! j) \<longrightarrow> (i = - 1) = ((a # l) ! j \<notin> set l)" and
-    hyp': 
-      "\<And>i. i = fst_ind l ((a # l) ! j) \<longrightarrow>
-             ((a # l) ! j \<in> set l) =
-             (0 \<le> i \<and> l ! nat i = (a # l) ! j \<and> (\<forall>ja<nat i. l ! ja \<noteq> (a # l) ! j))" and
-    j_el: "(a # l) ! j \<in> set (a # l)" and "x = (a # l) ! j" and
-    less: "j < nat (fst_ind (a # l) ((a # l) ! j))" 
-  hence "x = a \<or> x \<in> set l"
-    by simp
-  hence "fst_ind (a # l) x = 0 \<or> (j > 0 \<and> fst_ind (a # l) x = 1 + fst_ind l x)"
-    using hyp' \<open>x = (a # l) ! j\<close> 
-    by force
-  hence "False \<or> (j > 0 \<and> j < 1 + fst_ind l x \<and> l ! (j - 1) = x)"
-    using less j_el \<open>x = (a # l) ! j\<close> zless_nat_eq_int_zless 
-    by auto
-  hence "j - 1 \<ge> 0 \<and> j - 1 < fst_ind l x \<and> l ! (j - 1) = x"
-    by (simp add: of_nat_diff)
-  thus "False"
-    using hyp' hyp \<open>x = (a # l) ! j\<close> less_nat_zero_code zless_nat_eq_int_zless
-    by auto
-next
-  fix
-    a :: 'x and
-    i :: nat and
-    l :: "'x list"
-  assume
-    hyp: "\<And>i. i = fst_ind l x \<longrightarrow> (i = - 1) = (x \<notin> set l)" and
-    "0 \<le> fst_ind (a # l) x"
-  hence "x = a \<or> fst_ind l x \<noteq> -1"
-    by fastforce
-  hence "x = a \<or> x \<in> set l"
-    using hyp
-    by blast
-  thus "x \<in> set (a # l)"
-    by simp
-qed
-
-lemma fst_ind_inj:
-  fixes
-    l :: "'x list" and
-    x :: 'x and y :: 'x
-  assumes
-    "x \<in> set l" and
-    "y \<in> set l" and
-    "x \<noteq> y"
-  shows
-    "fst_ind l x \<noteq> fst_ind l y"
-proof (safe)
-  assume
-    "fst_ind l x = fst_ind l y"
-  moreover have nonneg: "fst_ind l x \<ge> 0 \<and> fst_ind l y \<ge> 0"
-    using nonneg_fst_ind assms nat_eq_iff2
-    by metis
-  ultimately have "l!(nat (fst_ind l x)) = l!(nat (fst_ind l y))"
-    by simp
-  moreover have "l!(nat (fst_ind l x)) = x \<and> l!(nat (fst_ind l y)) = y"
-    using nonneg_fst_ind nonneg assms
-    by metis
-  ultimately show "False"
-    using \<open>x \<noteq> y\<close>
-    by simp
-qed
-
-lemma fst_ind_bij:
-  fixes
-    X :: "'x set" and
-    l :: "'x list"
-  assumes
-    "finite X" and
-    "set l = X" and
-    "distinct l"  
-  shows
-    "bij_betw (fst_ind l) X {0..<length l}"
-proof (unfold bij_betw_def, safe)
-  show "inj_on (fst_ind l) X"
-    using fst_ind_inj assms
-    unfolding inj_on_def
-    by meson
-next
-  fix
-    x :: 'x
-  assume
-    "x \<in> X"
-  hence "x \<in> set l" 
-    using assms
-    by simp
-  hence is_index:
-    "0 \<le> fst_ind l x \<and> l ! nat (fst_ind l x) = x \<and> (\<forall>j < nat (fst_ind l x). l ! j \<noteq> x)"
-    using nonneg_fst_ind[of _ l x]
-    by blast
-  moreover from this have "nat (fst_ind l x) < length l"
-    using \<open>x \<in> X\<close> assms(2) atLeast0LessThan 
-          diff_diff_cancel in_set_conv_nth
-          less_imp_diff_less linorder_not_le
-          bot_nat_0.extremum
-    by metis
-  ultimately show "fst_ind l x \<in> {0..<int (length l)}"
-    using is_index nat_less_iff 
-    by force
-next
-  fix
-    i :: int
-  assume
-    i_rng: "i \<in> {0..<int (length l)}"
-  hence fst_ind_i:
-    "0 \<le> fst_ind l (l!nat i) \<and> l!(nat (fst_ind l (l!nat i))) = l!(nat i) \<and> 
-    (\<forall>j < nat (fst_ind l (l!nat i)). l!j \<noteq> l!(nat i))"
-    using assms nonneg_fst_ind[of _ l "l!nat i"] int_eq_iff 
-          atLeastLessThan_iff nat_less_iff nth_mem
-    by meson
-  hence ge: "nat i \<ge> nat (fst_ind l (l!nat i))"
-    using linorder_le_less_linear 
-    by blast
-  have "\<forall>j < nat i. l!j \<noteq> l!(nat i)"
-    using assms(3) i_rng nth_eq_iff_index_eq 
-    by fastforce
-  hence "nat i \<le> nat (fst_ind l (l!nat i))"
-    using fst_ind_i linorder_le_less_linear 
-    by blast
-  hence "nat i = nat (fst_ind l (l!nat i))"
-    using ge
-    by simp
-  hence "i = fst_ind l (l!nat i)"
-    by (metis atLeastLessThan_iff fst_ind_i i_rng int_nat_eq)
-  moreover from i_rng have "l!(nat i) \<in> X"
-    using assms atLeastLessThan_iff nat_less_iff nth_mem
-    by meson
-  ultimately show "i \<in> fst_ind l ` X"
-    by blast
-qed
-
-lemma fin_ordered:
-  fixes
-    X :: "'x set" 
-  assumes
-    "finite X"
-  obtains ord :: "'x rel" where "linear_order_on X ord"
-proof -
-  assume
-    ex: "\<And>ord. linear_order_on X ord \<Longrightarrow> thesis"
-  obtain l :: "'x list" where "set l = X"
-    using finite_list assms
-    by blast
-  let ?r = "lin_ord_of_list l"
-  have "antisym ?r"
-    using fst_ind_inj \<open>set l = X\<close>
-    unfolding antisym_def
-    by fastforce
-  moreover have "refl_on X ?r"
-    using \<open>set l = X\<close>
-    unfolding refl_on_def lin_ord_of_list.simps
-    by blast
-  moreover have "trans ?r"
-    unfolding trans_def
-    by simp
-  moreover have "total_on X ?r"
-    using \<open>set l = X\<close>
-    unfolding total_on_def
-    by force
-  ultimately have "linear_order_on X ?r"
-    unfolding linear_order_on_def preorder_on_def partial_order_on_def
-    by blast
-  thus thesis
-    using ex
-    by blast
-qed
 
 lemma obtain_partition:
   fixes
@@ -470,107 +135,6 @@ next
                 (\<forall>i\<in>Y. card (\<X> i) = N i) \<and> (\<forall>i j. i \<noteq> j \<longrightarrow> i \<in> Y \<and> j \<in> Y \<longrightarrow> \<X> i \<inter> \<X> j = {})"
     using part'
     by blast
-qed
-
-lemma rel_ind_by_action_subset:
-  fixes
-    X :: "'x set" and
-    Y :: "'y set" and
-    Z :: "'y set" and
-    \<phi> :: "('x, 'y) binary_fun" and 
-    \<phi>' :: "('x, 'y) binary_fun"
-  assumes
-    "Z \<subseteq> Y" and
-    "\<forall>x \<in> X. \<forall>z \<in> Z. \<phi>' x z = \<phi> x z"
-  shows
-    "rel_induced_by_action X Z \<phi>' = Restr (rel_induced_by_action X Y \<phi>) Z"
-proof (unfold rel_induced_by_action.simps)
-  have 
-    "{(y1, y2). (y1, y2) \<in> Z \<times> Z \<and> (\<exists>x\<in>X. \<phi>' x y1 = y2)} = 
-      {(y1, y2). (y1, y2) \<in> Z \<times> Z \<and> (\<exists>x\<in>X. \<phi> x y1 = y2)}"
-    using assms
-    by auto
-  also have 
-    "... = Restr {(y1, y2). (y1, y2) \<in> Y \<times> Y \<and> (\<exists>x\<in>X. \<phi> x y1 = y2)} Z"
-    using assms
-    by blast
-  finally show 
-    "{(y1, y2). (y1, y2) \<in> Z \<times> Z \<and> (\<exists>x\<in>X. \<phi>' x y1 = y2)} =
-      Restr {(y1, y2). (y1, y2) \<in> Y \<times> Y \<and> (\<exists>x\<in>X. \<phi> x y1 = y2)} Z"
-    by simp
-qed
-
-lemma lin_ord_of_list_bij_betw:
-  fixes
-    X :: "'x set"
-  assumes
-    "finite X"
-  shows
-    "bij_betw lin_ord_of_list (permutations_of_set X) {r :: 'x rel. linear_order_on X r}"
-  sorry
-(* proof (unfold bij_betw_def inj_on_def permutations_of_set_def, safe) *)
-
-subsection \<open>Definitions\<close>
-
-(* fun isomorphic :: "'x set \<Rightarrow> 'y set \<Rightarrow> bool" where
-  "isomorphic X Y = (\<exists>f :: 'x \<Rightarrow> 'y. bij_betw f X Y)" *)
-
-typedef 'a Ordered_Preference = 
-  "{p :: 'a::finite Preference_Relation. linear_order_on (UNIV::'a set) p}"
-  morphisms ord2pref pref2ord
-proof (simp)
-  have "finite (UNIV::'a set)"
-    by simp
-  then obtain p :: "'a Preference_Relation" where
-    "linear_order_on (UNIV::'a set) p"
-    using fin_ordered[of UNIV False]
-    by blast
-  thus "\<exists>p::'a Preference_Relation. linear_order p"
-    by blast
-qed
-
-instance Ordered_Preference :: (finite) finite
-proof
-  have 
-    "(UNIV::'a Ordered_Preference set) = 
-      pref2ord ` {p :: 'a Preference_Relation. linear_order_on (UNIV::'a set) p}"
-    using type_definition.card type_definition_Ordered_Preference type_definition.univ 
-    by blast
-  moreover have "finite {p :: 'a Preference_Relation. linear_order_on (UNIV::'a set) p}"
-    by simp
-  ultimately show "finite (UNIV::'a Ordered_Preference set)"
-    by (metis finite_imageI)
-qed
-
-lemma range_ord2pref:
-  "range ord2pref = {p. linear_order p}"
-proof -
-  have 
-    "range ord2pref = {p :: 'a Preference_Relation. linear_order_on (UNIV::'a set) p}"
-    by (metis type_definition.Rep_range type_definition_Ordered_Preference)
-  also have "... = {p. linear_order p}"
-    by simp
-  finally show ?thesis
-    by (meson type_definition.Rep_range type_definition_Ordered_Preference)
-qed
-
-lemma card_ord_pref:
-"CARD ('a::finite Ordered_Preference) = fact (CARD ('a))"
-proof -
-  let ?n = "card (UNIV::'a set)" and
-      ?perm = "permutations_of_set (UNIV :: 'a set)" and
-      ?univ' = "{p :: 'a Preference_Relation. linear_order_on (UNIV::'a set) p}"
-  have "card ?perm = fact ?n"
-    by simp
-  moreover have "CARD ('a::finite Ordered_Preference) = 
-    card {p :: 'a Preference_Relation. linear_order_on (UNIV::'a set) p}"
-    using type_definition.card type_definition_Ordered_Preference 
-    by blast
-  moreover have "?n = CARD ('a)"
-    by simp
-  ultimately show ?thesis
-    using bij_betw_same_card lin_ord_of_list_bij_betw[of "UNIV::'a set"] 
-    by force
 qed
 
 subsection \<open>Anonymity Quotient - Grid\<close>
@@ -937,19 +501,7 @@ definition vote_simplex :: "(rat^'b) set" where
   "vote_simplex = insert 0 (rat_vec_set (convex hull (standard_basis :: (real^'b) set)))"
 
 subsubsection \<open>Auxiliary Lemmas\<close>
-
-lemma sum_comp:
-  fixes
-    f :: "'x \<Rightarrow> 'z::comm_monoid_add" and
-    g :: "'y \<Rightarrow> 'x" and
-    X :: "'x set" and
-    Y :: "'y set"
-  assumes
-    "bij_betw g Y X"
-  shows
-    "sum f X = sum (f \<circ> g) Y"
-  sorry
-
+  
 lemma convex_combination_in_convex_hull:
   fixes
     X :: "(real^'b) set" and
@@ -1295,7 +847,7 @@ next
       by force
     moreover have
       "\<forall>b. sum (\<lambda>b'. if b' = b then x$b else 0) UNIV = x$b"
-      sorry
+      sorry (* All summands but that one are 0 *)
     ultimately have
       "\<forall>b. (sum (\<lambda>x. (f x) *\<^sub>R x) standard_basis)$b = x$b"
       by simp
@@ -1336,7 +888,7 @@ next
     unfolding sym_def anon_hom\<^sub>\<R>.simps
     by (simp add: sup_commute)
 next
-  show "trans (anon_hom\<^sub>\<R> X)"
+  show "Relation.trans (anon_hom\<^sub>\<R> X)"
   proof 
     fix
       E :: "('a, 'v) Election" and
@@ -1543,7 +1095,9 @@ next
         (\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X)) = 0"
       using repr
       by (simp add: zero_vec_def)
-    have eq_card:
+    have "finite (UNIV::('a \<times> 'a) set)"
+      by simp
+    hence eq_card:
       "finite (votrs_\<E> E) \<longrightarrow>
         card (votrs_\<E> E) = sum (\<lambda>p. vote_count p E) UNIV"
       using vote_count_sum
@@ -1561,13 +1115,13 @@ next
     moreover with this have
       "sum (\<lambda>p. Fract (vote_count p E) (sum (\<lambda>p. vote_count p E) UNIV)) UNIV =
         Fract (sum (\<lambda>p. (vote_count p E)) UNIV) (sum (\<lambda>p. vote_count p E) UNIV)"
-      sorry (* Use that addition of rationals is distributive. *)
+      sorry (* Use that addition of rationals is distributive? *)
     moreover have
       "Fract (sum (\<lambda>p. (vote_count p E)) UNIV) (sum (\<lambda>p. vote_count p E) UNIV) = 1"
       using gt_0 One_rat_def
             Fract_coprime[of 
               "sum (\<lambda>p. (vote_count p E)) UNIV" "sum (\<lambda>p. (vote_count p E)) UNIV"]
-      sorry
+      sorry (* Fract n n = 1 if n isn't 0, which it isn't here. *)
     ultimately have sum_1:
       "(finite (votrs_\<E> E) \<and> votrs_\<E> E \<noteq> {}) \<longrightarrow>
         sum (\<lambda>p. vote_fraction p E) UNIV = 1"
@@ -1938,7 +1492,7 @@ next
     moreover have
       "\<forall>x \<in> \<rat>. \<forall>y. complex_of_rat y = complex_of_real x \<longrightarrow> y = the_inv real_of_rat x"
       unfolding Rats_def
-      sorry
+      sorry (* Do some type magic? *)
     ultimately have all_eq_vec:
       "\<forall>p. \<forall>E \<in> anon_hom\<^sub>\<R> (fixed_alt_elections UNIV) `` {(UNIV, V, prof)}.
        vote_fraction (ord2pref p) E = x$p"

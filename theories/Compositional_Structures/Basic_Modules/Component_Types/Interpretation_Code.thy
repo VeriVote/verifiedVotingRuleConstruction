@@ -1,3 +1,5 @@
+section \<open>Result + Property Locale Code Generation\<close>
+
 theory Interpretation_Code
   imports Electoral_Module
           Distance_Rationalization
@@ -75,4 +77,5 @@ export_code electoral_module_soc_choice_code in Haskell
 export_code \<R>\<^sub>\<W>_std_soc_choice_code in Haskell
 export_code distance_\<R>_std_soc_choice_code in Haskell
 export_code anonymity_soc_choice_code in Haskell
+
 end

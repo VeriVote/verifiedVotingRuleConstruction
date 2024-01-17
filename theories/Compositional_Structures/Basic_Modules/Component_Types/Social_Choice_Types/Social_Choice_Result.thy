@@ -5,6 +5,8 @@
 \<^marker>\<open>contributor "Karsten Diekhoff, Karlsruhe Institute of Technology (KIT)"\<close>
 \<^marker>\<open>contributor "Michael Kirsten, Karlsruhe Institute of Technology (KIT)"\<close>
 
+section \<open>Social Choice Result\<close>
+
 theory Social_Choice_Result
   imports Result
 begin

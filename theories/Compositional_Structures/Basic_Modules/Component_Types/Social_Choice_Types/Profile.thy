@@ -87,11 +87,63 @@ fun vote_count :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election \<Righ
 
 subsection \<open>Vote Count\<close>
 
+lemma sum_comp:
+  fixes
+    f :: "'x \<Rightarrow> 'z::comm_monoid_add" and
+    g :: "'y \<Rightarrow> 'x" and
+    X :: "'x set" and
+    Y :: "'y set"
+  assumes
+    "bij_betw g Y X"
+  shows
+    "sum f X = sum (f \<circ> g) Y"
+  using assms
+proof (induction "card X" arbitrary: X Y f g)
+  case 0
+  assume "bij_betw g Y X"
+  hence "card Y = 0"
+    by (simp add: "0.hyps" bij_betw_same_card)
+  hence "sum f X = 0 \<and> sum (f \<circ> g) Y = 0"
+    using assms 0
+    by (metis card_0_eq sum.empty sum.infinite)
+  thus ?case
+    by simp
+next
+  case (Suc n)
+  assume 
+    "Suc n = card X" and bij: "bij_betw g Y X" and
+    hyp: "\<And>X Y f g. n = card X \<Longrightarrow> bij_betw g Y X \<Longrightarrow> sum f X = sum (f \<circ> g) Y"
+  then obtain x :: 'x where "x \<in> X" by fastforce
+  with bij have "bij_betw g (Y - {the_inv_into Y g x}) (X - {x})"
+    using bij_betw_DiffI bij_betw_apply bij_betw_singletonI bij_betw_the_inv_into 
+          empty_subsetI f_the_inv_into_f_bij_betw insert_subsetI
+    by (metis (mono_tags, lifting))
+  moreover have "n = card (X - {x})"
+    using \<open>Suc n = card X\<close> \<open>x \<in> X\<close>
+    by fastforce
+  ultimately have "sum f (X - {x}) = sum (f \<circ> g) (Y - {the_inv_into Y g x})"
+    using hyp Suc 
+    by blast
+  moreover have 
+    "sum (f \<circ> g) Y = f (g (the_inv_into Y g x)) + sum (f \<circ> g) (Y - {the_inv_into Y g x})"
+    using Suc.hyps(2) \<open>x \<in> X\<close> bij bij_betw_def calculation card.infinite 
+          f_the_inv_into_f_bij_betw nat.discI sum.reindex sum.remove
+    by metis
+  moreover have "f (g (the_inv_into Y g x)) + sum (f \<circ> g) (Y - {the_inv_into Y g x}) =
+    f x + sum (f \<circ> g) (Y - {the_inv_into Y g x})"
+    by (metis \<open>x \<in> X\<close> bij f_the_inv_into_f_bij_betw)
+  moreover have "sum f X = f x + sum f (X - {x})" 
+    by (metis Suc.hyps(2) Zero_neq_Suc \<open>x \<in> X\<close> card.infinite sum.remove)
+  ultimately show ?case 
+    by simp
+qed
+
 lemma vote_count_sum:
   fixes
     E :: "('a, 'v) Election"
   assumes
-    "finite (votrs_\<E> E)"
+    "finite (votrs_\<E> E)" and
+    "finite (UNIV::('a \<times> 'a) set)"
   shows
     "sum (\<lambda>p. vote_count p E) UNIV = card (votrs_\<E> E)"
 proof (simp)
@@ -102,20 +154,103 @@ proof (simp)
     "disjoint {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV}"
     unfolding disjoint_def
     by blast
-  moreover have
+  moreover have partition:
     "votrs_\<E> E = \<Union>{{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV}"
     using Union_eq[of "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV}"]
     by blast
-  ultimately have
+  ultimately have card_eq_sum':
     "card (votrs_\<E> E) = sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV}"
     using card_Union_disjoint[of "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV}"]
     by auto
-  also have
-    "sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV} = 
-      (\<Sum>p \<in> UNIV. card {v \<in> votrs_\<E> E. prof_\<E> E v = p})"
-    sorry
-  finally show 
-    "(\<Sum>p \<in> UNIV. card {v \<in> votrs_\<E> E. prof_\<E> E v = p}) = card (votrs_\<E> E)"
+  have "finite {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV}"
+    using partition assms
+    by (simp add: finite_UnionD)
+  moreover have
+    "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV} = 
+        {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+              p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} \<union> 
+        {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+              p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}"
+    by blast
+  moreover have
+    "{} = {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+              p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} \<inter>
+          {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+              p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}"
+    by blast
+  ultimately have "sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV} = 
+    sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+                p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} +
+    sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+                p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}"
+    using sum.union_disjoint[of 
+            "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+              p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+            "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+                p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}"]
+    by simp
+  moreover have
+    "\<forall>X \<in> {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+            p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}. card X = 0"
+    using card_eq_0_iff 
+    by fastforce
+  ultimately have card_eq_sum:
+    "card (votrs_\<E> E) = sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+                          p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+    using card_eq_sum'
+    by simp
+  have "inj_on (\<lambda>p. {v \<in> votrs_\<E> E. prof_\<E> E v = p}) 
+                {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+    unfolding inj_on_def
+    by blast
+  moreover have 
+    "(\<lambda>p. {v \<in> votrs_\<E> E. prof_\<E> E v = p}) ` {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} \<subseteq>
+         {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+                          p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+    by blast
+  moreover have 
+    "(\<lambda>p. {v \<in> votrs_\<E> E. prof_\<E> E v = p}) ` {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} \<supseteq>
+      {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+        p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+    by blast
+  ultimately have "bij_betw (\<lambda>p. {v \<in> votrs_\<E> E. prof_\<E> E v = p}) 
+    {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}
+    {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+      p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+    unfolding bij_betw_def
+    by simp
+  hence sum_rewrite:
+    "(\<Sum>x\<in>{p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}. 
+            card {v \<in> votrs_\<E> E. prof_\<E> E v = x}) =
+      sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+        p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+    using sum_comp[of "\<lambda>p. {v \<in> votrs_\<E> E. prof_\<E> E v = p}"
+        "{p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+        "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. 
+          p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+        card]
+    unfolding comp_def
+    by simp
+  have "{p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}} \<inter> 
+    {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} = {}"
+    by blast
+  moreover have "{p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}} \<union> 
+    {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} = UNIV"
+    by blast
+  ultimately have "(\<Sum>p\<in>UNIV. card {v \<in> votrs_\<E> E. prof_\<E> E v = p}) =
+    (\<Sum>x \<in> {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}. card {v \<in> votrs_\<E> E. prof_\<E> E v = x}) + 
+    (\<Sum>x \<in> {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}. card {v \<in> votrs_\<E> E. prof_\<E> E v = x})"
+    using assms sum.union_disjoint[of
+      "{p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}" 
+      "{p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}" 
+      "\<lambda>p. card {v \<in> votrs_\<E> E. prof_\<E> E v = p}"]
+    by (metis (mono_tags, lifting) Finite_Set.finite_set add.commute finite_Un)
+  moreover have "\<forall>x \<in> {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}.
+    card {v \<in> votrs_\<E> E. prof_\<E> E v = x} = 0"
+    using card_eq_0_iff 
+    by fastforce 
+  ultimately show "(\<Sum>p\<in>UNIV. card {v \<in> votrs_\<E> E. prof_\<E> E v = p}) = card (votrs_\<E> E)"
+    using card_eq_sum sum_rewrite
     by simp
 qed
 
@@ -294,15 +429,10 @@ text \<open>
   A profile on a voter set that has a natural order can be viewed as a list of ballots.
 \<close>
 
-fun list_of_preferences :: "'v list \<Rightarrow> ('a, 'v) Profile 
-                              \<Rightarrow> ('a Preference_Relation) list" where
-  "list_of_preferences [] p = []" |
-  "list_of_preferences (x#xs) p = (p x)#(list_of_preferences xs p)"
-
 fun to_list :: "'v::linorder set \<Rightarrow> ('a, 'v) Profile 
                   \<Rightarrow> ('a Preference_Relation) list" where
   "to_list V p = (if (finite V) 
-                    then (list_of_preferences (sorted_list_of_set V) p)
+                    then (map p (sorted_list_of_set V))
                     else [])"
 
 lemma map2_helper:
@@ -334,53 +464,6 @@ proof -
     by simp
 qed
 
-lemma list_of_pref_simps: 
-  shows length_inv: "length (list_of_preferences l p) = length l" and
-        index: "\<forall>i < length l. (list_of_preferences l p)!i = p (l!i)"
-proof -
-  show length_inv: "length (list_of_preferences l p) = length l"
-    by (induction rule: list_of_preferences.induct, auto) 
-next
-  show "\<forall>i<length l. list_of_preferences l p ! i = p (l ! i)"
-  proof (clarify, induction l)
-    case Nil
-    fix 
-      i::nat
-    assume in_bounds: "i < length []"
-    hence "False"
-      by (simp add: Nil)
-    thus "list_of_preferences [] p ! i = p ([] ! i)"
-      by simp
-  next
-    case (Cons a list)
-    fix 
-      i :: nat and
-      a :: 'v and
-      l :: "'v list" and
-      p :: "('a, 'v) Profile"
-    assume 
-      in_bnds: "i < length (a#l)" and
-      hyp: "(\<And>i. (i < length l \<Longrightarrow> list_of_preferences l p ! i = p (l ! i)))"
-    show "list_of_preferences (a # l) p ! i = p ((a # l) ! i)"
-    proof (cases "i = 0")
-      case True
-      thus ?thesis by simp
-    next
-      case False
-      hence "list_of_preferences (a # l) p ! i = list_of_preferences l p ! (i-1)"
-        by simp
-      also have "list_of_preferences l p ! (i-1) = p (l ! (i-1))" 
-        using False hyp in_bnds 
-        by auto
-      also have "p (l ! (i-1)) = p ((a#l) ! i)"
-        using False 
-        by auto
-      finally show "list_of_preferences (a # l) p ! i = p ((a # l) ! i)" 
-        by simp
-    qed
-  qed
-qed
-
 lemma to_list_simp: 
   fixes 
     i :: nat and
@@ -390,10 +473,10 @@ lemma to_list_simp:
     "i < card V"
   shows "(to_list V p)!i = p ((sorted_list_of_set V)!i)"
 proof -
-  have "(to_list V p)!i = (list_of_preferences (sorted_list_of_set V) p)!i"
+  have "(to_list V p)!i = (map p (sorted_list_of_set V))!i"
     by auto
   also have "... = p ((sorted_list_of_set V)!i)"
-    by (simp add: assms index)
+    by (simp add: assms)
   finally show ?thesis by auto
 qed
 
@@ -417,13 +500,13 @@ proof -
     by simp
   moreover have "map p (sorted_list_of_set V) = to_list V p"
     using to_list_simp
-    by (simp add: index length_inv list_eq_iff_nth_eq)
+    by (simp add: list_eq_iff_nth_eq)
   ultimately have "\<forall>i < card V. (to_list V (f \<circ> p))!i = (map f (to_list V p))!i"
-    by auto
+    by presburger
   moreover have "length (map f (to_list V p)) = card V"
-    by (simp add: length_inv)
+    by simp
   moreover have "length (to_list V (f \<circ> p)) = card V" 
-    by (simp add: length_inv)
+    by simp
   ultimately show ?thesis
     by (simp add: nth_equalityI)
 qed
@@ -581,15 +664,15 @@ next
     using assms bij_betw_same_card bij_betw_subset top_greatest
     by metis
   also have card_length_V: "?n = card V"
-    using True length_inv to_list.simps
+    using True to_list.simps
           sorted_list_of_set.length_sorted_key_list_of_set 
-    by metis
+    by simp
   also have card_length_img: 
     "length (to_list ?img ?q) = card ?img"
-    using True assms card_eq length_inv to_list.simps
+    using True assms card_eq to_list.simps
           sorted_list_of_set.length_sorted_key_list_of_set
           card.infinite list.size(3)
-    by metis
+    by simp
   finally have eq_length: "length (to_list ?img ?q) = ?n"
     by auto
   show ?thesis
@@ -612,8 +695,9 @@ next
       proof -
         have "\<forall>v. v \<in> ?img \<longrightarrow> {v' \<in> ?img. v' < v} \<subseteq> ?img - {v}" by blast
         moreover have elem_of_img: "\<pi> (sorted_list_of_set V ! i) \<in> ?img"
-          using True in_bnds image_eqI length_inv nth_mem
-                sorted_list_of_set.set_sorted_key_list_of_set to_list.simps
+          using True in_bnds image_eqI nth_mem  card_length_V 
+                sorted_list_of_set.length_sorted_key_list_of_set
+                sorted_list_of_set.set_sorted_key_list_of_set
           by metis
         ultimately have "{v \<in> ?img. v < \<pi> (sorted_list_of_set V ! i)}
                          \<subseteq> ?img - {\<pi> (sorted_list_of_set V ! i)}"
@@ -621,10 +705,10 @@ next
         hence "{v \<in> ?img. v < \<pi> (sorted_list_of_set V ! i)} \<subset> ?img"
           using elem_of_img by blast
         moreover have img_card_eq_V_length: "card ?img = ?n"
-          using True bij length_inv subset_UNIV to_list.simps
-                bij_betw_same_card bij_betw_subset
+          using True bij subset_UNIV to_list.simps
+                bij_betw_same_card bij_betw_subset card_eq card_length_V 
                 sorted_list_of_set.length_sorted_key_list_of_set 
-          by metis
+          by presburger
         ultimately have card_in_bnds: "?c < ?n"
           by (metis (mono_tags, lifting) True finite_imageI psubset_card_mono)
         moreover have img_list_map: "map (\<lambda>i. to_list ?img ?q ! ?c) [0..<?n] ! i 
@@ -646,9 +730,9 @@ next
           by metis
       qed
       also have "to_list V p ! i = p ((sorted_list_of_set V)!i)"
-        using True length_inv to_list.simps to_list_simp in_bnds 
+        using True to_list.simps to_list_simp in_bnds 
               sorted_list_of_set.length_sorted_key_list_of_set
-        by metis      
+        by simp  
       finally show "to_list V p ! i 
                     = map (\<lambda>i. (to_list ?img ?q) 
                                ! card {v \<in> ?img. v < \<pi> (sorted_list_of_set V ! i)})

@@ -1,3 +1,5 @@
+section \<open>Distance Rationalization on Election Quotients\<close>
+
 theory Quotient_Distance_Rationalization
   imports Quotient_Modules
           "../Distance_Rationalization_Symmetry"

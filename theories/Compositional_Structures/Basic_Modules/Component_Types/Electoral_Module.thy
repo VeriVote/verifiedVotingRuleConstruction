@@ -180,15 +180,6 @@ proof (unfold anonymity'.simps satisfies.simps, standard, standard, standard)
     by blast
 qed
 
-lemma (in result) hom_equiv_anon_hom':
-  fixes
-    X :: "('a, 'v::linorder) Election set"
-  assumes
-    "\<forall>E \<in> X. finite (votrs_\<E> E)"
-  shows
-    "homogeneity X m = (anonymity' X m \<and> homogeneity' X m)"
-  sorry
-  
 subsubsection \<open>Neutrality\<close>
 
 text \<open>

@@ -47,7 +47,8 @@ subsection \<open>Invariance and Equivariance\<close>
 
 text \<open>
   Invariance and equivariance are symmetry properties of functions:
-  Invariance means that related preimages have identical images and equivariance.
+  Invariance means that related preimages have identical images and 
+  equivariance denotes consistent changes.
 \<close>
 
 datatype ('x, 'y) property = 
@@ -101,7 +102,7 @@ next
     by (metis id_def)
 qed
 
-lemma rewrite_invar_ind_by_act [intro?]:
+lemma rewrite_invar_ind_by_act:
   fixes
     f :: "'x \<Rightarrow> 'y" and
     G :: "'z set" and
@@ -134,7 +135,7 @@ next
     by simp
 qed
 
-lemma rewrite_equivar_ind_by_act [intro?]:
+lemma rewrite_equivar_ind_by_act:
   fixes
     f :: "'x \<Rightarrow> 'y" and
     G :: "'z set" and
@@ -237,6 +238,34 @@ lemma extensional_continuation_subset:
   unfolding extensional_continuation.simps
   using assms
   by (simp add: subset_iff)
+
+lemma rel_ind_by_action_subset:
+  fixes
+    X :: "'x set" and
+    Y :: "'y set" and
+    Z :: "'y set" and
+    \<phi> :: "('x, 'y) binary_fun" and 
+    \<phi>' :: "('x, 'y) binary_fun"
+  assumes
+    "Z \<subseteq> Y" and
+    "\<forall>x \<in> X. \<forall>z \<in> Z. \<phi>' x z = \<phi> x z"
+  shows
+    "rel_induced_by_action X Z \<phi>' = Restr (rel_induced_by_action X Y \<phi>) Z"
+proof (unfold rel_induced_by_action.simps)
+  have 
+    "{(y1, y2). (y1, y2) \<in> Z \<times> Z \<and> (\<exists>x\<in>X. \<phi>' x y1 = y2)} = 
+      {(y1, y2). (y1, y2) \<in> Z \<times> Z \<and> (\<exists>x\<in>X. \<phi> x y1 = y2)}"
+    using assms
+    by auto
+  also have 
+    "... = Restr {(y1, y2). (y1, y2) \<in> Y \<times> Y \<and> (\<exists>x\<in>X. \<phi> x y1 = y2)} Z"
+    using assms
+    by blast
+  finally show 
+    "{(y1, y2). (y1, y2) \<in> Z \<times> Z \<and> (\<exists>x\<in>X. \<phi>' x y1 = y2)} =
+      Restr {(y1, y2). (y1, y2) \<in> Y \<times> Y \<and> (\<exists>x\<in>X. \<phi> x y1 = y2)} Z"
+    by simp
+qed
 
 subsubsection \<open>Invariance and Equivariance\<close>
 

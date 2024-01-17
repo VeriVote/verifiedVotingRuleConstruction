@@ -28,7 +28,7 @@ text \<open>
 type_synonym 'a Preference_Relation = "'a rel"
 
 type_synonym 'a Vote = "'a set \<times> 'a Preference_Relation"
-
+                             
 fun is_less_preferred_than ::
   "'a \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> bool" ("_ \<preceq>\<^sub>_ _" [50, 1000, 51] 50) where
     "a \<preceq>\<^sub>r b = ((a, b) \<in> r)"

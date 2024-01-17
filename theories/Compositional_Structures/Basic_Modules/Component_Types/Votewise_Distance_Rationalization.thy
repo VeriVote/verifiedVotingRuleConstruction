@@ -48,13 +48,14 @@ proof (unfold non_voters_irrelevant_def, clarify)
           sorted_list_of_set.set_sorted_key_list_of_set
     by metis
   hence "(to_list V p) = (to_list V q)"
-    using index coincide length_inv nth_equalityI to_list.simps
-    by (metis (no_types, lifting))
+    using coincide length_map nth_equalityI to_list.simps
+    by auto
   thus "votewise_distance d N (A, V, p) (A', V', p') = 
             votewise_distance d N (A, V, q) (A', V', p') \<and>
          votewise_distance d N (A', V', p') (A, V, p) = 
             votewise_distance d N (A', V', p') (A, V, q)"
-    by auto
+    unfolding votewise_distance.simps
+    by presburger
 qed
 
 lemma swap_standard: "standard (votewise_distance swap l_one)"
@@ -74,7 +75,7 @@ proof (unfold standard_def, clarify)
     \<forall> l1 l2. (l1 \<noteq> [] \<and> l2 \<noteq> [] \<longrightarrow> (\<forall>i < length (?l l1 l2). (?l l1 l2)!i = \<infinity>))"
     by simp
   moreover have "V = V' \<and> V \<noteq> {} \<and> finite V \<Longrightarrow> (to_list V p) \<noteq> [] \<and> (to_list V' p') \<noteq> []"
-    using card_eq_0_iff length_inv list.size(3) to_list.simps
+    using card_eq_0_iff length_map list.size(3) to_list.simps
           sorted_list_of_set.length_sorted_key_list_of_set 
     by metis
   moreover have "\<forall> l. ((\<exists> i < length l. l!i = \<infinity>) \<longrightarrow> l_one l = \<infinity>)"
@@ -93,7 +94,7 @@ proof (unfold standard_def, clarify)
     by (metis length_greater_0_conv map_is_Nil_conv zip_eq_Nil_iff)
   hence "A \<noteq> A' \<and> V = V' \<and> V \<noteq> {} \<and> finite V \<Longrightarrow> 
     votewise_distance swap l_one (A, V, p) (A', V', p') = \<infinity>"
-    by (simp add: length_inv)
+    by simp
   moreover have "V \<noteq> V' \<Longrightarrow> votewise_distance swap l_one (A, V, p) (A', V', p') = \<infinity>"
     by simp
   moreover have "A \<noteq> A' \<and> V = {} \<Longrightarrow> votewise_distance swap l_one (A, V, p) (A', V', p') = \<infinity>"

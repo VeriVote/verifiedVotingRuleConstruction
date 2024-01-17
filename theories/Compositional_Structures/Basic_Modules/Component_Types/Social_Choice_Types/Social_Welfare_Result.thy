@@ -1,3 +1,5 @@
+section \<open>Social Welfare Result\<close>
+
 theory Social_Welfare_Result
   imports Result
 begin

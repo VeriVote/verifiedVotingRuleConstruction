@@ -14,7 +14,6 @@ fun closest_preimg_dist :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightar
 
 fun minimizer :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightarrow> 'x Distance \<Rightarrow> 'y set \<Rightarrow> 'x \<Rightarrow> 'y set" where
   "minimizer f domain\<^sub>f d Y x = arg_min_set (closest_preimg_dist f domain\<^sub>f d x) Y"
-(* arg_min instead of arg_min_set? *)
 
 subsubsection \<open>Auxiliary Lemmas\<close>
 
@@ -304,7 +303,8 @@ proof -
     "satisfies (\<lambda>x. minimizer f domain\<^sub>f d (?img x) x)
               (equivar_ind_by_act (carrier G) X \<phi> (set_action ?\<psi>))"
     using assms 
-          grp_act_invar_dist_and_equivar_f_imp_equivar_minimizer[of G X \<phi> ?\<psi> domain\<^sub>f ?img d f]
+          grp_act_invar_dist_and_equivar_f_imp_equivar_minimizer[of 
+            G X \<phi> ?\<psi> domain\<^sub>f ?img d f]
     by blast
   hence "satisfies (minimizer f domain\<^sub>f d img)
                   (equivar_ind_by_act (carrier G) X \<phi> (set_action ?\<psi>))"

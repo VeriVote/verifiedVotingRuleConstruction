@@ -1,4 +1,4 @@
-section \<open>Result-Dependent Properties\<close>
+section \<open>Result-Dependent Voting Rule Properties\<close>
 
 theory Property_Interpretations
   imports Voting_Symmetry

@@ -1048,7 +1048,7 @@ lemma rel_rename_sound:
     r :: "'a rel" and
     A :: "'a set"
   assumes
-    "bij \<pi>"
+    "inj \<pi>"
   shows
     "refl_on A r \<longrightarrow> refl_on (\<pi> ` A) (rel_rename \<pi> r)" and
     "antisym r \<longrightarrow> antisym (rel_rename \<pi> r)" and
@@ -1080,8 +1080,9 @@ next
     unfolding rel_rename.simps
     by auto
   hence "c = c' \<and> d = d'"
-    using \<open>bij \<pi>\<close>
-    by (metis UNIV_I bij_betw_iff_bijections)
+    using \<open>inj \<pi>\<close>
+    unfolding inj_def
+    by presburger
   hence "c = d"
     using antisym \<open>(d', c') \<in> r\<close> \<open>(c, d) \<in> r\<close>
     by simp
@@ -1115,8 +1116,8 @@ next
     using rel_rename.simps
     by auto
   hence "s = e"
-    using \<open>bij \<pi>\<close>
-    by (metis bij_is_inj rangeI range_ex1_eq)
+    using \<open>inj \<pi>\<close>
+    by (metis rangeI range_ex1_eq)
   hence "(d, e) \<in> r \<and> (e, t) \<in> r"
     using \<open>(d, e) \<in> r\<close> \<open>(s, t) \<in> r\<close> 
     by simp
@@ -1263,8 +1264,8 @@ next
       by simp
     ultimately have "\<forall>v \<in> V'. linear_order_on A' (p' v)"
       unfolding linear_order_on_def partial_order_on_def preorder_on_def
-      using rewr rel_rename_sound[of \<pi>] \<open>bij \<pi>\<close> 
-      by auto
+      using rewr rel_rename_sound[of \<pi>] \<open>bij \<pi>\<close> bij_is_inj 
+      by metis
     hence "(A', V', p') \<in> valid_elections"
       unfolding valid_elections_def profile_def
       by simp
@@ -1519,7 +1520,7 @@ proof (simp del: limit_set_welfare.simps \<phi>_neutr.simps \<psi>_neutr\<^sub>\
       by (metis UNIV_I bij_betw_imp_surj bij_car_el
                 f_the_inv_into_f_bij_betw image_f_inv_f surj_imp_inv_eq)
     hence lin_inv: "linear_order_on A ?r_inv"
-      using rel_rename_sound[of "the_inv \<pi>"] bij_inv lin
+      using rel_rename_sound[of "the_inv \<pi>"] bij_inv lin bij_is_inj
       unfolding \<psi>_neutr\<^sub>\<w>.simps linear_order_on_def preorder_on_def partial_order_on_def
       by metis
     hence "\<forall>a b. (a, b) \<in> ?r_inv \<longrightarrow> a \<in> A \<and> b \<in> A"

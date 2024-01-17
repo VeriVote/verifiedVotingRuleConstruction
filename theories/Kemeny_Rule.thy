@@ -62,63 +62,6 @@ theorem kemeny_rule_neutral:
           "votewise_distance swap l_one" strong_unanimity]
   unfolding kemeny_rule.simps swap_\<R>.simps
   by blast
-
-subsection \<open>Quotient Rule\<close>
-
-thm social_choice_result.invar_dr_simple_dist_imp_quotient_dr
-
-theorem (in result) kemeny_lattice_quotient:
-  fixes
-    X :: "('a, 'v::wellorder) Election set" and
-    E :: "('a, 'v) Election"
-  assumes
-    "E \<in> X" and 
-    "X \<subseteq> valid_elections" and
-    "\<K>_els strong_unanimity \<subseteq> X" and
-    "equiv X (anonymity\<^sub>\<R> X)"
-  shows
-  "fun\<^sub>\<E> kemeny_rule E = social_choice_result.distance_\<R>\<^sub>\<Q> 
-    (anonymity\<^sub>\<R> X) (votewise_distance swap l_one) strong_unanimity (anonymity\<^sub>\<R> X `` {E})"
-proof -
-  have "satisfies (fun\<^sub>\<E> kemeny_rule) (Invariance (anonymity\<^sub>\<R> X))"
-    sorry
-  moreover have "simple (anonymity\<^sub>\<R> X) X (votewise_distance swap l_one)" 
-    sorry
-  moreover have 
-    "closed_under_restr_rel (anonymity\<^sub>\<R> X) X (\<K>_els strong_unanimity)"
-    sorry
-  moreover have
-    "satisfies (\<lambda>E. limit_set_soc_choice (alts_\<E> E) UNIV) (Invariance (anonymity\<^sub>\<R> X))"
-    sorry
-  moreover have
-    "satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) 
-      (Invariance (Restr (anonymity\<^sub>\<R> X) (\<K>_els strong_unanimity)))"
-    sorry
-  moreover have
-    "satisfies (fun\<^sub>\<E> (social_choice_result.\<R>\<^sub>\<W> (votewise_distance swap l_one) 
-                strong_unanimity)) (Invariance (anonymity\<^sub>\<R> X))"
-    sorry
-  moreover have "anonymity\<^sub>\<R> X `` {E} \<in> X // (anonymity\<^sub>\<R> X)"
-    sorry
-  moreover have
-    "(social_choice_result.distance_\<R> (votewise_distance swap l_one) strong_unanimity)
-      = kemeny_rule"
-    unfolding kemeny_rule.simps swap_\<R>.simps
-    by (metis (no_types))
-  ultimately have
-    "\<pi>\<^sub>\<Q> (fun\<^sub>\<E> kemeny_rule) (anonymity\<^sub>\<R> X `` {E}) = 
-      social_choice_result.distance_\<R>\<^sub>\<Q> 
-        (anonymity\<^sub>\<R> X) (votewise_distance swap l_one) strong_unanimity (anonymity\<^sub>\<R> X `` {E})"
-    using assms 
-      social_choice_result.invar_dr_simple_dist_imp_quotient_dr[of
-        "anonymity\<^sub>\<R> X" X "votewise_distance swap l_one" 
-        strong_unanimity "anonymity\<^sub>\<R> X `` {E}"]
-    by (metis (no_types))
-  also have "\<pi>\<^sub>\<Q> (fun\<^sub>\<E> kemeny_rule) (anonymity\<^sub>\<R> X `` {E}) = fun\<^sub>\<E> kemeny_rule E"
-    sorry
-  finally show ?thesis
-    by (metis (no_types))
-qed
     
 subsection \<open>Datatype Instantiation\<close>
 

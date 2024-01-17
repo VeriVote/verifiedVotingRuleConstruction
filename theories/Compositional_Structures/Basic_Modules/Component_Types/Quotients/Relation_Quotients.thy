@@ -1,3 +1,7 @@
+chapter \<open>Quotient Rules\<close>
+
+section \<open>Quotients of Equivalence Relations\<close>
+
 theory Relation_Quotients
   imports HOL.Equiv_Relations
           "../Social_Choice_Types/Symmetry_Of_Functions"

@@ -186,7 +186,7 @@ proof (unfold distance_anonymity_def, safe)
       (* the lists of V and V' have equal lengths as the sets are equal by assumption *)
       have lengths_eq: "?len = length (to_list V' p')"
         using True
-        by (simp add: length_inv)
+        by simp
       (* show that the list of the renamed (A, V, p) 
           permutes the original list using ?perm_total *)
       have rn_V_permutes: "(to_list V p) = permute_list ?perm (to_list ?rn_V ?rn_p)"
@@ -229,11 +229,12 @@ proof (unfold distance_anonymity_def, safe)
         (*(\<lambda>i. (card ({v\<in>(\<pi> ` V). v < \<pi> ((sorted_list_of_set V)!i)})))*)
         have "\<forall> i j. (i < ?len \<and> j < ?len \<and> i \<noteq> j 
                      \<longrightarrow> \<pi> ((sorted_list_of_set V)!i) \<noteq> \<pi> ((sorted_list_of_set V)!j))"
-          using bij
-          by (metis (mono_tags, opaque_lifting) bij_pointE True length_inv nth_eq_iff_index_eq 
-                     sorted_list_of_set.distinct_sorted_key_list_of_set to_list.elims)
+          using bij bij_pointE True nth_eq_iff_index_eq length_map
+                sorted_list_of_set.distinct_sorted_key_list_of_set to_list.elims
+          by (metis (mono_tags, opaque_lifting))
         moreover have in_bnds_imp_img_el: "\<forall>i. i < ?len \<longrightarrow> \<pi> ((sorted_list_of_set V)!i) \<in> \<pi> ` V"
-          by (metis True image_eqI length_inv nth_mem sorted_list_of_set(1) to_list.simps)
+          using True image_eqI nth_mem sorted_list_of_set(1) to_list.simps length_map
+          by metis
         ultimately have "\<forall> i < ?len. \<forall>j < ?len. (?perm_total i = ?perm_total j \<longrightarrow> i = j)"
           using linorder_rank_injective
           by (metis (no_types, lifting) Collect_cong True finite_imageI)
@@ -253,14 +254,14 @@ proof (unfold distance_anonymity_def, safe)
         moreover have "card (\<pi> ` V) = card V" using bij
           by (metis bij_betw_same_card bij_betw_subset top_greatest)
         moreover have "card V = ?len"
-          by (simp add: length_inv)
+          by simp
         ultimately have bounded_img: "\<forall>i. (i < ?len \<longrightarrow> ?perm_total i \<in> {0..<?len})"
-          by auto
-        hence "i < ?len \<Longrightarrow> ?perm_total i \<in> {0..<?len}"
+          by (metis (full_types) atLeast0LessThan lessThan_iff)
+        hence "\<forall>i. i < ?len \<longrightarrow> ?perm_total i \<in> {0..<?len}"
           by blast
-        moreover have "i \<in> {0..<?len} \<Longrightarrow> i < ?len"
+        moreover have "\<forall>i. i \<in> {0..<?len} \<longrightarrow> i < ?len"
           using atLeastLessThan_iff by blast
-        ultimately have "i \<in> {0..<?len} \<Longrightarrow> ?perm_total i \<in> {0..?len}"
+        ultimately have "\<forall>i. i \<in> {0..<?len} \<longrightarrow> ?perm_total i \<in> {0..?len}"
           by fastforce
         hence "?perm_total ` {0..<?len} \<subseteq> {0..<?len}"
           using bounded_img 
