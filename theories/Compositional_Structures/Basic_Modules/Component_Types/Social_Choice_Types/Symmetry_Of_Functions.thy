@@ -66,7 +66,146 @@ definition equivar_ind_by_act ::
 
 subsection \<open>Auxiliary Lemmas\<close>
 
-subsubsection \<open>Rewrite Rules\<close>
+lemma bij_imp_bij_on_set_system:
+  fixes
+    f :: "'x \<Rightarrow> 'y"
+  assumes
+    "bij f"
+  shows
+    "bij (\<lambda>\<A>. {f ` A | A. A \<in> \<A>})"
+proof (unfold bij_def inj_def surj_def, safe)
+  {
+    fix
+      \<A> :: "'x set set" and \<B> :: "'x set set" and A :: "'x set"
+    assume 
+      "{f ` A | A. A \<in> \<A>} = {f ` B | B. B \<in> \<B>}" and "A \<in> \<A>"
+    hence "f ` A \<in> {f ` B | B. B \<in> \<B>}"
+      by blast
+    then obtain B :: "'x set" where el_Y': "B \<in> \<B>" and "f ` B = f ` A"
+      by auto
+    hence "the_inv f ` f ` B = the_inv f ` f ` A"
+      by simp
+    hence "B = A"
+      using image_inv_f_f assms \<open>f ` B = f ` A\<close> bij_betw_def
+      by metis
+    thus "A \<in> \<B>"
+      using el_Y'
+      by simp
+  }
+  note img_set_eq_imp_subs =
+    \<open>\<And>\<A> \<B> A. {f ` A | A. A \<in> \<A>} = {f ` B | B. B \<in> \<B>} \<Longrightarrow> A \<in> \<A> \<Longrightarrow> A \<in> \<B>\<close>
+  fix
+    \<A> :: "'x set set" and \<B> :: "'x set set" and A :: "'x set"
+  assume 
+    "{f ` A | A. A \<in> \<A>} = {f ` B | B. B \<in> \<B>}" and "A \<in> \<B>"
+  thus "A \<in> \<A>"
+    using img_set_eq_imp_subs[of \<B> \<A> A] \<comment> \<open>Symmetry of "="\<close>
+    by presburger
+next
+  fix
+    \<A> :: "'y set set"
+  have "\<forall>A. f ` (the_inv f) ` A = A"
+    using image_f_inv_f[of f] assms
+    by (metis bij_betw_def surj_imp_inv_eq the_inv_f_f)
+  hence "{A | A. A \<in> \<A>} = {f ` (the_inv f) ` A | A. A \<in> \<A>}"
+    by presburger
+  hence "\<A> = {f ` (the_inv f) ` A | A. A \<in> \<A>}"  
+    by simp
+  also have "{f ` (the_inv f) ` A | A. A \<in> \<A>} = 
+              {f ` A | A. A \<in> {(the_inv f) ` A | A. A \<in> \<A>}}"
+    by blast
+  finally show "\<exists>\<B>. \<A> = {f ` B | B. B \<in> \<B>}"
+    by blast
+qed
+
+lemma un_left_inv_singleton_set_system:
+  "\<Union> \<circ> singleton_set_system = id"
+proof
+  fix
+    X :: "'x set"
+  have "(\<Union> \<circ> singleton_set_system) X = {x. \<exists>x' \<in> singleton_set_system X. x \<in> x'}"
+    by auto
+  also have "{x. \<exists>x' \<in> singleton_set_system X. x \<in> x'} = {x. {x} \<in> singleton_set_system X}"
+    by auto
+  also have "{x. {x} \<in> singleton_set_system X} = {x. {x} \<in> {{x} | x. x \<in> X}}"
+    by simp
+  also have "{x. {x} \<in> {{x} | x. x \<in> X}} = {x. x \<in> X}"
+    by simp
+  finally show "(\<Union> \<circ> singleton_set_system) X = id X"
+    by simp
+qed
+
+lemma the_inv_comp:
+  fixes
+    f :: "'y \<Rightarrow> 'z" and
+    g :: "'x \<Rightarrow> 'y" and
+    X :: "'x set" and
+    Y :: "'y set" and
+    Z :: "'z set" and
+    z :: 'z
+  assumes
+    "bij_betw f Y Z" and
+    "bij_betw g X Y" and
+    "z \<in> Z"
+  shows "the_inv_into X (f \<circ> g) z = ((the_inv_into X g) \<circ> (the_inv_into Y f)) z"
+proof (clarsimp)
+  have el_Y: "the_inv_into Y f z \<in> Y"
+    using assms
+    by (meson bij_betw_apply bij_betw_the_inv_into)
+  hence "g (the_inv_into X g (the_inv_into Y f z)) = the_inv_into Y f z"
+    using assms
+    by (simp add: f_the_inv_into_f_bij_betw)
+  moreover have "f (the_inv_into Y f z) = z"
+    using el_Y assms
+    by (simp add: f_the_inv_into_f_bij_betw)
+  ultimately have "(f \<circ> g) (the_inv_into X g (the_inv_into Y f z)) = z"
+    by simp
+  hence 
+    "the_inv_into X (f \<circ> g) z = 
+      the_inv_into X (f \<circ> g) ((f \<circ> g) (the_inv_into X g (the_inv_into Y f z)))"
+    by presburger
+  also have 
+    "the_inv_into X (f \<circ> g) ((f \<circ> g) (the_inv_into X g (the_inv_into Y f z))) =
+      the_inv_into X g (the_inv_into Y f z)"
+    using assms
+    by (meson bij_betw_apply bij_betw_imp_inj_on bij_betw_the_inv_into 
+                bij_betw_trans the_inv_into_f_eq)
+  finally show "the_inv_into X (f \<circ> g) z = the_inv_into X g (the_inv_into Y f z)"
+    by blast
+qed
+
+lemma preimg_comp:
+  fixes
+    f :: "'x \<Rightarrow> 'y" and
+    g :: "'x \<Rightarrow> 'x" and
+    X :: "'x set" and
+    y :: 'y
+  shows
+    "preimg f (g ` X) y = g ` preimg (f \<circ> g) X y"
+proof (safe)
+  fix
+    x :: 'x
+  assume 
+    "x \<in> preimg f (g ` X) y"
+  hence "f x = y \<and> x \<in> g ` X"
+    by simp
+  then obtain x' :: 'x where "x' \<in> X" and "g x' = x" and "x' \<in> preimg (f \<circ> g) X y"
+    unfolding comp_def
+    by force
+  thus "x \<in> g ` preimg (f \<circ> g) X y"
+    by blast
+next
+   fix
+    x :: 'x
+  assume 
+    "x \<in> preimg (f \<circ> g) X y"
+  hence "f (g x) = y \<and> x \<in> X"
+    by simp
+  thus "g x \<in> preimg f (g ` X) y"
+    by simp
+qed
+
+subsection \<open>Rewrite Rules\<close>
 
 theorem rewrite_invar_as_equivar:
   fixes
@@ -221,7 +360,7 @@ next
     by (simp add: restrict_def)
 qed
 
-lemma extensional_univ:
+lemma simp_extensional_univ:
   "extensional_continuation f UNIV = f"
   unfolding If_def
   by simp
@@ -239,7 +378,7 @@ lemma extensional_continuation_subset:
   using assms
   by (simp add: subset_iff)
 
-lemma rel_ind_by_action_subset:
+lemma rel_ind_by_coinciding_action_on_subset_eq_restr:
   fixes
     X :: "'x set" and
     Y :: "'y set" and
@@ -267,7 +406,127 @@ proof (unfold rel_induced_by_action.simps)
     by simp
 qed
 
-subsubsection \<open>Invariance and Equivariance\<close>
+lemma coinciding_actions_ind_equal_rel:
+  fixes
+    X :: "'x set" and
+    Y :: "'y set" and
+    \<phi> :: "('x, 'y) binary_fun" and
+    \<phi>' :: "('x, 'y) binary_fun"
+  assumes
+    "\<forall>x \<in> X. \<forall>y \<in> Y. \<phi> x y = \<phi>' x y"
+  shows
+    "rel_induced_by_action X Y \<phi> = rel_induced_by_action X Y \<phi>'"
+  unfolding extensional_continuation.simps
+  using assms
+  by auto
+
+subsection \<open>Group Actions\<close>
+
+lemma const_id_is_grp_act:
+  fixes
+    G :: "'x monoid"
+  assumes
+    "group G"
+  shows
+    "group_action G UNIV (\<lambda>g. id)"
+proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def, safe)
+  show "group G"
+    using assms
+    by blast
+next
+  show "group (BijGroup UNIV)"
+    by (rule group_BijGroup)
+next
+  show "id \<in> carrier (BijGroup UNIV)"
+    unfolding BijGroup_def Bij_def
+    by simp
+  thus "id = id \<otimes>\<^bsub>BijGroup UNIV\<^esub> id"
+    using rewrite_mult_univ
+    by (metis comp_id)
+qed
+
+theorem grp_act_induces_set_grp_act:
+  fixes
+    G :: "'x monoid" and
+    Y :: "'y set" and
+    \<phi> :: "('x, 'y) binary_fun"
+  defines
+    "\<phi>_img \<equiv> (\<lambda>g. extensional_continuation (image (\<phi> g)) (Pow Y))"
+  assumes
+    grp_act: "group_action G Y \<phi>"
+  shows 
+    "group_action G (Pow Y) \<phi>_img"
+proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def, safe)
+  show "group G" 
+    using assms
+    unfolding group_action_def group_hom_def
+    by simp
+next
+  show "group (BijGroup (Pow Y))"
+    by (rule group_BijGroup)
+next
+  {
+    fix
+      g :: 'x
+    assume "g \<in> carrier G"
+    hence "bij_betw (\<phi> g) Y Y"
+      using grp_act
+      by (simp add: bij_betw_def group_action.inj_prop group_action.surj_prop)
+    hence "bij_betw (image (\<phi> g)) (Pow Y) (Pow Y)"
+      by (rule bij_betw_Pow)
+    moreover have "\<forall>A \<in> Pow Y. \<phi>_img g A = image (\<phi> g) A"
+      unfolding \<phi>_img_def
+      by simp
+    ultimately have "bij_betw (\<phi>_img g) (Pow Y) (Pow Y)"
+      using bij_betw_cong 
+      by fastforce
+    moreover have "\<phi>_img g \<in> extensional (Pow Y)"
+      unfolding \<phi>_img_def
+      by (simp add: extensional_def)
+    ultimately show "\<phi>_img g \<in> carrier (BijGroup (Pow Y))"
+      unfolding BijGroup_def Bij_def
+      by simp
+  }
+  note car_el =
+    \<open>\<And>g. g \<in> carrier G \<Longrightarrow> \<phi>_img g \<in> carrier (BijGroup (Pow Y))\<close>
+  fix
+    g :: 'x and h :: 'x
+  assume 
+    car_g: "g \<in> carrier G" and car_h: "h \<in> carrier G"
+  hence car_els: "\<phi>_img g \<in> carrier (BijGroup (Pow Y)) \<and> \<phi>_img h \<in> carrier (BijGroup (Pow Y))"
+    using car_el
+    by blast
+  hence h_closed: "\<forall>A. A \<in> Pow Y \<longrightarrow> \<phi>_img h A \<in> Pow Y"
+    unfolding BijGroup_def Bij_def
+    using bij_betw_apply 
+    by (metis Int_Collect partial_object.select_convs(1))
+  from car_els have 
+    "\<phi>_img g \<otimes>\<^bsub>BijGroup (Pow Y)\<^esub> \<phi>_img h = 
+      extensional_continuation (\<phi>_img g \<circ> \<phi>_img h) (Pow Y)"
+    using rewrite_mult
+    by blast
+  moreover have 
+    "\<forall>A. A \<notin> Pow Y \<longrightarrow> extensional_continuation (\<phi>_img g \<circ> \<phi>_img h) (Pow Y) A = undefined"
+    by simp
+  moreover have "\<forall>A. A \<notin> Pow Y \<longrightarrow> \<phi>_img (g \<otimes>\<^bsub>G\<^esub> h) A = undefined"
+    unfolding \<phi>_img_def
+    by simp
+  moreover have 
+    "\<forall>A. A \<in> Pow Y \<longrightarrow> extensional_continuation (\<phi>_img g \<circ> \<phi>_img h) (Pow Y) A = \<phi> g ` \<phi> h ` A"
+    using h_closed
+    by (simp add: \<phi>_img_def)
+  moreover have 
+    "\<forall>A. A \<in> Pow Y \<longrightarrow> \<phi>_img (g \<otimes>\<^bsub>G\<^esub> h) A = \<phi> g ` \<phi> h ` A"
+    unfolding \<phi>_img_def extensional_continuation.simps
+    using rewrite_grp_act_img[of G Y \<phi>] car_g car_h grp_act
+    by (metis PowD)
+  ultimately have "\<forall>A. \<phi>_img (g \<otimes>\<^bsub>G\<^esub> h) A = (\<phi>_img g \<otimes>\<^bsub>BijGroup (Pow Y)\<^esub> \<phi>_img h) A"
+    by metis
+  thus "\<phi>_img (g \<otimes>\<^bsub>G\<^esub> h) = \<phi>_img g \<otimes>\<^bsub>BijGroup (Pow Y)\<^esub> \<phi>_img h"
+    by blast
+qed
+
+subsection \<open>Invariance and Equivariance\<close>
 
 text \<open>
   It suffices to show invariance under the group action of a generating set of a group
@@ -354,6 +613,45 @@ proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
     by blast
 qed
 
+lemma invar_parameterized_fun:
+  fixes
+    f :: "'x \<Rightarrow> ('x \<Rightarrow> 'y)" and
+    rel :: "'x rel"
+  assumes
+    param_invar: "\<forall>x. satisfies (f x) (Invariance rel)" and
+    invar: "satisfies f (Invariance rel)"
+  shows
+    "satisfies (\<lambda>x. f x x) (Invariance rel)"
+  using invar param_invar 
+  by auto
+
+lemma invar_under_subset_rel:
+  fixes
+    f :: "'x \<Rightarrow> 'y" and
+    rel' :: "'x rel"
+  assumes
+    subset: "rel' \<subseteq> rel" and
+    invar: "satisfies f (Invariance rel)"
+  shows
+    "satisfies f (Invariance rel')"
+  using assms satisfies.simps
+  by auto
+
+lemma equivar_ind_by_act_coincide:
+  fixes
+    X :: "'x set" and
+    Y :: "'y set" and
+    f :: "'y \<Rightarrow> 'z" and
+    \<phi> :: "('x, 'y) binary_fun" and
+    \<phi>' :: "('x, 'y) binary_fun" and
+    \<psi> :: "('x, 'z) binary_fun"
+  assumes
+    "\<forall>x \<in> X. \<forall>y \<in> Y. \<phi> x y = \<phi>' x y"
+  shows
+    "satisfies f (equivar_ind_by_act X Y \<phi> \<psi>) = satisfies f (equivar_ind_by_act X Y \<phi>' \<psi>)"
+  using assms
+  by (auto simp add: rewrite_equivar_ind_by_act)
+
 lemma equivar_under_subset:
   fixes
     f :: "'x \<Rightarrow> 'y" and
@@ -386,34 +684,7 @@ lemma equivar_under_subset':
   unfolding satisfies.simps
   by blast
 
-lemma equivar_ind_by_act_coincide:
-  fixes
-    X :: "'x set" and
-    Y :: "'y set" and
-    f :: "'y \<Rightarrow> 'z" and
-    \<phi> :: "('x, 'y) binary_fun" and
-    \<phi>' :: "('x, 'y) binary_fun" and
-    \<psi> :: "('x, 'z) binary_fun"
-  assumes
-    "\<forall>x \<in> X. \<forall>y \<in> Y. \<phi> x y = \<phi>' x y"
-  shows
-    "satisfies f (equivar_ind_by_act X Y \<phi> \<psi>) = satisfies f (equivar_ind_by_act X Y \<phi>' \<psi>)"
-  using assms
-  by (auto simp add: rewrite_equivar_ind_by_act)
-
-lemma invar_under_subset_rel:
-  fixes
-    f :: "'x \<Rightarrow> 'y" and
-    rel' :: "'x rel"
-  assumes
-    subset: "rel' \<subseteq> rel" and
-    invar: "satisfies f (Invariance rel)"
-  shows
-    "satisfies f (Invariance rel')"
-  using assms satisfies.simps
-  by auto
-
-theorem equivar_preimg:
+theorem grp_act_equivar_f_imp_equivar_preimg:
   fixes
     f :: "'x \<Rightarrow> 'y" and
     domain\<^sub>f :: "'x set" and
@@ -510,59 +781,7 @@ next
     by auto
 qed
 
-subsubsection \<open>Function Composition\<close>
-
-lemma bij_app_to_set_of_sets:
-  fixes
-    f :: "'x \<Rightarrow> 'y"
-  assumes
-    "bij f"
-  shows
-    "bij (\<lambda>\<A>. {f ` A | A. A \<in> \<A>})"
-proof (unfold bij_def inj_def surj_def, safe)
-  {
-    fix
-      \<A> :: "'x set set" and \<B> :: "'x set set" and A :: "'x set"
-    assume 
-      "{f ` A | A. A \<in> \<A>} = {f ` B | B. B \<in> \<B>}" and "A \<in> \<A>"
-    hence "f ` A \<in> {f ` B | B. B \<in> \<B>}"
-      by blast
-    then obtain B :: "'x set" where el_Y': "B \<in> \<B>" and "f ` B = f ` A"
-      by auto
-    hence "the_inv f ` f ` B = the_inv f ` f ` A"
-      by simp
-    hence "B = A"
-      using image_inv_f_f assms \<open>f ` B = f ` A\<close> bij_betw_def
-      by metis
-    thus "A \<in> \<B>"
-      using el_Y'
-      by simp
-  }
-  note img_set_eq_imp_subs =
-    \<open>\<And>\<A> \<B> A. {f ` A | A. A \<in> \<A>} = {f ` B | B. B \<in> \<B>} \<Longrightarrow> A \<in> \<A> \<Longrightarrow> A \<in> \<B>\<close>
-  fix
-    \<A> :: "'x set set" and \<B> :: "'x set set" and A :: "'x set"
-  assume 
-    "{f ` A | A. A \<in> \<A>} = {f ` B | B. B \<in> \<B>}" and "A \<in> \<B>"
-  thus "A \<in> \<A>"
-    using img_set_eq_imp_subs[of \<B> \<A> A] \<comment> \<open>Symmetry of "="\<close>
-    by presburger
-next
-  fix
-    \<A> :: "'y set set"
-  have "\<forall>A. f ` (the_inv f) ` A = A"
-    using image_f_inv_f[of f] assms
-    by (metis bij_betw_def surj_imp_inv_eq the_inv_f_f)
-  hence "{A | A. A \<in> \<A>} = {f ` (the_inv f) ` A | A. A \<in> \<A>}"
-    by presburger
-  hence "\<A> = {f ` (the_inv f) ` A | A. A \<in> \<A>}"  
-    by simp
-  also have "{f ` (the_inv f) ` A | A. A \<in> \<A>} = 
-              {f ` A | A. A \<in> {(the_inv f) ` A | A. A \<in> \<A>}}"
-    by blast
-  finally show "\<exists>\<B>. \<A> = {f ` B | B. B \<in> \<B>}"
-    by blast
-qed
+subsubsection \<open>Invariance and Equivariance Function Composition\<close>
 
 lemma invar_comp:
   fixes
@@ -699,284 +918,6 @@ proof (unfold equivar_ind_by_act_def, clarsimp, safe)
     by simp
   thus "\<phi> g x \<in> \<Union> ((`) (\<phi> g) ` \<X>)"
     using \<open>x \<in> X\<close>
-    by blast
-qed
-
-lemma un_left_inv_singleton_set_system:
-  "\<Union> \<circ> singleton_set_system = id"
-proof
-  fix
-    X :: "'x set"
-  have "(\<Union> \<circ> singleton_set_system) X = {x. \<exists>x' \<in> singleton_set_system X. x \<in> x'}"
-    by auto
-  also have "{x. \<exists>x' \<in> singleton_set_system X. x \<in> x'} = {x. {x} \<in> singleton_set_system X}"
-    by auto
-  also have "{x. {x} \<in> singleton_set_system X} = {x. {x} \<in> {{x} | x. x \<in> X}}"
-    by simp
-  also have "{x. {x} \<in> {{x} | x. x \<in> X}} = {x. x \<in> X}"
-    by simp
-  finally show "(\<Union> \<circ> singleton_set_system) X = id X"
-    by simp
-qed
-
-lemma the_inv_comp:
-  fixes
-    f :: "'y \<Rightarrow> 'z" and
-    g :: "'x \<Rightarrow> 'y" and
-    X :: "'x set" and
-    Y :: "'y set" and
-    Z :: "'z set" and
-    z :: 'z
-  assumes
-    "bij_betw f Y Z" and
-    "bij_betw g X Y" and
-    "z \<in> Z"
-  shows "the_inv_into X (f \<circ> g) z = ((the_inv_into X g) \<circ> (the_inv_into Y f)) z"
-proof (clarsimp)
-  have el_Y: "the_inv_into Y f z \<in> Y"
-    using assms
-    by (meson bij_betw_apply bij_betw_the_inv_into)
-  hence "g (the_inv_into X g (the_inv_into Y f z)) = the_inv_into Y f z"
-    using assms
-    by (simp add: f_the_inv_into_f_bij_betw)
-  moreover have "f (the_inv_into Y f z) = z"
-    using el_Y assms
-    by (simp add: f_the_inv_into_f_bij_betw)
-  ultimately have "(f \<circ> g) (the_inv_into X g (the_inv_into Y f z)) = z"
-    by simp
-  hence 
-    "the_inv_into X (f \<circ> g) z = 
-      the_inv_into X (f \<circ> g) ((f \<circ> g) (the_inv_into X g (the_inv_into Y f z)))"
-    by presburger
-  also have 
-    "the_inv_into X (f \<circ> g) ((f \<circ> g) (the_inv_into X g (the_inv_into Y f z))) =
-      the_inv_into X g (the_inv_into Y f z)"
-    using assms
-    by (meson bij_betw_apply bij_betw_imp_inj_on bij_betw_the_inv_into 
-                bij_betw_trans the_inv_into_f_eq)
-  finally show "the_inv_into X (f \<circ> g) z = the_inv_into X g (the_inv_into Y f z)"
-    by blast
-qed
-
-lemma preimg_comp:
-  fixes
-    f :: "'x \<Rightarrow> 'y" and
-    g :: "'x \<Rightarrow> 'x" and
-    X :: "'x set" and
-    y :: 'y
-  shows
-    "preimg f (g ` X) y = g ` preimg (f \<circ> g) X y"
-proof (safe)
-  fix
-    x :: 'x
-  assume 
-    "x \<in> preimg f (g ` X) y"
-  hence "f x = y \<and> x \<in> g ` X"
-    by simp
-  then obtain x' :: 'x where "x' \<in> X" and "g x' = x" and "x' \<in> preimg (f \<circ> g) X y"
-    unfolding comp_def
-    by force
-  thus "x \<in> g ` preimg (f \<circ> g) X y"
-    by blast
-next
-   fix
-    x :: 'x
-  assume 
-    "x \<in> preimg (f \<circ> g) X y"
-  hence "f (g x) = y \<and> x \<in> X"
-    by simp
-  thus "g x \<in> preimg f (g ` X) y"
-    by simp
-qed
-  
-subsubsection \<open>Group Actions\<close>
-
-lemma const_id_is_grp_act:
-  fixes
-    G :: "'x monoid"
-  assumes
-    "group G"
-  shows
-    "group_action G UNIV (\<lambda>g. id)"
-proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def, safe)
-  show "group G"
-    using assms
-    by blast
-next
-  show "group (BijGroup UNIV)"
-    by (rule group_BijGroup)
-next
-  show "id \<in> carrier (BijGroup UNIV)"
-    unfolding BijGroup_def Bij_def
-    by simp
-  thus "id = id \<otimes>\<^bsub>BijGroup UNIV\<^esub> id"
-    using rewrite_mult_univ
-    by (metis comp_id)
-qed
-
-lemma invar_param_fun:
-  fixes
-    f :: "'x \<Rightarrow> ('x \<Rightarrow> 'y)" and
-    rel :: "'x rel"
-  assumes
-    param_invar: "\<forall>x. satisfies (f x) (Invariance rel)" and
-    invar: "satisfies f (Invariance rel)"
-  shows
-    "satisfies (\<lambda>x. f x x) (Invariance rel)"
-  using invar param_invar 
-  by auto
-
-definition map_monoid :: "'x set \<Rightarrow> ('x \<Rightarrow> 'x) monoid" where
-  "map_monoid X = \<lparr>carrier = {f :: 'x \<Rightarrow> 'x. f ` X \<subseteq> X}, mult = comp, one = id\<rparr>"
-
-lemma monoid_map_monoid: 
-  fixes
-    X :: "'x set"
-  shows "monoid (map_monoid X)"
-  unfolding monoid_def map_monoid_def
-  by auto
-
-lemma rel_induced_by_action_coincide:
-  fixes
-    X :: "'x set" and
-    Y :: "'y set" and
-    \<phi> :: "('x, 'y) binary_fun" and
-    \<phi>' :: "('x, 'y) binary_fun"
-  assumes
-    "\<forall>x \<in> X. \<forall>y \<in> Y. \<phi> x y = \<phi>' x y"
-  shows
-    "rel_induced_by_action X Y \<phi> = rel_induced_by_action X Y \<phi>'"
-  unfolding extensional_continuation.simps
-  using assms
-  by auto
-
-lemma rel_induced_by_monoid_action_refl:
-  fixes
-    X :: "'x monoid" and
-    Y :: "'y set" and
-    \<phi> :: "('x, 'y) binary_fun"
-  assumes
-    hom: "\<phi> \<in> hom X (map_monoid Y)" and
-    one: "\<phi> \<one>\<^bsub>X\<^esub> = \<one>\<^bsub>map_monoid Y\<^esub>" and
-    mon: "monoid X"
-  shows "refl_on Y (rel_induced_by_action (carrier X) Y \<phi>)"
-proof (unfold refl_on_def, clarsimp, safe)
-  fix
-    y :: 'y
-  assume
-    el: "y \<in> Y"
-  interpret monoid: monoid X
-    using assms
-    by blast
-  interpret monoid: monoid "map_monoid Y"
-    by (rule monoid_map_monoid)
-  have "\<one>\<^bsub>X\<^esub> \<in> carrier X"
-    by simp
-  thus "\<exists>x \<in> carrier X. \<phi> x y = y"
-    using el one
-    unfolding map_monoid_def
-    by force
-qed
-
-lemma grp_act_is_monoid_act:
-  fixes
-    X :: "'x monoid" and
-    Y :: "'y set" and
-    \<phi> :: "('x, 'y) binary_fun"
-  assumes
-    "group_action X Y \<phi>"
-  shows
-    hom: "\<phi> \<in> hom X (BijGroup Y)" and
-    one: "\<phi> \<one>\<^bsub>X\<^esub> = \<one>\<^bsub>BijGroup Y\<^esub>"
-proof -
-  show "\<phi> \<in> hom X (BijGroup Y)"
-    using assms
-    unfolding group_action_def
-    by simp
-next
-  show "\<phi> \<one>\<^bsub>X\<^esub> = \<one>\<^bsub>BijGroup Y\<^esub>"
-    using assms group_action_def group_hom.hom_one 
-    by blast
-qed
-
-theorem grp_act_induces_set_grp_act:
-  fixes
-    G :: "'x monoid" and
-    Y :: "'y set" and
-    \<phi> :: "('x, 'y) binary_fun"
-  defines
-    "\<phi>_img \<equiv> (\<lambda>g. extensional_continuation (image (\<phi> g)) (Pow Y))"
-  assumes
-    grp_act: "group_action G Y \<phi>"
-  shows 
-    "group_action G (Pow Y) \<phi>_img"
-proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def, safe)
-  show "group G" 
-    using assms
-    unfolding group_action_def group_hom_def
-    by simp
-next
-  show "group (BijGroup (Pow Y))"
-    by (rule group_BijGroup)
-next
-  {
-    fix
-      g :: 'x
-    assume "g \<in> carrier G"
-    hence "bij_betw (\<phi> g) Y Y"
-      using grp_act
-      by (simp add: bij_betw_def group_action.inj_prop group_action.surj_prop)
-    hence "bij_betw (image (\<phi> g)) (Pow Y) (Pow Y)"
-      by (rule bij_betw_Pow)
-    moreover have "\<forall>A \<in> Pow Y. \<phi>_img g A = image (\<phi> g) A"
-      unfolding \<phi>_img_def
-      by simp
-    ultimately have "bij_betw (\<phi>_img g) (Pow Y) (Pow Y)"
-      using bij_betw_cong 
-      by fastforce
-    moreover have "\<phi>_img g \<in> extensional (Pow Y)"
-      unfolding \<phi>_img_def
-      by (simp add: extensional_def)
-    ultimately show "\<phi>_img g \<in> carrier (BijGroup (Pow Y))"
-      unfolding BijGroup_def Bij_def
-      by simp
-  }
-  note car_el =
-    \<open>\<And>g. g \<in> carrier G \<Longrightarrow> \<phi>_img g \<in> carrier (BijGroup (Pow Y))\<close>
-  fix
-    g :: 'x and h :: 'x
-  assume 
-    car_g: "g \<in> carrier G" and car_h: "h \<in> carrier G"
-  hence car_els: "\<phi>_img g \<in> carrier (BijGroup (Pow Y)) \<and> \<phi>_img h \<in> carrier (BijGroup (Pow Y))"
-    using car_el
-    by blast
-  hence h_closed: "\<forall>A. A \<in> Pow Y \<longrightarrow> \<phi>_img h A \<in> Pow Y"
-    unfolding BijGroup_def Bij_def
-    using bij_betw_apply 
-    by (metis Int_Collect partial_object.select_convs(1))
-  from car_els have 
-    "\<phi>_img g \<otimes>\<^bsub>BijGroup (Pow Y)\<^esub> \<phi>_img h = 
-      extensional_continuation (\<phi>_img g \<circ> \<phi>_img h) (Pow Y)"
-    using rewrite_mult
-    by blast
-  moreover have 
-    "\<forall>A. A \<notin> Pow Y \<longrightarrow> extensional_continuation (\<phi>_img g \<circ> \<phi>_img h) (Pow Y) A = undefined"
-    by simp
-  moreover have "\<forall>A. A \<notin> Pow Y \<longrightarrow> \<phi>_img (g \<otimes>\<^bsub>G\<^esub> h) A = undefined"
-    unfolding \<phi>_img_def
-    by simp
-  moreover have 
-    "\<forall>A. A \<in> Pow Y \<longrightarrow> extensional_continuation (\<phi>_img g \<circ> \<phi>_img h) (Pow Y) A = \<phi> g ` \<phi> h ` A"
-    using h_closed
-    by (simp add: \<phi>_img_def)
-  moreover have 
-    "\<forall>A. A \<in> Pow Y \<longrightarrow> \<phi>_img (g \<otimes>\<^bsub>G\<^esub> h) A = \<phi> g ` \<phi> h ` A"
-    unfolding \<phi>_img_def extensional_continuation.simps
-    using rewrite_grp_act_img[of G Y \<phi>] car_g car_h grp_act
-    by (metis PowD)
-  ultimately have "\<forall>A. \<phi>_img (g \<otimes>\<^bsub>G\<^esub> h) A = (\<phi>_img g \<otimes>\<^bsub>BijGroup (Pow Y)\<^esub> \<phi>_img h) A"
-    by metis
-  thus "\<phi>_img (g \<otimes>\<^bsub>G\<^esub> h) = \<phi>_img g \<otimes>\<^bsub>BijGroup (Pow Y)\<^esub> \<phi>_img h"
     by blast
 qed
   

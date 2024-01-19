@@ -120,11 +120,8 @@ proof (unfold equivar_ind_by_act_def equivar_prop_set_valued_def,
     using \<open>x \<in> X\<close> grp_el invar_dist_image invar_d grp_act
     by metis
   have "\<forall>y. preimg f domain\<^sub>f (\<psi> g y) = (\<phi> g) ` (preimg f domain\<^sub>f y)"
-    using equivar_preimg[of G X \<phi> \<psi> domain\<^sub>f f g] assms grp_el 
+    using grp_act_equivar_f_imp_equivar_preimg[of G X \<phi> \<psi> domain\<^sub>f f g] assms grp_el 
     by blast
-  \<comment> \<open>We want to apply lemma rewrite-arg-min-set to show that the arg-min-set for
-    ?x' is the image of the arg-min-set for ?x under $\psi g$, thus showing equivariance
-    of the minimizer function.\<close>
   hence "\<forall>y. d ?x' ` preimg f domain\<^sub>f (\<psi> g y) = d ?x' ` (\<phi> g) ` (preimg f domain\<^sub>f y)"
     by presburger
   hence "\<forall>y. Inf (d ?x' ` preimg f domain\<^sub>f (\<psi> g y)) = Inf (d x ` preimg f domain\<^sub>f y)"
@@ -234,36 +231,6 @@ proof -
   ultimately show ?thesis
     using invar_comp
     by simp
-qed
-
-theorem monoid_tot_invar_dist_imp_invar_minimizer:
-  fixes
-    f :: "'x \<Rightarrow> 'y" and
-    domain\<^sub>f :: "'x set" and
-    d :: "'x Distance" and
-    img :: "'y set" and
-    X :: "'x set" and
-    G :: "'z monoid" and
-    \<phi> :: "('z, 'x) binary_fun"
-  defines
-    "rel \<equiv> rel_induced_by_action (carrier G) X \<phi>"
-  assumes        
-    hom: "\<phi> \<in> hom G (map_monoid X)" and
-    one: "\<phi> \<one>\<^bsub>G\<^esub> = \<one>\<^bsub>map_monoid X\<^esub>" and
-    "monoid G" and "domain\<^sub>f \<subseteq> X" and
-    tot_invar_d: "totally_invariant_dist d rel"
-  shows "satisfies (minimizer f domain\<^sub>f d img) (Invariance rel)"
-proof -
-  have "refl_on X rel" 
-    using \<open>monoid G\<close> hom one rel_induced_by_monoid_action_refl 
-    unfolding rel_def 
-    by blast
-  hence "refl_on domain\<^sub>f (Restr rel domain\<^sub>f)"
-    using \<open>domain\<^sub>f \<subseteq> X\<close>
-    by (simp add: refl_on_def subset_eq)
-  thus ?thesis
-    using tot_invar_d
-    by (rule refl_rel_and_tot_invar_dist_imp_invar_minimizer)
 qed
 
 theorem grp_act_invar_dist_and_invar_f_imp_invar_minimizer:
@@ -385,7 +352,7 @@ lemma (in result) \<R>\<^sub>\<W>_is_minimizer:
                       (singleton_set_system (limit_set (alts_\<E> E) UNIV)) E))"
 proof (standard)
   fix
-    E :: "('a, 'v) Election"
+    E :: "('a, 'v) Election"                                                    
   let ?min = "(minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d 
                           (singleton_set_system (limit_set (alts_\<E> E) UNIV)) E)"
   have 
@@ -393,11 +360,8 @@ proof (standard)
               (closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E) 
               (singleton_set_system (limit_set (alts_\<E> E) UNIV))"
     by simp
-  also have 
-    "arg_min_set 
-              (closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E) 
-              (singleton_set_system (limit_set (alts_\<E> E) UNIV))
-      = singleton_set_system (arg_min_set (score d C E) (limit_set (alts_\<E> E) UNIV))"
+  also have                                                         
+    "... = singleton_set_system (arg_min_set (score d C E) (limit_set (alts_\<E> E) UNIV))"
   proof (safe)
     fix 
       R :: "'r set"
@@ -469,7 +433,7 @@ proof (standard)
     by simp
   finally have 
     "\<Union>?min = \<Union>(singleton_set_system (fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) E))"
-    by presburger
+    by presburger                            
   thus "fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) E = \<Union>?min"
     using un_left_inv_singleton_set_system
     by auto
@@ -500,7 +464,7 @@ proof -
     by auto
   ultimately have 
     "satisfies (\<lambda>E. ?min E E) (Invariance rel)"
-    using invar_param_fun[of ?min rel]
+    using invar_parameterized_fun[of ?min rel]
     by blast
   also have "(\<lambda>E. ?min E E) = fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)"
     using \<R>\<^sub>\<W>_is_minimizer comp_def
@@ -522,7 +486,6 @@ theorem (in result) invar_dist_cons_imp_invar_dr_rule:
     G :: "'x monoid" and
     \<phi> :: "('x, ('a, 'v) Election) binary_fun" and
     B :: "('a, 'v) Election set" 
-    \<comment> \<open>Base set of elections on which the DR rule is invariant, e.g. valid-elections.\<close>
   defines
     "rel \<equiv> rel_induced_by_action (carrier G) B \<phi>" and
     "rel' \<equiv> rel_induced_by_action (carrier G) (\<K>_els C) \<phi>"
@@ -549,7 +512,7 @@ proof -
     by auto
   ultimately have 
     "satisfies (\<lambda>E. ?min E E) (Invariance rel)"
-    using invar_param_fun[of ?min rel]
+    using invar_parameterized_fun[of ?min rel]
     by blast
   also have "(\<lambda>E. ?min E E) = fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)"
     using \<R>\<^sub>\<W>_is_minimizer comp_def
@@ -599,7 +562,7 @@ proof -
                                 (singleton_set_system (limit_set (alts_\<E> E) UNIV)) E"
   let ?min = "(\<lambda>E. \<Union> \<circ> (minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d 
                                     (singleton_set_system (limit_set (alts_\<E> E) UNIV))))"
-  let ?\<psi>' = "set_action (set_action \<psi>)" \<comment> \<open>Apply $\psi$ to a set of sets.\<close>
+  let ?\<psi>' = "set_action (set_action \<psi>)"
   let ?equivar_prop_global_set_valued' = "equivar_ind_by_act (carrier G) B \<phi> ?\<psi>'"
   have "\<forall>E g. g \<in> carrier G \<longrightarrow> E \<in> B \<longrightarrow>
           singleton_set_system (limit_set (alts_\<E> (\<phi> g E)) UNIV) =
@@ -657,7 +620,6 @@ proof -
   moreover have "(\<lambda>E. ?min E E) = fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)"
     using \<R>\<^sub>\<W>_is_minimizer comp_def
     by metis
-  \<comment> \<open>As all components of the result are equivariant, the whole result is equivariant.\<close>
   ultimately have equivar_\<R>\<^sub>\<W>: 
     "satisfies (fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)) equivar_prop_global_set_valued"
     by simp
@@ -700,7 +662,7 @@ proof -
   hence 
     "rel_induced_by_action (carrier anonymity\<^sub>\<G>) (\<K>_els C) (\<phi>_anon valid_elections) =
       rel_induced_by_action (carrier anonymity\<^sub>\<G>) (\<K>_els C) (\<phi>_anon (\<K>_els C))"
-    using rel_induced_by_action_coincide[of 
+    using coinciding_actions_ind_equal_rel[of 
           "carrier anonymity\<^sub>\<G>" "\<K>_els C" "\<phi>_anon valid_elections" "\<phi>_anon (\<K>_els C)"] 
     by metis
   hence

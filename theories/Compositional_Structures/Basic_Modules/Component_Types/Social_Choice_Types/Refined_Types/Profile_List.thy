@@ -32,7 +32,8 @@ fun pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> ('a, nat) Profile" where
 lemma prof_abstr_presv_size:
   fixes p :: "'a Profile_List"
   shows "length p = length (to_list {0..<length p} (pl_to_pr_\<alpha> p))"
-  sorry
+  unfolding pl_to_pr_\<alpha>.simps to_list.simps
+  by simp
 
 text \<open>
   A profile on a finite set of alternatives A contains only ballots that are
@@ -48,10 +49,9 @@ lemma refinement:
     p :: "'a Profile_List"
   assumes "profile_l A p"
   shows "profile {0..<length p} A (pl_to_pr_\<alpha> p)"
-  sorry
-(*proof (unfold profile_def, intro allI impI)
+proof (unfold profile_def, safe)
   fix i :: nat
-  assume in_range: "i < length (pl_to_pr_\<alpha> p)"
+  assume in_range: "i \<in> {0..<length p}"
   moreover have "well_formed_l (p!i)"
     using assms in_range
     unfolding profile_l_def
@@ -60,10 +60,10 @@ lemma refinement:
     using assms in_range
     unfolding profile_l_def
     by simp
-  ultimately show "linear_order_on A ((pl_to_pr_\<alpha> p)!i)"
+  ultimately show "linear_order_on A (pl_to_pr_\<alpha> p i)"
     using lin_ord_equiv length_map nth_map
     unfolding pl_to_pr_\<alpha>.simps
-    by metis
-qed*)
+    by auto
+qed
 
 end

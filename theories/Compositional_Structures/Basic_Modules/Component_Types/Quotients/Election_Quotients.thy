@@ -165,7 +165,6 @@ text \<open>
 theorem anonymity\<^sub>\<Q>_iso:
   assumes
     "infinite (UNIV::('v set))" 
-    \<comment> \<open>Assume an infinite voter universe so that we can choose arbitrarily large voter sets.\<close>
   shows
     "bij_betw (anon_cls_to_vec::('a::finite, 'v) Election set \<Rightarrow> nat^('a Ordered_Preference)) 
               (anonymity\<^sub>\<Q> (UNIV::'a set)) (UNIV::(nat^('a Ordered_Preference)) set)"
@@ -195,8 +194,9 @@ proof (unfold bij_betw_def inj_on_def, standard, standard, standard, standard)
   have 
     "equiv valid_elections (anonymity\<^sub>\<R> valid_elections)"
     using rel_ind_by_grp_act_equiv[of anonymity\<^sub>\<G> valid_elections "\<phi>_anon valid_elections"]
-          rel_ind_by_action_subset[of "fixed_alt_elections UNIV" valid_elections
-                                      "carrier anonymity\<^sub>\<G>" "\<phi>_anon valid_elections"]
+          rel_ind_by_coinciding_action_on_subset_eq_restr[
+            of "fixed_alt_elections UNIV" valid_elections
+               "carrier anonymity\<^sub>\<G>" "\<phi>_anon valid_elections"]
     by (simp add: anon_grp_act.group_action_axioms)
   moreover have
     "\<forall>\<pi> \<in> carrier anonymity\<^sub>\<G>.
@@ -207,7 +207,7 @@ proof (unfold bij_betw_def inj_on_def, standard, standard, standard, standard)
     by simp
   ultimately have equiv_rel:
     "equiv (fixed_alt_elections UNIV) (anonymity\<^sub>\<R> (fixed_alt_elections UNIV))"
-    using subset rel_ind_by_action_subset[of
+    using subset rel_ind_by_coinciding_action_on_subset_eq_restr[of
             "fixed_alt_elections UNIV" valid_elections "carrier anonymity\<^sub>\<G>" 
             "\<phi>_anon (fixed_alt_elections UNIV)" "\<phi>_anon valid_elections"]
           equiv_rel_restr[
@@ -301,10 +301,11 @@ next
   have 
     "equiv valid_elections (anonymity\<^sub>\<R> valid_elections)"
     using rel_ind_by_grp_act_equiv[of anonymity\<^sub>\<G> valid_elections "\<phi>_anon valid_elections"]
-          rel_ind_by_action_subset[of "fixed_alt_elections UNIV" valid_elections
-                                      "carrier anonymity\<^sub>\<G>" "\<phi>_anon valid_elections"]
+          rel_ind_by_coinciding_action_on_subset_eq_restr[
+            of "fixed_alt_elections UNIV" valid_elections
+               "carrier anonymity\<^sub>\<G>" "\<phi>_anon valid_elections"]
     by (simp add: anon_grp_act.group_action_axioms)
-  \<comment> \<open>TODO: Remove this duplicate, already shown in the previous subgoal...\<close>
+  (* TODO: Remove this duplicate, already shown in the previous subgoal... *)
   moreover have
     "\<forall>\<pi> \<in> carrier anonymity\<^sub>\<G>.
       \<forall>E\<in>fixed_alt_elections UNIV. 
@@ -314,7 +315,7 @@ next
     by simp
   ultimately have equiv_rel:
     "equiv (fixed_alt_elections UNIV) (anonymity\<^sub>\<R> (fixed_alt_elections UNIV))"
-    using subset rel_ind_by_action_subset[of
+    using subset rel_ind_by_coinciding_action_on_subset_eq_restr[of
             "fixed_alt_elections UNIV" valid_elections "carrier anonymity\<^sub>\<G>" 
             "\<phi>_anon (fixed_alt_elections UNIV)" "\<phi>_anon valid_elections"]
           equiv_rel_restr[
@@ -931,7 +932,6 @@ text \<open>
 theorem anon_hom\<^sub>\<Q>_iso:
   assumes
     "infinite (UNIV::('v set))" 
-    \<comment> \<open>Assume an infinite voter universe so that we can choose arbitrarily large voter sets.\<close>
   shows
     "bij_betw (anon_hom_cls_to_vec::('a::finite, 'v) Election set \<Rightarrow> rat^('a Ordered_Preference)) 
               (anon_hom\<^sub>\<Q> (UNIV::'a set)) (vote_simplex :: (rat^('a Ordered_Preference)) set)"
@@ -1373,10 +1373,6 @@ next
     hence "finite {snd (fraction p) |p. p \<in> UNIV}"
       using finite_Atleast_Atmost_nat 
       by fastforce
-    (* TODO Why does this work?
-    have "prod (\<lambda>x. x) {n::nat. n > 0} > 0"
-      by (simp add: prod_pos) 
-    *)
     have pos_prod: "?prod > 0"
       using pos
       by (simp add: prod_pos)
@@ -1477,9 +1473,6 @@ next
       "\<forall>E \<in> anon_hom\<^sub>\<R> (fixed_alt_elections UNIV) `` {(UNIV, V, prof)}.
         \<forall>p. vote_fraction (ord2pref p) E = x'$p"
       by simp
-    \<comment> \<open>The percentages of voters voting for each linearly ordered profile in
-        any election related to (UNIV, V, prof) under the anonymity relation
-        equal the entries of the given vector.\<close>
     hence
       "\<forall>E \<in> anon_hom\<^sub>\<R> (fixed_alt_elections UNIV) `` {(UNIV, V, prof)}.
         \<forall>p. vote_fraction (ord2pref p) E = x'$p"
@@ -1492,7 +1485,7 @@ next
     moreover have
       "\<forall>x \<in> \<rat>. \<forall>y. complex_of_rat y = complex_of_real x \<longrightarrow> y = the_inv real_of_rat x"
       unfolding Rats_def
-      sorry (* Do some type magic? *)
+      sorry (* Manual type inference? *)
     ultimately have all_eq_vec:
       "\<forall>p. \<forall>E \<in> anon_hom\<^sub>\<R> (fixed_alt_elections UNIV) `` {(UNIV, V, prof)}.
        vote_fraction (ord2pref p) E = x$p"

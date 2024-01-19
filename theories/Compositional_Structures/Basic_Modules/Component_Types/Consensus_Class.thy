@@ -608,7 +608,7 @@ proof -
     "satisfies strong_unanimity\<^sub>\<C>
      (Invariance (rel_induced_by_action (carrier neutrality\<^sub>\<G>) domain (\<phi>_neutr valid_elections)))"
     unfolding consensus_neutrality.simps neutrality\<^sub>\<R>.simps
-    using coincides rel_induced_by_action_coincide
+    using coincides coinciding_actions_ind_equal_rel
     by metis
   moreover have
     "satisfies (elect_r \<circ> fun\<^sub>\<E> elect_first_module)
