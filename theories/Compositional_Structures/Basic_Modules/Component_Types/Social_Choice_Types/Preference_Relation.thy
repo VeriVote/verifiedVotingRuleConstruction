@@ -28,7 +28,7 @@ text \<open>
 type_synonym 'a Preference_Relation = "'a rel"
 
 type_synonym 'a Vote = "'a set \<times> 'a Preference_Relation"
-                             
+
 fun is_less_preferred_than ::
   "'a \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> bool" ("_ \<preceq>\<^sub>_ _" [50, 1000, 51] 50) where
     "a \<preceq>\<^sub>r b = ((a, b) \<in> r)"
@@ -800,7 +800,7 @@ proof (unfold rank.simps above_def, clarify)
   hence "finite {a'. (b, a') \<in> r}"
     using rel_b
     by (simp add: Collect_mono rev_finite_subset)
-  moreover with this
+  moreover from this
   have "finite {a'. (a, a') \<in> r}"
     using card_eq card_gt_0_iff rel_refl_b
     by force

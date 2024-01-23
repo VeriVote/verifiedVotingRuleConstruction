@@ -6,7 +6,7 @@
 section \<open>Kemeny Rule\<close>
 
 theory Kemeny_Rule
-  imports 
+  imports
     "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance_Rationalization"
     "Compositional_Structures/Basic_Modules/Component_Types/Distance_Rationalization_Symmetry"
     "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Quotient_Distance_Rationalization"
@@ -40,29 +40,27 @@ proof (unfold kemeny_rule.simps swap_\<R>.simps)
   have "distance_anonymity ?swap_dist"
     using l_one_is_sym symmetric_norm_imp_distance_anonymous[of l_one]
     by simp
-  thus "social_choice_result.anonymity 
+  thus "social_choice_result.anonymity
           (social_choice_result.distance_\<R> ?swap_dist strong_unanimity)"
-    using strong_unanimity_anonymous 
+    using strong_unanimity_anonymous
           social_choice_result.anonymous_distance_and_consensus_imp_rule_anonymity
     by metis
 qed
 
 subsection \<open>Neutrality Property\<close>
 
-lemma swap_dist_neutral:
-  "distance_neutrality valid_elections (votewise_distance swap l_one)"
+lemma swap_dist_neutral: "distance_neutrality valid_elections (votewise_distance swap l_one)"
   using neutral_dist_imp_neutral_votewise_dist swap_neutral
   by blast
 
-theorem kemeny_rule_neutral: 
-  "social_choice_properties.neutrality valid_elections kemeny_rule"  
+theorem kemeny_rule_neutral: "social_choice_properties.neutrality valid_elections kemeny_rule"
   using strong_unanimity_neutral' swap_dist_neutral
         strong_unanimity_closed_under_neutrality
-        social_choice_properties.neutr_dist_and_cons_imp_neutr_dr[of 
+        social_choice_properties.neutr_dist_and_cons_imp_neutr_dr[of
           "votewise_distance swap l_one" strong_unanimity]
   unfolding kemeny_rule.simps swap_\<R>.simps
   by blast
-    
+
 subsection \<open>Datatype Instantiation\<close>
 
 datatype alternative = a | b | c | d

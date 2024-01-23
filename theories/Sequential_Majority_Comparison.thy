@@ -199,8 +199,7 @@ proof -
     using assms pass_one_mod_def_one
     by simp
   have 20000: "non_blocking (plurality_rule\<down>)"
-    (* by simp *)
-    sorry
+    by simp
   have 0020: "disjoint_compatibility ?pass2 ?drop2"
     using assms
     by simp (* disj_compat_comm *)
@@ -208,9 +207,8 @@ proof -
     using assms
     by simp
   have 1001: "non_electing ?plurality_defer"
-    using 00011 00012
-    (* by simp *)
-    sorry
+    using 00011 00012 seq_comp_presv_non_electing
+    by blast
   have 2000: "non_blocking ?pass2"
     using assms
     by simp
@@ -223,9 +221,8 @@ proof -
     (* by simp *)
     sorry
   have 100: "non_electing ?compare_two"
-    using 1000 1001
-    (* by simp *)
-    sorry
+    using 1000 1001 seq_comp_presv_non_electing
+    by simp
   have 101: "non_electing ?drop2"
     using assms
     by simp
@@ -239,9 +236,8 @@ proof -
     by simp
 
   have 10: "non_electing ?eliminator"
-    using 100 101 102
-    (* by simp *)
-    sorry
+    using 100 101 102 conserv_max_agg_presv_non_electing
+    by blast
   have 20: "eliminates 1 ?eliminator"
     using 200 100 201 002 par_comp_elim_one
     by simp
@@ -295,16 +291,14 @@ proof -
     using assms
     by simp (* dl_inv_imp_def_mono pass_mod_dl_inv *)
   have 20000: "non_blocking (plurality_rule\<down>)"
-    (* by simp *) (* rev_comp_non_blocking plurality_electing *)
-    sorry
+    by simp (* rev_comp_non_blocking plurality_electing *)
   have 0000: "defer_lift_invariance ?pass2"
     using assms
-    (* by simp *) (* pass_mod_dl_inv *)
-    sorry
+    by simp (* pass_mod_dl_inv *)
   have 0001: "defer_lift_invariance ?plurality_defer"
-    using 00010 00011 00012 00013 00014
-    (* by simp *) (* def_inv_mono_imp_def_lift_inv *)
-    sorry
+    using 00010 00012 00013 00014 def_inv_mono_imp_def_lift_inv
+    unfolding pass_module.simps only_voters_vote_def
+    by blast (* def_inv_mono_imp_def_lift_inv *)
   have 0020: "disjoint_compatibility ?pass2 ?drop2"
     using assms
     by simp (* disj_compat_comm drop_pass_disj_compat *)
@@ -312,9 +306,8 @@ proof -
     using assms
     by simp (* pass_mod_non_electing *)
   have 1001: "non_electing ?plurality_defer"
-    using 00011 00012
-    (* by simp *) (* seq_comp_presv_non_electing *)
-    sorry
+    using 00011 00012 seq_comp_presv_non_electing
+    by blast (* seq_comp_presv_non_electing *)
   have 2000: "non_blocking ?pass2"
     using assms
     by simp (* pass_mod_non_blocking *)
@@ -336,9 +329,8 @@ proof -
          plurality_sound pass_mod_sound *)
     sorry
   have 100: "non_electing ?compare_two"
-    using 1000 1001
-    (* by simp *) (* seq_comp_presv_non_electing *)
-    sorry
+    using 1000 1001 seq_comp_presv_non_electing
+    by simp (* seq_comp_presv_non_electing *)
   have 101: "non_electing ?drop2"
     using assms
     by simp (* drop_mod_non_electing *)
@@ -355,9 +347,8 @@ proof -
     using 000 001 002 par_comp_def_lift_inv
     by blast (* par_comp_def_lift_inv *)
   have 10: "non_electing ?eliminator"
-    using 100 101 102
-    (* by simp *) (* conserv_agg_presv_non_electing *)
-    sorry
+    using 100 101 conserv_max_agg_presv_non_electing
+    by blast (* conserv_agg_presv_non_electing *)
   have 20: "eliminates 1 ?eliminator"
     using 200 100 201 002 par_comp_elim_one
     by simp
@@ -367,9 +358,8 @@ proof -
     (* by simp *) (* loop_comp_presv_def_lift_inv *)
     sorry
   have 1: "non_electing ?loop"
-    using 10
-    (* by simp *) (* loop_comp_presv_non_electing *)
-    sorry
+    using 10 loop_comp_presv_non_electing
+    by simp (* loop_comp_presv_non_electing *)
   have 2: "defers 1 ?loop"
     using 10 20
     (* by simp *) (* iter_elim_def_n *)
@@ -386,4 +376,3 @@ proof -
 qed
 
 end
-

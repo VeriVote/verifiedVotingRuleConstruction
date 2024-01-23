@@ -29,20 +29,17 @@ text \<open>
 \<close>
 
 fun score :: 
-"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class 
-  \<Rightarrow> ('a, 'v) Election \<Rightarrow> 'r \<Rightarrow> ereal" where
-    "score d K E w = Inf (d E ` (\<K>\<^sub>\<E> K w))"
+"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class \<Rightarrow> ('a, 'v) Election \<Rightarrow>
+        'r \<Rightarrow> ereal" where
+  "score d K E w = Inf (d E ` (\<K>\<^sub>\<E> K w))"
 
-fun (in result) \<R>\<^sub>\<W> :: 
-"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class 
-  \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
+fun (in result) \<R>\<^sub>\<W> :: "('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class \<Rightarrow>
+      'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
   "\<R>\<^sub>\<W> d K V A p = arg_min_set (score d K (A, V, p)) (limit_set A UNIV)"
 
-fun (in result) distance_\<R> :: 
-"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class 
-  \<Rightarrow> ('a, 'v, 'r Result) Electoral_Module" 
-    where
-      "distance_\<R> d K V A p = (\<R>\<^sub>\<W> d K V A p, (limit_set A UNIV) - \<R>\<^sub>\<W> d K V A p, {})"
+fun (in result) distance_\<R> :: "('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class \<Rightarrow>
+      ('a, 'v, 'r Result) Electoral_Module" where
+  "distance_\<R> d K V A p = (\<R>\<^sub>\<W> d K V A p, (limit_set A UNIV) - \<R>\<^sub>\<W> d K V A p, {})"
 
 subsection \<open>Standard Definitions\<close>
 
@@ -50,8 +47,8 @@ definition standard :: "('a, 'v) Election Distance \<Rightarrow> bool" where
  "standard d \<equiv> \<forall> A A' V V' p p'. (V \<noteq> V' \<or> A \<noteq> A') \<longrightarrow> d (A, V, p) (A', V', p') = \<infinity>"
 
 definition non_voters_irrelevant :: "('a, 'v) Election Distance \<Rightarrow> bool" where
-  "non_voters_irrelevant d \<equiv> \<forall> A A' V V' p q p'. 
-    (\<forall> v \<in> V. p v = q v) \<longrightarrow> (d (A, V, p) (A', V', p') = d (A, V, q) (A', V', p') 
+  "non_voters_irrelevant d \<equiv> \<forall> A A' V V' p q p'.
+    (\<forall> v \<in> V. p v = q v) \<longrightarrow> (d (A, V, p) (A', V', p') = d (A, V, q) (A', V', p')
                               \<and> (d (A', V', p') (A, V, p) = d (A', V', p') (A, V, q)))"
 
 (*
@@ -81,50 +78,41 @@ fun all_profiles :: "'v set \<Rightarrow> 'a set \<Rightarrow> (('a, 'v) Profile
 
 export_code all_profiles in Haskell
 
-fun \<K>\<^sub>\<E>_std :: 
-"('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> 'a set \<Rightarrow> 'v set \<Rightarrow> ('a, 'v) Election set" where
+fun \<K>\<^sub>\<E>_std ::  "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> 'a set \<Rightarrow> 'v set \<Rightarrow>
+        ('a, 'v) Election set" where
   "\<K>\<^sub>\<E>_std K w A V =
-    (\<lambda> p. (A, V, p)) ` (Set.filter 
+    (\<lambda> p. (A, V, p)) ` (Set.filter
                           (\<lambda> p. (consensus_\<K> K) (A, V, p) \<and> elect (rule_\<K> K) V A p = {w})
                           (all_profiles V A))"
 
 text \<open>
   Returns those consensus elections on a given alternative and voter set
-  from a given consensus that are mapped to the given unique winner by a 
+  from a given consensus that are mapped to the given unique winner by a
   given consensus rule.
 \<close>
 
-fun score_std :: 
-"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class 
-  \<Rightarrow> ('a, 'v) Election \<Rightarrow> 'r \<Rightarrow> ereal" 
-    where
-      "score_std d K E w =
+fun score_std :: "('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class \<Rightarrow>
+        ('a, 'v) Election \<Rightarrow> 'r \<Rightarrow> ereal" where
+  "score_std d K E w =
         (if \<K>\<^sub>\<E>_std K w (alts_\<E> E) (votrs_\<E> E) = {}
           then \<infinity> else Min (d E ` (\<K>\<^sub>\<E>_std K w (alts_\<E> E) (votrs_\<E> E))))"
 
-fun (in result) \<R>\<^sub>\<W>_std :: 
-"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class 
-  \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
-    "\<R>\<^sub>\<W>_std d K V A p = arg_min_set (score_std d K (A, V, p)) (limit_set A UNIV)"
+fun (in result) \<R>\<^sub>\<W>_std :: "('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class \<Rightarrow>
+        'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
+  "\<R>\<^sub>\<W>_std d K V A p = arg_min_set (score_std d K (A, V, p)) (limit_set A UNIV)"
 
-fun (in result) distance_\<R>_std :: 
-"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class 
-  \<Rightarrow> ('a, 'v, 'r Result) Electoral_Module" 
-where
+fun (in result) distance_\<R>_std :: "('a, 'v) Election Distance \<Rightarrow>
+        ('a, 'v, 'r Result) Consensus_Class \<Rightarrow> ('a, 'v, 'r Result) Electoral_Module" where
   "distance_\<R>_std d K V A p = (\<R>\<^sub>\<W>_std d K V A p, (limit_set A UNIV) - \<R>\<^sub>\<W>_std d K V A p, {})"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
 lemma \<K>_els_fin:
-  fixes
-    C :: "('a, 'v, 'r Result) Consensus_Class"
-  shows
-    "\<K>_els C \<subseteq> finite_elections"
+  fixes C :: "('a, 'v, 'r Result) Consensus_Class"
+  shows "\<K>_els C \<subseteq> finite_elections"
 proof
-  fix 
-    E :: "('a,'v) Election"
-  assume 
-    "E \<in> \<K>_els C"
+  fix E :: "('a,'v) Election"
+  assume "E \<in> \<K>_els C"
   hence "finite_election E"
     unfolding \<K>\<^sub>\<E>.simps
     by force
@@ -134,10 +122,8 @@ proof
 qed
 
 lemma \<K>_els_univ:
-  fixes
-    C :: "('a, 'v, 'r Result) Consensus_Class"
-  shows
-    "\<K>_els C \<subseteq> UNIV"
+  fixes C :: "('a, 'v, 'r Result) Consensus_Class"
+  shows "\<K>_els C \<subseteq> UNIV"
   by simp
 
 lemma list_cons_presv_finiteness:
@@ -244,7 +230,7 @@ proof (induct l, simp)
     by (simp add: set_Cons_def)
   ultimately show "\<forall> l'. l' \<in> listset (a#l) \<longrightarrow> length l' = length (a#l)"
     using local.Cons
-    by force
+    by fastforce
 qed
 
 lemma all_ls_elems_in_ls_set:
@@ -281,93 +267,96 @@ lemma fin_all_profs:
     V :: "'v set" and
     x :: "'a Preference_Relation"
   assumes
-    finA: "finite A" and
-    finV: "finite V"
+    fin_A: "finite A" and
+    fin_V: "finite V"
   shows "finite (all_profiles V A \<inter> {p. \<forall> v. v \<notin> V \<longrightarrow> p v = x})"
 proof (cases "A = {}")
-  let ?profs = "(all_profiles V A \<inter> {p. \<forall> v. v \<notin> V \<longrightarrow> p v = x})"
+  let ?profs = "all_profiles V A \<inter> {p. \<forall> v. v \<notin> V \<longrightarrow> p v = x}"
   case True
-  hence "permutations_of_set A = {[]}" 
+  hence "permutations_of_set A = {[]}"
     unfolding permutations_of_set_def
     by fastforce
   hence "pl_\<alpha> ` permutations_of_set A = {{}}"
     unfolding pl_\<alpha>_def
-    using is_less_preferred_than_l.simps
     by simp
-  hence "\<forall> p \<in> all_profiles V A. \<forall>v. v \<in> V \<longrightarrow> p v = {}"
+  hence "\<forall> p \<in> all_profiles V A. \<forall> v. v \<in> V \<longrightarrow> p v = {}"
     by (simp add: image_subset_iff)
-  hence "\<forall> p \<in> ?profs. (\<forall>v. v \<in> V \<longrightarrow> p v = {}) \<and> (\<forall> v. v \<notin> V \<longrightarrow> p v = x)"
+  hence "\<forall> p \<in> ?profs. (\<forall> v. v \<in> V \<longrightarrow> p v = {}) \<and> (\<forall> v. v \<notin> V \<longrightarrow> p v = x)"
     by simp
-  hence "\<forall> p \<in> ?profs. p = (\<lambda>v. (if v \<in> V then {} else x))"
+  hence "\<forall> p \<in> ?profs. p = (\<lambda> v. if v \<in> V then {} else x)"
     by meson
-  hence "?profs \<subseteq> {(\<lambda>v. (if v \<in> V then {} else x))}" 
-    by auto
-  thus "finite ?profs" 
-    by (meson finite.emptyI finite_insert finite_subset)
+  hence "?profs \<subseteq> {\<lambda> v. if v \<in> V then {} else x}"
+    by blast
+  thus "finite ?profs"
+    using finite.emptyI finite_insert finite_subset
+    by meson
 next
   let ?profs = "(all_profiles V A \<inter> {p. \<forall> v. v \<notin> V \<longrightarrow> p v = x})"
   case False
-  from finV obtain ord where "linear_order_on V ord"
-    by (metis finite_list lin_ord_equiv lin_order_equiv_list_of_alts)
-  then obtain list_V where 
-    len: "length list_V = card V" and
-    pl: "ord = pl_\<alpha> list_V" and 
-    perm: "list_V \<in> permutations_of_set V"
-    using lin_order_pl_\<alpha> finV image_iff length_finite_permutations_of_set
+  from fin_V obtain ord where "linear_order_on V ord"
+    using finite_list lin_ord_equiv lin_order_equiv_list_of_alts
     by metis
-  let ?map = "\<lambda>p::('a, 'v) Profile. map p list_V"
-  have "\<forall> p \<in> all_profiles V A. (\<forall> v \<in> V. p v \<in> (pl_\<alpha> ` permutations_of_set A))"
+  then obtain list_V where
+    len: "length list_V = card V" and
+    pl: "ord = pl_\<alpha> list_V" and
+    perm: "list_V \<in> permutations_of_set V"
+    using lin_order_pl_\<alpha> fin_V image_iff length_finite_permutations_of_set
+    by metis
+  let ?map = "\<lambda> p::('a, 'v) Profile. map p list_V"
+  have "\<forall> p \<in> all_profiles V A. \<forall> v \<in> V. p v \<in> (pl_\<alpha> ` permutations_of_set A)"
     by (simp add: image_subset_iff)
   hence "\<forall> p \<in> all_profiles V A. (\<forall> v \<in> V. linear_order_on A (p v))"
-    using pl_\<alpha>_lin_order finA False
+    using pl_\<alpha>_lin_order fin_A False
     by metis
   moreover have "\<forall> p \<in> ?profs. \<forall> i < length (?map p). (?map p)!i = p (list_V!i)"
-    by auto
+    by simp
   moreover have "\<forall> i < length list_V. list_V!i \<in> V"
-    using perm nth_mem permutations_of_setD(1) 
-    by blast
+    using perm nth_mem permutations_of_setD(1)
+    by metis
   moreover have lens_eq: "\<forall> p \<in> ?profs. length (?map p) = length list_V"
     by simp
-  ultimately have "\<forall> p \<in> ?profs. \<forall> i < length (?map p). linear_order_on A ((?map p)!i)" 
+  ultimately have "\<forall> p \<in> ?profs. \<forall> i < length (?map p). linear_order_on A ((?map p)!i)"
     by simp
-  hence subset: "?map ` ?profs \<subseteq> {xs. length xs = card V \<and> 
+  hence subset: "?map ` ?profs \<subseteq> {xs. length xs = card V \<and>
                             (\<forall> i < length xs. linear_order_on A (xs!i))}"
     using len lens_eq
-    by force
-  have "\<forall> p1 p2. (p1 \<in> ?profs \<and> p2 \<in> ?profs \<and> p1 \<noteq> p2) \<longrightarrow> (\<exists> v \<in> V. p1 v \<noteq> p2 v)"
     by fastforce
-  hence "\<forall> p1 p2. (p1 \<in> ?profs \<and> p2 \<in> ?profs \<and> p1 \<noteq> p2) \<longrightarrow> (\<exists> v \<in> set list_V. p1 v \<noteq> p2 v)"
-    using perm 
+  have "\<forall> p1 p2. p1 \<in> ?profs \<and> p2 \<in> ?profs \<and> p1 \<noteq> p2 \<longrightarrow> (\<exists> v \<in> V. p1 v \<noteq> p2 v)"
+    by fastforce
+  hence "\<forall> p1 p2. p1 \<in> ?profs \<and> p2 \<in> ?profs \<and> p1 \<noteq> p2 \<longrightarrow> (\<exists> v \<in> set list_V. p1 v \<noteq> p2 v)"
+    using perm
     unfolding permutations_of_set_def
     by simp
-  hence "\<forall> p1 p2. (p1 \<in> ?profs \<and> p2 \<in> ?profs \<and> p1 \<noteq> p2) \<longrightarrow> (?map p1 \<noteq> ?map p2)"
+  hence "\<forall> p1 p2. p1 \<in> ?profs \<and> p2 \<in> ?profs \<and> p1 \<noteq> p2 \<longrightarrow> ?map p1 \<noteq> ?map p2"
     by simp
   hence "inj_on ?map ?profs"
     unfolding inj_on_def
-    by meson
-  moreover have "finite {xs. length xs = card V \<and> 
-                            (\<forall> i < length xs. linear_order_on A (xs!i))}"
+    by blast
+  moreover have "finite {xs. length xs = card V \<and> (\<forall> i < length xs. linear_order_on A (xs!i))}"
   proof -
     have "finite {r. linear_order_on A r}"
-      using finA
+      using fin_A
       unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
-      by auto
-    hence finSupset: "\<forall>n. finite {xs. length xs = n \<and> set xs \<subseteq> {r. linear_order_on A r}}"
-      by (metis (no_types, lifting) Collect_mono finite_lists_length_eq rev_finite_subset)
-    have "\<forall>l \<in> {xs. length xs = card V \<and> 
+      by simp
+    hence finSupset: "\<forall> n. finite {xs. length xs = n \<and> set xs \<subseteq> {r. linear_order_on A r}}"
+      using Collect_mono finite_lists_length_eq rev_finite_subset
+      by (metis (no_types, lifting))
+    have "\<forall> l \<in> {xs. length xs = card V \<and>
                             (\<forall> i < length xs. linear_order_on A (xs!i))}.
                     set l \<subseteq> {r. linear_order_on A r}"
-      by (metis (no_types, lifting) in_set_conv_nth mem_Collect_eq subsetI)
-    hence "{xs. length xs = card V \<and> 
+      using in_set_conv_nth mem_Collect_eq subsetI
+      by (metis (no_types, lifting))
+    hence "{xs. length xs = card V \<and>
                             (\<forall> i < length xs. linear_order_on A (xs!i))}
            \<subseteq> {xs. length xs = card V \<and> set xs \<subseteq> {r. linear_order_on A r}}"
-      by auto
-    thus ?thesis 
-      using finSupset 
-      by (meson rev_finite_subset)
+      by blast
+    thus "?thesis"
+      using finSupset rev_finite_subset
+      by blast
   qed
   moreover have "\<forall> f X Y. inj_on f X \<and> finite Y \<and> f ` X \<subseteq> Y \<longrightarrow> finite X"
-    by (meson finite_imageD finite_subset)
+    using finite_imageD finite_subset
+    by metis
   ultimately show "finite ?profs"
     using subset
     by blast
@@ -380,33 +369,32 @@ lemma profile_permutation_set:
   shows "all_profiles V A =
           {p' :: ('a, 'v) Profile. finite_profile V A p'}"
 proof (cases "finite A \<and> finite V \<and> A \<noteq> {}", clarsimp)
-  assume 
+  assume
     fin_A: "finite A" and
     fin_V: "finite V" and
     non_empty: "A \<noteq> {}"
   show "{\<pi>. \<pi> ` V \<subseteq> pl_\<alpha> ` permutations_of_set A} = {p'. profile V A p'}"
-  proof 
+  proof
     show "{\<pi>. \<pi> ` V \<subseteq> pl_\<alpha> ` permutations_of_set A} \<subseteq> {p'. profile V A p'}"
     proof (rule, clarify)
-      fix
-        p' :: "'v \<Rightarrow> 'a Preference_Relation"
+      fix p' :: "'v \<Rightarrow> 'a Preference_Relation"
       assume
         subset: "p' ` V \<subseteq> pl_\<alpha> ` permutations_of_set A"
-      hence "\<forall> v \<in> V. p' v \<in> pl_\<alpha> ` permutations_of_set A" 
-        by auto
+      hence "\<forall> v \<in> V. p' v \<in> pl_\<alpha> ` permutations_of_set A"
+        by blast
       hence "\<forall> v \<in> V. linear_order_on A (p' v)"
         using fin_A pl_\<alpha>_lin_order non_empty
         by metis
       thus "profile V A p'"
-        using profile_def
-        by auto
+        unfolding profile_def
+        by simp
     qed
   next
     show "{p'. profile V A p'} \<subseteq> {\<pi>. \<pi> ` V \<subseteq> pl_\<alpha> ` permutations_of_set A}"
     proof (rule, clarify)
-      fix 
+      fix
         p' :: "('a, 'v) Profile" and
-        v :: 'v
+        v :: "'v"
       assume
         prof: "profile V A p'" and
         el: "v \<in> V"
@@ -420,51 +408,55 @@ proof (cases "finite A \<and> finite V \<and> A \<noteq> {}", clarsimp)
   qed
 next
   assume not_fin_empty: "\<not> (finite A \<and> finite V \<and> A \<noteq> {})"
-  have "(finite A \<and> finite V \<and> A = {}) \<Longrightarrow> permutations_of_set A = {[]}"
+  have "finite A \<and> finite V \<and> A = {} \<Longrightarrow> permutations_of_set A = {[]}"
     unfolding permutations_of_set_def
     by fastforce
-  hence pl_empty: "(finite A \<and> finite V \<and> A = {}) \<Longrightarrow> pl_\<alpha> ` permutations_of_set A = {{}}"
+  hence pl_empty: "finite A \<and> finite V \<and> A = {} \<Longrightarrow> pl_\<alpha> ` permutations_of_set A = {{}}"
     unfolding pl_\<alpha>_def
     by simp
-  hence "(finite A \<and> finite V \<and> A = {}) \<Longrightarrow> 
-    \<forall>\<pi> \<in> {\<pi>. \<pi> ` V \<subseteq> (pl_\<alpha> ` permutations_of_set A)}. (\<forall>v \<in> V. \<pi> v = {})"
+  hence "finite A \<and> finite V \<and> A = {} \<Longrightarrow>
+    \<forall> \<pi> \<in> {\<pi>. \<pi> ` V \<subseteq> (pl_\<alpha> ` permutations_of_set A)}. \<forall> v \<in> V. \<pi> v = {}"
     by fastforce
-  hence "(finite A \<and> finite V \<and> A = {}) \<Longrightarrow> 
-    {\<pi>. \<pi> ` V \<subseteq> (pl_\<alpha> ` permutations_of_set A)} = {\<pi>. (\<forall>v \<in> V. \<pi> v = {})}" 
-    using image_subset_iff singletonD singletonI pl_empty 
+  hence "finite A \<and> finite V \<and> A = {} \<Longrightarrow>
+    {\<pi>. \<pi> ` V \<subseteq> (pl_\<alpha> ` permutations_of_set A)} = {\<pi>. \<forall> v \<in> V. \<pi> v = {}}"
+    using image_subset_iff singletonD singletonI pl_empty
       (* TODO make this proof step more understandable *)
-    by auto
-  moreover have "(finite A \<and> finite V \<and> A = {}) 
+    by fastforce
+  moreover have "finite A \<and> finite V \<and> A = {}
     \<Longrightarrow> all_profiles V A = {\<pi>. \<pi> ` V \<subseteq> (pl_\<alpha> ` permutations_of_set A)}"
     by simp
-  ultimately have all_prof_eq: "(finite A \<and> finite V \<and> A = {}) 
-    \<Longrightarrow> all_profiles V A = {\<pi>. (\<forall>v \<in> V. \<pi> v = {})}"
+  ultimately have all_prof_eq: "finite A \<and> finite V \<and> A = {}
+    \<Longrightarrow> all_profiles V A = {\<pi>. \<forall> v \<in> V. \<pi> v = {}}"
     by simp
-  have "(finite A \<and> finite V \<and> A = {}) 
-    \<Longrightarrow> \<forall> p' \<in> {p'. finite_profile V A p' \<and> (\<forall>v'. v' \<notin> V \<longrightarrow> p' v' = {})}. 
+  have "finite A \<and> finite V \<and> A = {}
+    \<Longrightarrow> \<forall> p' \<in> {p'. finite_profile V A p' \<and> (\<forall> v'. v' \<notin> V \<longrightarrow> p' v' = {})}.
       (\<forall> v \<in> V. linear_order_on {} (p' v))"
     unfolding profile_def
     by simp
   moreover have "\<forall> r. linear_order_on {} r \<longrightarrow> r = {}"
-    by (meson lin_ord_not_empty) 
-  ultimately have "(finite A \<and> finite V \<and> A = {}) 
-    \<Longrightarrow> \<forall> p' \<in> {p'. finite_profile V A p' \<and> (\<forall>v'. v' \<notin> V \<longrightarrow> p' v' = {})}. 
-      (\<forall> v. p' v = {})"
+    using lin_ord_not_empty
+    by metis
+  ultimately have "finite A \<and> finite V \<and> A = {}
+    \<Longrightarrow> \<forall> p' \<in> {p'. finite_profile V A p' \<and> (\<forall> v'. v' \<notin> V \<longrightarrow> p' v' = {})}.
+      \<forall> v. p' v = {}"
     by blast
-  hence "(finite A \<and> finite V \<and> A = {}) 
-    \<Longrightarrow> {p'. finite_profile V A p'} = {p'. (\<forall> v \<in> V. p' v = {})}"
-    using lin_ord_not_empty lnear_order_on_empty profile_def
+  hence "finite A \<and> finite V \<and> A = {}
+    \<Longrightarrow> {p'. finite_profile V A p'} = {p'. \<forall> v \<in> V. p' v = {}}"
+    using lin_ord_not_empty lnear_order_on_empty
+    unfolding profile_def
     by (metis (no_types, opaque_lifting))
-  hence "(finite A \<and> finite V \<and> A = {}) 
+  hence "finite A \<and> finite V \<and> A = {}
     \<Longrightarrow> all_profiles V A = {p'. finite_profile V A p'}"
     using all_prof_eq
     by simp
-  moreover have "(infinite A \<or> infinite V) \<Longrightarrow> all_profiles V A = {}"
+  moreover have "infinite A \<or> infinite V \<Longrightarrow> all_profiles V A = {}"
     by simp
-  moreover have "(infinite A \<or> infinite V) \<Longrightarrow> 
-    {p'. finite_profile V A p' \<and> (\<forall>v'. v' \<notin> V \<longrightarrow> p' v' = {})} = {}"
+  moreover have "infinite A \<or> infinite V \<Longrightarrow>
+    {p'. finite_profile V A p' \<and> (\<forall> v'. v' \<notin> V \<longrightarrow> p' v' = {})} = {}"
     by auto
-  moreover have "(infinite A \<or> infinite V) \<or> A = {}" using not_fin_empty by simp
+  moreover have "infinite A \<or> infinite V \<or> A = {}"
+    using not_fin_empty
+    by simp
   ultimately show "all_profiles V A = {p'. finite_profile V A p'}"
     by blast
 qed
@@ -483,18 +475,17 @@ proof (unfold electoral_module_def, safe)
     p :: "('a, 'v) Profile"
   have "\<R>\<^sub>\<W> d K V A p \<subseteq> (limit_set A UNIV)"
     using \<R>\<^sub>\<W>.simps arg_min_subset
-    by force
+    by metis
   hence "set_equals_partition (limit_set A UNIV) (distance_\<R> d K V A p)"
-    using distance_\<R>.simps
     by auto
   moreover have "disjoint3 (distance_\<R> d K V A p)"
-    using distance_\<R>.simps
     by simp
   ultimately show "well_formed A (distance_\<R> d K V A p)"
-    using result_axioms result_def
-    by blast
+    using result_axioms
+    unfolding result_def
+    by simp
 qed
-     
+
 subsection \<open>Inference Rules\<close>
 
 lemma is_arg_min_equal:
@@ -502,7 +493,7 @@ lemma is_arg_min_equal:
     f :: "'a \<Rightarrow> 'b::ord" and
     g :: "'a \<Rightarrow> 'b" and
     S :: "'a set" and
-    x :: 'a
+    x :: "'a"
   assumes "\<forall> x \<in> S. f x = g x"
   shows "is_arg_min f (\<lambda> s. s \<in> S) x = is_arg_min g (\<lambda> s. s \<in> S) x"
 proof (unfold is_arg_min_def, cases "x \<in> S")
@@ -514,20 +505,20 @@ next
   thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
   proof (cases "\<exists> y. (\<lambda> s. s \<in> S) y \<and> f y < f x")
     case y: True
-    then obtain y :: 'a where
+    then obtain y :: "'a" where
       "(\<lambda> s. s \<in> S) y \<and> f y < f x"
       by metis
     hence "(\<lambda> s. s \<in> S) y \<and> g y < g x"
       using x_in_S assms
       by metis
-    thus ?thesis
+    thus "?thesis"
       using y
       by metis
   next
     case not_y: False
     have "\<not> (\<exists> y. (\<lambda> s. s \<in> S) y \<and> g y < g x)"
     proof (safe)
-      fix  y :: "'a"
+      fix y :: "'a"
       assume
         y_in_S: "y \<in> S" and
         g_y_lt_g_x: "g y < g x"
@@ -537,11 +528,11 @@ next
       hence "g x = f x"
         using x_in_S
         by presburger
-      thus "False"
+      thus False
         using f_eq_g_for_elems_in_S g_y_lt_g_x not_y y_in_S
         by (metis (no_types))
     qed
-    thus ?thesis
+    thus "?thesis"
       using x_in_S not_y
       by simp
   qed
@@ -555,7 +546,7 @@ lemma (in result) standard_distance_imp_equal_score:
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
     w :: "'r"
-  assumes 
+  assumes
     irr_non_V: "non_voters_irrelevant d" and
     std: "standard d"
   shows "score d K (A, V, p) w = score_std d K (A, V, p) w"
@@ -579,49 +570,50 @@ proof -
     hence "Inf (d (A, V, p) ` (\<K>\<^sub>\<E> K w)) \<le>
                    Inf (d (A, V, p) ` (\<K>\<^sub>\<E> K w \<inter>
                     Pair A ` Pair V ` {p' :: ('a, 'v) Profile. finite_profile V A p'}))"
-      by (meson INF_superset_mono dual_order.refl)
+      using INF_superset_mono dual_order.refl
+      by metis
     moreover have "Inf (d (A, V, p) ` (\<K>\<^sub>\<E> K w)) \<ge>
                    Inf (d (A, V, p) ` (\<K>\<^sub>\<E> K w \<inter>
                     Pair A ` Pair V ` {p' :: ('a, 'v) Profile. finite_profile V A p'}))"
     proof (rule INF_greatest)
-      let ?inf = "Inf (d (A, V, p) ` 
+      let ?inf = "Inf (d (A, V, p) `
         (\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` {p'. finite_profile V A p'}))"
-      let ?compl = "(\<K>\<^sub>\<E> K w) - 
+      let ?compl = "(\<K>\<^sub>\<E> K w) -
         (\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` {p'. finite_profile V A p'})"
-      fix 
-        i :: "('a, 'v) Election"
-      assume
-        el: "i \<in> \<K>\<^sub>\<E> K w"
+      fix i :: "('a, 'v) Election"
+      assume el: "i \<in> \<K>\<^sub>\<E> K w"
       have in_intersect: "i \<in> (\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` {p'. finite_profile V A p'})
               \<Longrightarrow> ?inf \<le> d (A, V, p) i"
-        by (rule Complete_Lattices.complete_lattice_class.INF_lower)
-      have "i \<in> ?compl \<Longrightarrow> (V \<noteq> fst (snd i) 
-                              \<or> A \<noteq> fst i 
+        using Complete_Lattices.complete_lattice_class.INF_lower
+        by metis
+      have "i \<in> ?compl \<Longrightarrow> (V \<noteq> fst (snd i)
+                              \<or> A \<noteq> fst i
                               \<or> \<not> finite_profile V A (snd (snd i)))"
         by fastforce
-      moreover have "V \<noteq> fst (snd i) \<Longrightarrow> d (A, V, p) i = \<infinity>" 
-        using std
+      moreover have "V \<noteq> fst (snd i) \<Longrightarrow> d (A, V, p) i = \<infinity>"
+        using std prod.collapse
         unfolding standard_def
-        by (metis prod.collapse)
+        by metis
       moreover have "A \<noteq> fst i \<Longrightarrow> d (A, V, p) i = \<infinity>"
-        using std
+        using std prod.collapse
         unfolding standard_def
-        by (metis prod.collapse)
-      moreover have "V = fst (snd i) \<and> A = fst i 
+        by metis
+      moreover have "V = fst (snd i) \<and> A = fst i
                       \<and> \<not> finite_profile V A (snd (snd i)) \<longrightarrow> False"
-        using el \<K>\<^sub>\<E>.simps
-        by auto
-      ultimately have 
+        using el
+        by fastforce
+      ultimately have
         "i \<in> ?compl \<Longrightarrow> Inf (d (A, V, p) `
                           (\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` {p'. finite_profile V A p'}))
                         \<le> d (A, V, p) i"
-        by (metis ereal_less_eq(1))
+        using ereal_less_eq
+        by metis
       thus "Inf (d (A, V, p) `
               (\<K>\<^sub>\<E> K w \<inter>
                Pair A ` Pair V ` {p'. finite_profile V A p'}))
              \<le> d (A, V, p) i"
         using in_intersect el
-        by auto
+        by blast
     qed
     ultimately show
       "Inf (d (A, V, p) ` \<K>\<^sub>\<E> K w) =
@@ -634,12 +626,12 @@ proof -
   proof (cases "\<K>\<^sub>\<E>_std K w A V = {}")
     case True
     hence "Inf (d (A, V, p) `
-          (\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` 
+          (\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V `
             {p'. finite_profile V A p'})) = \<infinity>"
       using eq_intersect
       by (simp add: top_ereal_def)
-    also have "score_std d K (A, V, p) w = \<infinity>" 
-      using True score_std.simps
+    also have "score_std d K (A, V, p) w = \<infinity>"
+      using True
       unfolding Let_def
       by simp
     finally show ?thesis
@@ -647,110 +639,109 @@ proof -
   next
     case False
     hence fin: "finite A \<and> finite V"
-      using eq_intersect 
+      using eq_intersect
       by blast
     have "finite (d (A, V, p) `(\<K>\<^sub>\<E>_std K w A V))"
     proof -
       have "\<K>\<^sub>\<E>_std K w A V = (\<K>\<^sub>\<E> K w) \<inter>
                               {(A, V, p') | p'. finite_profile V A p'}"
         using eq_intersect
-        by auto
-      hence subset: "d (A, V, p) `(\<K>\<^sub>\<E>_std K w A V) \<subseteq> 
+        by blast
+      hence subset: "d (A, V, p) `(\<K>\<^sub>\<E>_std K w A V) \<subseteq>
               d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p'}"
-        by auto
-      let ?finite_prof = "\<lambda>p' v. (if (v \<in> V) then p' v else {})"
-      have "\<forall> p'. finite_profile V A p' \<longrightarrow> 
+        by blast
+      let ?finite_prof = "\<lambda> p' v. (if (v \<in> V) then p' v else {})"
+      have "\<forall> p'. finite_profile V A p' \<longrightarrow>
                     finite_profile V A (?finite_prof p')"
         unfolding If_def profile_def
-        by auto
+        by simp
       moreover have "\<forall> p'. (\<forall> v. v \<notin> V \<longrightarrow> ?finite_prof p' v = {})"
         by simp
-      ultimately have 
+      ultimately have
         "\<forall> (A', V', p') \<in> {(A', V', p'). A' = A \<and> V' = V \<and> finite_profile V A p'}.
-              (A', V', ?finite_prof p') \<in> 
-                {(A, V, p') | p'. finite_profile V A p'}"
+              (A', V', ?finite_prof p') \<in> {(A, V, p') | p'. finite_profile V A p'}"
         by force
       moreover have "\<forall> p'. d (A, V, p) (A, V, p') = d (A, V, p) (A, V, ?finite_prof p')"
         using irr_non_V
         unfolding non_voters_irrelevant_def
         by simp
-      ultimately have 
+      ultimately have
         "\<forall> (A', V', p') \<in> {(A, V, p') | p'. finite_profile V A p'}.
-           (\<exists> (X, Y, z) \<in> {(A, V, p') | p'. finite_profile V A p' 
-                              \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}. 
+           (\<exists> (X, Y, z) \<in> {(A, V, p') | p'. finite_profile V A p'
+                              \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}.
                 d (A, V, p) (A', V', p') = d (A, V, p) (X, Y, z))"
-        by auto
-      hence "\<forall> (A', V', p') \<in> {(A', V', p'). A' = A \<and> V' = V \<and> finite_profile V A p'}.
-                d (A, V, p) (A', V', p') \<in> 
-                d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p' 
-                                  \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}"
-        by auto
-      hence subset_2: "d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p'}
-              \<subseteq> d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p' 
-                                  \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}"
-        by auto
-      have "\<forall> (A', V', p') \<in> {(A, V, p') | p'. finite_profile V A p' 
-                                \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}.
-                (\<forall> v \<in> V. linear_order_on A (p' v)) 
-                \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})"
-        using fin profile_def
         by fastforce
-      hence "{(A, V, p') | p'. finite_profile V A p' 
+      hence "\<forall> (A', V', p') \<in> {(A', V', p'). A' = A \<and> V' = V \<and> finite_profile V A p'}.
+                d (A, V, p) (A', V', p') \<in>
+                d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p'
+                                  \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}"
+        by fastforce
+      hence subset_2: "d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p'}
+              \<subseteq> d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p'
+                                  \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}"
+        by fastforce
+      have "\<forall> (A', V', p') \<in> {(A, V, p') | p'. finite_profile V A p'
+                                \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}.
+                (\<forall> v \<in> V. linear_order_on A (p' v))
+                \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})"
+        using fin
+        unfolding profile_def
+        by simp
+      hence "{(A, V, p') | p'. finite_profile V A p'
                                 \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}
-              \<subseteq> {(A, V, p') | p'. p' \<in> {p'. (\<forall> v \<in> V. linear_order_on A (p' v)) 
+              \<subseteq> {(A, V, p') | p'. p' \<in> {p'. (\<forall> v \<in> V. linear_order_on A (p' v))
                                               \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}}"
         by blast
-      moreover have "finite {(A, V, p') | p'. p' \<in> {p'. (\<forall> v \<in> V. linear_order_on A (p' v)) 
+      moreover have "finite {(A, V, p') | p'. p' \<in> {p'. (\<forall> v \<in> V. linear_order_on A (p' v))
                                               \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}}"
       proof -
         have "{p'. (\<forall> v \<in> V. linear_order_on A (p' v)) \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}
                 \<subseteq> all_profiles V A \<inter> {p. \<forall> v. v \<notin> V \<longrightarrow> p v = {}}"
-          using lin_order_pl_\<alpha> fin 
+          using lin_order_pl_\<alpha> fin
           by fastforce
         moreover have "finite (all_profiles V A \<inter> {p. \<forall> v. v \<notin> V \<longrightarrow> p v = {}})"
           using fin fin_all_profs
           by blast
-        ultimately have "finite {p'. (\<forall> v \<in> V. linear_order_on A (p' v)) 
+        ultimately have "finite {p'. (\<forall> v \<in> V. linear_order_on A (p' v))
                                         \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}"
           using rev_finite_subset
           by blast
-        thus ?thesis 
+        thus "?thesis"
           by simp
       qed
-      ultimately have "finite {(A, V, p') | p'. finite_profile V A p' 
+      ultimately have "finite {(A, V, p') | p'. finite_profile V A p'
                                 \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}"
         using rev_finite_subset
         by simp
-      hence "finite (d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p' 
+      hence "finite (d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p'
                                 \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})})"
-        by blast
+        by simp
       hence "finite (d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p'})"
         using subset_2 rev_finite_subset
         by simp
-      thus ?thesis
+      thus "?thesis"
         using subset rev_finite_subset
-        by auto
+        by blast
     qed
     moreover have "d (A, V, p) ` (\<K>\<^sub>\<E>_std K w A V) \<noteq> {}"
       using False
       by simp
-    ultimately have "Inf (d (A, V, p) ` (\<K>\<^sub>\<E>_std K w A V))
-        = Min (d (A, V, p) ` (\<K>\<^sub>\<E>_std K w A V))"
-      using Min_Inf False 
-      by fastforce
+    ultimately have "Inf (d (A, V, p) ` (\<K>\<^sub>\<E>_std K w A V)) = Min (d (A, V, p) ` (\<K>\<^sub>\<E>_std K w A V))"
+      using Min_Inf False
+      by metis
     also have "... = score_std d K (A, V, p) w"
-      using score_std.simps False
+      using False
       by simp
-    also have "Inf (d (A, V, p) ` (\<K>\<^sub>\<E>_std K w A V)) = 
+    also have "Inf (d (A, V, p) ` (\<K>\<^sub>\<E>_std K w A V)) =
       Inf (d (A, V, p) ` (\<K>\<^sub>\<E> K w \<inter>
         Pair A ` Pair V ` {p'. finite_profile V A p'}))"
       using eq_intersect
       by simp
-    ultimately show ?thesis
+    ultimately show "?thesis"
       by simp
   qed
   finally show "score d K (A, V, p) w = score_std d K (A, V, p) w"
-    by simp 
+    by simp
 qed
 
 lemma (in result) anonymous_distance_and_consensus_imp_rule_anonymity:
@@ -763,7 +754,8 @@ lemma (in result) anonymous_distance_and_consensus_imp_rule_anonymity:
   shows "anonymity (distance_\<R> d K)"
 proof (unfold anonymity_def Let_def, safe)
   show "electoral_module (distance_\<R> d K)"
-    by (simp add: \<R>_sound)
+    using \<R>_sound
+    by metis
 next
   fix
     A :: "'a set" and
@@ -780,19 +772,22 @@ next
     profile_q: "profile V' A' q" and
     bij: "bij \<pi>" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)"
-  have "A = A'" using bij renamed rename.simps by simp
-  hence eq_univ: "limit_set A UNIV = limit_set A' UNIV" by simp
+  have "A = A'"
+    using bij renamed
+    by simp
+  hence eq_univ: "limit_set A UNIV = limit_set A' UNIV"
+    by simp
   hence "\<R>\<^sub>\<W> d K V A p = \<R>\<^sub>\<W> d K V' A' q"
   proof -
     have dist_rename_inv:
-      "\<forall>E::('a, 'v) Election. (d (A, V, p) E = d (A', V', q) (rename \<pi> E))"
-        using d_anon bij renamed surj_pair
-        unfolding distance_anonymity_def
-        by metis
-    hence "\<forall> S::('a, 'v) Election set. 
-            ((d (A, V, p) ` S) \<subseteq> (d (A', V', q) ` (rename \<pi> ` S)))"
+      "\<forall> E::('a, 'v) Election. d (A, V, p) E = d (A', V', q) (rename \<pi> E)"
+      using d_anon bij renamed surj_pair
+      unfolding distance_anonymity_def
+      by metis
+    hence "\<forall> S::('a, 'v) Election set.
+            (d (A, V, p) ` S) \<subseteq> (d (A', V', q) ` (rename \<pi> ` S))"
       by blast
-    moreover have "\<forall> S::('a, 'v) Election set. 
+    moreover have "\<forall> S::('a, 'v) Election set.
             ((d (A', V', q) ` (rename \<pi> ` S)) \<subseteq> (d (A, V, p) ` S))"
     proof (clarify)
       fix
@@ -813,12 +808,12 @@ next
         using el
         by simp
     qed
-    ultimately have eq_range: "\<forall> S::('a, 'v) Election set. 
-            ((d (A, V, p) ` S) = (d (A', V', q) ` (rename \<pi> ` S)))"
+    ultimately have eq_range: "\<forall> S::('a, 'v) Election set.
+            (d (A, V, p) ` S) = (d (A', V', q) ` (rename \<pi> ` S))"
       by blast
     have "\<forall> w. rename \<pi> ` (\<K>\<^sub>\<E> K w) \<subseteq> (\<K>\<^sub>\<E> K w)"
     proof (clarify)
-      fix 
+      fix
         w :: 'r and
         A :: "'a set" and
         A' :: "'a set" and
@@ -826,16 +821,16 @@ next
         V' :: "'v set" and
         p :: "('a, 'v) Profile" and
         p' :: "('a, 'v) Profile"
-      assume 
+      assume
         renamed: "(A', V', p') = rename \<pi> (A, V, p)" and
         consensus: "(A, V, p) \<in> \<K>\<^sub>\<E> K w"
-      hence cons: "(consensus_\<K> K) (A, V, p) \<and> finite_profile V A p                
-                \<and> elect (rule_\<K> K) V A p = {w}"
+      hence cons:
+        "(consensus_\<K> K) (A, V, p) \<and> finite_profile V A p \<and> elect (rule_\<K> K) V A p = {w}"
         by simp
-      hence fin_img: "finite_profile V' A' p'" 
+      hence fin_img: "finite_profile V' A' p'"
         using renamed bij rename.simps fst_conv rename_finite
         by metis
-      hence cons_img: "(consensus_\<K> K (A', V', p') \<and> (rule_\<K> K V A p = rule_\<K> K V' A' p'))"
+      hence cons_img: "consensus_\<K> K (A', V', p') \<and> (rule_\<K> K V A p = rule_\<K> K V' A' p')"
         using K_anon renamed bij cons
         unfolding consensus_rule_anonymity_def Let_def
         by simp
@@ -844,29 +839,29 @@ next
         by simp
       thus "(A', V', p') \<in> \<K>\<^sub>\<E> K w"
         using cons_img fin_img
-        by simp     
+        by simp
     qed
     moreover have "\<forall> w. (\<K>\<^sub>\<E> K w) \<subseteq> rename \<pi> ` (\<K>\<^sub>\<E> K w)"
     proof (clarify)
-      fix 
+      fix
         w :: 'r and
         A :: "'a set" and
         V :: "'v set" and
         p :: "('a, 'v) Profile"
-      assume 
-        consensus: "(A, V, p) \<in> \<K>\<^sub>\<E> K w"
+      assume consensus: "(A, V, p) \<in> \<K>\<^sub>\<E> K w"
       let ?inv = "rename (the_inv \<pi>) (A, V, p)"
       have inv_inv_id: "the_inv (the_inv \<pi>) = \<pi>"
-        using the_inv_f_f bij bij_betw_imp_inj_on bij_betw_imp_surj 
+        using the_inv_f_f bij bij_betw_imp_inj_on bij_betw_imp_surj
               inj_on_the_inv_into surj_imp_inv_eq the_inv_into_onto
         by (metis (no_types, opaque_lifting))
       hence "?inv = (A, ((the_inv \<pi>) ` V), p \<circ> (the_inv (the_inv \<pi>)))"
         by simp
       moreover have "(p \<circ> (the_inv (the_inv \<pi>))) \<circ> (the_inv \<pi>) = p"
-        using bij
-        by (simp add: the_inv_f_f inv_inv_id bij_betw_def comp_def f_the_inv_into_f)
+        using bij inv_inv_id
+        unfolding bij_betw_def comp_def
+        by (simp add: f_the_inv_into_f)
       moreover have "\<pi> ` (the_inv \<pi>) ` V = V"
-        using bij the_inv_f_f bij_betw_def image_inv_into_cancel 
+        using bij the_inv_f_f bij_betw_def image_inv_into_cancel
               surj_imp_inv_eq top_greatest
         by (metis (no_types, opaque_lifting))
       ultimately have preimg: "rename \<pi> ?inv = (A, V, p)"
@@ -874,47 +869,47 @@ next
         by simp
       moreover have "?inv \<in> \<K>\<^sub>\<E> K w"
       proof -
-        have cons: "(consensus_\<K> K) (A, V, p) \<and> finite_profile V A p                
-                \<and> elect (rule_\<K> K) V A p = {w}"
+        have cons:
+          "(consensus_\<K> K) (A, V, p) \<and> finite_profile V A p \<and> elect (rule_\<K> K) V A p = {w}"
           using consensus
           by simp
-        moreover have bij_inv: "bij (the_inv \<pi>)" 
-          using bij bij_betw_the_inv_into 
-          by auto
-        moreover have fin_preimg:
-          "finite_profile (fst (snd ?inv)) (fst ?inv) (snd (snd ?inv))"
-          using bij_inv rename.simps fst_conv rename_finite cons 
+        moreover have bij_inv: "bij (the_inv \<pi>)"
+          using bij bij_betw_the_inv_into
+          by metis
+        moreover have fin_preimg: "finite_profile (fst (snd ?inv)) (fst ?inv) (snd (snd ?inv))"
+          using bij_inv rename.simps fst_conv rename_finite cons
           by fastforce
-        ultimately have cons_preimg: 
-          "(consensus_\<K> K ?inv 
-            \<and> (rule_\<K> K V A p = rule_\<K> K (fst (snd ?inv)) (fst ?inv) (snd (snd ?inv))))"
+        ultimately have cons_preimg:
+          "consensus_\<K> K ?inv \<and>
+              (rule_\<K> K V A p = rule_\<K> K (fst (snd ?inv)) (fst ?inv) (snd (snd ?inv)))"
           using K_anon renamed bij cons
           unfolding consensus_rule_anonymity_def Let_def
           by simp
         hence "elect (rule_\<K> K) (fst (snd ?inv)) (fst ?inv) (snd (snd ?inv)) = {w}"
           using cons
           by simp
-        thus ?thesis
+        thus "?thesis"
           using cons_preimg fin_preimg
-          by simp 
+          by simp
         qed
-      ultimately show "(A, V, p) \<in> rename \<pi> ` \<K>\<^sub>\<E> K w"
-        by (metis image_eqI)   
+        ultimately show "(A, V, p) \<in> rename \<pi> ` \<K>\<^sub>\<E> K w"
+          using image_eqI
+          by metis
     qed
     ultimately have "\<forall> w. (\<K>\<^sub>\<E> K w) = rename \<pi> ` (\<K>\<^sub>\<E> K w)"
       by blast
     hence "\<forall> w. score d K (A, V, p) w = score d K (A', V', q) w"
       using eq_range
       by simp
-    hence "arg_min_set (score d K (A, V, p)) (limit_set A UNIV) 
+    hence "arg_min_set (score d K (A, V, p)) (limit_set A UNIV)
             = arg_min_set (score d K (A', V', q)) (limit_set A' UNIV)"
-      using arg_min_set.simps eq_univ
+      using eq_univ
       by presburger
     thus "\<R>\<^sub>\<W> d K V A p = \<R>\<^sub>\<W> d K V' A' q"
       by simp
   qed
   thus "distance_\<R> d K V A p = distance_\<R> d K V' A' q"
-    using eq_univ distance_\<R>.simps
+    using eq_univ
     by simp
 qed
 

@@ -31,8 +31,7 @@ fun pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> ('a, nat) Profile" where
 
 lemma prof_abstr_presv_size:
   fixes p :: "'a Profile_List"
-  shows "length p = length (to_list {0..<length p} (pl_to_pr_\<alpha> p))"
-  unfolding pl_to_pr_\<alpha>.simps to_list.simps
+  shows "length p = length (to_list {0 ..< length p} (pl_to_pr_\<alpha> p))"
   by simp
 
 text \<open>
@@ -48,10 +47,10 @@ lemma refinement:
     A :: "'a set" and
     p :: "'a Profile_List"
   assumes "profile_l A p"
-  shows "profile {0..<length p} A (pl_to_pr_\<alpha> p)"
+  shows "profile {0 ..< length p} A (pl_to_pr_\<alpha> p)"
 proof (unfold profile_def, safe)
-  fix i :: nat
-  assume in_range: "i \<in> {0..<length p}"
+  fix i :: "nat"
+  assume in_range: "i \<in> {0 ..< length p}"
   moreover have "well_formed_l (p!i)"
     using assms in_range
     unfolding profile_l_def
@@ -62,7 +61,6 @@ proof (unfold profile_def, safe)
     by simp
   ultimately show "linear_order_on A (pl_to_pr_\<alpha> p i)"
     using lin_ord_equiv length_map nth_map
-    unfolding pl_to_pr_\<alpha>.simps
     by auto
 qed
 

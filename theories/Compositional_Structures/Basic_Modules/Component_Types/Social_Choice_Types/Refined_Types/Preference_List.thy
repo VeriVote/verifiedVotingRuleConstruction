@@ -288,7 +288,7 @@ next
   thus ?thesis
   proof (unfold linear_order_on_def total_on_def antisym_def
     partial_order_on_def preorder_on_def, safe)
-    have "A \<noteq> {}" 
+    have "A \<noteq> {}"
       using False
       by simp
     hence "\<forall> l \<in> permutations_of_set A. l \<noteq> []"
@@ -298,10 +298,10 @@ next
       using  is_less_preferred_than_l.simps
       unfolding permutations_of_set_def
       by simp
-    hence "\<forall> a \<in> A. \<forall> l \<in> permutations_of_set A. (a,a) \<in> pl_\<alpha> l"
+    hence "\<forall> a \<in> A. \<forall> l \<in> permutations_of_set A. (a, a) \<in> pl_\<alpha> l"
       unfolding pl_\<alpha>_def
       by simp
-    hence "\<forall> a \<in> A. (a,a) \<in> r"
+    hence "\<forall> a \<in> A. (a, a) \<in> r"
       using el
       by auto
     moreover have "r \<subseteq> A \<times> A"
@@ -322,11 +322,11 @@ next
     assume
       x_rel_y: "(x, y) \<in> r" and
       y_rel_x: "(y, x) \<in> r"
-    have "\<forall> x y. \<forall> l \<in> permutations_of_set A. (x \<lesssim>\<^sub>l y \<and> y \<lesssim>\<^sub>l x \<longrightarrow> x = y)"
+    have "\<forall> x y. \<forall> l \<in> permutations_of_set A. x \<lesssim>\<^sub>l y \<and> y \<lesssim>\<^sub>l x \<longrightarrow> x = y"
       using  is_less_preferred_than_l.simps  index_eq_index_conv nle_le
       unfolding permutations_of_set_def
       by metis
-    hence "\<forall> x y. \<forall> l \<in> pl_\<alpha> ` permutations_of_set A. ((x, y) \<in> l \<and> (y, x) \<in> l \<longrightarrow> x = y)"
+    hence "\<forall> x y. \<forall> l \<in> pl_\<alpha> ` permutations_of_set A. (x, y) \<in> l \<and> (y, x) \<in> l \<longrightarrow> x = y"
       unfolding pl_\<alpha>_def permutations_of_set_def antisym_on_def
       by blast
     thus "x = y"
@@ -337,20 +337,20 @@ next
       x :: 'a and
       y :: 'a
     assume
-      "x \<in> A" and
-      "y \<in> A" and
-      "x \<noteq> y" and
-      "(y, x) \<notin> r"
-    have "\<forall> x y. \<forall> l \<in> permutations_of_set A. (x \<in> A \<and> y \<in> A \<and> x \<noteq> y \<and> (\<not> y \<lesssim>\<^sub>l x) \<longrightarrow> x \<lesssim>\<^sub>l y)"
+      x_in_A: "x \<in> A" and
+      y_in_A: "y \<in> A" and
+      x_neq_y: "x \<noteq> y" and
+      not_y_x_rel: "(y, x) \<notin> r"
+    have "\<forall> x y. \<forall> l \<in> permutations_of_set A. x \<in> A \<and> y \<in> A \<and> x \<noteq> y \<and> (\<not> y \<lesssim>\<^sub>l x) \<longrightarrow> x \<lesssim>\<^sub>l y"
       using  is_less_preferred_than_l.simps
       unfolding permutations_of_set_def
       by auto
-    hence "\<forall> x y. \<forall> l \<in> pl_\<alpha> ` permutations_of_set A. 
-            (x \<in> A \<and> y \<in> A \<and> x \<noteq> y \<and> (y, x) \<notin> l \<longrightarrow> (x, y) \<in> l)"
+    hence "\<forall> x y. \<forall> l \<in> pl_\<alpha> ` permutations_of_set A.
+            x \<in> A \<and> y \<in> A \<and> x \<noteq> y \<and> (y, x) \<notin> l \<longrightarrow> (x, y) \<in> l"
       unfolding pl_\<alpha>_def permutations_of_set_def
       by blast
     thus "(x, y) \<in> r"
-      using \<open>x \<in> A\<close> \<open>y \<in> A\<close> \<open>x \<noteq> y\<close> \<open>(y, x) \<notin> r\<close> el
+      using x_in_A y_in_A x_neq_y not_y_x_rel el
       by auto
   qed
 qed
@@ -364,91 +364,90 @@ lemma lin_order_pl_\<alpha>:
     fin: "finite A"
   shows "r \<in> pl_\<alpha> ` permutations_of_set A"
 proof -
-  let ?\<phi> = "(\<lambda>a. card ((underS r a) \<inter> A))"
-  let ?inv = "(the_inv_into A ?\<phi>)"
-  let ?l = "map (\<lambda>x. ?inv x) (rev [0..<(card A)])"
-  have antisym: "\<forall> a b. (a \<in> ((underS r b) \<inter> A) \<and> b \<in> ((underS r a) \<inter> A) \<longrightarrow> False)"
+  let ?\<phi> = "\<lambda>a. card ((underS r a) \<inter> A)"
+  let ?inv = "the_inv_into A ?\<phi>"
+  let ?l = "map (\<lambda>x. ?inv x) (rev [0 ..< card A])"
+  have antisym: "\<forall> a b. a \<in> ((underS r b) \<inter> A) \<and> b \<in> ((underS r a) \<inter> A) \<longrightarrow> False"
     using lin_order
     unfolding underS_def linear_order_on_def partial_order_on_def antisym_def
     by auto
-  hence "\<forall> a b c. (a \<in> (underS r b) \<inter> A \<longrightarrow> b \<in> (underS r c) \<inter> A 
-                            \<longrightarrow> a \<in> (underS r c) \<inter> A)"
+  hence "\<forall> a b c. a \<in> (underS r b) \<inter> A \<longrightarrow> b \<in> (underS r c) \<inter> A
+                            \<longrightarrow> a \<in> (underS r c) \<inter> A"
     using lin_order CollectD CollectI transD IntE IntI
-    unfolding underS_def linear_order_on_def partial_order_on_def preorder_on_def trans_def
+    unfolding underS_def linear_order_on_def partial_order_on_def preorder_on_def
     by (metis (mono_tags, lifting))
-  hence "\<forall> a b. (a \<in> (underS r b) \<inter> A \<longrightarrow> (underS r a) \<inter> A \<subset> (underS r b) \<inter> A)"
+  hence "\<forall> a b. a \<in> (underS r b) \<inter> A \<longrightarrow> (underS r a) \<inter> A \<subset> (underS r b) \<inter> A"
     using antisym
     by blast
-  hence mon: "\<forall> a b. (a \<in> (underS r b) \<inter> A \<longrightarrow> ?\<phi> a < ?\<phi> b)"
+  hence mon: "\<forall> a b. a \<in> (underS r b) \<inter> A \<longrightarrow> ?\<phi> a < ?\<phi> b"
     by (simp add: fin psubset_card_mono)
-  moreover have total_underS: "\<forall> a b. (a \<in> A \<and> b \<in> A \<and> a \<noteq> b) 
-                    \<longrightarrow> (a \<in> ((underS r b) \<inter> A) \<or> b \<in> ((underS r a) \<inter> A))"
+  moreover have total_underS: "\<forall> a b. a \<in> A \<and> b \<in> A \<and> a \<noteq> b
+                    \<longrightarrow> a \<in> ((underS r b) \<inter> A) \<or> b \<in> ((underS r a) \<inter> A)"
     using lin_order totalp_onD totalp_on_total_on_eq
     unfolding underS_def linear_order_on_def partial_order_on_def antisym_def
     by fastforce
-  ultimately have "\<forall> a b. (a \<in> A \<and> b \<in> A \<and> a \<noteq> b) \<longrightarrow> ?\<phi> a \<noteq> ?\<phi> b"
+  ultimately have "\<forall> a b. a \<in> A \<and> b \<in> A \<and> a \<noteq> b \<longrightarrow> ?\<phi> a \<noteq> ?\<phi> b"
     by (metis order_less_imp_not_eq2)
   hence inj: "inj_on ?\<phi> A"
-    using inj_on_def 
+    using inj_on_def
     by blast
   have in_bounds: "\<forall> a \<in> A. ?\<phi> a < card A"
     using CollectD IntD1 card_seteq fin inf_sup_ord(2) linorder_le_less_linear
     unfolding underS_def
     by (metis (mono_tags, lifting))
-  hence "?\<phi> ` A \<subseteq> {0..<(card A)}"
-    using atLeast0LessThan 
+  hence "?\<phi> ` A \<subseteq> {0 ..< card A}"
+    using atLeast0LessThan
     by blast
   moreover have "card (?\<phi> ` A) = card A"
-    using inj fin card_image 
+    using inj fin card_image
     by blast
-  ultimately have "?\<phi> ` A = {0..<(card A)}"
+  ultimately have "?\<phi> ` A = {0 ..< card A}"
     by (simp add: card_subset_eq)
-  hence bij: "bij_betw ?\<phi> A {0..<(card A)}"
+  hence bij: "bij_betw ?\<phi> A {0 ..< card A}"
     using inj bij_betw_def
     by fastforce
-  hence bij_inv: "bij_betw ?inv {0..<(card A)} A"
+  hence bij_inv: "bij_betw ?inv {0 ..< card A} A"
     by (rule bij_betw_the_inv_into)
-  hence "?inv ` {0..<(card A)} = A"
+  hence "?inv ` {0 ..< card A} = A"
     using bij_inv bij_betw_def
     by meson
   hence "set ?l = A" by simp
-  moreover have "distinct ?l"
+  moreover have dist_l: "distinct ?l"
     using bij_inv
     by (simp add: bij_betw_imp_inj_on distinct_map)
   ultimately have "?l \<in> permutations_of_set A" by auto
-  moreover have index_eq: "\<forall> a \<in> A. (index ?l a = card A - 1 - ?\<phi> a)"
+  moreover have index_eq: "\<forall> a \<in> A. index ?l a = card A - 1 - ?\<phi> a"
   proof 
     fix 
       a :: 'a
-    assume "a \<in> A"
+    assume a_in_A: "a \<in> A"
     have "\<forall> xs. \<forall> i < length xs. (rev xs)!i = xs!(length xs - 1 - i)"
       using rev_nth 
       by auto
-    hence "\<forall> i < length [0..<card A]. (rev [0..<card A])!i 
-              = [0..<card A]!(length [0..<card A] - 1 - i)"
+    hence "\<forall> i < length [0 ..< card A]. (rev [0 ..< card A])!i
+              = [0 ..< card A]!(length [0 ..< card A] - 1 - i)"
       by blast
-    moreover have "\<forall> i < card A. [0..<card A]!i = i" by simp
-    moreover have "length [0..<card A] = card A" by simp
-    ultimately have "\<forall> i < (card A). (rev [0..<card A])!i = card A - 1 - i"
+    moreover have "\<forall> i < card A. [0 ..< card A]!i = i" by simp
+    moreover have card_A_len: "length [0 ..< card A] = card A" by simp
+    ultimately have "\<forall> i < card A. (rev [0 ..< card A])!i = card A - 1 - i"
       using diff_Suc_eq_diff_pred diff_less diff_self_eq_0 less_imp_diff_less zero_less_Suc
       by metis
-    moreover have "\<forall> i < (card A). ?l!i = ?inv ((rev [0..<card A])!i)"
+    moreover have "\<forall> i < card A. ?l!i = ?inv ((rev [0 ..< card A])!i)"
       by simp
-    ultimately have "\<forall> i < (card A). ?l!i = ?inv (card A - 1 - i)"
+    ultimately have "\<forall> i < card A. ?l!i = ?inv (card A - 1 - i)"
       by presburger
-    moreover have "(card A - 1 - (card A - 1 - card (underS r a \<inter> A))) = card (underS r a \<inter> A)" 
-      using in_bounds \<open>a \<in> A\<close>
+    moreover have "card A - 1 - (card A - 1 - card (underS r a \<inter> A)) = card (underS r a \<inter> A)"
+      using in_bounds a_in_A
       by auto
     moreover have "?inv (card (underS r a \<inter> A)) = a"
-      using \<open>a \<in> A\<close> inj the_inv_into_f_f 
+      using a_in_A inj the_inv_into_f_f
       by fastforce
     ultimately have "?l!(card A - 1 - card (underS r a \<inter> A)) = a"
-      using in_bounds \<open>a \<in> A\<close> card_Diff_singleton card_Suc_Diff1 diff_less_Suc fin
+      using in_bounds a_in_A card_Diff_singleton card_Suc_Diff1 diff_less_Suc fin
       by metis
-    thus "index ?l a = (card A - 1 - card (underS r a \<inter> A))"
-      using bij_inv \<open>distinct ?l\<close> \<open>a \<in> A\<close> \<open>length [0..<card A] = card A\<close>
-            card_Diff_singleton card_Suc_Diff1 diff_less_Suc fin index_nth_id
-            length_map length_rev
+    thus "index ?l a = card A - 1 - card (underS r a \<inter> A)"
+      using bij_inv dist_l a_in_A card_A_len card_Diff_singleton card_Suc_Diff1
+            diff_less_Suc fin index_nth_id length_map length_rev
       by metis
   qed
   moreover have "pl_\<alpha> ?l = r"
@@ -458,13 +457,13 @@ proof -
       fix
         a :: 'a and
         b :: 'a
-      assume 
+      assume
         "(a, b) \<in> r"
       hence "a \<in> A"
         using lin_order
         unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
         by auto
-      thus "a \<in> ?inv ` {0..<card A}"
+      thus "a \<in> ?inv ` {0 ..< card A}"
         using bij_inv bij_betw_def
         by metis
     next
@@ -477,7 +476,7 @@ proof -
         using lin_order
         unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
         by auto
-      thus "b \<in> ?inv ` {0..<card A}"
+      thus "b \<in> ?inv ` {0 ..< card A}"
         using bij_inv bij_betw_def
         by metis
     next
@@ -494,8 +493,8 @@ proof -
         using lin_order rel
         unfolding underS_def
         by simp
-      ultimately have "?\<phi> a \<le> ?\<phi> b" 
-        using mon le_eq_less_or_eq 
+      ultimately have "?\<phi> a \<le> ?\<phi> b"
+        using mon le_eq_less_or_eq
         by auto
       thus "index ?l b \<le> index ?l a"
         using index_eq el_A diff_le_mono2
@@ -511,45 +510,45 @@ proof -
         in_bnds_a: "a < card A" and
         in_bnds_b: "b < card A" and
         index_rel: "index ?l (?inv b) \<le> index ?l (?inv a)"
-      have el_a: "(?inv a) \<in> A"
+      have el_a: "?inv a \<in> A"
         using bij_inv in_bnds_a atLeast0LessThan
         unfolding bij_betw_def
         by auto
-      moreover have el_b: "(?inv b) \<in> A"
+      moreover have el_b: "?inv b \<in> A"
         using bij_inv in_bnds_b atLeast0LessThan
         unfolding bij_betw_def
         by auto
       ultimately have leq_diff: "card A - 1 - (?\<phi> (?inv b)) \<le> card A - 1 - (?\<phi> (?inv a))"
         using index_rel index_eq
         by metis
-      have "\<forall> a < card A. (?\<phi> (?inv a)) < card A"
+      have "\<forall> a < card A. ?\<phi> (?inv a) < card A"
         using fin bij_inv bij
         unfolding bij_betw_def
         by fastforce
-      hence "(?\<phi> (?inv b)) \<le> card A - 1 \<and> (?\<phi> (?inv a)) \<le> card A - 1"
+      hence "?\<phi> (?inv b) \<le> card A - 1 \<and> ?\<phi> (?inv a) \<le> card A - 1"
         using in_bnds_a in_bnds_b fin
         by fastforce
-      hence "(?\<phi> (?inv b)) \<ge> (?\<phi> (?inv a))"
-        using fin leq_diff le_diff_iff' 
+      hence "?\<phi> (?inv b) \<ge> ?\<phi> (?inv a)"
+        using fin leq_diff le_diff_iff'
         by blast
-      hence cases: "(?\<phi> (?inv a)) < (?\<phi> (?inv b)) \<or> (?\<phi> (?inv a)) = (?\<phi> (?inv b))"
+      hence cases: "?\<phi> (?inv a) < ?\<phi> (?inv b) \<or> ?\<phi> (?inv a) = ?\<phi> (?inv b)"
         by auto
       have "\<forall> a b. a \<in> A \<and> b \<in> A \<and> ?\<phi> a < ?\<phi> b \<longrightarrow> a \<in> underS r b"
         using mon total_underS antisym IntD1 order_less_not_sym
         by metis
-      hence "(?\<phi> (?inv a)) < (?\<phi> (?inv b)) \<longrightarrow> ?inv a \<in> underS r (?inv b)" 
+      hence "?\<phi> (?inv a) < ?\<phi> (?inv b) \<longrightarrow> ?inv a \<in> underS r (?inv b)"
         using el_a el_b
         by blast
-      hence cases_less: "(?\<phi> (?inv a)) < (?\<phi> (?inv b)) \<longrightarrow> (?inv a, ?inv b) \<in> r"
+      hence cases_less: "?\<phi> (?inv a) < ?\<phi> (?inv b) \<longrightarrow> (?inv a, ?inv b) \<in> r"
         unfolding underS_def
         by simp
       have "\<forall> a b. a \<in> A \<and> b \<in> A \<and> ?\<phi> a = ?\<phi> b \<longrightarrow> a = b"
         using mon total_underS antisym order_less_not_sym
         by metis
-      hence "(?\<phi> (?inv a)) = (?\<phi> (?inv b)) \<longrightarrow> ?inv a = ?inv b"
+      hence "?\<phi> (?inv a) = ?\<phi> (?inv b) \<longrightarrow> ?inv a = ?inv b"
         using el_a el_b
         by simp
-      hence cases_eq: "(?\<phi> (?inv a)) = (?\<phi> (?inv b)) \<longrightarrow> (?inv a, ?inv b) \<in> r"
+      hence cases_eq: "?\<phi> (?inv a) = ?\<phi> (?inv b) \<longrightarrow> (?inv a, ?inv b) \<in> r"
         using lin_order el_a el_b
         unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
         by auto
@@ -566,9 +565,11 @@ lemma pl_\<alpha>_eq_imp_list_eq:
     xs :: "'x list" and
     ys :: "'x list"
   assumes
-    "finite (set xs)" and "set xs = set ys" and
-    "distinct xs" and "distinct ys" and
-    "pl_\<alpha> xs = pl_\<alpha> ys"
+    fin_set_xs: "finite (set xs)" and
+    set_eq: "set xs = set ys" and
+    dist_xs: "distinct xs" and
+    dist_ys: "distinct ys" and
+    pl_\<alpha>_eq: "pl_\<alpha> xs = pl_\<alpha> ys"
   shows
     "xs = ys"
   sorry
@@ -667,7 +668,7 @@ next
         unfolding pl_\<alpha>_def
         by fastforce
     next
-      have "\<forall> a' l' a''. ((a'::'a) \<lesssim>\<^sub>l' a'') =
+      have "\<forall> a' l' a''. (a'::'a) \<lesssim>\<^sub>l' a'' =
             (a' \<in> set l' \<and> a'' \<in> set l' \<and> index l' a'' \<le> index l' a')"
         using is_less_preferred_than_l.simps
         by blast
@@ -676,9 +677,9 @@ next
         {(a', a''). a' \<in> set (limit_l A l) \<and> a'' \<in> set (limit_l A l) \<and>
             index (limit_l A l) a'' \<le> index (limit_l A l) a'}"
         by presburger
-      moreover from this have
-        "{(a', b'). a' \<lesssim>\<^sub>l b'} =
-            {(a', a''). a' \<in> set l \<and> a'' \<in> set l \<and> index l a'' \<le> index l a'}"
+      moreover from this
+      have "{(a', b'). a' \<lesssim>\<^sub>l b'} =
+        {(a', a''). a' \<in> set l \<and> a'' \<in> set l \<and> index l a'' \<le> index l a'}"
         using is_less_preferred_than_l.simps
         by auto
       ultimately have "{(a', b').

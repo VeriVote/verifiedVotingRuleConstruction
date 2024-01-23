@@ -54,12 +54,12 @@ text \<open>
 \<close>
 
 locale result =
-  fixes well_formed :: "'a set \<Rightarrow> ('r Result) \<Rightarrow> bool" 
+  fixes well_formed :: "'a set \<Rightarrow> ('r Result) \<Rightarrow> bool"
     and limit_set :: "'a set \<Rightarrow> 'r set \<Rightarrow> 'r set"
-  assumes "\<And> A r. (set_equals_partition (limit_set A UNIV) r \<and> disjoint3 r) 
+  assumes "\<And> A r. (set_equals_partition (limit_set A UNIV) r \<and> disjoint3 r)
             \<Longrightarrow> well_formed A r"
 
-(* and "\<And> A B r1 r2 r3. A \<subseteq> B \<Longrightarrow> well_formed B (r1, r2, r3) 
+(* and "\<And> A B r1 r2 r3. A \<subseteq> B \<Longrightarrow> well_formed B (r1, r2, r3)
             \<Longrightarrow> well_formed A ((limit_set A r1), (limit_set A r2), (limit_set A r3))" *)
 
 text \<open>
