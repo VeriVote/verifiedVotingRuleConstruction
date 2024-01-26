@@ -560,6 +560,37 @@ proof -
   ultimately show "r \<in> pl_\<alpha> ` permutations_of_set A" by auto
 qed
 
+lemma index_helper:
+  fixes
+    xs :: "'x list" and
+    x :: 'x
+  assumes
+    fin_set_xs: "finite (set xs)" and
+    dist_xs: "distinct xs" and
+    "x \<in> set xs"
+  shows
+    "index xs x = card {y \<in> set xs. index xs y < index xs x}"
+proof -
+  have bij: "bij_betw (index xs) (set xs) {0..<length xs}"
+    using assms bij_betw_index 
+    by blast
+  hence "card {y \<in> set xs. index xs y < index xs x} = 
+    card (index xs ` {y \<in> set xs. index xs y < index xs x})"
+    by (metis (no_types, lifting) CollectD bij_betw_same_card bij_betw_subset subsetI)
+  also have "index xs ` {y \<in> set xs. index xs y < index xs x} =
+    {m |m. m \<in> index xs ` (set xs) \<and> m < index xs x}"
+    by blast
+  also have 
+    "{m |m. m \<in> index xs ` (set xs) \<and> m < index xs x} = {m |m. m < index xs x}"
+    using bij assms atLeastLessThan_iff bot_nat_0.extremum 
+          index_image index_less_size_conv order_less_trans
+    by metis
+  also have "card {m |m. m < index xs x} = index xs x"
+    by simp
+  finally show ?thesis
+    by simp
+qed
+
 lemma pl_\<alpha>_eq_imp_list_eq:
   fixes
     xs :: "'x list" and
@@ -572,8 +603,47 @@ lemma pl_\<alpha>_eq_imp_list_eq:
     pl_\<alpha>_eq: "pl_\<alpha> xs = pl_\<alpha> ys"
   shows
     "xs = ys"
-  sorry
-
+proof (rule ccontr)
+  assume "xs \<noteq> ys"
+  moreover with this have "xs \<noteq> [] \<and> ys \<noteq> []"
+    using set_eq
+    by auto
+  ultimately obtain i :: nat and x :: 'x where 
+    "i < length xs" and
+    "xs!i \<noteq> ys!i" and
+    "x = xs!i" and "x \<in> set xs"
+    using dist_xs dist_ys distinct_remdups_id 
+          length_remdups_card_conv nth_equalityI nth_mem set_eq
+    by metis
+  moreover with this have neq_ind: "index xs x \<noteq> index ys x"
+    by (metis dist_xs index_nth_id nth_index set_eq)
+  ultimately have "card {y \<in> set xs. index xs y < index xs x} \<noteq> 
+    card {y \<in> set xs. index ys y < index ys x}"
+    using dist_xs dist_ys set_eq index_helper fin_set_xs
+    by (metis (mono_tags))
+  then obtain y :: 'x where
+    "y \<in> set xs" and
+    "y \<noteq> x" and
+    neq_indices:
+      "(index xs y < index xs x \<and> index ys y > index ys x) \<or>
+        (index ys y < index ys x \<and> index xs y > index xs x)"
+    by (metis (mono_tags, lifting) index_eq_index_conv not_less_iff_gr_or_eq set_eq)
+  hence "(is_less_preferred_than_l x xs y \<and> is_less_preferred_than_l y ys x) \<or> 
+    (is_less_preferred_than_l x ys y \<and> is_less_preferred_than_l y xs x)"
+    unfolding is_less_preferred_than_l.simps
+    using \<open>x \<in> set xs\<close> less_imp_le_nat set_eq 
+    by blast
+  hence 
+    "((x, y) \<in> pl_\<alpha> xs \<and> (x, y) \<notin> pl_\<alpha> ys) \<or> ((x, y) \<in> pl_\<alpha> ys \<and> (x, y) \<notin> pl_\<alpha> xs)"
+    unfolding pl_\<alpha>_def
+    using is_less_preferred_than_l.simps \<open>y \<noteq> x\<close> neq_indices
+          case_prod_conv linorder_not_less mem_Collect_eq
+    by metis
+  thus "False"
+    using pl_\<alpha>_eq
+    by blast
+qed
+  
 lemma pl_\<alpha>_bij_betw:
   fixes
     X :: "'x set"
