@@ -813,8 +813,9 @@ next
       "\<forall> b. (\<lambda> b'. (\<chi> i. if i = b' then x$b' else 0)$b) =
         (\<lambda> b'. if b' = b then x$b else 0)"
       by force
-    moreover have "\<forall> b. sum (\<lambda> b'. if b' = b then x$b else 0) UNIV = x$b"
-      sorry (* All summands but that one are 0 *)
+    moreover have "\<forall> b. sum (\<lambda> b'. if b' = b then x$b else 0) UNIV = 
+      x$b + sum (\<lambda> b'. 0) (UNIV - {b})"
+      by simp
     ultimately have "\<forall> b. (sum (\<lambda> x. (f x) *\<^sub>R x) standard_basis)$b = x$b"
       by simp
     hence "sum (\<lambda> x. (f x) *\<^sub>R x) standard_basis = x"
@@ -835,6 +836,15 @@ next
       by blast
   qed
 qed
+
+lemma fract_distr_helper:
+  fixes
+     a :: int and
+     b :: int and 
+     c :: int
+  assumes "c \<noteq> 0"
+  shows "Fract a c + Fract b c = Fract (a + b) c"
+  by (metis add_rat assms mult.commute mult_rat_cancel ring_class.ring_distribs(2))
 
 lemma anon_hom_equiv_rel:
   fixes X :: "('a, 'v) Election set"
@@ -875,6 +885,66 @@ next
       unfolding anon_hom\<^sub>\<R>.simps
       by blast
   qed
+qed
+
+lemma fract_distr:
+  fixes
+    A :: "'x set" and
+    f :: "'x \<Rightarrow> int" and
+    b :: int
+  assumes
+    "finite A" and
+    "b \<noteq> 0"
+  shows
+    "sum (\<lambda>a. Fract (f a) b) A = Fract (sum f A) b"
+  using assms
+proof (induction "card A" arbitrary: A f b)
+  case 0
+  fix
+    A :: "'x set" and
+    f :: "'x \<Rightarrow> int" and
+    b :: int
+  assume
+    "0 = card A" and
+    "finite A" and
+    "b \<noteq> 0"
+  hence "sum (\<lambda>a. Fract (f a) b) A = 0 \<and> sum f A = 0"
+    by simp
+  thus ?case
+    using 0 rat_number_collapse 
+    by simp
+next
+  case (Suc n)
+  fix
+    A :: "'x set" and
+    f :: "'x \<Rightarrow> int" and
+    b :: int and 
+    n :: nat
+  assume
+    card_A: "Suc n = card A" and
+    fin_A: "finite A" and
+    "b \<noteq> 0" and
+    hyp:
+      "\<And>A f b.
+           n = card (A::'x set) \<Longrightarrow>
+           finite A \<Longrightarrow> b \<noteq> 0 \<Longrightarrow> (\<Sum>a\<in>A. Fract (f a) b) = Fract (sum f A) b"
+  hence "A \<noteq> {}"
+    by auto
+  then obtain c :: 'x where 
+    "c \<in> A" 
+    by blast
+  hence "(\<Sum>a \<in> A. Fract (f a) b) = (\<Sum>a \<in> A - {c}. Fract (f a) b) + Fract (f c) b"
+    by (simp add: \<open>finite A\<close> sum_diff1)
+  also have "... = Fract (sum f (A - {c})) b + Fract (f c) b"
+    using hyp[of "A - {c}" b f] card_A fin_A \<open>b \<noteq> 0\<close> \<open>c \<in> A\<close>
+    by (metis Diff_empty card_Diff_singleton diff_Suc_1 finite_Diff_insert)
+  also have "... = Fract (sum f (A - {c}) + f c) b"
+    using \<open>c \<in> A\<close> \<open>b \<noteq> 0\<close> fract_distr_helper[of b "sum f (A - {c})" "f c"]
+    by blast
+  also have "... = Fract (sum f A) b"
+    by (simp add: \<open>c \<in> A\<close> fin_A sum_diff1)
+  finally show "(\<Sum>a\<in>A. Fract (f a) b) = Fract (sum f A) b"
+    by blast
 qed
 
 subsubsection \<open>Simplex Bijection\<close>
@@ -1052,12 +1122,15 @@ next
     moreover have gt_0: "finite (votrs_\<E> E) \<and> votrs_\<E> E \<noteq> {} \<longrightarrow> ?sum > 0"
       using eq_card
       by fastforce
-    moreover from this
-    have "sum (\<lambda> p. Fract (vote_count p E) ?sum) UNIV = Fract ?sum ?sum"
-      sorry (* Use that addition of rationals is distributive? *)
-    moreover have "Fract ?sum ?sum = 1"
-      using gt_0 One_rat_def Fract_coprime[of ?sum ?sum]
-      sorry (* Fract n n = 1 if n isn't 0, which it isn't here. *)
+    hence "finite (votrs_\<E> E) \<and> votrs_\<E> E \<noteq> {} \<longrightarrow> 
+      sum (\<lambda> p. Fract (vote_count p E) ?sum) UNIV = Fract ?sum ?sum"
+      using fract_distr[of UNIV ?sum "\<lambda>p. int (vote_count p E)"]
+            card_0_eq eq_card finite_class.finite_UNIV 
+            of_nat_eq_0_iff of_nat_sum sum.cong
+      by (metis (no_types, lifting))
+    moreover have "finite (votrs_\<E> E) \<and> votrs_\<E> E \<noteq> {} \<longrightarrow> Fract ?sum ?sum = 1"
+      using gt_0 One_rat_def eq_rat(1)[of ?sum 1 ?sum 1]
+      by linarith
     ultimately have sum_1:
       "finite (votrs_\<E> E) \<and> votrs_\<E> E \<noteq> {} \<longrightarrow> sum (\<lambda> p. vote_fraction p E) UNIV = 1"
       by presburger
@@ -1079,9 +1152,15 @@ next
     hence "\<forall> p. \<not> linear_order p \<longrightarrow> vote_fraction p E = 0"
       using rat_number_collapse
       by simp
-    hence "sum (\<lambda> p. vote_fraction p E) UNIV = sum (\<lambda> p. vote_fraction p E) {p. linear_order p}"
-      sorry
-      (* Decompose into sums over disjoint sets where the sum over non-linear orders is 0. *)
+    moreover have "sum (\<lambda> p. vote_fraction p E) UNIV =
+      sum (\<lambda> p. vote_fraction p E) {p. linear_order p} + 
+      sum (\<lambda> p. vote_fraction p E) (UNIV - {p. linear_order p})"
+      using \<open>finite UNIV\<close> CollectD Collect_mono Finite_Set.finite_set 
+            UNIV_I add.commute sum.subset_diff top_set_def
+      by metis
+    ultimately have "sum (\<lambda> p. vote_fraction p E) UNIV = 
+      sum (\<lambda> p. vote_fraction p E) {p. linear_order p}"
+      by simp
     moreover have "bij_betw ord2pref UNIV {p. linear_order p}"
       using inj_def ord2pref_inject range_ord2pref
       unfolding bij_betw_def
@@ -1234,6 +1313,7 @@ next
   next
     fix x :: "rat^('a Ordered_Preference)"
     assume "x \<in> rat_vec_set (convex hull standard_basis)"
+    \<comment> \<open>Convert rat vector x to real vector x'.\<close>
     then obtain x' :: "real^('a Ordered_Preference)" where
       conv: "x' \<in> convex hull standard_basis" and
       inv: "\<forall> p. x$p = the_inv real_of_rat (x'$p)" and
@@ -1390,14 +1470,17 @@ next
         \<forall> p. vote_fraction (ord2pref p) E = x'$p"
       using eq_vec
       by metis
-    hence "\<forall> p. \<forall> E \<in> anon_hom\<^sub>\<R> (fixed_alt_elections UNIV) `` {(UNIV, V, prof)}.
-            vote_fraction (ord2pref p) E = x'$p"
+    hence vec_entries_match_E_vote_frac:
+      "\<forall> p. \<forall> E \<in> anon_hom\<^sub>\<R> (fixed_alt_elections UNIV) `` {(UNIV, V, prof)}.
+        vote_fraction (ord2pref p) E = x'$p"
       by blast
-    moreover have
+    have 
+      "\<forall> x \<in> \<rat>. \<forall> y. complex_of_rat y = complex_of_real x \<longrightarrow> real_of_rat y = x"
+      by (metis Re_complex_of_real Re_divide_of_real of_rat.rep_eq of_real_of_int_eq)
+    hence
       "\<forall> x \<in> \<rat>. \<forall> y. complex_of_rat y = complex_of_real x \<longrightarrow> y = the_inv real_of_rat x"
-      unfolding Rats_def
-      sorry (* Manual type inference? *)
-    ultimately have all_eq_vec:
+      by (metis injI of_rat_eq_iff the_inv_f_f)
+    with vec_entries_match_E_vote_frac have all_eq_vec:
       "\<forall> p. \<forall> E \<in> anon_hom\<^sub>\<R> (fixed_alt_elections UNIV) `` {(UNIV, V, prof)}.
         vote_fraction (ord2pref p) E = x$p"
       using rat inv
