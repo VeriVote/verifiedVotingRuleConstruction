@@ -215,10 +215,10 @@ proof -
   have 2001: "defers 1 ?plurality_defer"
     using 20000 00011 00013 seq_comp_def_one
     by blast
-
-  have 002: "disjoint_compatibility ?compare_two ?drop2"
-    using assms 0020
-    (* by simp *)
+  hence 002: "disjoint_compatibility ?compare_two ?drop2"
+    using assms 0020 disj_compat_seq pass_mod_sound plurality_rule_sound 
+          rev_comp_sound seq_comp_sound 
+    (* Need to show "only_voters_vote ((plurality_rule\<down>) \<triangleright> pass_module 1 x)". *)
     sorry
   have 100: "non_electing ?compare_two"
     using 1000 1001 seq_comp_presv_non_electing
@@ -241,14 +241,12 @@ proof -
   have 20: "eliminates 1 ?eliminator"
     using 200 100 201 002 par_comp_elim_one
     by simp
-
   have 2: "defers 1 ?loop"
-    using 10 20
-    (* by simp *)
-    sorry
+    using 10 20 defer_equal_condition.simps
+    unfolding Let_def loop_composition.simps
+    by (metis iter_elim_def_n less_numeral_extra(1) prod.exhaust_sel)                         
   have 3: "electing elect_module"
     by simp
-
   show ?thesis
     using 2 3 assms seq_comp_electing smc_sound
     unfolding Defer_One_Loop_Composition.iter.simps
@@ -314,59 +312,55 @@ proof -
   have 2001: "defers 1 ?plurality_defer"
     using 20000 00011 00013 seq_comp_def_one
     by blast
-
   have 000: "defer_lift_invariance ?compare_two"
-    using 0000 0001
-    (* by simp *) (* seq_comp_presv_def_lift_inv *)
+    using 0000 0001 seq_comp_presv_def_lift_inv
+    (* Need to show "only_voters_vote ((plurality_rule\<down>) \<triangleright> pass_module 1 x)" *)
     sorry
   have 001: "defer_lift_invariance ?drop2"
     using assms
-    by simp (* drop_mod_def_lift_inv *)
+    by simp
   have 002: "disjoint_compatibility ?compare_two ?drop2"
-    using assms 0020
-    (* by simp *)
-      (* disj_compat_seq seq_comp_sound rev_comp_sound
-         plurality_sound pass_mod_sound *)
+    using assms 0020 disj_compat_seq pass_mod_sound 
+          plurality_rule_sound rev_comp_sound seq_comp_sound
+    (* Need to show "only_voters_vote (pass_module 2 x)" and 
+        "only_voters_vote ((plurality_rule\<down>) \<triangleright> pass_module 1 x)". *)
     sorry
   have 100: "non_electing ?compare_two"
     using 1000 1001 seq_comp_presv_non_electing
-    by simp (* seq_comp_presv_non_electing *)
+    by simp
   have 101: "non_electing ?drop2"
     using assms
-    by simp (* drop_mod_non_electing *)
+    by simp
   have 102: "agg_conservative max_aggregator"
-    by simp (* max_agg_conserv *)
+    by simp
   have 200: "defers 1 ?compare_two"
     using 2000 1000 2001 seq_comp_def_one
     by simp
   have 201: "rejects 2 ?drop2"
     using assms
-    by simp (* drop_two_mod_rej_two *)
-
+    by simp
   have 00: "defer_lift_invariance ?eliminator"
     using 000 001 002 par_comp_def_lift_inv
-    by blast (* par_comp_def_lift_inv *)
+    by blast
   have 10: "non_electing ?eliminator"
     using 100 101 conserv_max_agg_presv_non_electing
-    by blast (* conserv_agg_presv_non_electing *)
+    by blast
   have 20: "eliminates 1 ?eliminator"
     using 200 100 201 002 par_comp_elim_one
     by simp
-
   have 0: "defer_lift_invariance ?loop"
-    using 00
-    (* by simp *) (* loop_comp_presv_def_lift_inv *)
+    using 00 loop_comp_presv_def_lift_inv
+    (* Need to show "only_voters_vote 
+      ((pass_module 2 x \<triangleright> ((plurality_rule\<down>) \<triangleright> pass_module 1 x)) \<parallel>\<^sub>\<up> drop_module 2 x)". *)
     sorry
   have 1: "non_electing ?loop"
     using 10 loop_comp_presv_non_electing
-    by simp (* loop_comp_presv_non_electing *)
+    by simp
   have 2: "defers 1 ?loop"
-    using 10 20
-    (* by simp *) (* iter_elim_def_n *)
-    sorry
+    using 10 20 iter_elim_def_n
+    by (metis defer_equal_condition.simps prod.exhaust_sel zero_less_one)
   have 3: "electing elect_module"
-    by simp (* elect_mod_electing *)
-
+    by simp
   show ?thesis
     using 0 1 2 3 assms seq_comp_mono
     unfolding Electoral_Module.monotonicity_def elector.simps
