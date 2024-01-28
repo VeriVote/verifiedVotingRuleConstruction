@@ -29,6 +29,10 @@ theorem elect_mod_sound[simp]: "social_choice_result.electoral_module elect_modu
   unfolding social_choice_result.electoral_module_def
   by simp
 
+lemma elect_mod_only_voters: "only_voters_vote elect_module"
+  unfolding only_voters_vote_def
+  by simp
+
 subsection \<open>Electing\<close>
 
 theorem elect_mod_electing[simp]: "electing elect_module"

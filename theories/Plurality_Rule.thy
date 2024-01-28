@@ -119,6 +119,12 @@ proof (unfold social_choice_result.electoral_module_def, safe)
     by simp
 qed
 
+lemma plurality_rule_only_voters:
+  "only_voters_vote plurality_rule"
+  unfolding plurality_rule.simps
+  using elector_only_voters plurality_only_voters
+  by blast
+
 subsection \<open>Electing\<close>
 
 lemma plurality_rule_elect_non_empty:

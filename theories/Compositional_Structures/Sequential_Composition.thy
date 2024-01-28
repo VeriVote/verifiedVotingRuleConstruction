@@ -44,7 +44,7 @@ fun sequential_composition' :: "('a, 'v, 'a Result) Electoral_Module \<Rightarro
         (n_e, n_r, n_d) = n V new_A new_p in
             (m_e \<union> n_e, m_r \<union> n_r, n_d))"
 
-lemma seq_comp_presv_only_voters_vote:
+lemma seq_comp_only_voters:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     n :: "('a, 'v, 'a Result) Electoral_Module"

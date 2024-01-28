@@ -59,6 +59,14 @@ proof (unfold social_choice_result.electoral_module_def, safe)
     by simp
 qed
 
+lemma pass_mod_only_voters:
+  fixes
+    r :: "'a Preference_Relation" and
+    n :: nat
+  shows "only_voters_vote (pass_module n r)"
+  unfolding only_voters_vote_def pass_module.simps
+  by blast
+
 subsection \<open>Non-Blocking\<close>
 
 text \<open>
@@ -122,7 +130,6 @@ theorem pass_mod_non_electing[simp]:
   by simp
 
 subsection \<open>Properties\<close>
-
 
 text \<open>
   The pass module is strictly defer-monotone.

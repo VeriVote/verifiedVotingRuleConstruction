@@ -62,6 +62,14 @@ proof (unfold social_choice_result.electoral_module_def, safe)
     by simp
 qed
 
+lemma drop_mod_only_voters:
+  fixes
+    r :: "'a Preference_Relation" and
+    n :: nat
+  shows "only_voters_vote (drop_module n r)"
+  unfolding only_voters_vote_def
+  by simp
+
 subsection \<open>Non-Electing\<close>
 
 text \<open>

@@ -196,6 +196,30 @@ proof (unfold social_choice_result.electoral_module_def, safe)
     by simp
 qed
 
+lemma plurality_score_only_voters: "only_voters_count plurality_score"
+proof (unfold plurality_score.simps only_voters_count_def, safe)
+  fix
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile" and
+    p' :: "('b, 'a) Profile" and
+    a :: 'b
+  assume
+    "\<forall>v\<in>V. p v = p' v" and
+    "a \<in> A"
+  hence "finite V \<longrightarrow>
+    card {v \<in> V. above (p v) a = {a}} = card {v \<in> V. above (p' v) a = {a}}"
+    by (metis (no_types, lifting) Collect_cong)
+  thus "win_count V p a = win_count V p' a"
+    unfolding win_count.simps
+    by presburger
+qed
+    
+lemma plurality_only_voters: "only_voters_vote plurality"
+  unfolding plurality.simps
+  using max_elim_only_voters plurality_score_only_voters
+  by blast
+
 subsection \<open>Non-Blocking\<close>
 
 text \<open>

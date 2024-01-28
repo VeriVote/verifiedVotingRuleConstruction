@@ -215,11 +215,12 @@ proof -
   have 2001: "defers 1 ?plurality_defer"
     using 20000 00011 00013 seq_comp_def_one
     by blast
-  hence 002: "disjoint_compatibility ?compare_two ?drop2"
+  have 002: "disjoint_compatibility ?compare_two ?drop2"
     using assms 0020 disj_compat_seq pass_mod_sound plurality_rule_sound 
-          rev_comp_sound seq_comp_sound 
-    (* Need to show "only_voters_vote ((plurality_rule\<down>) \<triangleright> pass_module 1 x)". *)
-    sorry
+          rev_comp_sound seq_comp_sound pass_mod_only_voters 
+          plurality_rule_only_voters seq_comp_only_voters
+          rev_comp_only_voters
+    by metis
   have 100: "non_electing ?compare_two"
     using 1000 1001 seq_comp_presv_non_electing
     by simp
@@ -234,7 +235,6 @@ proof -
   have 201: "rejects 2 ?drop2"
     using assms
     by simp
-
   have 10: "non_electing ?eliminator"
     using 100 101 102 conserv_max_agg_presv_non_electing
     by blast
@@ -313,18 +313,19 @@ proof -
     using 20000 00011 00013 seq_comp_def_one
     by blast
   have 000: "defer_lift_invariance ?compare_two"
-    using 0000 0001 seq_comp_presv_def_lift_inv
-    (* Need to show "only_voters_vote ((plurality_rule\<down>) \<triangleright> pass_module 1 x)" *)
-    sorry
+    using 0000 0001 seq_comp_presv_def_lift_inv 
+          plurality_rule_only_voters pass_mod_only_voters
+          rev_comp_only_voters seq_comp_only_voters
+    by blast
   have 001: "defer_lift_invariance ?drop2"
     using assms
     by simp
   have 002: "disjoint_compatibility ?compare_two ?drop2"
-    using assms 0020 disj_compat_seq pass_mod_sound 
+    using assms 0020 disj_compat_seq pass_mod_sound pass_mod_only_voters
           plurality_rule_sound rev_comp_sound seq_comp_sound
-    (* Need to show "only_voters_vote (pass_module 2 x)" and 
-        "only_voters_vote ((plurality_rule\<down>) \<triangleright> pass_module 1 x)". *)
-    sorry
+          plurality_rule_only_voters pass_mod_only_voters
+          rev_comp_only_voters seq_comp_only_voters
+    by metis
   have 100: "non_electing ?compare_two"
     using 1000 1001 seq_comp_presv_non_electing
     by simp
@@ -350,9 +351,9 @@ proof -
     by simp
   have 0: "defer_lift_invariance ?loop"
     using 00 loop_comp_presv_def_lift_inv
-    (* Need to show "only_voters_vote 
-      ((pass_module 2 x \<triangleright> ((plurality_rule\<down>) \<triangleright> pass_module 1 x)) \<parallel>\<^sub>\<up> drop_module 2 x)". *)
-    sorry
+          plurality_rule_only_voters pass_mod_only_voters drop_mod_only_voters
+          rev_comp_only_voters seq_comp_only_voters max_par_comp_only_voters
+    by metis
   have 1: "non_electing ?loop"
     using 10 loop_comp_presv_non_electing
     by simp

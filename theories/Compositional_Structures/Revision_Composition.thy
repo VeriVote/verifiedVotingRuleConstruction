@@ -54,6 +54,14 @@ proof -
     by (simp add: social_choice_result.electoral_module_def)
 qed
 
+lemma rev_comp_only_voters:
+  fixes m :: "('a, 'v, 'a Result) Electoral_Module"
+  assumes "only_voters_vote m"
+  shows "only_voters_vote (revision_composition m)"
+  using assms 
+  unfolding only_voters_vote_def revision_composition.simps
+  by presburger
+
 subsection \<open>Composition Rules\<close>
 
 text \<open>

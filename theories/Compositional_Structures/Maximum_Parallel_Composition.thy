@@ -48,6 +48,20 @@ theorem max_par_comp_sound:
   using assms
   by simp
 
+lemma max_par_comp_only_voters:
+  fixes
+    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    n :: "('a, 'v, 'a Result) Electoral_Module"
+  assumes
+     "only_voters_vote m" and
+     "only_voters_vote n"
+  shows "only_voters_vote (m \<parallel>\<^sub>\<up> n)"
+  using max_aggregator.simps assms
+  unfolding Let_def maximum_parallel_composition.simps 
+            parallel_composition.simps 
+            only_voters_vote_def
+  by presburger
+ 
 subsection \<open>Lemmas\<close>
 
 lemma max_agg_eq_result:
