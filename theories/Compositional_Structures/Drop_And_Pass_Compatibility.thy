@@ -75,8 +75,8 @@ next
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile"   
-  assume 
+    p :: "('a, 'v) Profile"
+  assume
     card_n: "n \<le> card A" and
     fin_A: "finite A" and
     prof: "profile V A p"
@@ -91,7 +91,8 @@ next
     unfolding above_def
     by auto
   hence leq: "\<forall> a \<in> A. rank (limit A r) a \<le> card A"
-    by (simp add: card_mono fin_A)
+    using fin_A
+    by (simp add: card_mono)
   have "\<forall> a \<in> A. {a} \<subseteq> (above (limit A r) a)"
     using lin_ord_limit
     unfolding linear_order_on_def partial_order_on_def 
@@ -102,57 +103,54 @@ next
     by metis
   hence geq_1: "\<forall> a \<in> A. 1 \<le> rank (limit A r) a"
     by simp
-  with leq have
-    "\<forall> a \<in> A. rank (limit A r) a \<in> {1..card A}"
+  with leq have "\<forall> a \<in> A. rank (limit A r) a \<in> {1 .. card A}"
     by simp
-  hence "rank (limit A r) ` A \<subseteq> {1..card A}"
+  hence "rank (limit A r) ` A \<subseteq> {1 .. card A}"
     by auto
   moreover have inj: "inj_on (rank (limit A r)) A"
     using fin_A inj_onI rank_unique lin_ord_limit
     by metis
-  ultimately have bij: "bij_betw (rank (limit A r)) A {1..card A}"
-    using bij_betw_def bij_betw_finite bij_betw_iff_card card_seteq 
+  ultimately have bij: "bij_betw (rank (limit A r)) A {1 .. card A}"
+    using bij_betw_def bij_betw_finite bij_betw_iff_card card_seteq
           dual_order.refl ex_bij_betw_nat_finite_1 fin_A
     by metis
-  hence bij_inv: "bij_betw ?inv_rank {1..card A} A"
-    using bij_betw_the_inv_into 
+  hence bij_inv: "bij_betw ?inv_rank {1 .. card A} A"
+    using bij_betw_the_inv_into
     by blast
   hence "\<forall> S \<subseteq> {1..card A}. card (?inv_rank ` S) = card S"
     using fin_A bij_betw_same_card bij_betw_subset
     by metis
-  moreover have subset: "{1..n} \<subseteq> {1..card A}"
+  moreover have subset: "{1 .. n} \<subseteq> {1 .. card A}"
     using card_n
     by simp
-  ultimately have "card (?inv_rank ` {1..n}) = n"
-    using numeral_One numeral_eq_iff semiring_norm(85) card_atLeastAtMost 
+  ultimately have "card (?inv_rank ` {1 .. n}) = n"
+    using numeral_One numeral_eq_iff semiring_norm(85) card_atLeastAtMost
     by presburger
-  also have "?inv_rank ` {1..n} = {a \<in> A. rank (limit A r) a \<in> {1..n}}"
-  proof 
-    show "?inv_rank ` {1..n} \<subseteq> {a \<in> A. rank (limit A r) a \<in> {1..n}}"
+  also have "?inv_rank ` {1..n} = {a \<in> A. rank (limit A r) a \<in> {1 .. n}}"
+  proof
+    show "?inv_rank ` {1..n} \<subseteq> {a \<in> A. rank (limit A r) a \<in> {1 .. n}}"
     proof
-      fix 
-        a :: 'a
+      fix a :: "'a"
       assume "a \<in> ?inv_rank ` {1..n}"
-      then obtain b where b_img: "b \<in> {1..n} \<and> ?inv_rank b = a"
+      then obtain b where b_img: "b \<in> {1 .. n} \<and> ?inv_rank b = a"
         by auto
       hence "rank (limit A r) a = b"
         using subset f_the_inv_into_f_bij_betw subsetD bij
         by metis
-      hence "rank (limit A r) a \<in> {1..n}"
+      hence "rank (limit A r) a \<in> {1 .. n}"
         using b_img
         by simp
       moreover have "a \<in> A"
-        using b_img bij_inv bij_betwE subset 
+        using b_img bij_inv bij_betwE subset
         by blast
-      ultimately show "a \<in> {a \<in> A. rank (limit A r) a \<in> {1..n}}" 
+      ultimately show "a \<in> {a \<in> A. rank (limit A r) a \<in> {1 .. n}}"
         by blast
     qed
   next
-    show "{a \<in> A. rank (limit A r) a \<in> {1..n}} \<subseteq> the_inv_into A (rank (limit A r)) ` {1..n}"
+    show "{a \<in> A. rank (limit A r) a \<in> {1 .. n}} \<subseteq> the_inv_into A (rank (limit A r)) ` {1 .. n}"
     proof
-      fix 
-        a :: 'a
-      assume el: "a \<in> {a \<in> A. rank (limit A r) a \<in> {1..n}}"
+      fix a :: "'a"
+      assume el: "a \<in> {a \<in> A. rank (limit A r) a \<in> {1 .. n}}"
       then obtain b where b_img: "b \<in> {1..n} \<and> rank (limit A r) a = b"
         by auto
       moreover have "a \<in> A"
@@ -161,16 +159,15 @@ next
       ultimately have "?inv_rank b = a"
         using inj the_inv_into_f_f
         by metis
-      thus "a \<in> ?inv_rank ` {1..n}"
+      thus "a \<in> ?inv_rank ` {1 .. n}"
         using b_img
         by auto
     qed
-  qed   
+  qed
   finally have "card {a \<in> A. rank (limit A r) a \<in> {1..n}} = n"
     by blast
-  also have 
-    "{a \<in> A. rank (limit A r) a \<in> {1..n}} = {a \<in> A. rank (limit A r) a \<le> n}"
-    using geq_1 
+  also have "{a \<in> A. rank (limit A r) a \<in> {1 .. n}} = {a \<in> A. rank (limit A r) a \<le> n}"
+    using geq_1
     by auto
   also have "... = reject (drop_module n r) V A p"
     by simp
@@ -185,7 +182,7 @@ text \<open>
 theorem drop_pass_disj_compat[simp]:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   assumes "linear_order r"
   shows "disjoint_compatibility (drop_module n r) (pass_module n r)"
 proof (unfold disjoint_compatibility_def, safe)
@@ -197,21 +194,22 @@ next
     using assms
     by simp
 next
-  fix A :: "'a set" and V :: "'b set"
-  have "linear_order_on A (limit A r)" 
-    using assms limit_presv_lin_ord 
+  fix
+    A :: "'a set" and
+    V :: "'b set"
+  have "linear_order_on A (limit A r)"
+    using assms limit_presv_lin_ord
     by blast
-  hence "profile V A (\<lambda>v. (limit A r))"
-    using profile_def 
+  hence "profile V A (\<lambda> v. (limit A r))"
+    using profile_def
     by blast
   then obtain p :: "('a, 'b) Profile" where
     "profile V A p"
     by blast
-  show
-    "\<exists>B\<subseteq>A. (\<forall>a\<in>B. indep_of_alt (drop_module n r) V A a \<and>
-                         (\<forall>p. profile V A p \<longrightarrow> a \<in> reject (drop_module n r) V A p)) \<and>
-            (\<forall>a\<in>A - B. indep_of_alt (pass_module n r) V A a \<and>
-                      (\<forall>p. profile V A p \<longrightarrow> a \<in> reject (pass_module n r) V A p))"
+  show "\<exists> B \<subseteq> A. (\<forall> a \<in> B. indep_of_alt (drop_module n r) V A a \<and>
+                         (\<forall> p. profile V A p \<longrightarrow> a \<in> reject (drop_module n r) V A p)) \<and>
+            (\<forall> a \<in> A - B. indep_of_alt (pass_module n r) V A a \<and>
+                      (\<forall> p. profile V A p \<longrightarrow> a \<in> reject (pass_module n r) V A p))"
   proof
     have same_A:
       "\<forall> p q. (profile V A p \<and> profile V A q) \<longrightarrow>
@@ -224,18 +222,15 @@ next
       using assms
       unfolding indep_of_alt_def
       by simp
-    moreover have
-      "\<forall> a \<in> ?A. \<forall> p. profile V A p \<longrightarrow> a \<in> reject (drop_module n r) V A p"
+    moreover have "\<forall> a \<in> ?A. \<forall> p. profile V A p \<longrightarrow> a \<in> reject (drop_module n r) V A p"
       by auto
     moreover have "\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) V A a"
       using assms
       unfolding indep_of_alt_def
       by simp
-    moreover have
-      "\<forall> a \<in> A - ?A. \<forall> p. profile V A p \<longrightarrow> a \<in> reject (pass_module n r) V A p"
+    moreover have "\<forall> a \<in> A - ?A. \<forall> p. profile V A p \<longrightarrow> a \<in> reject (pass_module n r) V A p"
       by auto
-    ultimately show
-      "?A \<subseteq> A \<and>
+    ultimately show "?A \<subseteq> A \<and>
         (\<forall> a \<in> ?A. indep_of_alt (drop_module n r) V A a \<and>
           (\<forall> p. profile V A p \<longrightarrow> a \<in> reject (drop_module n r) V A p)) \<and>
         (\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) V A a \<and>

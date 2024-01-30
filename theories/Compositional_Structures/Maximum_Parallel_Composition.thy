@@ -179,7 +179,8 @@ next
               \<and> (a' \<in> elect m' V' A' p' \<longrightarrow> a' \<in> elect n' V' A' p')
               \<and> (a' \<in> reject m' V' A' p' \<longrightarrow> a' \<in> reject n' V' A' p')
               \<and> (a' \<in> defer m' V' A' p' \<longrightarrow> a' \<in> defer n' V' A' p'))"
-        by (simp add: mod_contains_result_def)
+        unfolding mod_contains_result_def
+        by simp
       have max_agg_res:
         "max_aggregator A (elect m V A p, reject m V A p, defer m V A p)
           (elect n V A p, reject n V A p, defer n V A p) = (m \<parallel>\<^sub>max_aggregator n) V A p"
@@ -242,7 +243,8 @@ next
     hence "let (e, r, d) = m V A p;
             (e', r', d') = n V A p in
               a \<in> reject_r (max_aggregator A (e, r, d) (e', r', d'))"
-      by (simp add: case_prod_unfold)
+      unfolding case_prod_unfold
+      by simp
     hence "let (e, r, d) = m V A p;
             (e', r', d') = n V A p in
               a \<in> A - (e \<union> e' \<union> d \<union> d')"
@@ -283,7 +285,8 @@ proof
   have "let (e, r, d) = m V A p;
           (e', r', d') = n V A p in
             a \<in> reject_r (max_aggregator A (e, r, d) (e', r', d'))"
-    by (simp add: prod.case_eq_if)
+    unfolding prod.case_eq_if
+    by simp
   hence "let (e, r, d) = m V A p;
             (e', r', d') = n V A p in
               a \<in> A - (e \<union> e' \<union> d \<union> d')"
@@ -355,7 +358,7 @@ next
     by (metis (no_types))
 next
   assume a_in_defer: "a \<in> defer m V A p"
-  then obtain d :: 'a where
+  then obtain d :: "'a" where
     defer_a: "a = d \<and> d \<in> defer m V A p"
     by metis
   have a_not_rej: "a \<notin> reject m V A p"
@@ -451,8 +454,8 @@ next
 next
   assume "a \<in> elect n V A p"
   thus "a \<in> elect (m \<parallel>\<^sub>\<up> n) V A p" 
-    using parallel_composition.simps[of m n max_aggregator V A p] 
-          max_aggregator.simps[of 
+    using parallel_composition.simps
+          max_aggregator.simps[of
             A "elect m V A p" "reject m V A p" "defer m V A p"
             "elect n V A p" "reject n V A p" "defer n V A p"]
     by simp
@@ -603,17 +606,16 @@ theorem par_comp_def_lift_inv[simp]:
     monotone_n: "defer_lift_invariance n"
   shows "defer_lift_invariance (m \<parallel>\<^sub>\<up> n)"
 proof (unfold defer_lift_invariance_def, safe)
-  have "social_choice_result.electoral_module m"
+  have mod_m: "social_choice_result.electoral_module m"
     using monotone_m
     unfolding defer_lift_invariance_def
     by simp
-  moreover have "social_choice_result.electoral_module n"
+  moreover have mod_n: "social_choice_result.electoral_module n"
     using monotone_n
     unfolding defer_lift_invariance_def
     by simp
   ultimately show "social_choice_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
     by simp
-next
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -773,15 +775,13 @@ next
       using DiffI lifted_a compatible f_profs
       unfolding Profile.lifted_def
       by (metis (no_types, lifting))
-    hence "a \<in> reject n V A p"
+    hence reject_n: "a \<in> reject n V A p"
       using alts f_profs
       by blast
     hence defer_m: "a \<in> defer m V A p"
-      using DiffD1 DiffD2 compatible dcompat_dec_by_one_mod f_profs defer_not_elec_or_rej
-            max_agg_sound par_comp_sound disjoint_compatibility_def not_rej_imp_elec_or_def
-            mod_contains_result_def defer_a
-      unfolding maximum_parallel_composition.simps
-      by (metis (no_types, lifting))
+      using mod_m mod_n defer_a f_profs max_agg_rej_fst_equiv_seq_contained
+      unfolding mod_contains_result_sym_def
+      by (metis (no_types))
     have "\<forall> b \<in> B. mod_contains_result (m \<parallel>\<^sub>\<up> n) n V A p b"
       using alts compatible f_profs max_agg_rej_snd_imp_seq_contained mod_contains_result_comm
       unfolding disjoint_compatibility_def
@@ -920,7 +920,7 @@ lemma par_comp_rej_card:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    c :: nat
+    c :: "nat"
   assumes
     compatible: "disjoint_compatibility m n" and
     prof: "profile V A p" and
@@ -947,7 +947,8 @@ proof -
     unfolding disjoint_compatibility_def
     by simp
   hence subsets: "(reject m V A p) \<subseteq> A \<and> (reject n V A p) \<subseteq> A"
-    by (simp add: prof reject_in_alts)
+    using prof
+    by (simp add: reject_in_alts)
   hence "finite (reject m V A p) \<and> finite (reject n V A p)"
     using rev_finite_subset prof fin_A
     by metis

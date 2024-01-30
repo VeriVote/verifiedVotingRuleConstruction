@@ -43,11 +43,11 @@ lemma max_agg_rej_set:
   shows "reject_r (max_aggregator A (e, r, d) (e', r', d')) = r \<inter> r'"
 proof -
   have "A - (e \<union> d) = r"
-    using wf_first_mod
-    by (simp add: result_imp_rej)
+    using wf_first_mod result_imp_rej
+    by metis
   moreover have "A - (e' \<union> d') = r'"
-    using wf_second_mod
-    by (simp add: result_imp_rej)
+    using wf_second_mod result_imp_rej
+    by metis
   ultimately have "A - (e \<union> e' \<union> d \<union> d') = r \<inter> r'"
     by blast
   moreover have "{l \<in> A. l \<notin> e \<union> e' \<union> d \<union> d'} = A - (e \<union> e' \<union> d \<union> d')"

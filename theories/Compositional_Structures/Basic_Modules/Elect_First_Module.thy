@@ -17,7 +17,7 @@ text \<open>
 subsection \<open>Definition\<close>
 
 fun least :: "'v::wellorder set \<Rightarrow> 'v" where
-  "least V = (Least (\<lambda>v. v \<in> V))"
+  "least V = (Least (\<lambda> v. v \<in> V))"
 
 fun elect_first_module :: "('a, 'v::wellorder, 'a Result) Electoral_Module" where
   "elect_first_module V A p =

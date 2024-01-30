@@ -2,7 +2,7 @@ section \<open>Result-Dependent Voting Rule Properties\<close>
 
 theory Property_Interpretations
   imports Voting_Symmetry
-begin    
+begin
 
 subsection \<open>Properties Dependent on the Result Type\<close>
 
@@ -16,8 +16,7 @@ text \<open>
 \<close>
 
 locale result_properties = result +
-  fixes
-    \<psi>_neutr :: "('a \<Rightarrow> 'a, 'b) binary_fun"
+  fixes \<psi>_neutr :: "('a \<Rightarrow> 'a, 'b) binary_fun"
   assumes
     act_neutr: "group_action neutrality\<^sub>\<G> UNIV \<psi>_neutr" and
     well_formed_res_neutr:

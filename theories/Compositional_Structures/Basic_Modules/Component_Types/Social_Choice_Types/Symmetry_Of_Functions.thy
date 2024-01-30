@@ -101,7 +101,7 @@ proof (unfold bij_def inj_def surj_def, safe)
     \<A> :: "'x set set" and
     \<B> :: "'x set set" and
     A :: "'x set"
-  assume 
+  assume
     "{f ` A | A. A \<in> \<A>} = {f ` B | B. B \<in> \<B>}" and
     "A \<in> \<B>"
   thus "A \<in> \<A>"
@@ -298,8 +298,7 @@ lemma rewrite_grp_act_img:
     G :: "'x monoid" and
     Y :: "'y set" and
     \<phi> :: "('x, 'y) binary_fun"
-  assumes
-    grp_act: "group_action G Y \<phi>"
+  assumes grp_act: "group_action G Y \<phi>"
   shows "\<forall> Z g h. Z \<subseteq> Y \<longrightarrow> g \<in> carrier G \<longrightarrow> h \<in> carrier G \<longrightarrow>
               \<phi> (g \<otimes> \<^bsub>G\<^esub> h) ` Z = \<phi> g ` \<phi> h ` Z"
 proof (safe)
@@ -395,8 +394,8 @@ lemma rel_ind_by_coinciding_action_on_subset_eq_restr:
     "\<forall> x \<in> X. \<forall> z \<in> Z. \<phi>' x z = \<phi> x z"
   shows "rel_induced_by_action X Z \<phi>' = Restr (rel_induced_by_action X Y \<phi>) Z"
 proof (unfold rel_induced_by_action.simps)
-  have  "{(y1, y2). (y1, y2) \<in> Z \<times> Z \<and> (\<exists> x \<in> X. \<phi>' x y1 = y2)} =
-            {(y1, y2). (y1, y2) \<in> Z \<times> Z \<and> (\<exists> x \<in> X. \<phi> x y1 = y2)}"
+  have "{(y1, y2). (y1, y2) \<in> Z \<times> Z \<and> (\<exists> x \<in> X. \<phi>' x y1 = y2)}
+          = {(y1, y2). (y1, y2) \<in> Z \<times> Z \<and> (\<exists> x \<in> X. \<phi> x y1 = y2)}"
     using assms
     by auto
   also have "... = Restr {(y1, y2). (y1, y2) \<in> Y \<times> Y \<and> (\<exists> x \<in> X. \<phi> x y1 = y2)} Z"
@@ -461,8 +460,7 @@ next
     by metis
 next
   {
-    fix
-      g :: "'x"
+    fix g :: "'x"
     assume "g \<in> carrier G"
     hence "bij_betw (\<phi> g) Y Y"
       using grp_act group_action.surj_prop
@@ -484,12 +482,11 @@ next
       unfolding BijGroup_def Bij_def
       by simp
   }
-  note car_el =
-    \<open>\<And> g. g \<in> carrier G \<Longrightarrow> \<phi>_img g \<in> carrier (BijGroup (Pow Y))\<close>
+  note car_el = \<open>\<And> g. g \<in> carrier G \<Longrightarrow> \<phi>_img g \<in> carrier (BijGroup (Pow Y))\<close>
   fix
     g :: "'x" and
     h :: "'x"
-  assume 
+  assume
     car_g: "g \<in> carrier G" and
     car_h: "h \<in> carrier G"
   hence car_els: "\<phi>_img g \<in> carrier (BijGroup (Pow Y)) \<and> \<phi>_img h \<in> carrier (BijGroup (Pow Y))"
@@ -555,7 +552,7 @@ proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
   assume
     grp_el: "g \<in> carrier G" and
     x_in_X: "x \<in> X"
-  interpret grp_act: group_action G X \<phi>
+  interpret grp_act: "group_action" G X \<phi>
     using grp_act
     by blast
   have "g \<in> generate G H"
@@ -567,7 +564,7 @@ proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
     hence "\<forall> x \<in> X. \<phi> \<one> \<^bsub>G\<^esub> x = x"
       using grp_act group_action.id_eq_one restrict_apply
       by metis
-    thus "?case"
+    thus ?case
       by simp
   next
     case (incl g)
@@ -575,7 +572,7 @@ proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
       using gen grp_act generate.incl group_action.element_image
       unfolding rel_induced_by_action.simps
       by fastforce
-    thus "?case"
+    thus ?case
       using invar
       unfolding satisfies.simps
       by blast
@@ -588,11 +585,11 @@ proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
       using gen generate.incl group_action.element_image grp_act
             invar local.inv rewrite_invar_ind_by_act
       by metis
-    moreover have "\<forall> x \<in> X. \<phi> g (\<phi> (inv\<^bsub>G\<^esub> g) x) = x"
+    moreover have "\<forall> x \<in> X. \<phi> g (\<phi> (inv \<^bsub>G\<^esub> g) x) = x"
       using grp_act gen generate.incl group.inv_closed group_action.orbit_sym_aux
             group.inv_inv group_hom.axioms(1) grp_act.group_hom local.inv
       by (metis (full_types))
-    ultimately show "?case"
+    ultimately show ?case
       by simp
   next
     case (eng g1 g2)
@@ -613,7 +610,7 @@ proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
     moreover have "\<forall> x \<in> X. f (\<phi> (g1 \<otimes> \<^bsub>G\<^esub> g2) x) = f (\<phi> g1 (\<phi> g2 x))"
       using grp_act gen grp_act.composition_rule gen1 gen2
       by simp
-    ultimately show "?case"
+    ultimately show ?case
       by simp
   qed
   thus "f x = f (\<phi> g x)"
@@ -860,12 +857,12 @@ lemma equivar_ind_by_act_comp:
 proof -
   let ?Act_f = "{(\<phi> g, \<psi>' g) | g. g \<in> G}" and
       ?Act_g = "{(\<psi>' g, \<psi> g) | g. g \<in> G}"
-  have "\<forall> g \<in> G. (\<phi> g, \<psi>' g) \<in> {(\<phi> g, \<psi>' g) |g. g \<in> G} \<and>
-                  (\<psi>' g, \<psi> g) \<in> {(\<psi>' g, \<psi> g) |g. g \<in> G} \<and> \<psi>' g ` f ` X \<subseteq> Y"
+  have "\<forall> g \<in> G. (\<phi> g, \<psi>' g) \<in> {(\<phi> g, \<psi>' g) | g. g \<in> G} \<and>
+                  (\<psi>' g, \<psi> g) \<in> {(\<psi>' g, \<psi> g) | g. g \<in> G} \<and> \<psi>' g ` f ` X \<subseteq> Y"
     using assms
     by blast
   hence "{(\<phi> g, \<psi> g) | g. g \<in> G} \<subseteq>
-          {(\<phi>, \<psi>). \<exists>\<psi>'. (\<phi>, \<psi>') \<in> ?Act_f \<and> (\<psi>', \<psi>) \<in> ?Act_g \<and> \<psi>' ` f ` X \<subseteq> Y}"
+          {(\<phi>, \<psi>). \<exists> \<psi>'. (\<phi>, \<psi>') \<in> ?Act_f \<and> (\<psi>', \<psi>) \<in> ?Act_g \<and> \<psi>' ` f ` X \<subseteq> Y}"
     by blast
   hence "satisfies (g \<circ> f) (Equivariance X {(\<phi> g, \<psi> g) | g. g \<in> G})"
     using assms equivar_comp[of f X Y ?Act_f g ?Act_g] equivar_under_subset'
@@ -916,8 +913,7 @@ lemma equivar_union_under_img_act:
     f :: "'x \<Rightarrow> 'y" and
     G :: "'z set" and
     \<phi> :: "('z, 'x) binary_fun"
-  shows
-    "satisfies \<Union> (equivar_ind_by_act G UNIV
+  shows "satisfies \<Union> (equivar_ind_by_act G UNIV
               (set_action (set_action \<phi>)) (set_action \<phi>))"
 proof (unfold equivar_ind_by_act_def, clarsimp, safe)
   fix

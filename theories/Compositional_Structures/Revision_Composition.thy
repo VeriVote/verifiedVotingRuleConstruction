@@ -19,12 +19,12 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun revision_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 
-  ('a, 'v, 'a Result) Electoral_Module" where
+fun revision_composition :: "('a, 'v, 'a Result) Electoral_Module
+        \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "revision_composition m V A p = ({}, A - elect m V A p, elect m V A p)"
 
-abbreviation rev ::
-"('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" ("_\<down>" 50) where
+abbreviation rev :: "('a, 'v, 'a Result) Electoral_Module
+        \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" ("_\<down>" 50) where
   "m\<down> == revision_composition m"
 
 subsection \<open>Soundness\<close>
@@ -51,7 +51,8 @@ proof -
     by simp
   from unity disjoint
   show ?thesis
-    by (simp add: social_choice_result.electoral_module_def)
+    unfolding social_choice_result.electoral_module_def
+    by simp
 qed
 
 lemma rev_comp_only_voters:

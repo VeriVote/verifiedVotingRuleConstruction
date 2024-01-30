@@ -219,7 +219,7 @@ proof -
     (\<lambda> x. arg_min_set x img) \<circ> (closest_preimg_dist f domain\<^sub>f d)"
     unfolding comp_def
     by auto
-  ultimately show "?thesis"
+  ultimately show ?thesis
     using invar_comp
     by simp
 qed
@@ -269,7 +269,7 @@ proof -
   hence "satisfies (minimizer f domain\<^sub>f d img)
                   (equivar_ind_by_act (carrier G) X \<phi> (set_action ?\<psi>))"
     by blast
-  thus "?thesis"
+  thus ?thesis
     unfolding rel_def set_action.simps
     using rewrite_invar_as_equivar image_id
     by metis
@@ -642,7 +642,7 @@ proof -
     using anon_C
     unfolding consensus_rule_anonymity'.simps anonymity\<^sub>\<R>.simps
     by presburger
-  thus "?thesis"
+  thus ?thesis
     using cons_domain_valid[of C] assms anon_grp_act.group_action_axioms well_formed_res_anon
           invar_dist_cons_imp_invar_dr_rule[of "anonymity\<^sub>\<G>"]
     unfolding distance_anonymity'.simps anonymity\<^sub>\<R>.simps anonymity'.simps
@@ -670,7 +670,7 @@ proof -
     using neutr_C equivar_ind_by_act_coincide[of "carrier neutrality\<^sub>\<G>"]
     unfolding consensus_rule_neutrality.simps
     by (metis (no_types, lifting))
-  thus "?thesis"
+  thus ?thesis
     using neutr_d closed_C \<phi>_neutr_act.group_action_axioms well_formed_res_neutr act_neutr
           cons_domain_valid[of C] invar_dist_equivar_cons_imp_equivar_dr_rule[of "neutrality\<^sub>\<G>"
             "valid_elections" "\<phi>_neutr valid_elections"]
@@ -697,7 +697,7 @@ proof -
     using rev_sym_C equivar_ind_by_act_coincide[of "carrier reversal\<^sub>\<G>"]
     unfolding consensus_rule_reversal_symmetry.simps
     by (metis (no_types, lifting))
-  thus "?thesis"
+  thus ?thesis
     using cons_domain_valid rev_sym_d closed_C \<phi>_rev_act.group_action_axioms
           \<psi>_rev_act.group_action_axioms \<phi>_\<psi>_rev_well_formed
           social_welfare_result.invar_dist_equivar_cons_imp_equivar_dr_rule[of

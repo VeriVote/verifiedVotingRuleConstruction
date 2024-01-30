@@ -100,8 +100,9 @@ proof (induction "card X" arbitrary: X Y f g)
   case 0
   assume "bij_betw g Y X"
   hence "card Y = 0"
-    using bij_betw_same_card
-    by (simp add: "0.hyps")
+    using bij_betw_same_card "0.hyps"
+    unfolding "0.hyps"
+    by simp
   hence "sum f X = 0 \<and> sum (f \<circ> g) Y = 0"
     using assms 0 card_0_eq sum.empty sum.infinite
     by metis
@@ -168,7 +169,7 @@ proof (simp)
     using partition assms
     by (simp add: finite_UnionD)
   moreover have
-    "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} |p. p \<in> UNIV} =
+    "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p. p \<in> UNIV} =
         {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
               p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} \<union>
         {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
@@ -471,7 +472,7 @@ qed
 
 lemma to_list_simp:
   fixes
-    i :: nat and
+    i :: "nat" and
     V :: "'v::linorder set" and
     p :: "('a, 'v) Profile"
   assumes
@@ -784,8 +785,8 @@ lemma pref_count_voter_set_card:
   fixes
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    a :: 'a and
-    b :: 'a
+    a :: "'a" and
+    b :: "'a"
   assumes fin_V: "finite V"
   shows "prefer_count V p a b \<le> card V"
 proof (simp)
@@ -1113,7 +1114,7 @@ qed
 
 (* have limit_prof_simp: "limit_profile A p = map (limit A) p"
     by simp
-  obtain n :: nat where
+  obtain n :: "nat" where
     prof_limit_n: "n < length (limit_profile A p) \<longrightarrow>
             linear_order_on A (limit_profile A p!n) \<longrightarrow> profile A (limit_profile A p)"
     using prof_is_lin_ord

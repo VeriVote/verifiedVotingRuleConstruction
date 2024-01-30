@@ -46,8 +46,8 @@ proof (unfold condorcet_rating_def, safe)
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
-    w :: 'b and
-    l :: 'b
+    w :: "'b" and
+    l :: "'b"
   assume 
     c_win: "condorcet_winner V A p w" and
     l_neq_w: "l \<noteq> w"
@@ -79,13 +79,13 @@ next
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
-    a :: 'b
+    a :: "'b"
   assume
     c_win_w: "condorcet_winner V A p a"
   let ?m = "(max_eliminator condorcet_score)::(('b, 'a, 'b Result) Electoral_Module)"
   have "defer_condorcet_consistency ?m"
-    using cr_eval_imp_dcc_max_elim
-    by (simp add: condorcet_score_is_condorcet_rating)
+    using cr_eval_imp_dcc_max_elim condorcet_score_is_condorcet_rating
+    by metis
   hence "?m V A p =
           ({}, A - defer ?m V A p, {b \<in> A. condorcet_winner V A p b})"
     using c_win_w

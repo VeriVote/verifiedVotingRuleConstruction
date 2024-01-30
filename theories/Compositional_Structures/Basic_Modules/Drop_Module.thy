@@ -35,7 +35,7 @@ subsection \<open>Soundness\<close>
 theorem drop_mod_sound[simp]:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   shows "social_choice_result.electoral_module (drop_module n r)"
 proof (unfold social_choice_result.electoral_module_def, safe)
   fix
@@ -65,7 +65,7 @@ qed
 lemma drop_mod_only_voters:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   shows "only_voters_vote (drop_module n r)"
   unfolding only_voters_vote_def
   by simp
@@ -79,7 +79,7 @@ text \<open>
 theorem drop_mod_non_electing[simp]:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   shows "non_electing (drop_module n r)"
   unfolding non_electing_def
   by simp
@@ -93,7 +93,7 @@ text \<open>
 theorem drop_mod_def_lift_inv[simp]:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   shows "defer_lift_invariance (drop_module n r)"
   unfolding defer_lift_invariance_def
   by simp

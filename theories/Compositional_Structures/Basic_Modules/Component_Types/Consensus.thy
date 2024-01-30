@@ -161,7 +161,7 @@ proof -
   have "profile V' A' q"
     using rename_sound bij renamed prof_p
     by fastforce
-  thus "?thesis"
+  thus ?thesis
     using anon cond_c renamed rename_finite bij prof_p
     unfolding consensus_anonymity_def Let_def
     by auto

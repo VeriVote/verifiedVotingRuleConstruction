@@ -71,7 +71,7 @@ proof (unfold standard_def, clarify)
   have "A \<noteq> A' \<and> V = V' \<and> V \<noteq> {} \<and> finite V \<Longrightarrow> \<forall> q q'. swap (A, q) (A', q') = \<infinity>"
     by simp
   hence "A \<noteq> A' \<and> V = V' \<and> V \<noteq> {} \<and> finite V \<Longrightarrow>
-    \<forall> l1 l2. (l1 \<noteq> [] \<and> l2 \<noteq> [] \<longrightarrow> (\<forall>i < length (?l l1 l2). (?l l1 l2)!i = \<infinity>))"
+    \<forall> l1 l2. (l1 \<noteq> [] \<and> l2 \<noteq> [] \<longrightarrow> (\<forall> i < length (?l l1 l2). (?l l1 l2)!i = \<infinity>))"
     by simp
   moreover have "V = V' \<and> V \<noteq> {} \<and> finite V \<Longrightarrow> (to_list V p) \<noteq> [] \<and> (to_list V' p') \<noteq> []"
     using card_eq_0_iff length_map list.size(3) to_list.simps

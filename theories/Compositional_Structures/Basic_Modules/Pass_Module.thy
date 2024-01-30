@@ -32,7 +32,7 @@ subsection \<open>Soundness\<close>
 theorem pass_mod_sound[simp]:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   shows "social_choice_result.electoral_module (pass_module n r)"
 proof (unfold social_choice_result.electoral_module_def, safe)
   fix
@@ -62,7 +62,7 @@ qed
 lemma pass_mod_only_voters:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   shows "only_voters_vote (pass_module n r)"
   unfolding only_voters_vote_def pass_module.simps
   by blast
@@ -76,10 +76,10 @@ text \<open>
 theorem pass_mod_non_blocking[simp]:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   assumes
     order: "linear_order r" and
-    g0_n:  "n > 0"
+    g0_n: "n > 0"
   shows "non_blocking (pass_module n r)"
 proof (unfold non_blocking_def, safe)
   show "social_choice_result.electoral_module (pass_module n r)"
@@ -89,7 +89,7 @@ next
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    a :: 'a
+    a :: "'a"
   assume
     fin_A: "finite A" and
     rej_pass_A: "reject (pass_module n r) V A p = A" and
@@ -122,7 +122,7 @@ text \<open>
 theorem pass_mod_non_electing[simp]:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   assumes "linear_order r"
   shows "non_electing (pass_module n r)"
   unfolding non_electing_def
@@ -138,7 +138,7 @@ text \<open>
 theorem pass_mod_dl_inv[simp]:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   assumes "linear_order r"
   shows "defer_lift_invariance (pass_module n r)"
   unfolding defer_lift_invariance_def
@@ -221,8 +221,8 @@ next
     ultimately have winner_exists:
       "\<exists> a \<in> A. above (limit A r) a = {a} \<and>
           (\<forall> b \<in> A. above (limit A r) b = {b} \<longrightarrow> b = a)"
-      using finite_A
-      by (simp add: above_one)
+      using finite_A above_one
+      by simp
     then obtain w where w_unique_top:
       "above (limit A r) w = {w} \<and>
         (\<forall> a \<in> A. above (limit A r) a = {a} \<longrightarrow> a = w)"
@@ -275,8 +275,8 @@ next
           using a_above_a lin_ord_on_A rank_one_imp_above_one
           by metis
         hence "a = w"
-          using w_unique
-          by (simp add: a_in_A)
+          using w_unique a_in_A
+          by simp
         thus "a \<in> {w}"
           by simp
       qed
@@ -385,7 +385,8 @@ next
     using limit_A_order lin_ord_imp_connex
     by auto
   hence "\<forall> c \<in> A. c \<in> above (limit A r) c"
-    by (simp add: above_connex)
+    using above_connex
+    by metis
   hence "\<forall> c \<in> A - {a, b}. {a, b, c} \<subseteq> above (limit A r) c"
     using a_above b_above
     by auto

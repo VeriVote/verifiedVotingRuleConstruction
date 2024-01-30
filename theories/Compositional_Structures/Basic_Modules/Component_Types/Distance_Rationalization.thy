@@ -78,8 +78,8 @@ fun all_profiles :: "'v set \<Rightarrow> 'a set \<Rightarrow> (('a, 'v) Profile
 
 export_code all_profiles in Haskell
 
-fun \<K>\<^sub>\<E>_std ::  "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> 'a set \<Rightarrow> 'v set \<Rightarrow>
-        ('a, 'v) Election set" where
+fun \<K>\<^sub>\<E>_std :: "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> 'a set \<Rightarrow> 'v set
+          \<Rightarrow> ('a, 'v) Election set" where
   "\<K>\<^sub>\<E>_std K w A V =
     (\<lambda> p. (A, V, p)) ` (Set.filter
                           (\<lambda> p. (consensus_\<K> K) (A, V, p) \<and> elect (rule_\<K> K) V A p = {w})
@@ -242,7 +242,7 @@ proof (induct l, simp, safe)
     a :: "'a set" and
     l :: "'a set list" and
     l' :: "'a list" and
-    i :: nat
+    i :: "nat"
   assume elems_in_set_then_elems_pos:
     "\<forall> l' i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i" and
     l_prime_in_set_a_l: "l' \<in> listset (a#l)" and
@@ -350,7 +350,7 @@ next
                             (\<forall> i < length xs. linear_order_on A (xs!i))}
            \<subseteq> {xs. length xs = card V \<and> set xs \<subseteq> {r. linear_order_on A r}}"
       by blast
-    thus "?thesis"
+    thus ?thesis
       using finSupset rev_finite_subset
       by blast
   qed
@@ -511,7 +511,7 @@ next
     hence "(\<lambda> s. s \<in> S) y \<and> g y < g x"
       using x_in_S assms
       by metis
-    thus "?thesis"
+    thus ?thesis
       using y
       by metis
   next
@@ -532,7 +532,7 @@ next
         using f_eq_g_for_elems_in_S g_y_lt_g_x not_y y_in_S
         by (metis (no_types))
     qed
-    thus "?thesis"
+    thus ?thesis
       using x_in_S not_y
       by simp
   qed
@@ -629,7 +629,8 @@ proof -
           (\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V `
             {p'. finite_profile V A p'})) = \<infinity>"
       using eq_intersect
-      by (simp add: top_ereal_def)
+      using top_ereal_def
+      by simp
     also have "score_std d K (A, V, p) w = \<infinity>"
       using True
       unfolding Let_def
@@ -706,7 +707,7 @@ proof -
                                         \<and> (\<forall> v. v \<notin> V \<longrightarrow> p' v = {})}"
           using rev_finite_subset
           by blast
-        thus "?thesis"
+        thus ?thesis
           by simp
       qed
       ultimately have "finite {(A, V, p') | p'. finite_profile V A p'
@@ -719,7 +720,7 @@ proof -
       hence "finite (d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p'})"
         using subset_2 rev_finite_subset
         by simp
-      thus "?thesis"
+      thus ?thesis
         using subset rev_finite_subset
         by blast
     qed
@@ -737,7 +738,7 @@ proof -
         Pair A ` Pair V ` {p'. finite_profile V A p'}))"
       using eq_intersect
       by simp
-    ultimately show "?thesis"
+    ultimately show ?thesis
       by simp
   qed
   finally show "score d K (A, V, p) w = score_std d K (A, V, p) w"
@@ -888,7 +889,7 @@ next
         hence "elect (rule_\<K> K) (fst (snd ?inv)) (fst ?inv) (snd (snd ?inv)) = {w}"
           using cons
           by simp
-        thus "?thesis"
+        thus ?thesis
           using cons_preimg fin_preimg
           by simp
         qed

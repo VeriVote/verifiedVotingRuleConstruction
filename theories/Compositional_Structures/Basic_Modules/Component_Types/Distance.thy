@@ -32,7 +32,7 @@ type_synonym 'a Distance = "'a \<Rightarrow> 'a \<Rightarrow> ereal"
 
 \<comment> \<open>The not curried version of a distanace is defined on tuples.\<close>
 fun dist\<^sub>\<T> :: "'a Distance \<Rightarrow> ('a * 'a \<Rightarrow> ereal)" where
-  "dist\<^sub>\<T> d = (\<lambda>pair. d (fst pair) (snd pair))"
+  "dist\<^sub>\<T> d = (\<lambda> pair. d (fst pair) (snd pair))"
 
 definition distance :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
   "distance S d \<equiv> \<forall> x y. x \<in> S \<and> y \<in> S \<longrightarrow> d x x = 0 \<and> 0 \<le> d x y"
@@ -219,16 +219,16 @@ fun distance_anonymity' :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Electio
 fun distance_neutrality :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
   "distance_neutrality X d = invariant_dist d (carrier neutrality\<^sub>\<G>) X (\<phi>_neutr X)"
 
-fun distance_reversal_symmetry :: "('a, 'v) Election set \<Rightarrow>
-        ('a, 'v) Election Distance \<Rightarrow> bool" where
+fun distance_reversal_symmetry :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance
+        \<Rightarrow> bool" where
   "distance_reversal_symmetry X d = invariant_dist d (carrier reversal\<^sub>\<G>) X (\<phi>_rev X)"
 
-definition distance_homogeneity' ::
-  "('a, 'v::linorder) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
+definition distance_homogeneity' :: "('a, 'v::linorder) Election set
+        \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
   "distance_homogeneity' X d = totally_invariant_dist d (homogeneity\<^sub>\<R>' X)"
 
-definition distance_homogeneity ::
-  "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
+definition distance_homogeneity :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance
+        \<Rightarrow> bool" where
   "distance_homogeneity X d = totally_invariant_dist d (homogeneity\<^sub>\<R> X)"
 
 subsubsection \<open>Auxiliary Lemmas\<close>
@@ -320,8 +320,8 @@ lemma invar_dist_image:
     Y :: "'y set" and
     Y' :: "'y set" and
     \<phi> :: "('x, 'y) binary_fun" and
-    y :: 'y and
-    g :: 'x
+    y :: "'y" and
+    g :: "'x"
   assumes
     invar_d: "invariant_dist d (carrier G) Y \<phi>" and 
     Y'_in_Y: "Y' \<subseteq> Y" and
@@ -330,7 +330,7 @@ lemma invar_dist_image:
     y_in_Y: "y \<in> Y"
   shows "d (\<phi> g y) ` (\<phi> g) ` Y' = d y ` Y'"
 proof (safe)
-  fix y' :: 'y
+  fix y' :: "'y"
   assume y'_in_Y': "y' \<in> Y'"
   hence "((y, y'), ((\<phi> g y), (\<phi> g y'))) \<in> equivariance_rel (carrier G) Y \<phi>"
     using Y'_in_Y y_in_Y g_carrier
@@ -351,8 +351,8 @@ proof (safe)
     by (simp add: rev_image_eqI)
 qed
 
-lemma swap_neutral:
-  "invariant_dist swap (carrier neutrality\<^sub>\<G>) UNIV (\<lambda> \<pi> (A, q). (\<pi> ` A, rel_rename \<pi> q))"
+lemma swap_neutral: "invariant_dist swap (carrier neutrality\<^sub>\<G>)
+                        UNIV (\<lambda> \<pi> (A, q). (\<pi> ` A, rel_rename \<pi> q))"
 proof (simp only: rewrite_invariant_dist, safe)
   fix
     \<pi> :: "'a \<Rightarrow> 'a" and
@@ -367,7 +367,7 @@ proof (simp only: rewrite_invariant_dist, safe)
     by blast
   show "swap (A, q) (A', q') = swap (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q')"
   proof (cases "A = A'")
-    let ?f = "(\<lambda>(a, b). (\<pi> a, \<pi> b))"
+    let ?f = "(\<lambda> (a, b). (\<pi> a, \<pi> b))"
     let ?swap_set = "{(a, b) \<in> A \<times> A. a \<noteq> b \<and> neq_ord q q' a b}"
     let ?swap_set' =
       "{(a, b) \<in> \<pi> ` A \<times> \<pi> ` A. a \<noteq> b \<and> neq_ord (rel_rename \<pi> q) (rel_rename \<pi> q') a b}"
@@ -439,7 +439,7 @@ proof (simp only: rewrite_invariant_dist, safe)
     moreover have "card ?swap_set = swap (A, q) (A', q')"
       using True
       by simp
-    ultimately show "?thesis"
+    ultimately show ?thesis
       by (simp add: bij_betw_same_card)
   next
     case False
@@ -450,7 +450,7 @@ proof (simp only: rewrite_invariant_dist, safe)
       swap (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q') = \<infinity>"
       using False
       by simp
-    thus "?thesis"
+    thus ?thesis
       by simp
   qed
 qed

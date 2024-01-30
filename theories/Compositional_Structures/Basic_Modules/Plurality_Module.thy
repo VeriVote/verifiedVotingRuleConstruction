@@ -41,7 +41,8 @@ lemma enat_leq_enat_set_max:
     "x \<in> X" and 
     "finite X"
   shows "x \<le> Max X"
-  by (simp add: assms)
+  using assms
+  by simp
 
 lemma plurality_mod_elim_equiv:
   fixes
@@ -54,24 +55,24 @@ lemma plurality_mod_elim_equiv:
     prof: "profile V A p"
   shows "plurality V A p = plurality' V A p"
 proof (unfold plurality.simps plurality'.simps plurality_score.simps, standard)
-  have "fst (max_eliminator (\<lambda>V x A p. win_count V p x) V A p) = {}"
+  have "fst (max_eliminator (\<lambda> V x A p. win_count V p x) V A p) = {}"
     by simp
   also have "... = fst ({},
              {a \<in> A. \<exists> b \<in> A. win_count V p a < win_count V p b},
              {a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a})"
     by simp
   finally show 
-    "fst (max_eliminator (\<lambda>V x A p. win_count V p x) V A p) =
+    "fst (max_eliminator (\<lambda> V x A p. win_count V p x) V A p) =
       fst ({}, 
-            {a \<in> A. \<exists>b\<in>A. win_count V p a < win_count V p b}, 
-            {a \<in> A. \<forall>b\<in>A. win_count V p b \<le> win_count V p a})"
+            {a \<in> A. \<exists> b \<in> A. win_count V p a < win_count V p b},
+            {a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a})"
     by simp
 next
-  let ?no_max = "{a \<in> A. win_count V p a < Max {win_count V p x |x. x \<in> A}} = A"
-  have "?no_max \<Longrightarrow> {win_count V p x |x. x \<in> A} \<noteq> {}"
+  let ?no_max = "{a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} = A"
+  have "?no_max \<Longrightarrow> {win_count V p x | x. x \<in> A} \<noteq> {}"
     using non_empty_A
     by blast
-  moreover have "finite {win_count V p x |x. x \<in> A}"
+  moreover have "finite {win_count V p x | x. x \<in> A}"
     using fin_A
     by simp
   ultimately have exists_max: "?no_max \<Longrightarrow> False"
@@ -79,9 +80,9 @@ next
     by fastforce
   have rej_eq:
     "snd (max_eliminator (\<lambda> V b A p. win_count V p b) V A p) =
-      snd ({}, 
-            {a \<in> A. \<exists>x\<in>A. win_count V p a < win_count V p x}, 
-            {a \<in> A. \<forall>x\<in>A. win_count V p x \<le> win_count V p a})"
+      snd ({},
+            {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x},
+            {a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a})"
   proof (simp del: win_count.simps, safe)
     fix
       a :: "'a" and
@@ -117,46 +118,46 @@ next
       by blast
   next
     fix
-      a :: 'a and
-      b :: 'a
+      a :: "'a" and
+      b :: "'a"
     assume 
       a_in_A: "a \<in> A" and
       b_in_A: "b \<in> A" and
-      wc_a_max: "\<not> win_count V p a < Max {win_count V p x |x. x \<in> A}"
-    have "win_count V p b \<in> {win_count V p x |x. x \<in> A}"
+      wc_a_max: "\<not> win_count V p a < Max {win_count V p x | x. x \<in> A}"
+    have "win_count V p b \<in> {win_count V p x | x. x \<in> A}"
       using b_in_A
       by auto
-    hence "win_count V p b \<le> Max {win_count V p x |x. x \<in> A}"
+    hence "win_count V p b \<le> Max {win_count V p x | x. x \<in> A}"
       using b_in_A fin_A enat_leq_enat_set_max
       by auto
     thus "win_count V p b \<le> win_count V p a"
-      using wc_a_max
-      by (meson dual_order.strict_trans1 linorder_le_less_linear)
+      using wc_a_max dual_order.strict_trans1 linorder_le_less_linear
+      by simp
   next
     fix
-      a :: 'a and
-      b :: 'a
+      a :: "'a" and
+      b :: "'a"
     assume 
       a_in_A: "a \<in> A" and
       b_in_A: "b \<in> A" and
-      wc_a_max: "\<forall>x\<in>A. win_count V p x \<le> win_count V p a" and
-      wc_a_not_max: "win_count V p a < Max {win_count V p x |x. x \<in> A}"
+      wc_a_max: "\<forall> x \<in> A. win_count V p x \<le> win_count V p a" and
+      wc_a_not_max: "win_count V p a < Max {win_count V p x | x. x \<in> A}"
     have "win_count V p b \<le> win_count V p a"
       using b_in_A wc_a_max
       by auto
-    thus "win_count V p b < Max {win_count V p x |x. x \<in> A}"
+    thus "win_count V p b < Max {win_count V p x | x. x \<in> A}"
       using wc_a_not_max
       by simp
   next
     assume ?no_max
     thus "False"
-      by (rule exists_max)
+      using exists_max
+      by simp
   next
     fix
-      a :: 'a and
-      b :: 'a
-    assume 
-      ?no_max
+      a :: "'a" and
+      b :: "'a"
+    assume ?no_max
     thus "win_count V p a \<le> win_count V p b"
       using exists_max
       by simp
@@ -191,7 +192,7 @@ proof (unfold social_choice_result.electoral_module_def, safe)
     "{a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x} \<union>
       {a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a} = A"
     using not_le_imp_less
-    by auto
+    by blast
   ultimately show "well_formed_soc_choice A (plurality' V A p)"
     by simp
 qed
@@ -203,18 +204,19 @@ proof (unfold plurality_score.simps only_voters_count_def, safe)
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
     p' :: "('b, 'a) Profile" and
-    a :: 'b
+    a :: "'b"
   assume
-    "\<forall>v\<in>V. p v = p' v" and
+    "\<forall> v \<in> V. p v = p' v" and
     "a \<in> A"
   hence "finite V \<longrightarrow>
     card {v \<in> V. above (p v) a = {a}} = card {v \<in> V. above (p' v) a = {a}}"
-    by (metis (no_types, lifting) Collect_cong)
+    using Collect_cong
+    by (metis (no_types, lifting))
   thus "win_count V p a = win_count V p' a"
     unfolding win_count.simps
     by presburger
 qed
-    
+
 lemma plurality_only_voters: "only_voters_vote plurality"
   unfolding plurality.simps
   using max_elim_only_voters plurality_score_only_voters
@@ -243,7 +245,8 @@ theorem plurality_non_electing[simp]: "non_electing plurality"
   by metis
 
 theorem plurality'_non_electing[simp]: "non_electing plurality'"
-  by (simp add: non_electing_def) 
+  unfolding non_electing_def
+  by simp
 
 subsection \<open>Property\<close>
 
@@ -260,10 +263,9 @@ lemma plurality_def_inv_mono_alts:
   shows "defer plurality V A q = defer plurality V A p \<or> defer plurality V A q = {a}"
 proof -
   have set_disj: "\<forall> b c. (b::'a) \<notin> {c} \<or> b = c"
-    by force
-  have lifted_winner:
-    "\<forall> b \<in> A.
-      \<forall> i \<in> V. (above (p i) b = {b} \<longrightarrow> (above (q i) b = {b} \<or> above (q i) a = {a}))"
+    by blast
+  have lifted_winner: "\<forall> b \<in> A. \<forall> i \<in> V.
+      above (p i) b = {b} \<longrightarrow> (above (q i) b = {b} \<or> above (q i) a = {a})"
     using lift_a lifted_above_winner_alts
     unfolding Profile.lifted_def
     by metis
@@ -271,8 +273,7 @@ proof -
     using defer_a lift_a
     unfolding Profile.lifted_def
     by metis
-  hence a_win_subset:
-    "{i\<in>V. above (p i) a = {a}} \<subseteq> {i\<in>V. above (q i) a = {a}}"
+  hence a_win_subset: "{i \<in> V. above (p i) a = {a}} \<subseteq> {i \<in> V. above (q i) a = {a}}"
     by blast
   moreover have lifted_prof: "profile V A q"
     using lift_a
@@ -284,9 +285,8 @@ proof -
     using lift_a
     unfolding Profile.lifted_def
     by blast
-  hence
-    "\<forall> b \<in> A - {a}.
-      \<forall> i \<in> V. (above (q i) a = {a} \<longrightarrow> above (q i) b \<noteq> {b})"
+  hence "\<forall> b \<in> A - {a}.
+          \<forall> i \<in> V. (above (q i) a = {a} \<longrightarrow> above (q i) b \<noteq> {b})"
     using DiffE above_one lift_a insertCI insert_absorb insert_not_empty
     unfolding Profile.lifted_def profile_def
     by metis
@@ -309,13 +309,12 @@ proof -
       using win_count.simps Profile.lifted_def enat.inject lift_a
       by (metis (mono_tags, lifting))
     moreover have "finite {i \<in> V. above (q i) a = {a}}"
-      by (metis (mono_tags) Collect_mem_eq Profile.lifted_def finite_Collect_conjI lift_a)
-    ultimately have
-      "{i \<in> V. above (p i) a = {a}} = {i \<in> V. above (q i) a = {a}}"
+      using Collect_mem_eq Profile.lifted_def finite_Collect_conjI lift_a
+      by (metis (mono_tags))
+    ultimately have "{i \<in> V. above (p i) a = {a}} = {i \<in> V. above (q i) a = {a}}"
       using a_win_subset
       by (simp add: card_subset_eq)
-    hence above_pq:
-      "\<forall> i \<in> V. (above (p i) a = {a}) = (above (q i) a = {a})"
+    hence above_pq: "\<forall> i \<in> V. (above (p i) a = {a}) = (above (q i) a = {a})"
       by blast
     moreover have
       "\<forall> b \<in> A - {a}.
@@ -356,8 +355,7 @@ proof -
     proof (safe)
       fix b :: "'a"
       assume
-        above_c:
-          "\<forall> c \<in> A - {a}. \<forall> i \<in> V. above (p i) c = {c} \<longrightarrow> above (q i) c = {c}" and
+        above_c: "\<forall> c \<in> A - {a}. \<forall> i \<in> V. above (p i) c = {c} \<longrightarrow> above (q i) c = {c}" and
         b_in_A: "b \<in> A"
       show "card {i \<in> V. above (p i) b = {b}} =
               card {i \<in> V. above (q i) b = {b}}"
@@ -458,16 +456,17 @@ next
     by simp
 next
   fix
-    A :: "'b set" and 
-    V :: "'a set" and 
-    p :: "('b, 'a) Profile" and 
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile" and
     q :: "('b, 'a) Profile" and
-    a :: 'b
+    a :: "'b"
   assume "a \<in> defer plurality V A p \<and> Profile.lifted V A p q a"
   hence "defer plurality V A q = defer plurality V A p \<or> defer plurality V A q = {a}"
-    by (meson plurality_def_inv_mono_alts)
+    using plurality_def_inv_mono_alts
+    by metis
   thus "defer plurality V A q = defer plurality V A p \<or> defer plurality V A q = {a}"
-    by auto
+    by simp
 qed
 
 end

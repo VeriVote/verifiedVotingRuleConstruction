@@ -46,25 +46,25 @@ text \<open>
 
 type_synonym ('a, 'v, 'r) Electoral_Module = "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r"
 
-abbreviation fun\<^sub>\<E> :: 
-  "('v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r) \<Rightarrow> (('a, 'v) Election \<Rightarrow> 'r)" where
-  "fun\<^sub>\<E> m \<equiv> (\<lambda>E. m (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E))"
+abbreviation fun\<^sub>\<E> :: "('v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r)
+        \<Rightarrow> (('a, 'v) Election \<Rightarrow> 'r)" where
+  "fun\<^sub>\<E> m \<equiv> (\<lambda> E. m (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E))"
 
 text \<open>
   The next three functions take an electoral module and turn it into a
   function only outputting the elect, reject, or defer set respectively.
 \<close>
 
-abbreviation elect :: 
-"('a, 'v, 'r Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
+abbreviation elect :: "('a, 'v, 'r Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set
+        \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
   "elect m V A p \<equiv> elect_r (m V A p)"
 
-abbreviation reject :: 
-"('a, 'v, 'r Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
+abbreviation reject :: "('a, 'v, 'r Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set
+        \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
   "reject m V A p \<equiv> reject_r (m V A p)"
 
-abbreviation "defer" :: 
-"('a, 'v, 'r Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
+abbreviation "defer" :: "('a, 'v, 'r Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set
+        \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
   "defer m V A p \<equiv> defer_r (m V A p)"
 
 subsection \<open>Auxiliary Definitions\<close>
@@ -78,8 +78,7 @@ text \<open>
   in multiple structures to create more complex electoral modules.
 \<close>
 
-definition (in result) electoral_module :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" 
-  where
+definition (in result) electoral_module :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
     "electoral_module m \<equiv> \<forall> A V p. profile V A p \<longrightarrow> well_formed A (m V A p)"
 
 definition only_voters_vote :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
@@ -110,71 +109,68 @@ text \<open>
 \<close>
 
 definition (in result) anonymity :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
-  "anonymity m \<equiv> 
+  "anonymity m \<equiv>
     electoral_module m \<and>
-      (\<forall> A V p \<pi>::('v \<Rightarrow> 'v). 
+      (\<forall> A V p \<pi>::('v \<Rightarrow> 'v).
         bij \<pi> \<longrightarrow> (let (A', V', q) = (rename \<pi> (A, V, p)) in
             finite_profile V A p \<and> finite_profile V' A' q \<longrightarrow> m V A p = m V' A' q))"
 
 text \<open>
-  Anonymity can alternatively be described as invariance 
-  under the voter permutation group acting on elections 
+  Anonymity can alternatively be described as invariance
+  under the voter permutation group acting on elections
   via the rename function.
 \<close>
 
-fun anonymity' :: 
-  "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'r) Electoral_Module \<Rightarrow> bool" where
+fun anonymity' :: "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'r) Electoral_Module \<Rightarrow> bool" where
   "anonymity' X m = satisfies (fun\<^sub>\<E> m) (Invariance (anonymity\<^sub>\<R> X))"
 
 subsubsection \<open>Homogeneity\<close>
 
 text \<open>
   A voting rule is homogeneous if copying an election does not change the result.
-  For ordered voter types and finite elections, we use the notion of copying ballot 
+  For ordered voter types and finite elections, we use the notion of copying ballot
   lists to define copying an election.
-  The more general definition of homogeneity for unordered voter types already 
+  The more general definition of homogeneity for unordered voter types already
   implies anonymity.
 \<close>
 
-
-fun (in result) homogeneity :: 
-  "('a, 'v) Election set \<Rightarrow> ('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
+fun (in result) homogeneity :: "('a, 'v) Election set \<Rightarrow> ('a, 'v, ('r Result)) Electoral_Module
+        \<Rightarrow> bool" where
   "homogeneity X m = satisfies (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R> X))"
-\<comment> \<open>This does not require any specific behaviour on infinite voter sets... 
+\<comment> \<open>This does not require any specific behaviour on infinite voter sets ...
     Might make sense to extend the definition to that case somehow.\<close>
 
-fun homogeneity' :: 
-  "('a, 'v::linorder) Election set \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
+fun homogeneity' :: "('a, 'v::linorder) Election set \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module
+        \<Rightarrow> bool" where
   "homogeneity' X m = satisfies (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R>' X))"
 
-lemma (in result) hom_imp_anon: 
-  fixes
-    X :: "('a, 'v) Election set"
+lemma (in result) hom_imp_anon:
+  fixes X :: "('a, 'v) Election set"
   assumes
     "homogeneity X m" and
-    "\<forall>E \<in> X. finite (votrs_\<E> E)"
-  shows
-    "anonymity' X m"
+    "\<forall> E \<in> X. finite (votrs_\<E> E)"
+  shows "anonymity' X m"
 proof (unfold anonymity'.simps satisfies.simps, standard, standard, standard)
-  fix 
+  fix
     E :: "('a, 'v) Election" and
     E' :: "('a, 'v) Election"
-  assume
-    rel: "(E, E') \<in> anonymity\<^sub>\<R> X"
+  assume rel: "(E, E') \<in> anonymity\<^sub>\<R> X"
   hence "E \<in> X \<and> E' \<in> X"
     unfolding anonymity\<^sub>\<R>.simps rel_induced_by_action.simps
     by blast
-  moreover with this have fin: "finite (votrs_\<E> E) \<and> finite (votrs_\<E> E')"
+  moreover with this
+    have fin: "finite (votrs_\<E> E) \<and> finite (votrs_\<E> E')"
     using assms
     by simp
-  moreover with this have "\<forall>r. vote_count r E = 1 * (vote_count r E')"
-    using anon_rel_vote_count rel
-    by (metis mult_1)
-  moreover with fin have "alts_\<E> E = alts_\<E> E'"
+  moreover with this
+    have "\<forall> r. vote_count r E = 1 * (vote_count r E')"
+    using anon_rel_vote_count rel mult_1
+    by metis
+  moreover with fin
+    have "alts_\<E> E = alts_\<E> E'"
     using anon_rel_vote_count rel
     by blast
-  ultimately show
-    "fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
+  ultimately show "fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
     using assms zero_less_one
     unfolding homogeneity.simps satisfies.simps homogeneity\<^sub>\<R>.simps
     by blast
@@ -183,13 +179,13 @@ qed
 subsubsection \<open>Neutrality\<close>
 
 text \<open>
-  Neutrality is equivariance under consistent renaming of 
+  Neutrality is equivariance under consistent renaming of
   candidates in the candidate set and election results.
 \<close>
 
-fun (in result_properties) neutrality :: 
-  "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
-  "neutrality X m = satisfies (fun\<^sub>\<E> m) 
+fun (in result_properties) neutrality :: "('a, 'v) Election set
+        \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
+  "neutrality X m = satisfies (fun\<^sub>\<E> m)
     (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) X (\<phi>_neutr X) (result_action \<psi>_neutr))"
 
 subsection \<open>Reversal Symmetry of Social Welfare Rules\<close>
@@ -199,15 +195,15 @@ text \<open>
   reverses the result rankings as well.
 \<close>
 
-definition reversal_symmetry :: 
-  "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'a rel Result) Electoral_Module \<Rightarrow> bool" where
+definition reversal_symmetry :: "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'a rel Result) Electoral_Module
+        \<Rightarrow> bool" where
   "reversal_symmetry X m = satisfies (fun\<^sub>\<E> m)
     (equivar_ind_by_act (carrier reversal\<^sub>\<G>) X (\<phi>_rev X) (result_action \<psi>_rev))"
 
 subsection \<open>Social Choice Modules\<close>
 
 text \<open>
-  The following results require electoral modules to return social choice results, 
+  The following results require electoral modules to return social choice results,
   i.e. sets of elected, rejected and deferred alternatives.
   In order to export code, we use the hack provided by Locale-Code.
 \<close>
@@ -257,15 +253,14 @@ text \<open>
   a's ranking does not influence the outcome.
 \<close>
 
-definition indep_of_alt :: 
-  "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" 
-  where
+definition indep_of_alt :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> 'a
+        \<Rightarrow> bool" where
   "indep_of_alt m V A a \<equiv>
-    social_choice_result.electoral_module m 
+    social_choice_result.electoral_module m
       \<and> (\<forall> p q. equiv_prof_except_a V A p q a \<longrightarrow> m V A p = m V A q)"
 
-definition unique_winner_if_profile_non_empty :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" 
-  where
+definition unique_winner_if_profile_non_empty :: "('a, 'v, 'a Result) Electoral_Module
+        \<Rightarrow> bool" where
   "unique_winner_if_profile_non_empty m \<equiv>
     social_choice_result.electoral_module m \<and>
     (\<forall> A V p. (A \<noteq> {} \<and> V \<noteq> {} \<and> profile V A p) \<longrightarrow>
@@ -276,45 +271,45 @@ subsection \<open>Equivalence Definitions\<close>
 definition prof_contains_result :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set
                                     \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "prof_contains_result m V A p q a \<equiv>
-    social_choice_result.electoral_module m \<and> 
+    social_choice_result.electoral_module m \<and>
     profile V A p \<and> profile V A q \<and> a \<in> A \<and>
     (a \<in> elect m V A p \<longrightarrow> a \<in> elect m V A q) \<and>
     (a \<in> reject m V A p \<longrightarrow> a \<in> reject m V A q) \<and>
     (a \<in> defer m V A p \<longrightarrow> a \<in> defer m V A q)"
 
-definition prof_leq_result :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set 
+definition prof_leq_result :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set
                                 \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "prof_leq_result m V A p q a \<equiv>
-    social_choice_result.electoral_module m \<and> 
+    social_choice_result.electoral_module m \<and>
     profile V A p \<and> profile V A q \<and> a \<in> A \<and>
     (a \<in> reject m V A p \<longrightarrow> a \<in> reject m V A q) \<and>
     (a \<in> defer m V A p \<longrightarrow> a \<notin> elect m V A q)"
 
-definition prof_geq_result :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set 
+definition prof_geq_result :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set
                                 \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "prof_geq_result m V A p q a \<equiv>
-    social_choice_result.electoral_module m \<and> 
+    social_choice_result.electoral_module m \<and>
     profile V A p \<and> profile V A q \<and> a \<in> A \<and>
     (a \<in> elect m V A p \<longrightarrow> a \<in> elect m V A q) \<and>
     (a \<in> defer m V A p \<longrightarrow> a \<notin> reject m V A q)"
 
-definition mod_contains_result :: "('a, 'v, 'a Result) Electoral_Module 
-                                    \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set 
+definition mod_contains_result :: "('a, 'v, 'a Result) Electoral_Module
+                                    \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set
                                     \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "mod_contains_result m n V A p a \<equiv>
-    social_choice_result.electoral_module m \<and> 
-    social_choice_result.electoral_module n \<and> 
+    social_choice_result.electoral_module m \<and>
+    social_choice_result.electoral_module n \<and>
     profile V A p \<and> a \<in> A \<and>
     (a \<in> elect m V A p \<longrightarrow> a \<in> elect n V A p) \<and>
     (a \<in> reject m V A p \<longrightarrow> a \<in> reject n V A p) \<and>
     (a \<in> defer m V A p \<longrightarrow> a \<in> defer n V A p)"
 
-definition mod_contains_result_sym :: "('a, 'v, 'a Result) Electoral_Module 
-                                    \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set 
+definition mod_contains_result_sym :: "('a, 'v, 'a Result) Electoral_Module
+                                    \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set
                                     \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "mod_contains_result_sym m n V A p a \<equiv>
-    social_choice_result.electoral_module m \<and> 
-    social_choice_result.electoral_module n \<and> 
+    social_choice_result.electoral_module m \<and>
+    social_choice_result.electoral_module n \<and>
     profile V A p \<and> a \<in> A \<and>
     (a \<in> elect m V A p \<longleftrightarrow> a \<in> elect n V A p) \<and>
     (a \<in> reject m V A p \<longleftrightarrow> a \<in> reject n V A p) \<and>
@@ -560,20 +555,24 @@ lemma upper_card_bounds_for_result:
     p :: "('a, 'v) Profile"
   assumes
     "social_choice_result.electoral_module m" and
-    "profile V A p" and "finite A"
+    "profile V A p" and
+    "finite A"
   shows
     upper_card_bound_for_elect: "card (elect m V A p) \<le> card A" and
     upper_card_bound_for_reject: "card (reject m V A p) \<le> card A" and
     upper_card_bound_for_defer: "card (defer m V A p) \<le> card A"
 proof -
   show "card (elect m V A p) \<le> card A"
-    by (meson assms card_mono elect_in_alts)
+    using assms card_mono elect_in_alts
+    by metis
 next
   show "card (reject m V A p) \<le> card A"
-    by (meson assms card_mono reject_in_alts)
+    using assms card_mono reject_in_alts
+    by metis
 next
   show "card (defer m V A p) \<le> card A"
-    by (meson assms card_mono defer_in_alts)
+    using assms card_mono defer_in_alts
+    by metis
 qed
 
 lemma reject_not_elec_or_def:
@@ -795,7 +794,7 @@ proof -
     by fastforce
   moreover have "\<forall> a \<in> reject m V A q. a \<in> reject m V A p"
   proof
-    fix a :: 'a
+    fix a :: "'a"
     assume q_rejects_a: "a \<in> reject m V A q"
     hence "a \<in> A"
       using rejected_in_A
@@ -1204,10 +1203,10 @@ next
   assume
     prof_A: "profile V A p" and
     a_in_A: "a \<in> A" and
-    finA: "finite A" and
-    finV: "finite V" and
+    fin_A: "finite A" and
+    fin_V: "finite V" and
     c_winner: 
-      "\<forall>x\<in>A - {a}.
+      "\<forall> x \<in> A - {a}.
           (finite V \<longrightarrow> card {v \<in> V. (a, x) \<in> p v} < card {v \<in> V. (x, a) \<in> p v}) \<and> finite V"
   hence winner: "condorcet_winner V A p a"
     by simp
@@ -1233,8 +1232,8 @@ next
     by simp
   thus "m V A p =
           ({}, A - defer m V A p,
-            {d \<in> A. \<forall>x\<in>A - {d}. card {v \<in> V. (d, x) \<in> p v} < card {v \<in> V. (x, d) \<in> p v}})"
-    using finA finV prof_A winner Collect_cong
+            {d \<in> A. \<forall> x \<in> A - {d}. card {v \<in> V. (d, x) \<in> p v} < card {v \<in> V. (x, d) \<in> p v}})"
+    using fin_A fin_V prof_A winner Collect_cong
     by simp
 qed
 

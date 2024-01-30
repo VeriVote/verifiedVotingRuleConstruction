@@ -13,15 +13,15 @@ fun (in result) results_closed_under_rel :: "('a, 'v) Election rel \<Rightarrow>
     (\<forall> (E, E') \<in> r. limit_set (alts_\<E> E) UNIV = limit_set (alts_\<E> E') UNIV)"
 
 fun result_action :: "('x, 'r) binary_fun \<Rightarrow> ('x, 'r Result) binary_fun" where
-  "result_action \<psi> x = (\<lambda>r. (\<psi> x ` elect_r r, \<psi> x ` reject_r r, \<psi> x ` defer_r r))"
+  "result_action \<psi> x = (\<lambda> r. (\<psi> x ` elect_r r, \<psi> x ` reject_r r, \<psi> x ` defer_r r))"
 
 subsubsection \<open>Anonymity\<close>
 
 definition anonymity\<^sub>\<G> :: "('v \<Rightarrow> 'v) monoid" where
   "anonymity\<^sub>\<G> = BijGroup (UNIV::'v set)"
 
-fun \<phi>_anon ::
-  "('a, 'v) Election set \<Rightarrow> ('v \<Rightarrow> 'v) \<Rightarrow> (('a, 'v) Election \<Rightarrow> ('a, 'v) Election)" where
+fun \<phi>_anon :: "('a, 'v) Election set \<Rightarrow> ('v \<Rightarrow> 'v) \<Rightarrow> (('a, 'v) Election
+                \<Rightarrow> ('a, 'v) Election)" where
   "\<phi>_anon X \<pi> = extensional_continuation (rename \<pi>) X"
 
 fun anonymity\<^sub>\<R> :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election rel" where
@@ -56,7 +56,7 @@ fun homogeneity\<^sub>\<R> :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Elec
   "homogeneity\<^sub>\<R> X =
     {(E, E') \<in> X \<times> X.
         alts_\<E> E = alts_\<E> E' \<and> finite (votrs_\<E> E) \<and> finite (votrs_\<E> E') \<and>
-        (\<exists>n > 0. \<forall>r::('a Preference_Relation). vote_count r E = n * (vote_count r E'))}"
+        (\<exists> n > 0. \<forall> r::('a Preference_Relation). vote_count r E = n * (vote_count r E'))}"
 
 fun copy_list :: "nat \<Rightarrow> 'x list \<Rightarrow> 'x list" where
   "copy_list 0 l = []" |
@@ -65,7 +65,7 @@ fun copy_list :: "nat \<Rightarrow> 'x list \<Rightarrow> 'x list" where
 fun homogeneity\<^sub>\<R>' :: "('a, 'v::linorder) Election set \<Rightarrow> ('a, 'v) Election rel" where
   "homogeneity\<^sub>\<R>' X =
     {(E, E') \<in> X \<times> X. alts_\<E> E = alts_\<E> E' \<and> finite (votrs_\<E> E) \<and> finite (votrs_\<E> E') \<and>
-      (\<exists>n > 0. to_list (votrs_\<E> E') (prof_\<E> E') = copy_list n (to_list (votrs_\<E> E) (prof_\<E> E)))}"
+      (\<exists> n > 0. to_list (votrs_\<E> E') (prof_\<E> E') = copy_list n (to_list (votrs_\<E> E) (prof_\<E> E)))}"
 
 subsubsection \<open>Reversal Symmetry\<close>
 
@@ -112,8 +112,7 @@ next
     f :: "'x \<Rightarrow> 'x" and
     n :: "nat" and
     x :: "'x"
-  assume
-    hyp: "\<And> x. f (n_app n f x) = n_app n f (f x)"
+  assume hyp: "\<And> x. f (n_app n f x) = n_app n f (f x)"
   have "f (n_app (Suc n) f x) = f (f (n_app n f x))"
     by simp
   also have "... = f ((n_app n f \<circ> f) x)"
@@ -132,62 +131,56 @@ lemma n_app_leaves_set:
     A :: "'x set" and
     B :: "'x set" and
     f :: "'x \<Rightarrow> 'x" and
-    x :: 'x
+    x :: "'x"
   assumes
     fin_A: "finite A" and
     fin_B: "finite B" and
     x_el: "x \<in> A - B" and
     bij: "bij_betw f A B"
-  obtains n :: nat where "n > 0" and 
+  obtains n :: "nat" where
+    "n > 0" and
     "n_app n f x \<in> B - A" and
     "\<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A \<inter> B"
 proof -
-  assume
-    existence_witness: 
-    "\<And> n. 0 < n \<Longrightarrow> n_app n f x \<in> B - A \<Longrightarrow> \<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A \<inter> B \<Longrightarrow> thesis"
+  assume existence_witness:
+    "\<And> n. 0 < n \<Longrightarrow> n_app n f x \<in> B - A \<Longrightarrow> \<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A \<inter> B \<Longrightarrow> ?thesis"
   have ex_A: "\<exists> n > 0. n_app n f x \<in> B - A \<and> (\<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A)"
   proof (rule ccontr, clarsimp)
-    assume
-      nex: "\<forall> n. n_app n f x \<in> B \<longrightarrow> n = 0 \<or> n_app n f x \<in> A \<or> (\<exists> m > 0. m < n \<and> n_app m f x \<notin> A)"
+    assume nex:
+      "\<forall> n. n_app n f x \<in> B \<longrightarrow> n = 0 \<or> n_app n f x \<in> A \<or> (\<exists> m > 0. m < n \<and> n_app m f x \<notin> A)"
     hence "\<forall> n > 0. n_app n f x \<in> B \<longrightarrow> n_app n f x \<in> A \<or> (\<exists> m > 0. m < n \<and> n_app m f x \<notin> A)"
       by blast
     moreover have "(\<forall> n > 0. n_app n f x \<in> B \<longrightarrow> n_app n f x \<in> A) \<longrightarrow> False"
     proof (safe)
-      assume
-        in_A: "\<forall> n > 0. n_app n f x \<in> B \<longrightarrow> n_app n f x \<in> A"
-      hence
-        "\<forall> n > 0. n_app n f x \<in> A \<longrightarrow> n_app (Suc n) f x \<in> A"
+      assume in_A: "\<forall> n > 0. n_app n f x \<in> B \<longrightarrow> n_app n f x \<in> A"
+      hence "\<forall> n > 0. n_app n f x \<in> A \<longrightarrow> n_app (Suc n) f x \<in> A"
         using n_app.simps bij
         unfolding bij_betw_def
         by force
-      hence in_AB_imp_in_AB: 
+      hence in_AB_imp_in_AB:
         "\<forall> n > 0. n_app n f x \<in> A \<inter> B \<longrightarrow> n_app (Suc n) f x \<in> A \<inter> B"
         using n_app.simps bij
         unfolding bij_betw_def
         by auto
       have in_int: "\<forall> n > 0. n_app n f x \<in> A \<inter> B"
       proof (clarify)
-        fix
-          n :: "nat"
-        assume
-          "n > 0"
+        fix n :: "nat"
+        assume "n > 0"
         thus "n_app n f x \<in> A \<inter> B"
         proof (induction n)
           case 0
           have "False"
-            using "0" 
+            using "0"
             by blast
           thus ?case
             by simp
         next
           case (Suc n)
-          assume
-            "0 < Suc n" and
-            hyp: "0 < n \<Longrightarrow> n_app n f x \<in> A \<inter> B"
+          assume hyp: "0 < n \<Longrightarrow> n_app n f x \<in> A \<inter> B"
           have "n = 0 \<longrightarrow> n_app (Suc n) f x = f x"
             by auto
           hence "n = 0 \<longrightarrow> n_app (Suc n) f x \<in> A \<inter> B"
-            using x_el bij in_A 
+            using x_el bij in_A
             unfolding bij_betw_def
             by blast
           moreover have "n > 0 \<longrightarrow> n_app (Suc n) f x \<in> A \<inter> B"
@@ -205,29 +198,28 @@ proof -
       ultimately have "finite {n_app n f x | n. n > 0}"
         using rev_finite_subset
         by blast
-      moreover have 
-        "inj_on (\<lambda>n. n_app n f x) {n. n > 0} \<longrightarrow> infinite ((\<lambda>n. n_app n f x) ` {n. n > 0})"
+      moreover have
+        "inj_on (\<lambda> n. n_app n f x) {n. n > 0} \<longrightarrow> infinite ((\<lambda> n. n_app n f x) ` {n. n > 0})"
         using diff_is_0_eq' finite_imageD finite_nat_set_iff_bounded lessI
               less_imp_diff_less mem_Collect_eq nless_le
         by metis
-      moreover have "(\<lambda>n. n_app n f x) ` {n. n > 0} = {n_app n f x | n. n > 0}"
+      moreover have "(\<lambda> n. n_app n f x) ` {n. n > 0} = {n_app n f x | n. n > 0}"
         by auto
-      ultimately have "\<not> inj_on (\<lambda>n. n_app n f x) {n. n > 0}"
+      ultimately have "\<not> inj_on (\<lambda> n. n_app n f x) {n. n > 0}"
         by metis
       hence "\<exists> n. n > 0 \<and> (\<exists> m > n. n_app n f x = n_app m f x)"
         using linorder_inj_onI' mem_Collect_eq
         by metis
-      hence 
-        "\<exists> n_min. 0 < n_min \<and> (\<exists> m > n_min. n_app n_min f x = n_app m f x) \<and>
-            (\<forall> n < n_min. \<not> (0 < n \<and> (\<exists> m > n. n_app n f x = n_app m f x)))"
+      hence "\<exists> n_min. 0 < n_min \<and> (\<exists> m > n_min. n_app n_min f x = n_app m f x) \<and>
+              (\<forall> n < n_min. \<not> (0 < n \<and> (\<exists> m > n. n_app n f x = n_app m f x)))"
         using exists_least_iff[of "\<lambda> n. n > 0 \<and> (\<exists> m > n. n_app n f x = n_app m f x)"]
         by presburger
-      then obtain n_min :: nat where
+      then obtain n_min :: "nat" where
         n_min_pos: "n_min > 0" and
         "\<exists> m > n_min. n_app n_min f x = n_app m f x" and
         neq: "\<forall> n < n_min. \<not> (n > 0 \<and> (\<exists> m > n. n_app n f x = n_app m f x))"
         by blast
-      then obtain m :: nat where
+      then obtain m :: "nat" where
         m_gt_n_min: "m > n_min" and
         "n_app n_min f x = f (n_app (m - 1) f x)"
         using comp_apply diff_Suc_1 less_nat_zero_code n_app.elims
@@ -244,7 +236,7 @@ proof -
         using bij
         unfolding bij_betw_def inj_def inj_on_def
         by simp
-      moreover have "m - 1 > n_min - 1" 
+      moreover have "m - 1 > n_min - 1"
         using m_gt_n_min n_min_pos
         by simp
       ultimately have case_greater_0: "n_min - 1 > 0 \<longrightarrow> False"
@@ -262,15 +254,15 @@ proof -
       thus "False"
         using case_greater_0
         by blast
-    qed      
+    qed
     ultimately have "\<exists> n > 0. \<exists> m > 0. m < n \<and> n_app m f x \<notin> A"
       by blast
     hence "\<exists> n. n > 0 \<and> n_app n f x \<notin> A"
       by blast
     hence "\<exists> n. n > 0 \<and> n_app n f x \<notin> A \<and> (\<forall> m < n. \<not> (m > 0 \<and> n_app m f x \<notin> A))"
-      using exists_least_iff[of "\<lambda>n. n > 0 \<and> n_app n f x \<notin> A"]
+      using exists_least_iff[of "\<lambda> n. n > 0 \<and> n_app n f x \<notin> A"]
       by presburger
-    then obtain n :: nat where
+    then obtain n :: "nat" where
       n_pos: "n > 0" and
       not_in_A: "n_app n f x \<notin> A" and
       less_in_A: "\<forall> m. (0 < m \<and> m < n) \<longrightarrow> n_app m f x \<in> A"
@@ -295,14 +287,14 @@ proof -
   moreover have n_app_f_x_in_A: "n_app 0 f x \<in> A"
     using x_el
     by simp
-  ultimately have 
+  ultimately have
     "\<forall> n. (\<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A) \<longrightarrow> (\<forall> m > 0. m < n \<longrightarrow> n_app (m - 1) f x \<in> A)"
     using bot_nat_0.not_eq_extremum less_imp_diff_less
     by metis
   moreover have "\<forall> m > 0. n_app m f x = f (n_app (m - 1) f x)"
     using bot_nat_0.not_eq_extremum comp_apply diff_Suc_1 n_app.elims
     by (metis (mono_tags, lifting))
-  ultimately have 
+  ultimately have
     "\<forall> n. (\<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A) \<longrightarrow> (\<forall> m > 0. m \<le> n \<longrightarrow> n_app m f x \<in> B)"
     using bij n_app.simps(1) n_app_f_x_in_A diff_Suc_1 gr0_conv_Suc imageI
           linorder_not_le nless_le not_less_eq_eq
@@ -311,7 +303,7 @@ proof -
   hence "\<exists> n > 0. n_app n f x \<in> B - A \<and> (\<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A \<inter> B)"
     using IntI nless_le ex_A
     by metis
-  thus "thesis"
+  thus ?thesis
     using existence_witness
     by blast
 qed
@@ -321,20 +313,21 @@ lemma n_app_rev:
     A :: "'x set" and
     B :: "'x set" and
     f :: "'x \<Rightarrow> 'x" and
-    n :: nat and m :: nat and
-    x :: 'x and y :: 'x
+    n :: "nat" and
+    m :: "nat" and
+    x :: "'x" and
+    y :: "'x"
   assumes
-    "x \<in> A" and
-    "y \<in> A" and
-    "n \<ge> m" and
-    "n_app n f x = n_app m f y" and
-    "\<forall> n' < n. n_app n' f x \<in> A" and
-    "\<forall> m' < m. n_app m' f y \<in> A" and
-    "finite A" and
-    "finite B" and
-    "bij_betw f A B"
-  shows
-    "n_app (n - m) f x = y"
+    x_in_A: "x \<in> A" and
+    y_in_A: "y \<in> A" and
+    n_geq_m: "n \<ge> m" and
+    n_app_eq_m_n: "n_app n f x = n_app m f y" and
+    n_app_x_in_A: "\<forall> n' < n. n_app n' f x \<in> A" and
+    n_app_y_in_A: "\<forall> m' < m. n_app m' f y \<in> A" and
+    fin_A: "finite A" and
+    fin_B: "finite B" and
+    bij_f_A_B: "bij_betw f A B"
+  shows "n_app (n - m) f x = y"
   using assms
 proof (induction n f arbitrary: m x y rule: n_app.induct)
   case (1 f)
@@ -364,7 +357,7 @@ next
     x_dom: "\<forall> n' < Suc n. n_app n' f x \<in> A" and
     y_dom: "\<forall> m' < m. n_app m' f y \<in> A" and
     eq: "n_app (Suc n) f x = n_app m f y" and
-    hyp: 
+    hyp:
       "\<And> m x y.
            x \<in> A \<Longrightarrow>
            y \<in> A \<Longrightarrow>
@@ -383,19 +376,19 @@ next
     using y_dom
     by simp
   ultimately have "m > 0 \<longrightarrow> n_app n f x = n_app (m - 1) f y"
-    using bij 
+    using bij
     unfolding bij_betw_def inj_on_def
     by blast
   moreover have "m - 1 \<le> n"
     using m_leq_suc_n
     by simp
   hence "m > 0 \<longrightarrow> n_app (n - (m - 1)) f x = y"
-    using hyp x_in_A y_in_A x_dom y_dom
-          Suc_pred assms(7, 8) bij calculation less_SucI
+    using hyp x_in_A y_in_A x_dom y_dom Suc_pred fin_A fin_B
+          bij calculation less_SucI
     unfolding One_nat_def
     by metis
   hence "m > 0 \<longrightarrow> n_app (Suc n - m) f x = y"
-    using Suc_diff_eq_diff_pred 
+    using Suc_diff_eq_diff_pred
     by presburger
   moreover have "m = 0 \<longrightarrow> n_app (Suc n - m) f x = y"
     using eq
@@ -409,19 +402,18 @@ lemma n_app_inv:
     A :: "'x set" and
     B :: "'x set" and
     f :: "'x \<Rightarrow> 'x" and
-    n :: nat and
-    x :: 'x
+    n :: "nat" and
+    x :: "'x"
   assumes
-    "x \<in> B" and 
-    "\<forall> m \<ge> 0. m < n \<longrightarrow> n_app m (the_inv_into A f) x \<in> B"
+    "x \<in> B" and
+    "\<forall> m \<ge> 0. m < n \<longrightarrow> n_app m (the_inv_into A f) x \<in> B" and
     "bij_betw f A B"
-  shows
-    "n_app n f (n_app n (the_inv_into A f) x) = x"
+  shows "n_app n f (n_app n (the_inv_into A f) x) = x"
   using assms
 proof (induction n f arbitrary: x rule: n_app.induct)
   case (1 f)
   fix f :: "'x \<Rightarrow> 'x"
-  show "?case"
+  show ?case
     by simp
 next
   case (2 n f)
@@ -433,22 +425,19 @@ next
     x_in_B: "x \<in> B" and
     bij: "bij_betw f A B" and
     stays_in_B: "\<forall> m \<ge> 0. m < Suc n \<longrightarrow> n_app m (the_inv_into A f) x \<in> B" and
-    hyp:  
-      "\<And> x. x \<in> B \<Longrightarrow>
+    hyp: "\<And> x. x \<in> B \<Longrightarrow>
              \<forall> m \<ge> 0. m < n \<longrightarrow> n_app m (the_inv_into A f) x \<in> B \<Longrightarrow>
              bij_betw f A B \<Longrightarrow> n_app n f (n_app n (the_inv_into A f) x) = x"
   have "n_app (Suc n) f (n_app (Suc n) (the_inv_into A f) x) =
     n_app n f (f (n_app (Suc n) (the_inv_into A f) x))"
     using n_app_rewrite
     by simp
-  also have
-    "... = n_app n f (f (the_inv_into A f (n_app n (the_inv_into A f) x)))"
+  also have "... = n_app n f (f (the_inv_into A f (n_app n (the_inv_into A f) x)))"
     by simp
-  also have
-    "f (the_inv_into A f (n_app n (the_inv_into A f) x)) = n_app n (the_inv_into A f) x"
+  also have "f (the_inv_into A f (n_app n (the_inv_into A f) x)) = n_app n (the_inv_into A f) x"
     using stays_in_B bij
     by (simp add: f_the_inv_into_f_bij_betw)
-  finally have 
+  finally have
     "n_app (Suc n) f (n_app (Suc n) (the_inv_into A f) x) =
       n_app n f (n_app n (the_inv_into A f) x)"
     by simp
@@ -467,17 +456,16 @@ lemma bij_betw_finite_ind_global_bij:
     fin_B: "finite B" and
     bij: "bij_betw f A B"
   obtains g :: "'x \<Rightarrow> 'x" where
-    "bij g" and 
-    "\<forall> a \<in> A. g a = f a" and 
+    "bij g" and
+    "\<forall> a \<in> A. g a = f a" and
     "\<forall> b \<in> B - A. g b \<in> A - B \<and> (\<exists> n > 0. n_app n f (g b) = b)" and
     "\<forall> x \<in> UNIV - A - B. g x = x"
 proof -
-  assume
-    existence_witness: 
+  assume existence_witness:
     "\<And> g. bij g \<Longrightarrow>
           \<forall> a \<in> A. g a = f a \<Longrightarrow>
           \<forall> b \<in> B - A. g b \<in> A - B \<and> (\<exists> n > 0. n_app n f (g b) = b) \<Longrightarrow>
-          \<forall> x \<in> UNIV - A - B. g x = x \<Longrightarrow> thesis"
+          \<forall> x \<in> UNIV - A - B. g x = x \<Longrightarrow> ?thesis"
   have bij_inv: "bij_betw (the_inv_into A f) B A"
     using bij bij_betw_the_inv_into
     by blast
@@ -485,11 +473,11 @@ proof -
     greater_0: "\<forall> x \<in> B - A. g' x > 0" and
     in_set_diff: "\<forall> x \<in> B - A. n_app (g' x) (the_inv_into A f) x \<in> A - B" and
     minimal: "\<forall> x \<in> B - A. \<forall> n > 0. n < g' x \<longrightarrow> n_app n (the_inv_into A f) x \<in> B \<inter> A"
-    using n_app_leaves_set[of B A _ "the_inv_into A f" False] fin_A fin_B
+    using n_app_leaves_set[of B A _ "the_inv_into A f" "False"] fin_A fin_B
     by metis
   obtain g :: "'x \<Rightarrow> 'x" where
     def_g:
-      "g = (\<lambda>x. if x \<in> A then f x else
+      "g = (\<lambda> x. if x \<in> A then f x else
                 (if x \<in> B - A then n_app (g' x) (the_inv_into A f) x else x))"
     by simp
   hence coincide: "\<forall> a \<in> A. g a = f a"
@@ -523,8 +511,7 @@ proof -
     using def_g bij
     unfolding bij_betw_def
     by simp
-  moreover have
-    "A \<union> (UNIV - A - B) = UNIV - (B - A) \<and> B \<union> (UNIV - A - B) = UNIV - (A - B)"
+  moreover have "A \<union> (UNIV - A - B) = UNIV - (B - A) \<and> B \<union> (UNIV - A - B) = UNIV - (A - B)"
     by blast
   ultimately have surj_cases_13: "g ` (UNIV - (B - A)) = UNIV - (A - B)"
     using image_Un
@@ -534,9 +521,9 @@ proof -
     unfolding bij_betw_def inj_on_def
     by simp
   hence inj_cases_13: "inj_on g (UNIV - (B - A))"
-    using DiffD2 DiffI bij bij_betwE
     unfolding inj_on_def
-    by (metis def_g)
+    using DiffD2 DiffI bij bij_betwE def_g
+    by (metis (no_types, lifting))
   have "card A = card B"
     using fin_A fin_B bij bij_betw_same_card
     by blast
@@ -544,27 +531,25 @@ proof -
   have "finite (B - A) \<and> finite (A - B) \<and> card (B - A) = card (A - B)"
     using card_le_sym_Diff finite_Diff2 nle_le
     by metis
-  moreover have "(\<lambda>x. n_app (g' x) (the_inv_into A f) x) ` (B - A) \<subseteq> A - B"
+  moreover have "(\<lambda> x. n_app (g' x) (the_inv_into A f) x) ` (B - A) \<subseteq> A - B"
     using in_set_diff
     by blast
-  moreover have "inj_on (\<lambda>x. n_app (g' x) (the_inv_into A f) x) (B - A)"
+  moreover have "inj_on (\<lambda> x. n_app (g' x) (the_inv_into A f) x) (B - A)"
     proof (unfold inj_on_def, safe)
     fix
-      x :: 'x and
-      y :: 'x
+      x :: "'x" and
+      y :: "'x"
     assume
       x_in_B: "x \<in> B" and
       x_not_in_A: "x \<notin> A" and
       y_in_B: "y \<in> B" and
       y_not_in_A: "y \<notin> A" and
       "n_app (g' x) (the_inv_into A f) x = n_app (g' y) (the_inv_into A f) y"
-    moreover have
-      "\<forall> n < g' x. n_app n (the_inv_into A f) x \<in> B"
+    moreover have "\<forall> n < g' x. n_app n (the_inv_into A f) x \<in> B"
       using x_in_B x_not_in_A minimal Diff_iff Int_iff bot_nat_0.not_eq_extremum
             eq_id_iff n_app.simps(1)
       by metis
-    moreover have
-      "\<forall> n < g' y. n_app n (the_inv_into A f) y \<in> B"
+    moreover have "\<forall> n < g' y. n_app n (the_inv_into A f) y \<in> B"
       using y_in_B y_not_in_A minimal Diff_iff Int_iff bot_nat_0.not_eq_extremum
             eq_id_iff n_app.simps(1)
       by metis
@@ -575,7 +560,7 @@ proof -
             n_app_rev[of "x"] n_app_rev[of "y" "B" "x" "g' x" "g' y"]
       by fastforce
     hence "g' x \<noteq> g' y \<longrightarrow>
-      ((\<exists> n > 0. n < g' x \<and> n_app n (the_inv_into A f) x \<in> B - A) \<or> 
+      ((\<exists> n > 0. n < g' x \<and> n_app n (the_inv_into A f) x \<in> B - A) \<or>
       (\<exists> n > 0. n < g' y \<and> n_app n (the_inv_into A f) y \<in> B - A))"
       using greater_0 x_in_B x_not_in_A y_in_B y_not_in_A Diff_iff diff_less_mono2
             diff_zero id_apply less_Suc_eq_0_disj n_app.elims
@@ -587,7 +572,7 @@ proof -
       using x_to_y
       by force
   qed
-  ultimately have "bij_betw (\<lambda>x. n_app (g' x) (the_inv_into A f) x) (B - A) (A - B)"
+  ultimately have "bij_betw (\<lambda> x. n_app (g' x) (the_inv_into A f) x) (B - A) (A - B)"
     unfolding bij_betw_def
     by (simp add: card_image card_subset_eq)
   hence bij_case2: "bij_betw g (B - A) (A - B)"
@@ -605,25 +590,23 @@ proof -
   ultimately have "bij g"
     unfolding bij_def
     by blast
-  with coincide id reverse have 
-    "\<exists> g. bij g \<and> (\<forall> a \<in> A. g a = f a) \<and>
+  with coincide id reverse
+  have "\<exists> g. bij g \<and> (\<forall> a \<in> A. g a = f a) \<and>
           (\<forall> b \<in> B - A. g b \<in> A - B \<and> (\<exists> n > 0. n_app n f (g b) = b)) \<and>
           (\<forall> x \<in> UNIV - A - B. g x = x)"
     by blast
-  thus "thesis"
+  thus ?thesis
     using existence_witness
     by blast
-qed 
+qed
 
 lemma bij_betw_ext:
   fixes
     f :: "'x \<Rightarrow> 'y" and
     X :: "'x set" and
     Y :: "'y set" 
-  assumes
-    "bij_betw f X Y"
-  shows
-    "bij_betw (extensional_continuation f X) X Y"
+  assumes "bij_betw f X Y"
+  shows "bij_betw (extensional_continuation f X) X Y"
 proof -
   have "\<forall> x \<in> X. extensional_continuation f X x = f x"
     by simp
@@ -642,8 +625,7 @@ lemma anon_rel_vote_count:
   assumes
     "finite (votrs_\<E> E)" and
     "(E, E') \<in> anonymity\<^sub>\<R> X"
-  shows
-    "alts_\<E> E = alts_\<E> E' \<and> (E, E') \<in> X \<times> X \<and> (\<forall> p. vote_count p E = vote_count p E')"
+  shows "alts_\<E> E = alts_\<E> E' \<and> (E, E') \<in> X \<times> X \<and> (\<forall> p. vote_count p E = vote_count p E')"
 proof -
   from assms have rel': "(E, E') \<in> X \<times> X"
     unfolding anonymity\<^sub>\<R>.simps rel_induced_by_action.simps
@@ -686,7 +668,7 @@ proof -
   hence
     "\<forall> p. \<pi> ` {v \<in> votrs_\<E> E. (prof_\<E> E) v = p} \<subseteq>
       {v \<in> votrs_\<E> E'. (prof_\<E> E) (the_inv \<pi> v) = p}"
-    using bijection_\<pi> bij_is_inj the_inv_f_f 
+    using bijection_\<pi> bij_is_inj the_inv_f_f
     by fastforce
   with subset rewrite
     have "\<forall> p. {v \<in> votrs_\<E> E'. (prof_\<E> E') v = p} = \<pi> ` {v \<in> votrs_\<E> E. (prof_\<E> E) v = p}"
@@ -698,8 +680,7 @@ proof -
   ultimately have "\<forall> p. vote_count p E = vote_count p E'"
     unfolding vote_count.simps
     by presburger
-  thus  
-    "alts_\<E> E = alts_\<E> E' \<and> (E, E') \<in> X \<times> X \<and> (\<forall>p. vote_count p E = vote_count p E')"
+  thus "alts_\<E> E = alts_\<E> E' \<and> (E, E') \<in> X \<times> X \<and> (\<forall> p. vote_count p E = vote_count p E')"
     using eq_alts assms
     by simp
 qed
@@ -818,7 +799,7 @@ proof -
   have "\<forall> v \<in> UNIV - (votrs_\<E> E' - votrs_\<E> E). \<pi>_global v \<in> UNIV - (votrs_\<E> E - votrs_\<E> E')"
     using \<pi>_global_def \<pi>_global_non_voters bij' bijection_\<pi>\<^sub>g DiffD1 DiffD2 DiffI bij_betwE
     by (metis (no_types, lifting))
-  hence "\<forall> v \<in> votrs_\<E> E - votrs_\<E> E'. \<exists>v' \<in> votrs_\<E> E' - votrs_\<E> E.
+  hence "\<forall> v \<in> votrs_\<E> E - votrs_\<E> E'. \<exists> v' \<in> votrs_\<E> E' - votrs_\<E> E.
       \<pi>_global v' = v \<and> (\<exists> n > 0. n_app n \<pi>' v = v')"
     using bijection_\<pi>\<^sub>g \<pi>_global_def' DiffD2 DiffI UNIV_I local.inv
     by metis
@@ -839,7 +820,7 @@ proof -
     unfolding bij_betw_def
     by (metis (mono_tags, opaque_lifting))
   with inv
-  have "\<forall> v \<in> votrs_\<E> E'. \<exists>v' \<in> votrs_\<E> E. v' = the_inv \<pi>_global v \<and> \<pi>' v' = v"
+  have "\<forall> v \<in> votrs_\<E> E'. \<exists> v' \<in> votrs_\<E> E. v' = the_inv \<pi>_global v \<and> \<pi>' v' = v"
     by presburger
   hence "\<forall> v \<in> votrs_\<E> E'. the_inv \<pi>_global v \<in> votrs_\<E> E \<and> \<pi>' (the_inv \<pi>_global v) = v"
     by blast
@@ -876,11 +857,9 @@ lemma rename_comp:
   assumes
     "bij \<pi>" and
     "bij \<pi>'"
-  shows
-    "rename \<pi> \<circ> rename \<pi>' = rename (\<pi> \<circ> \<pi>')"
+  shows "rename \<pi> \<circ> rename \<pi>' = rename (\<pi> \<circ> \<pi>')"
 proof
-  fix
-    E :: "('a, 'v) Election"
+  fix E :: "('a, 'v) Election"
   have "rename \<pi>' E = (alts_\<E> E, \<pi>' ` (votrs_\<E> E), (prof_\<E> E) \<circ> (the_inv \<pi>'))"
     using prod.collapse rename.simps
     by metis
@@ -906,14 +885,12 @@ proof
 qed
 
 interpretation anon_grp_act:
-  group_action anonymity\<^sub>\<G> valid_elections "\<phi>_anon valid_elections"
+  "group_action" "anonymity\<^sub>\<G>" "valid_elections" "\<phi>_anon valid_elections"
 proof (unfold group_action_def group_hom_def anonymity\<^sub>\<G>_def group_hom_axioms_def hom_def, 
         safe, (rule group_BijGroup)+)
   {
-    fix
-      \<pi> :: "'v \<Rightarrow> 'v"
-    assume
-      "\<pi> \<in> carrier (BijGroup UNIV)"
+    fix \<pi> :: "'v \<Rightarrow> 'v"
+    assume "\<pi> \<in> carrier (BijGroup UNIV)"
     hence bij: "bij \<pi>"
       using rewrite_carrier
       by blast
@@ -921,7 +898,7 @@ proof (unfold group_action_def group_hom_def anonymity\<^sub>\<G>_def group_hom_
       using rename_surj bij
       by blast
     moreover have "inj_on (rename \<pi>) valid_elections"
-      using rename_inj bij subset_inj_on 
+      using rename_inj bij subset_inj_on
       by blast
     ultimately have "bij_betw (rename \<pi>) valid_elections valid_elections"
       unfolding bij_betw_def
@@ -957,7 +934,7 @@ proof (unfold group_action_def group_hom_def anonymity\<^sub>\<G>_def group_hom_
     using bij_betw_imp_surj_on
     by blast
   from car_els
-  have "\<phi>_anon valid_elections \<pi> \<otimes>\<^bsub>BijGroup valid_elections\<^esub> (\<phi>_anon valid_elections) \<pi>' =
+  have "\<phi>_anon valid_elections \<pi> \<otimes> \<^bsub>BijGroup valid_elections\<^esub> (\<phi>_anon valid_elections) \<pi>' =
       extensional_continuation
         (\<phi>_anon valid_elections \<pi> \<circ> \<phi>_anon valid_elections \<pi>') valid_elections"
     using rewrite_mult
@@ -979,7 +956,7 @@ proof (unfold group_action_def group_hom_def anonymity\<^sub>\<G>_def group_hom_
     by metis
   moreover have
     "\<forall> E. E \<in> valid_elections \<longrightarrow>
-          rename (\<pi> \<circ> \<pi>') E = \<phi>_anon valid_elections (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') E"
+          rename (\<pi> \<circ> \<pi>') E = \<phi>_anon valid_elections (\<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<pi>') E"
     using rewrite_mult_univ bij bij'
     unfolding \<phi>_anon.simps
     by force
@@ -989,20 +966,20 @@ proof (unfold group_action_def group_hom_def anonymity\<^sub>\<G>_def group_hom_
         (\<phi>_anon valid_elections \<pi> \<circ> \<phi>_anon valid_elections \<pi>') valid_elections E = undefined"
     by simp
   moreover have
-    "\<forall> E. E \<notin> valid_elections \<longrightarrow> \<phi>_anon valid_elections (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') E = undefined"
+    "\<forall> E. E \<notin> valid_elections \<longrightarrow> \<phi>_anon valid_elections (\<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<pi>') E = undefined"
     by simp
   ultimately have
-    "\<forall> E. \<phi>_anon valid_elections (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') E =
-          (\<phi>_anon valid_elections \<pi> \<otimes>\<^bsub>BijGroup valid_elections\<^esub> \<phi>_anon valid_elections \<pi>') E"
+    "\<forall> E. \<phi>_anon valid_elections (\<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<pi>') E =
+          (\<phi>_anon valid_elections \<pi> \<otimes> \<^bsub>BijGroup valid_elections\<^esub> \<phi>_anon valid_elections \<pi>') E"
     by metis
   thus
-    "\<phi>_anon valid_elections (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') =
-      \<phi>_anon valid_elections \<pi> \<otimes>\<^bsub>BijGroup valid_elections\<^esub> \<phi>_anon valid_elections \<pi>'"
+    "\<phi>_anon valid_elections (\<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<pi>') =
+      \<phi>_anon valid_elections \<pi> \<otimes> \<^bsub>BijGroup valid_elections\<^esub> \<phi>_anon valid_elections \<pi>'"
     by blast
 qed
 
 lemma (in result) well_formed_res_anon:
-  "satisfies (\<lambda>E. limit_set (alts_\<E> E) UNIV) (Invariance (anonymity\<^sub>\<R> valid_elections))"
+  "satisfies (\<lambda> E. limit_set (alts_\<E> E) UNIV) (Invariance (anonymity\<^sub>\<R> valid_elections))"
 proof (unfold anonymity\<^sub>\<R>.simps, simp, safe) qed
 
 subsection \<open>Neutrality Lemmas\<close>
@@ -1013,15 +990,13 @@ lemma rel_rename_helper:
     \<pi> :: "'a \<Rightarrow> 'a" and
     a :: "'a" and
     b :: "'a"
-  assumes
-    "bij \<pi>"
-  shows
-    "(\<pi> a, \<pi> b) \<in> {(\<pi> x, \<pi> y) | x y. (x, y) \<in> r} \<longleftrightarrow> (a, b) \<in> {(x, y) | x y. (x, y) \<in> r}"
+  assumes "bij \<pi>"
+  shows "(\<pi> a, \<pi> b) \<in> {(\<pi> x, \<pi> y) | x y. (x, y) \<in> r} \<longleftrightarrow> (a, b) \<in> {(x, y) | x y. (x, y) \<in> r}"
 proof (safe, simp)
   fix
     x :: "'a" and
     y :: "'a"
-  assume 
+  assume
     x_rel_y: "(x, y) \<in> r" and
     "\<pi> a = \<pi> x" and
     "\<pi> b = \<pi> y"
@@ -1035,8 +1010,7 @@ next
   fix
     x :: "'a" and
     y :: "'a"
-  assume
-    "(a, b) \<in> r"
+  assume "(a, b) \<in> r"
   thus "\<exists> x y. (\<pi> a, \<pi> b) = (\<pi> x, \<pi> y) \<and> (x, y) \<in> r"
     by auto
 qed
@@ -1047,8 +1021,7 @@ lemma rel_rename_comp:
     \<pi>' :: "'a \<Rightarrow> 'a"
   shows "rel_rename (\<pi> \<circ> \<pi>') = rel_rename \<pi> \<circ> rel_rename \<pi>'"
 proof
-  fix
-    r :: "'a rel"
+  fix r :: "'a rel"
   have "rel_rename (\<pi> \<circ> \<pi>') r = {(\<pi> (\<pi>' a), \<pi> (\<pi>' b)) | a b. (a, b) \<in> r}"
     by auto
   also have
@@ -1068,16 +1041,14 @@ lemma rel_rename_sound:
     \<pi> :: "'a \<Rightarrow> 'a" and
     r :: "'a rel" and
     A :: "'a set"
-  assumes
-    "inj \<pi>"
+  assumes "inj \<pi>"
   shows
     "refl_on A r \<longrightarrow> refl_on (\<pi> ` A) (rel_rename \<pi> r)" and
     "antisym r \<longrightarrow> antisym (rel_rename \<pi> r)" and
     "total_on A r \<longrightarrow> total_on (\<pi> ` A) (rel_rename \<pi> r)" and
     "Relation.trans r \<longrightarrow> Relation.trans (rel_rename \<pi> r)"
 proof (unfold antisym_def total_on_def Relation.trans_def, safe)
-  assume
-    "refl_on A r"
+  assume "refl_on A r"
   hence "r \<subseteq> A \<times> A \<and> (\<forall> a \<in> A. (a, a) \<in> r)"
     unfolding refl_on_def
     by simp
@@ -1122,8 +1093,8 @@ next
     by simp
 next
   fix
-    a :: 'a and
-    b :: 'a
+    a :: "'a" and
+    b :: "'a"
   assume
     total: "\<forall> x \<in> A. \<forall> y \<in> A. x \<noteq> y \<longrightarrow> (x, y) \<in> r \<or> (y, x) \<in> r" and
     a_in_A: "a \<in> A" and
@@ -1148,13 +1119,14 @@ next
     trans: "\<forall> x y z. (x, y) \<in> r \<longrightarrow> (y, z) \<in> r \<longrightarrow> (x, z) \<in> r" and
     "(a, b) \<in> rel_rename \<pi> r" and
     "(b, c) \<in> rel_rename \<pi> r"
-  then obtain d :: 'a and
-    e :: 'a and
-    s :: 'a and
-    t :: 'a where
+  then obtain
+    d :: "'a" and
+    e :: "'a" and
+    s :: "'a" and
+    t :: "'a" where
       d_rel_e: "(d, e) \<in> r" and
-      s_rel_t: "(s, t) \<in> r" and 
-      \<pi>\<^sub>d_eq_a: "\<pi> d = a" and 
+      s_rel_t: "(s, t) \<in> r" and
+      \<pi>\<^sub>d_eq_a: "\<pi> d = a" and
       \<pi>\<^sub>s_eq_b: "\<pi> s = b" and
       \<pi>\<^sub>t_eq_c: "\<pi> t = c" and
       \<pi>\<^sub>e_eq_b: "\<pi> e = b"
@@ -1171,90 +1143,89 @@ next
     by blast
   thus "(a, c) \<in> rel_rename \<pi> r"
     unfolding rel_rename.simps
-    using \<pi>\<^sub>d_eq_a \<open>\<pi> t = c\<close> 
+    using \<pi>\<^sub>d_eq_a \<pi>\<^sub>t_eq_c
     by blast
 qed
 
 lemma rel_rename_bij:
-  fixes
-    \<pi> :: "'a \<Rightarrow> 'a"
-  assumes
-    "bij \<pi>"
-  shows
-    "bij (rel_rename \<pi>)"
+  fixes \<pi> :: "'a \<Rightarrow> 'a"
+  assumes bij_\<pi>: "bij \<pi>"
+  shows "bij (rel_rename \<pi>)"
 proof (unfold bij_def inj_def surj_def, safe)
   {
     fix
-      r :: "'a rel" and s :: "'a rel" and a :: 'a and b :: 'a
+      r :: "'a rel" and
+      s :: "'a rel" and
+      a :: "'a" and
+      b :: "'a"
     assume
-      "rel_rename \<pi> r = rel_rename \<pi> s" and "(a, b) \<in> r"
+      "rel_rename \<pi> r = rel_rename \<pi> s" and
+      "(a, b) \<in> r"
     hence "(\<pi> a, \<pi> b) \<in> {(\<pi> a, \<pi> b) | a b. (a,b) \<in> s}"
       unfolding rel_rename.simps
       by blast
-    hence "\<exists>c d. (c, d) \<in> s \<and> \<pi> c = \<pi> a \<and> \<pi> d = \<pi> b"
+    hence "\<exists> c d. (c, d) \<in> s \<and> \<pi> c = \<pi> a \<and> \<pi> d = \<pi> b"
       by fastforce
-    moreover have "\<forall>c d. \<pi> c = \<pi> d \<longrightarrow> c = d"
-      using \<open>bij \<pi>\<close>
-      by (metis bij_pointE)
+    moreover have "\<forall> c d. \<pi> c = \<pi> d \<longrightarrow> c = d"
+      using bij_\<pi> bij_pointE
+      by metis
     ultimately show "(a, b) \<in> s"
       by blast
   }
   note subset =
-    \<open>\<And>r s a b. rel_rename \<pi> r = rel_rename \<pi> s \<Longrightarrow> (a, b) \<in> r \<Longrightarrow> (a, b) \<in> s\<close>
+    \<open>\<And> r s a b. rel_rename \<pi> r = rel_rename \<pi> s \<Longrightarrow> (a, b) \<in> r \<Longrightarrow> (a, b) \<in> s\<close>
   fix
-    r :: "'a rel" and s :: "'a rel" and a :: 'a and b :: 'a
+    r :: "'a rel" and
+    s :: "'a rel" and
+    a :: "'a" and
+    b :: "'a"
   assume
-    "rel_rename \<pi> r = rel_rename \<pi> s" and "(a, b) \<in> s"
-  thus
-    "(a, b) \<in> r"
+    "rel_rename \<pi> r = rel_rename \<pi> s" and
+    "(a, b) \<in> s"
+  thus "(a, b) \<in> r"
     using subset
     by presburger
 next
-  fix
-    r :: "'a rel"
-  have 
-    "rel_rename (the_inv \<pi>) r = {((the_inv \<pi>) a, (the_inv \<pi>) b) | a b. (a,b) \<in> r}"
+  fix r :: "'a rel"
+  have "rel_rename (the_inv \<pi>) r = {((the_inv \<pi>) a, (the_inv \<pi>) b) | a b. (a,b) \<in> r}"
     by simp
   also have "rel_rename \<pi> {((the_inv \<pi>) a, (the_inv \<pi>) b) | a b. (a,b) \<in> r} =
     {(\<pi> ((the_inv \<pi>) a), \<pi> ((the_inv \<pi>) b)) | a b. (a,b) \<in> r}"
     by auto
   also have "{(\<pi> ((the_inv \<pi>) a), \<pi> ((the_inv \<pi>) b)) | a b. (a,b) \<in> r} =
     {(a, b) | a b. (a,b) \<in> r}"
-    using the_inv_f_f \<open>bij \<pi>\<close>
+    using the_inv_f_f bij_\<pi>
     by (simp add: f_the_inv_into_f_bij_betw)
   also have "{(a, b) | a b. (a,b) \<in> r} = r"
     by simp
   finally have "rel_rename \<pi> (rel_rename (the_inv \<pi>) r) = r"
     by simp
-  thus "\<exists>s. r = rel_rename \<pi> s"
+  thus "\<exists> s. r = rel_rename \<pi> s"
     by blast
 qed
     
 lemma alts_rename_comp:
   fixes
-    \<pi> :: "'a \<Rightarrow> 'a" and \<pi>' :: "'a \<Rightarrow> 'a"
-  assumes
-    "bij \<pi>" and "bij \<pi>'"
-  shows
-    "alts_rename \<pi> \<circ> alts_rename \<pi>' = alts_rename (\<pi> \<circ> \<pi>')"
+    \<pi> :: "'a \<Rightarrow> 'a" and
+    \<pi>' :: "'a \<Rightarrow> 'a"
+  shows "alts_rename \<pi> \<circ> alts_rename \<pi>' = alts_rename (\<pi> \<circ> \<pi>')"
 proof
-  fix
-    E :: "('a, 'v) Election"
+  fix E :: "('a, 'v) Election"
   have "(alts_rename \<pi> \<circ> alts_rename \<pi>') E = alts_rename \<pi> (alts_rename \<pi>' E)"
     by simp
-  also have "alts_rename \<pi> (alts_rename \<pi>' E) = 
+  also have "alts_rename \<pi> (alts_rename \<pi>' E) =
     alts_rename \<pi> (\<pi>' ` (alts_\<E> E), votrs_\<E> E, (rel_rename \<pi>') \<circ> (prof_\<E> E))"
     by simp
   also have "alts_rename \<pi> (\<pi>' ` (alts_\<E> E), votrs_\<E> E, (rel_rename \<pi>') \<circ> (prof_\<E> E))
     = (\<pi> ` \<pi>' ` (alts_\<E> E), votrs_\<E> E, (rel_rename \<pi>) \<circ> (rel_rename \<pi>') \<circ> (prof_\<E> E))"
     by (simp add: fun.map_comp)
-  also have 
-    "(\<pi> ` \<pi>' ` (alts_\<E> E), votrs_\<E> E, (rel_rename \<pi>) \<circ> (rel_rename \<pi>') \<circ> (prof_\<E> E)) = 
+  also have
+    "(\<pi> ` \<pi>' ` (alts_\<E> E), votrs_\<E> E, (rel_rename \<pi>) \<circ> (rel_rename \<pi>') \<circ> (prof_\<E> E)) =
       ((\<pi> \<circ> \<pi>') ` (alts_\<E> E), votrs_\<E> E, (rel_rename (\<pi> \<circ> \<pi>')) \<circ> (prof_\<E> E))"
     using rel_rename_comp image_comp
     by metis
-  also have 
-    "((\<pi> \<circ> \<pi>') ` (alts_\<E> E), votrs_\<E> E, (rel_rename (\<pi> \<circ> \<pi>')) \<circ> (prof_\<E> E)) = 
+  also have
+    "((\<pi> \<circ> \<pi>') ` (alts_\<E> E), votrs_\<E> E, (rel_rename (\<pi> \<circ> \<pi>')) \<circ> (prof_\<E> E)) =
       alts_rename (\<pi> \<circ> \<pi>') E"
     by simp
   finally show "(alts_rename \<pi> \<circ> alts_rename \<pi>') E = alts_rename (\<pi> \<circ> \<pi>') E"
@@ -1262,128 +1233,138 @@ proof
 qed
 
 lemma alts_rename_bij:
-  fixes
-    \<pi> :: "('a \<Rightarrow> 'a)"
-  assumes 
-    "bij \<pi>"
-  shows 
-    "bij_betw (alts_rename \<pi>) valid_elections valid_elections"
+  fixes \<pi> :: "('a \<Rightarrow> 'a)"
+  assumes bij_\<pi>: "bij \<pi>"
+  shows "bij_betw (alts_rename \<pi>) valid_elections valid_elections"
 proof (unfold bij_betw_def, safe, intro inj_onI, clarsimp)
   fix
-    A :: "'a set" and A' :: "'a set" and V :: "'v set" and
-    p :: "('a, 'v) Profile" and p' :: "('a, 'v) Profile"
+    A :: "'a set" and
+    A' :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    p' :: "('a, 'v) Profile"
   assume
-    "(A, V, p) \<in> valid_elections" and "(A', V, p') \<in> valid_elections" and
-    "\<pi> ` A = \<pi> ` A'" and eq: "rel_rename \<pi> \<circ> p = rel_rename \<pi> \<circ> p'"
-  hence "(the_inv (rel_rename \<pi>)) \<circ> rel_rename \<pi> \<circ> p = 
+    "(A, V, p) \<in> valid_elections" and
+    "(A', V, p') \<in> valid_elections" and
+    \<pi>_eq_img_A_A': "\<pi> ` A = \<pi> ` A'" and
+    eq: "rel_rename \<pi> \<circ> p = rel_rename \<pi> \<circ> p'"
+  hence "(the_inv (rel_rename \<pi>)) \<circ> rel_rename \<pi> \<circ> p =
     (the_inv (rel_rename \<pi>)) \<circ> rel_rename \<pi> \<circ> p'"
-    by (metis fun.map_comp)
+    using fun.map_comp
+    by metis
   also have "(the_inv (rel_rename \<pi>)) \<circ> rel_rename \<pi> = id"
-    using \<open>bij \<pi>\<close> rel_rename_bij
-    by (metis (no_types, opaque_lifting) bij_betw_def inv_o_cancel surj_imp_inv_eq the_inv_f_f)
+    using bij_\<pi> rel_rename_bij bij_betw_def inv_o_cancel surj_imp_inv_eq the_inv_f_f
+    by (metis (no_types, opaque_lifting))
   finally have "p = p'"
     by simp
   moreover have "A = A'"
-    using \<open>bij \<pi>\<close> \<open>\<pi> ` A = \<pi> ` A'\<close>
+    using bij_\<pi> \<pi>_eq_img_A_A'
     by (simp add: bij_betw_imp_inj_on inj_image_eq_iff)
   ultimately show "A = A' \<and> p = p'"
     by blast
 next
   {
     fix
-      A :: "'a set" and A' :: "'a set" and 
-      V :: "'v set" and V' :: "'v set" and
-      p :: "('a, 'v) Profile" and p' :: "('a, 'v) Profile" and
+      A :: "'a set" and
+      A' :: "'a set" and 
+      V :: "'v set" and
+      V' :: "'v set" and
+      p :: "('a, 'v) Profile" and
+      p' :: "('a, 'v) Profile" and
       \<pi> :: "'a \<Rightarrow> 'a"
     assume
-      prof: "(A, V, p) \<in> valid_elections" and "bij \<pi>" and
+      prof: "(A, V, p) \<in> valid_elections" and
+      bij_\<pi>: "bij \<pi>" and
       renamed: "(A', V', p') = alts_rename \<pi> (A, V, p)"
     hence rewr: "V = V' \<and> A' = \<pi> ` A"
       by simp
-    hence "\<forall>v \<in> V'. linear_order_on A (p v)"
+    hence "\<forall> v \<in> V'. linear_order_on A (p v)"
       using prof
       unfolding valid_elections_def profile_def
       by simp
-    moreover have "\<forall>v \<in> V'. p' v = rel_rename \<pi> (p v)"
+    moreover have "\<forall> v \<in> V'. p' v = rel_rename \<pi> (p v)"
       using renamed
       by simp
-    ultimately have "\<forall>v \<in> V'. linear_order_on A' (p' v)"
+    ultimately have "\<forall> v \<in> V'. linear_order_on A' (p' v)"
       unfolding linear_order_on_def partial_order_on_def preorder_on_def
-      using rewr rel_rename_sound[of \<pi>] \<open>bij \<pi>\<close> bij_is_inj 
+      using rewr rel_rename_sound bij_\<pi> bij_is_inj
       by metis
     hence "(A', V', p') \<in> valid_elections"
       unfolding valid_elections_def profile_def
       by simp
   }
   note valid_els_closed =
-    \<open>\<And> A A' V V' p p' \<pi>. (A, V, p) \<in> valid_elections \<Longrightarrow> 
+    \<open>\<And> A A' V V' p p' \<pi>. (A, V, p) \<in> valid_elections \<Longrightarrow>
       bij \<pi> \<Longrightarrow> (A', V', p') = alts_rename \<pi> (A, V, p) \<Longrightarrow>
         (A', V', p') \<in> valid_elections\<close>
-  thus "\<And>a aa b ab ac ba.
+  thus "\<And> a aa b ab ac ba.
           (a, aa, b) = alts_rename \<pi> (ab, ac, ba) \<Longrightarrow>
             (ab, ac, ba) \<in> valid_elections \<Longrightarrow> (a, aa, b) \<in> valid_elections"
-    using \<open>bij \<pi>\<close>
+    using bij_\<pi>
     by blast
   fix
-    A :: "'a set" and V :: "'v set" and p :: "('a, 'v) Profile"
-  assume
-    prof: "(A, V, p) \<in> valid_elections"
-  have 
-    "alts_rename (the_inv \<pi>) (A, V, p) = ((the_inv \<pi>) ` A, V, rel_rename (the_inv \<pi>) \<circ> p)"
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
+  assume prof: "(A, V, p) \<in> valid_elections"
+  have "alts_rename (the_inv \<pi>) (A, V, p) = ((the_inv \<pi>) ` A, V, rel_rename (the_inv \<pi>) \<circ> p)"
     by simp
-  also have 
+  also have
     "alts_rename \<pi> ((the_inv \<pi>) ` A, V, rel_rename (the_inv \<pi>) \<circ> p) =
       (\<pi> ` (the_inv \<pi>) ` A, V, rel_rename \<pi> \<circ> rel_rename (the_inv \<pi>) \<circ> p)"
     by auto
   also have
-    "(\<pi> ` (the_inv \<pi>) ` A, V, rel_rename \<pi> \<circ> rel_rename (the_inv \<pi>) \<circ> p) 
+    "(\<pi> ` (the_inv \<pi>) ` A, V, rel_rename \<pi> \<circ> rel_rename (the_inv \<pi>) \<circ> p)
       = (A, V, rel_rename (\<pi> \<circ> the_inv \<pi>) \<circ> p)"
-    using \<open>bij \<pi>\<close> rel_rename_comp[of \<pi> "the_inv \<pi>"] the_inv_f_f
+    using bij_\<pi> rel_rename_comp[of \<pi>] the_inv_f_f
     by (simp add: bij_betw_imp_surj_on bij_is_inj f_the_inv_into_f image_comp)
   also have "(A, V, rel_rename (\<pi> \<circ> the_inv \<pi>) \<circ> p) = (A, V, rel_rename id \<circ> p)"
-    by (metis UNIV_I assms comp_apply f_the_inv_into_f_bij_betw id_apply)
+    using UNIV_I assms comp_apply f_the_inv_into_f_bij_betw id_apply
+    by metis
   also have "rel_rename id \<circ> p = p"
     unfolding rel_rename.simps
     by auto
   finally have "alts_rename \<pi> (alts_rename (the_inv \<pi>) (A, V, p)) = (A, V, p)"
     by simp
   moreover have "alts_rename (the_inv \<pi>) (A, V, p) \<in> valid_elections"
-    using valid_els_closed[of A V p "the_inv \<pi>"] \<open>bij \<pi>\<close>
+    using valid_els_closed[of A V] bij_\<pi>
     by (simp add: bij_betw_the_inv_into prof)
   ultimately show "(A, V, p) \<in> alts_rename \<pi> ` valid_elections"
-    by (metis image_eqI)
+    using image_eqI
+    by metis
 qed
 
-interpretation \<phi>_neutr_act: 
-  group_action neutrality\<^sub>\<G> valid_elections "\<phi>_neutr valid_elections"
-proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def neutrality\<^sub>\<G>_def, 
+interpretation \<phi>_neutr_act:
+  "group_action" "neutrality\<^sub>\<G>" "valid_elections" "\<phi>_neutr valid_elections"
+proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def neutrality\<^sub>\<G>_def,
         safe, (rule group_BijGroup)+)
   {
-    fix
-      \<pi> :: "'a \<Rightarrow> 'a"
-    assume
-      "\<pi> \<in> carrier (BijGroup UNIV)"
+    fix \<pi> :: "'a \<Rightarrow> 'a"
+    assume "\<pi> \<in> carrier (BijGroup UNIV)"
     hence "bij \<pi>"
-      using bij_car_el 
+      using bij_car_el
       by blast
     hence "bij_betw (alts_rename \<pi>) valid_elections valid_elections"
       using alts_rename_bij
       by blast
     hence "bij_betw (\<phi>_neutr valid_elections \<pi>) valid_elections valid_elections"
-      unfolding \<phi>_neutr.simps 
-      using bij_betw_ext 
+      unfolding \<phi>_neutr.simps
+      using bij_betw_ext
       by blast
     thus "\<phi>_neutr valid_elections \<pi> \<in> carrier (BijGroup valid_elections)"
       unfolding \<phi>_neutr.simps BijGroup_def Bij_def extensional_def
       by simp
   }
   note bij_car_el =
-    \<open>\<And>\<pi>. \<pi> \<in> carrier (BijGroup UNIV) \<Longrightarrow> \<phi>_neutr valid_elections \<pi> \<in> carrier (BijGroup valid_elections)\<close>
+    \<open>\<And> \<pi>. \<pi> \<in> carrier (BijGroup UNIV) \<Longrightarrow>
+      \<phi>_neutr valid_elections \<pi> \<in> carrier (BijGroup valid_elections)\<close>
   fix
-      \<pi> :: "'a \<Rightarrow> 'a" and \<pi>' :: "'a \<Rightarrow> 'a"
+    \<pi> :: "'a \<Rightarrow> 'a" and
+    \<pi>' :: "'a \<Rightarrow> 'a"
   assume
-    bij: "\<pi> \<in> carrier (BijGroup UNIV)" and bij': "\<pi>' \<in> carrier (BijGroup UNIV)"
-  hence car_els: "\<phi>_neutr valid_elections \<pi> \<in> carrier (BijGroup valid_elections) \<and> 
+    bij: "\<pi> \<in> carrier (BijGroup UNIV)" and
+    bij': "\<pi>' \<in> carrier (BijGroup UNIV)"
+  hence car_els: "\<phi>_neutr valid_elections \<pi> \<in> carrier (BijGroup valid_elections) \<and>
                     \<phi>_neutr valid_elections \<pi>' \<in> carrier (BijGroup valid_elections)"
     using bij_car_el
     by metis
@@ -1391,61 +1372,60 @@ proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def neutra
     unfolding BijGroup_def Bij_def extensional_def
     by auto
   hence valid_closed': "\<phi>_neutr valid_elections \<pi>' ` valid_elections \<subseteq> valid_elections"
-    using bij_betw_imp_surj_on 
+    using bij_betw_imp_surj_on
     by blast
-  from car_els have 
-    "\<phi>_neutr valid_elections \<pi> \<otimes>\<^bsub>BijGroup valid_elections\<^esub> \<phi>_neutr valid_elections \<pi>' = 
-      extensional_continuation 
+  have "\<phi>_neutr valid_elections \<pi> \<otimes> \<^bsub>BijGroup valid_elections\<^esub> \<phi>_neutr valid_elections \<pi>' =
+      extensional_continuation
         (\<phi>_neutr valid_elections \<pi> \<circ> \<phi>_neutr valid_elections \<pi>') valid_elections"
-    using rewrite_mult
+    using car_els rewrite_mult
     by auto
   moreover have
-    "\<forall>E. E \<in> valid_elections \<longrightarrow> 
-      extensional_continuation 
-        (\<phi>_neutr valid_elections \<pi> \<circ> \<phi>_neutr valid_elections \<pi>') valid_elections E = 
+    "\<forall> E. E \<in> valid_elections \<longrightarrow>
+      extensional_continuation
+        (\<phi>_neutr valid_elections \<pi> \<circ> \<phi>_neutr valid_elections \<pi>') valid_elections E =
           (\<phi>_neutr valid_elections \<pi> \<circ> \<phi>_neutr valid_elections \<pi>') E"
     by simp
-  moreover have 
-    "\<forall>E. E \<in> valid_elections \<longrightarrow> (\<phi>_neutr valid_elections \<pi> \<circ> \<phi>_neutr valid_elections \<pi>') E = alts_rename \<pi> (alts_rename \<pi>' E)"
+  moreover have
+    "\<forall> E. E \<in> valid_elections \<longrightarrow>
+      (\<phi>_neutr valid_elections \<pi> \<circ> \<phi>_neutr valid_elections \<pi>') E =
+        alts_rename \<pi> (alts_rename \<pi>' E)"
     unfolding \<phi>_neutr.simps
     using valid_closed'
     by auto
-  moreover have 
-    "\<forall>E. E \<in> valid_elections \<longrightarrow> alts_rename \<pi> (alts_rename \<pi>' E) = alts_rename (\<pi> \<circ> \<pi>') E"
-    using alts_rename_comp bij bij' Symmetry_Of_Functions.bij_car_el comp_apply
+  moreover have
+    "\<forall> E. E \<in> valid_elections \<longrightarrow> alts_rename \<pi> (alts_rename \<pi>' E) = alts_rename (\<pi> \<circ> \<pi>') E"
+    using alts_rename_comp bij bij' comp_apply
     by metis
-  moreover have 
-    "\<forall>E. E \<in> valid_elections \<longrightarrow> alts_rename (\<pi> \<circ> \<pi>') E = \<phi>_neutr valid_elections (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') E"
+  moreover have
+    "\<forall> E. E \<in> valid_elections \<longrightarrow> alts_rename (\<pi> \<circ> \<pi>') E =
+        \<phi>_neutr valid_elections (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') E"
     using rewrite_mult_univ bij bij'
     unfolding \<phi>_anon.simps
     by force
-  moreover have 
-    "\<forall>E. E \<notin> valid_elections \<longrightarrow> 
-      extensional_continuation 
+  moreover have
+    "\<forall> E. E \<notin> valid_elections \<longrightarrow>
+      extensional_continuation
         (\<phi>_neutr valid_elections \<pi> \<circ> \<phi>_neutr valid_elections \<pi>') valid_elections E = undefined"
     by simp
-  moreover have 
-    "\<forall>E. E \<notin> valid_elections \<longrightarrow> \<phi>_neutr valid_elections (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') E = undefined"
+  moreover have
+    "\<forall> E. E \<notin> valid_elections \<longrightarrow> \<phi>_neutr valid_elections (\<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<pi>') E = undefined"
     by simp
-  ultimately have 
-    "\<forall>E. \<phi>_neutr valid_elections (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') E = 
+  ultimately have
+    "\<forall> E. \<phi>_neutr valid_elections (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') E =
       (\<phi>_neutr valid_elections \<pi> \<otimes>\<^bsub>BijGroup valid_elections\<^esub> \<phi>_neutr valid_elections \<pi>') E"
     by metis
   thus
-    "\<phi>_neutr valid_elections (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') = 
-      \<phi>_neutr valid_elections \<pi> \<otimes>\<^bsub>BijGroup valid_elections\<^esub> \<phi>_neutr valid_elections \<pi>'"
+    "\<phi>_neutr valid_elections (\<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<pi>') =
+      \<phi>_neutr valid_elections \<pi> \<otimes> \<^bsub>BijGroup valid_elections\<^esub> \<phi>_neutr valid_elections \<pi>'"
     by blast
 qed
 
-interpretation \<psi>_neutr\<^sub>\<c>_act:
-  group_action neutrality\<^sub>\<G> UNIV \<psi>_neutr\<^sub>\<c>
+interpretation \<psi>_neutr\<^sub>\<c>_act: "group_action" "neutrality\<^sub>\<G>" "UNIV" "\<psi>_neutr\<^sub>\<c>"
 proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def group_hom_axioms_def, 
         safe, (rule group_BijGroup)+)
   {
-    fix
-      \<pi> :: "'a \<Rightarrow> 'a"
-    assume
-      "\<pi> \<in> carrier (BijGroup UNIV)"
+    fix \<pi> :: "'a \<Rightarrow> 'a"
+    assume "\<pi> \<in> carrier (BijGroup UNIV)"
     hence "bij \<pi>"
       unfolding BijGroup_def Bij_def
       by simp
@@ -1457,24 +1437,23 @@ proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def g
       by blast
   }
   fix
-    \<pi> :: "'a \<Rightarrow> 'a" and \<pi>' :: "'a \<Rightarrow> 'a"
+    \<pi> :: "'a \<Rightarrow> 'a" and
+    \<pi>' :: "'a \<Rightarrow> 'a"
   assume
-    "\<pi> \<in> carrier (BijGroup UNIV)" and "\<pi>' \<in> carrier (BijGroup UNIV)"
-  show "\<psi>_neutr\<^sub>\<c> (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') =
-           \<psi>_neutr\<^sub>\<c> \<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<psi>_neutr\<^sub>\<c> \<pi>'"
+    "\<pi> \<in> carrier (BijGroup UNIV)" and
+    "\<pi>' \<in> carrier (BijGroup UNIV)"
+  show "\<psi>_neutr\<^sub>\<c> (\<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<pi>') =
+           \<psi>_neutr\<^sub>\<c> \<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<psi>_neutr\<^sub>\<c> \<pi>'"
     unfolding \<psi>_neutr\<^sub>\<c>.simps
     by simp
 qed
 
-interpretation \<psi>_neutr\<^sub>\<w>_act:
-  group_action neutrality\<^sub>\<G> UNIV \<psi>_neutr\<^sub>\<w>
+interpretation \<psi>_neutr\<^sub>\<w>_act: "group_action" "neutrality\<^sub>\<G>" "UNIV" "\<psi>_neutr\<^sub>\<w>"
 proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def group_hom_axioms_def, 
         safe, (rule group_BijGroup)+)
   {
-    fix
-      \<pi> :: "'a \<Rightarrow> 'a"
-    assume
-      "\<pi> \<in> carrier (BijGroup UNIV)"
+    fix \<pi> :: "'a \<Rightarrow> 'a"
+    assume "\<pi> \<in> carrier (BijGroup UNIV)"
     hence "bij \<pi>"
       unfolding neutrality\<^sub>\<G>_def BijGroup_def Bij_def
       by simp
@@ -1487,34 +1466,33 @@ proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def g
       by blast
   }
   note grp_el =
-    \<open>\<And>\<pi>. \<pi> \<in> carrier (BijGroup UNIV) \<Longrightarrow> \<psi>_neutr\<^sub>\<w> \<pi> \<in> carrier (BijGroup UNIV)\<close>
+    \<open>\<And> \<pi>. \<pi> \<in> carrier (BijGroup UNIV) \<Longrightarrow> \<psi>_neutr\<^sub>\<w> \<pi> \<in> carrier (BijGroup UNIV)\<close>
   fix
-    \<pi> :: "'a \<Rightarrow> 'a" and \<pi>' :: "'a \<Rightarrow> 'a"
+    \<pi> :: "'a \<Rightarrow> 'a" and
+    \<pi>' :: "'a \<Rightarrow> 'a"
   assume
-    bij: "\<pi> \<in> carrier (BijGroup UNIV)" and bij': "\<pi>' \<in> carrier (BijGroup UNIV)"
-  hence "\<psi>_neutr\<^sub>\<w> \<pi> \<in> carrier (BijGroup UNIV) \<and>
-          \<psi>_neutr\<^sub>\<w> \<pi>' \<in> carrier (BijGroup UNIV)"
+    bij: "\<pi> \<in> carrier (BijGroup UNIV)" and
+    bij': "\<pi>' \<in> carrier (BijGroup UNIV)"
+  hence "\<psi>_neutr\<^sub>\<w> \<pi> \<in> carrier (BijGroup UNIV) \<and> \<psi>_neutr\<^sub>\<w> \<pi>' \<in> carrier (BijGroup UNIV)"
     using grp_el
     by blast
-  thus "\<psi>_neutr\<^sub>\<w> (\<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<pi>') =
-           \<psi>_neutr\<^sub>\<w> \<pi> \<otimes>\<^bsub>BijGroup UNIV\<^esub> \<psi>_neutr\<^sub>\<w> \<pi>'"
+  thus "\<psi>_neutr\<^sub>\<w> (\<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<pi>') = \<psi>_neutr\<^sub>\<w> \<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<psi>_neutr\<^sub>\<w> \<pi>'"
     unfolding \<psi>_neutr\<^sub>\<w>.simps
-    using rel_rename_comp[of \<pi> \<pi>'] rewrite_mult_univ bij bij'
+    using rel_rename_comp rewrite_mult_univ bij bij'
     by metis
 qed
 
 lemma wf_res_neutr_soc_choice:
-  "satisfies (\<lambda>E. limit_set_soc_choice (alts_\<E> E) UNIV) 
-            (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) valid_elections 
+  "satisfies (\<lambda> E. limit_set_soc_choice (alts_\<E> E) UNIV)
+            (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) valid_elections
                                 (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<c>))"
-proof (simp del: limit_set_soc_choice.simps \<phi>_neutr.simps \<psi>_neutr\<^sub>\<w>.simps 
-            add: rewrite_equivar_ind_by_act, safe, auto) qed
+proof (unfold rewrite_equivar_ind_by_act, safe, auto) qed
 
 lemma wf_res_neutr_soc_welfare:
-  "satisfies (\<lambda>E. limit_set_welfare (alts_\<E> E) UNIV) 
-            (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) valid_elections 
+  "satisfies (\<lambda> E. limit_set_welfare (alts_\<E> E) UNIV)
+            (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) valid_elections
                                 (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<w>))"
-proof (simp del: limit_set_welfare.simps \<phi>_neutr.simps \<psi>_neutr\<^sub>\<w>.simps 
+proof (simp del: limit_set_welfare.simps \<phi>_neutr.simps
             add: rewrite_equivar_ind_by_act, safe)
   {
     fix
@@ -1524,30 +1502,31 @@ proof (simp del: limit_set_welfare.simps \<phi>_neutr.simps \<psi>_neutr\<^sub>\
       p :: "('a, 'v) Profile" and
       r :: "'a rel"
     let ?r_inv = "\<psi>_neutr\<^sub>\<w> (the_inv \<pi>) r"
-    assume  
-      "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
+    assume
+      carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
       prof: "(A, V, p) \<in> valid_elections" and
       "\<phi>_neutr valid_elections \<pi> (A, V, p) \<in> valid_elections" and
       lim_el: "r \<in> limit_set_welfare (alts_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
-    hence "the_inv \<pi> \<in> carrier neutrality\<^sub>\<G>"
-      unfolding neutrality\<^sub>\<G>_def
-      by (simp add: bij_betw_the_inv_into rewrite_carrier)
+    hence inv_carrier: "the_inv \<pi> \<in> carrier neutrality\<^sub>\<G>"
+      unfolding neutrality\<^sub>\<G>_def rewrite_carrier
+      using bij_betw_the_inv_into
+      by simp
     moreover have "the_inv \<pi> \<circ> \<pi> = id"
-      using \<open>\<pi> \<in> carrier neutrality\<^sub>\<G>\<close> bij_car_el[of \<pi>] bij_is_inj the_inv_f_f 
+      using carrier_\<pi> bij_car_el bij_is_inj the_inv_f_f 
       unfolding neutrality\<^sub>\<G>_def
       by fastforce
-    moreover have "\<one>\<^bsub>neutrality\<^sub>\<G>\<^esub> = id"
+    moreover have "\<one> \<^bsub>neutrality\<^sub>\<G>\<^esub> = id"
       unfolding neutrality\<^sub>\<G>_def BijGroup_def
       by auto
-    ultimately have "the_inv \<pi> \<otimes>\<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> = \<one>\<^bsub>neutrality\<^sub>\<G>\<^esub>"
-      using \<open>\<pi> \<in> carrier neutrality\<^sub>\<G>\<close>
+    ultimately have "the_inv \<pi> \<otimes> \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> = \<one> \<^bsub>neutrality\<^sub>\<G>\<^esub>"
+      using carrier_\<pi>
       unfolding neutrality\<^sub>\<G>_def
-      using rewrite_mult_univ[of "the_inv \<pi>" \<pi>]
+      using rewrite_mult_univ
       by metis
-    hence "inv\<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> = the_inv \<pi>"
-      using \<open>\<pi> \<in> carrier neutrality\<^sub>\<G>\<close> \<open>the_inv \<pi> \<in> carrier neutrality\<^sub>\<G>\<close>
-            \<psi>_neutr\<^sub>\<c>_act.group_hom group.inv_closed group.inv_solve_right 
-            group.l_inv group_BijGroup group_hom.hom_one group_hom.one_closed neutrality\<^sub>\<G>_def
+    hence inv_eq: "inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> = the_inv \<pi>"
+      using carrier_\<pi> inv_carrier \<psi>_neutr\<^sub>\<c>_act.group_hom group.inv_closed group.inv_solve_right
+            group.l_inv group_BijGroup group_hom.hom_one group_hom.one_closed
+      unfolding neutrality\<^sub>\<G>_def
       by metis
     have "r \<in> limit_set_welfare (\<pi> ` A) UNIV"
       unfolding \<phi>_neutr.simps
@@ -1556,19 +1535,19 @@ proof (simp del: limit_set_welfare.simps \<phi>_neutr.simps \<psi>_neutr\<^sub>\
     hence lin: "linear_order_on (\<pi> ` A) r"
       by auto
     have bij_inv: "bij (the_inv \<pi>)"
-      using \<open>\<pi> \<in> carrier neutrality\<^sub>\<G>\<close> bij_betw_the_inv_into bij_car_el
+      using carrier_\<pi> bij_betw_the_inv_into bij_car_el
       unfolding neutrality\<^sub>\<G>_def
       by blast
     hence "(the_inv \<pi>) ` \<pi> ` A = A"
-      using \<open>\<pi> \<in> carrier neutrality\<^sub>\<G>\<close>
+      using carrier_\<pi> UNIV_I bij_betw_imp_surj bij_car_el f_the_inv_into_f_bij_betw
+            image_f_inv_f surj_imp_inv_eq
       unfolding neutrality\<^sub>\<G>_def
-      by (metis UNIV_I bij_betw_imp_surj bij_car_el
-                f_the_inv_into_f_bij_betw image_f_inv_f surj_imp_inv_eq)
+      by metis
     hence lin_inv: "linear_order_on A ?r_inv"
-      using rel_rename_sound[of "the_inv \<pi>"] bij_inv lin bij_is_inj
+      using rel_rename_sound bij_inv lin bij_is_inj
       unfolding \<psi>_neutr\<^sub>\<w>.simps linear_order_on_def preorder_on_def partial_order_on_def
       by metis
-    hence "\<forall>a b. (a, b) \<in> ?r_inv \<longrightarrow> a \<in> A \<and> b \<in> A"
+    hence "\<forall> a b. (a, b) \<in> ?r_inv \<longrightarrow> a \<in> A \<and> b \<in> A"
       using linear_order_on_def partial_order_onD(1) refl_on_def 
       by blast
     hence "limit A ?r_inv = {(a, b). (a, b) \<in> ?r_inv}"
@@ -1579,15 +1558,12 @@ proof (simp del: limit_set_welfare.simps \<phi>_neutr.simps \<psi>_neutr\<^sub>\
       by blast
     hence "?r_inv \<in> limit_set_welfare (alts_\<E> (A, V, p)) UNIV"
       unfolding limit_set_welfare.simps 
-      using lin_inv
-      by (metis (mono_tags, lifting) UNIV_I fst_conv mem_Collect_eq)
+      using lin_inv UNIV_I fst_conv mem_Collect_eq
+      by (metis (mono_tags, lifting))
     moreover have "r = \<psi>_neutr\<^sub>\<w> \<pi> ?r_inv"
-      using \<open>\<pi> \<in> carrier neutrality\<^sub>\<G>\<close> \<open>inv\<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> = the_inv \<pi>\<close> 
-            \<open>the_inv \<pi> \<in> carrier neutrality\<^sub>\<G>\<close> iso_tuple_UNIV_I
-            \<psi>_neutr\<^sub>\<w>_act.orbit_sym_aux
+      using carrier_\<pi> inv_eq inv_carrier iso_tuple_UNIV_I \<psi>_neutr\<^sub>\<w>_act.orbit_sym_aux
       by metis
-    ultimately show
-      "r \<in> \<psi>_neutr\<^sub>\<w> \<pi> ` limit_set_welfare (alts_\<E> (A, V, p)) UNIV"
+    ultimately show "r \<in> \<psi>_neutr\<^sub>\<w> \<pi> ` limit_set_welfare (alts_\<E> (A, V, p)) UNIV"
       by blast
   }
   note lim_el_\<pi> =
@@ -1603,32 +1579,31 @@ proof (simp del: limit_set_welfare.simps \<phi>_neutr.simps \<psi>_neutr\<^sub>\
     r :: "'a rel"
   let ?r_inv = "\<psi>_neutr\<^sub>\<w> (the_inv \<pi>) r"
   assume
-    "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
+    carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
     prof: "(A, V, p) \<in> valid_elections" and
     prof_\<pi>: "\<phi>_neutr valid_elections \<pi> (A, V, p) \<in> valid_elections" and
     "r \<in> limit_set_welfare (alts_\<E> (A, V, p)) UNIV"
   hence
-    "r \<in> limit_set_welfare (alts_\<E> (\<phi>_neutr valid_elections (inv\<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>)
+    "r \<in> limit_set_welfare (alts_\<E> (\<phi>_neutr valid_elections (inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>)
                               (\<phi>_neutr valid_elections \<pi> (A, V, p)))) UNIV"
     using \<phi>_neutr_act.orbit_sym_aux
     by metis
   moreover have inv_grp_el: "inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> \<in> carrier neutrality\<^sub>\<G>"
-    using \<open>\<pi> \<in> carrier neutrality\<^sub>\<G>\<close> \<psi>_neutr\<^sub>\<c>_act.group_hom
+    using carrier_\<pi> \<psi>_neutr\<^sub>\<c>_act.group_hom
           group.inv_closed group_hom_def
-    by meson
+    by metis
   moreover have
     "\<phi>_neutr valid_elections (inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>)
       (\<phi>_neutr valid_elections \<pi> (A, V, p)) \<in> valid_elections"
     using prof \<phi>_neutr_act.element_image inv_grp_el prof_\<pi>
-    by blast
+    by metis
   ultimately have
     "r \<in> \<psi>_neutr\<^sub>\<w> (inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>) `
             limit_set_welfare (alts_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
     using prof_\<pi> lim_el_\<pi> prod.collapse
     by metis
-  thus
-    "\<psi>_neutr\<^sub>\<w> \<pi> r \<in> limit_set_welfare (alts_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
-    using \<open>\<pi> \<in> carrier neutrality\<^sub>\<G>\<close> \<psi>_neutr\<^sub>\<w>_act.group_action_axioms
+  thus "\<psi>_neutr\<^sub>\<w> \<pi> r \<in> limit_set_welfare (alts_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
+    using carrier_\<pi> \<psi>_neutr\<^sub>\<w>_act.group_action_axioms
           \<psi>_neutr\<^sub>\<w>_act.inj_prop group_action.orbit_sym_aux
           inj_image_mem_iff inv_grp_el iso_tuple_UNIV_I
     by (metis (no_types, lifting))
@@ -1637,49 +1612,39 @@ qed
 subsection \<open>Homogeneity Lemmas\<close>
 
 lemma refl_homogeneity\<^sub>\<R>:
-  fixes
-    X :: "('a, 'v) Election set"
-  assumes
-    "X \<subseteq> finite_voter_elections"
-  shows
-    "refl_on X (homogeneity\<^sub>\<R> X)"
+  fixes X :: "('a, 'v) Election set"
+  assumes "X \<subseteq> finite_voter_elections"
+  shows "refl_on X (homogeneity\<^sub>\<R> X)"
   using assms
-  unfolding refl_on_def finite_voter_elections_def homogeneity\<^sub>\<R>.simps
+  unfolding refl_on_def finite_voter_elections_def
   by auto
 
 lemma (in result) well_formed_res_homogeneity:
-  "satisfies (\<lambda>E. limit_set (alts_\<E> E) UNIV) (Invariance (homogeneity\<^sub>\<R> UNIV))"
-  unfolding satisfies.simps homogeneity\<^sub>\<R>.simps
+  "satisfies (\<lambda> E. limit_set (alts_\<E> E) UNIV) (Invariance (homogeneity\<^sub>\<R> UNIV))"
   by simp
 
 lemma refl_homogeneity\<^sub>\<R>':
-  fixes
-    X :: "('a, 'v::linorder) Election set"
-  assumes
-    "X \<subseteq> finite_voter_elections"
-  shows
-    "refl_on X (homogeneity\<^sub>\<R>' X)"
+  fixes X :: "('a, 'v::linorder) Election set"
+  assumes "X \<subseteq> finite_voter_elections"
+  shows "refl_on X (homogeneity\<^sub>\<R>' X)"
   using assms
   unfolding homogeneity\<^sub>\<R>'.simps refl_on_def finite_voter_elections_def
   by auto
 
 lemma (in result) well_formed_res_homogeneity':
-  "satisfies (\<lambda>E. limit_set (alts_\<E> E) UNIV) (Invariance (homogeneity\<^sub>\<R>' UNIV))"
-  unfolding satisfies.simps homogeneity\<^sub>\<R>.simps
+  "satisfies (\<lambda> E. limit_set (alts_\<E> E) UNIV) (Invariance (homogeneity\<^sub>\<R>' UNIV))"
   by simp
 
 subsection \<open>Reversal Symmetry Lemmas\<close>
 
-lemma rev_rev_id:
-  "rev_rel \<circ> rev_rel = id"
+lemma rev_rev_id: "rev_rel \<circ> rev_rel = id"
   by auto
 
 lemma rev_rel_limit:
   fixes
     A :: "'a set" and
     r :: "'a rel"
-  shows
-    "rev_rel (limit A r) = limit A (rev_rel r)"
+  shows "rev_rel (limit A r) = limit A (rev_rel r)"
   unfolding rev_rel.simps limit.simps
   by auto
 
@@ -1687,10 +1652,8 @@ lemma rev_rel_lin_ord:
   fixes
     A :: "'a set" and
     r :: "'a rel"
-  assumes
-    "linear_order_on A r"
-  shows
-    "linear_order_on A (rev_rel r)"
+  assumes "linear_order_on A r"
+  shows "linear_order_on A (rev_rel r)"
   using assms
   unfolding rev_rel.simps linear_order_on_def partial_order_on_def
             total_on_def antisym_def preorder_on_def refl_on_def trans_def
@@ -1707,66 +1670,50 @@ next
     using rev_rev_id
     by auto
 next
-  fix
-    x :: "'a rel \<Rightarrow> 'a rel"
-  assume
-    x_el: "x \<in> carrier reversal\<^sub>\<G>"
-  thus
-    "\<one> \<^bsub>reversal\<^sub>\<G>\<^esub> \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> x = x"
+  fix x :: "'a rel \<Rightarrow> 'a rel"
+  assume x_el: "x \<in> carrier reversal\<^sub>\<G>"
+  thus "\<one> \<^bsub>reversal\<^sub>\<G>\<^esub> \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> x = x"
     unfolding reversal\<^sub>\<G>_def
     by auto
-  show
-    "x \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> \<one> \<^bsub>reversal\<^sub>\<G>\<^esub> = x"
+  show "x \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> \<one> \<^bsub>reversal\<^sub>\<G>\<^esub> = x"
     unfolding reversal\<^sub>\<G>_def
     by auto
-  fix
-    y :: "'a rel \<Rightarrow> 'a rel"
-  assume
-    y_el: "y \<in> carrier reversal\<^sub>\<G>"
+  fix y :: "'a rel \<Rightarrow> 'a rel"
+  assume y_el: "y \<in> carrier reversal\<^sub>\<G>"
   thus "x \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> y \<in> carrier reversal\<^sub>\<G>"
     using x_el rev_rev_id
     unfolding reversal\<^sub>\<G>_def
     by auto
-  fix
-    z :: "'a rel \<Rightarrow> 'a rel"
-  assume
-    z_el: "z \<in> carrier reversal\<^sub>\<G>"
-  thus
-    "x \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> y \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> z = x \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> (y \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> z)"
+  fix z :: "'a rel \<Rightarrow> 'a rel"
+  assume z_el: "z \<in> carrier reversal\<^sub>\<G>"
+  thus "x \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> y \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> z = x \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> (y \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> z)"
     using x_el y_el
     unfolding reversal\<^sub>\<G>_def
     by auto
 qed
 
-interpretation \<phi>_rev_act:
-  group_action reversal\<^sub>\<G> valid_elections "\<phi>_rev valid_elections"
+interpretation \<phi>_rev_act: group_action "reversal\<^sub>\<G>" "valid_elections" "\<phi>_rev valid_elections"
 proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def,
         safe, rule group_BijGroup)
   {
-    fix
-      \<pi> :: "'a rel \<Rightarrow> 'a rel"
-    assume
-      "\<pi> \<in> carrier reversal\<^sub>\<G>"
+    fix \<pi> :: "'a rel \<Rightarrow> 'a rel"
+    assume "\<pi> \<in> carrier reversal\<^sub>\<G>"
     hence \<pi>_cases: "\<pi> \<in> {id, rev_rel}"
       unfolding reversal\<^sub>\<G>_def
       by auto
-    hence "rel_app \<pi> \<circ> rel_app \<pi> = id"
+    hence inv_rel_app: "rel_app \<pi> \<circ> rel_app \<pi> = id"
       using rev_rev_id
       by fastforce
-    hence id: "\<forall> E. rel_app \<pi> (rel_app \<pi> E) = E"
-      unfolding comp_def
-      \<comment> \<open>Weirdly doesn't seem to work without adding the previous equation like this.\<close>
-      by (simp add: \<open>rel_app \<pi> \<circ> rel_app \<pi> = id\<close> pointfree_idE)
-    have
-      "\<forall> E \<in> valid_elections. rel_app \<pi> E \<in> valid_elections"
+    have id: "\<forall> E. rel_app \<pi> (rel_app \<pi> E) = E"
+      by (simp add: inv_rel_app pointfree_idE)
+    have "\<forall> E \<in> valid_elections. rel_app \<pi> E \<in> valid_elections"
       unfolding valid_elections_def profile_def
       using \<pi>_cases rev_rel_lin_ord rel_app.simps fun.map_id
       by fastforce
     hence "rel_app \<pi> ` valid_elections \<subseteq> valid_elections"
       by blast
-    with id have
-      "bij_betw (rel_app \<pi>) valid_elections valid_elections"
-      using bij_betw_byWitness[of valid_elections]
+    with id have "bij_betw (rel_app \<pi>) valid_elections valid_elections"
+      using id bij_betw_byWitness[of "valid_elections"]
       by blast
     hence "bij_betw (\<phi>_rev valid_elections \<pi>) valid_elections valid_elections"
       unfolding \<phi>_rev.simps
@@ -1790,12 +1737,10 @@ proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def,
   hence "\<pi> \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> \<pi>' = \<pi> \<circ> \<pi>'"
     unfolding reversal\<^sub>\<G>_def
     by simp
-  hence
-    "\<phi>_rev valid_elections (\<pi> \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> \<pi>') =
-      extensional_continuation (rel_app (\<pi> \<circ> \<pi>')) valid_elections"
+  hence "\<phi>_rev valid_elections (\<pi> \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> \<pi>') =
+          extensional_continuation (rel_app (\<pi> \<circ> \<pi>')) valid_elections"
     by simp
-  also have
-    "rel_app (\<pi> \<circ> \<pi>') = rel_app \<pi> \<circ> rel_app \<pi>'"
+  also have "rel_app (\<pi> \<circ> \<pi>') = rel_app \<pi> \<circ> rel_app \<pi>'"
     using rel_app.simps
     by fastforce
   finally have rewrite:
@@ -1809,8 +1754,7 @@ proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def,
   hence "\<forall> E \<in> valid_elections. \<phi>_rev valid_elections \<pi>' E \<in> valid_elections"
     unfolding bij_betw_def
     by blast
-  hence
-    "extensional_continuation
+  hence "extensional_continuation
       (\<phi>_rev valid_elections \<pi> \<circ> \<phi>_rev valid_elections \<pi>') valid_elections =
       extensional_continuation (rel_app \<pi> \<circ> rel_app \<pi>') valid_elections"
     unfolding extensional_continuation.simps \<phi>_rev.simps
@@ -1827,15 +1771,12 @@ proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def,
     by metis
 qed
 
-interpretation \<psi>_rev_act:
-  group_action reversal\<^sub>\<G> UNIV \<psi>_rev
+interpretation \<psi>_rev_act: "group_action" "reversal\<^sub>\<G>" "UNIV" "\<psi>_rev"
 proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def \<psi>_rev.simps,
         safe, rule group_BijGroup)
   {
-    fix
-      \<pi> :: "'a rel \<Rightarrow> 'a rel"
-    assume
-      "\<pi> \<in> carrier reversal\<^sub>\<G>"
+    fix \<pi> :: "'a rel \<Rightarrow> 'a rel"
+    assume "\<pi> \<in> carrier reversal\<^sub>\<G>"
     hence "\<pi> \<in> {id, rev_rel}"
       unfolding reversal\<^sub>\<G>_def
       by auto
@@ -1846,8 +1787,7 @@ proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def \<psi>
       using rewrite_carrier
       by blast
   }
-  note bij =
-    \<open>\<And> \<pi>. \<pi> \<in> carrier reversal\<^sub>\<G> \<Longrightarrow> \<pi> \<in> carrier (BijGroup UNIV)\<close>
+  note bij = \<open>\<And> \<pi>. \<pi> \<in> carrier reversal\<^sub>\<G> \<Longrightarrow> \<pi> \<in> carrier (BijGroup UNIV)\<close>
   fix
     \<pi> :: "'a rel \<Rightarrow> 'a rel" and
     \<pi>' :: "'a rel \<Rightarrow> 'a rel"
@@ -1861,17 +1801,16 @@ proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def \<psi>
     unfolding reversal\<^sub>\<G>_def
     using rev rev'
     by simp
-  finally show
-    "\<pi> \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> \<pi>' = \<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<pi>'"
+  finally show "\<pi> \<otimes> \<^bsub>reversal\<^sub>\<G>\<^esub> \<pi>' = \<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<pi>'"
     by simp
 qed
 
 lemma \<phi>_\<psi>_rev_well_formed:
   shows
-    "satisfies (\<lambda>E. limit_set_welfare (alts_\<E> E) UNIV)
+    "satisfies (\<lambda> E. limit_set_welfare (alts_\<E> E) UNIV)
                (equivar_ind_by_act (carrier reversal\<^sub>\<G>) valid_elections
                                     (\<phi>_rev valid_elections) (set_action \<psi>_rev))"
-proof (simp only: rewrite_equivar_ind_by_act, clarify)
+proof (unfold rewrite_equivar_ind_by_act, clarify)
   fix
     \<pi> :: "'a rel \<Rightarrow> 'a rel" and
     A :: "'a set" and
@@ -1910,11 +1849,12 @@ proof (simp only: rewrite_equivar_ind_by_act, clarify)
   hence "\<forall> r \<in> limit_set_welfare A UNIV. r \<in> \<pi> ` limit_set_welfare A UNIV"
     using rev_rev_id comp_apply empty_iff id_apply image_eqI insert_iff local.cases
     by metis
-  with subset have "\<pi> ` limit_set_welfare A UNIV = limit_set_welfare A UNIV"
+  hence "\<pi> ` limit_set_welfare A UNIV = limit_set_welfare A UNIV"
+    using subset
     by blast
   hence "set_action \<psi>_rev \<pi> (limit_set_welfare A UNIV) = limit_set_welfare A UNIV"
-    unfolding set_action.simps \<psi>_rev.simps
-    by blast
+    unfolding set_action.simps
+    by simp
   also have
     "limit_set_welfare A UNIV =
       limit_set_welfare (alts_\<E> (\<phi>_rev valid_elections \<pi> (A, V, p))) UNIV"

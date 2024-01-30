@@ -44,9 +44,9 @@ proof (unfold copeland_score.simps only_voters_count_def, safe)
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
     p' :: "('b, 'a) Profile" and
-    a :: 'b
+    a :: "'b"
   assume
-    "\<forall>v\<in>V. p v = p' v" and
+    "\<forall> v \<in> V. p v = p' v" and
     "a \<in> A"
   hence "\<forall> x y. {v \<in> V. (x, y) \<in> p v} = {v \<in> V. (x, y) \<in> p' v}"
     by blast
@@ -206,7 +206,7 @@ proof -
     by (metis (full_types))
   thus ?thesis
     using assms wins_of_loser_eq_without_winner
-    by (simp add: card_Diff_subset)
+    by simp
 qed
 
 subsection \<open>Property\<close>
@@ -218,11 +218,11 @@ text \<open>
 theorem copeland_score_is_cr: "condorcet_rating copeland_score"
 proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
   fix
-    A :: "'b set" and 
-    V :: "'v set" and 
-    p :: "('b, 'v) Profile" and 
-    w :: 'b and 
-    l :: 'b
+    A :: "'b set" and
+    V :: "'v set" and
+    p :: "('b, 'v) Profile" and
+    w :: "'b" and
+    l :: "'b"
   assume
     winner: "condorcet_winner V A p w" and
     l_in_A: "l \<in> A" and
@@ -263,8 +263,7 @@ proof (unfold defer_condorcet_consistency_def social_choice_result.electoral_mod
     V :: "'a set" and
     p :: "('b, 'a) Profile"
   assume "profile V A p"
-  hence 
-    "well_formed_soc_choice A (max_eliminator copeland_score V A p)"
+  hence "well_formed_soc_choice A (max_eliminator copeland_score V A p)"
     using max_elim_sound
     unfolding social_choice_result.electoral_module_def
     by metis
@@ -275,9 +274,8 @@ next
     A :: "'b set" and 
     V :: "'v set" and 
     p :: "('b, 'v) Profile" and 
-    w :: 'b
-  assume
-    "condorcet_winner V A p w"
+    w :: "'b"
+  assume "condorcet_winner V A p w"
   moreover have "defer_condorcet_consistency (max_eliminator copeland_score)"
     by (simp add: copeland_score_is_cr)
   ultimately have "max_eliminator copeland_score V A p = 

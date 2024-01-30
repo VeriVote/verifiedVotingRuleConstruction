@@ -242,9 +242,9 @@ proof -
     using 200 100 201 002 par_comp_elim_one
     by simp
   have 2: "defers 1 ?loop"
-    using 10 20 defer_equal_condition.simps
-    unfolding Let_def loop_composition.simps
-    by (metis iter_elim_def_n less_numeral_extra(1) prod.exhaust_sel)                         
+    using 10 20 iter_elim_def_n zero_less_one prod.exhaust_sel
+          defer_equal_condition.simps
+    by metis
   have 3: "electing elect_module"
     by simp
   show ?thesis
@@ -358,8 +358,8 @@ proof -
     using 10 loop_comp_presv_non_electing
     by simp
   have 2: "defers 1 ?loop"
-    using 10 20 iter_elim_def_n
-    by (metis defer_equal_condition.simps prod.exhaust_sel zero_less_one)
+    using 10 20 iter_elim_def_n prod.exhaust_sel zero_less_one defer_equal_condition.simps
+    by metis
   have 3: "electing elect_module"
     by simp
   show ?thesis

@@ -30,7 +30,7 @@ lemma is_arg_min_equal:
     f :: "'a \<Rightarrow> 'b::ord" and
     g :: "'a \<Rightarrow> 'b" and
     S :: "'a set" and
-    x :: 'a
+    x :: "'a"
   assumes "\<forall> x \<in> S. f x = g x"
   shows "is_arg_min f (\<lambda> s. s \<in> S) x = is_arg_min g (\<lambda> s. s \<in> S) x"
 proof (unfold is_arg_min_def, cases "x \<notin> S", clarsimp)
@@ -38,7 +38,7 @@ proof (unfold is_arg_min_def, cases "x \<notin> S", clarsimp)
   thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
   proof (cases "\<exists> y. (\<lambda> s. s \<in> S) y \<and> f y < f x")
     case y: True
-    then obtain y :: 'a where
+    then obtain y :: "'a" where
       "(\<lambda> s. s \<in> S) y \<and> f y < f x"
       by metis
     hence "(\<lambda> s. s \<in> S) y \<and> g y < g x"
@@ -51,7 +51,7 @@ proof (unfold is_arg_min_def, cases "x \<notin> S", clarsimp)
     case not_y: False
     have "\<not> (\<exists> y. (\<lambda> s. s \<in> S) y \<and> g y < g x)"
     proof (safe)
-      fix  y :: "'a"
+      fix y :: "'a"
       assume
         y_in_S: "y \<in> S" and
         g_y_lt_g_x: "g y < g x"
@@ -61,7 +61,7 @@ proof (unfold is_arg_min_def, cases "x \<notin> S", clarsimp)
       hence "g x = f x"
         using x_in_S
         by presburger
-      thus False
+      thus "False"
         using f_eq_g_for_elems_in_S g_y_lt_g_x not_y y_in_S
         by (metis (no_types))
     qed
@@ -160,7 +160,7 @@ proof (induct l, simp, safe)
     a :: "'a set" and
     l :: "'a set list" and
     l' :: "'a list" and
-    i :: nat
+    i :: "nat"
   assume elems_in_set_then_elems_pos:
     "\<forall> l' i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i" and
     l_prime_in_set_a_l: "l' \<in> listset (a#l)" and
@@ -225,7 +225,8 @@ fun rank_l_idx :: "'a Preference_List \<Rightarrow> 'a \<Rightarrow> nat" where
       if i = length l then 0 else i + 1)"
 
 lemma rank_l_equiv: "rank_l = rank_l_idx"
-  by (simp add: ext index_size_conv member_def)
+  unfolding member_def
+  by (simp add: ext index_size_conv)
 
 lemma rank_zero_imp_not_present:
   fixes
@@ -241,14 +242,14 @@ definition above_l :: "'a Preference_List \<Rightarrow> 'a \<Rightarrow> 'a Pref
 
 subsection \<open>Definition\<close>
 
-fun is_less_preferred_than_l ::
-  "'a \<Rightarrow> 'a Preference_List \<Rightarrow> 'a \<Rightarrow> bool" ("_ \<lesssim>\<^sub>_ _" [50, 1000, 51] 50) where
+fun is_less_preferred_than_l :: "'a \<Rightarrow> 'a Preference_List \<Rightarrow> 'a
+        \<Rightarrow> bool" ("_ \<lesssim>\<^sub>_ _" [50, 1000, 51] 50) where
     "a \<lesssim>\<^sub>l b = (a \<in> set l \<and> b \<in> set l \<and> index l a \<ge> index l b)"
 
 lemma rank_gt_zero:
   fixes
     l :: "'a Preference_List" and
-    a :: 'a
+    a :: "'a"
   assumes "a \<lesssim>\<^sub>l a"
   shows "rank_l l a \<ge> 1"
   using assms
@@ -267,8 +268,7 @@ lemma pl_\<alpha>_lin_order:
   fixes
     A :: "'a set" and
     r :: "'a rel"
-  assumes
-    el: "r \<in> pl_\<alpha> ` permutations_of_set A"
+  assumes el: "r \<in> pl_\<alpha> ` permutations_of_set A"
   shows "linear_order_on A r"
 proof (cases "A = {}")
   case True
@@ -280,7 +280,7 @@ proof (cases "A = {}")
   hence "r = {}"
     unfolding pl_\<alpha>_def is_less_preferred_than_l.simps
     by simp
-  thus ?thesis 
+  thus ?thesis
     using True
     by simp
 next
@@ -292,10 +292,10 @@ next
       using False
       by simp
     hence "\<forall> l \<in> permutations_of_set A. l \<noteq> []"
-      using assms permutations_of_setD(1) 
+      using assms permutations_of_setD(1)
       by force
     hence "\<forall> a \<in> A. \<forall> l \<in> permutations_of_set A. a \<lesssim>\<^sub>l a"
-      using  is_less_preferred_than_l.simps
+      using is_less_preferred_than_l.simps
       unfolding permutations_of_set_def
       by simp
     hence "\<forall> a \<in> A. \<forall> l \<in> permutations_of_set A. (a, a) \<in> pl_\<alpha> l"
@@ -308,22 +308,22 @@ next
       using el
       unfolding pl_\<alpha>_def permutations_of_set_def
       by auto
-    ultimately show "refl_on A r" 
+    ultimately show "refl_on A r"
       unfolding refl_on_def
       by simp
   next
-    show "Relation.trans r" 
-      using el rel_trans 
+    show "Relation.trans r"
+      using el rel_trans
       by auto
   next
-    fix 
-      x :: 'a and
-      y :: 'a
+    fix
+      x :: "'a" and
+      y :: "'a"
     assume
       x_rel_y: "(x, y) \<in> r" and
       y_rel_x: "(y, x) \<in> r"
     have "\<forall> x y. \<forall> l \<in> permutations_of_set A. x \<lesssim>\<^sub>l y \<and> y \<lesssim>\<^sub>l x \<longrightarrow> x = y"
-      using  is_less_preferred_than_l.simps  index_eq_index_conv nle_le
+      using is_less_preferred_than_l.simps index_eq_index_conv nle_le
       unfolding permutations_of_set_def
       by metis
     hence "\<forall> x y. \<forall> l \<in> pl_\<alpha> ` permutations_of_set A. (x, y) \<in> l \<and> (y, x) \<in> l \<longrightarrow> x = y"
@@ -332,17 +332,17 @@ next
     thus "x = y"
       using y_rel_x x_rel_y el
       by auto
-  next 
-    fix 
-      x :: 'a and
-      y :: 'a
+  next
+    fix
+      x :: "'a" and
+      y :: "'a"
     assume
       x_in_A: "x \<in> A" and
       y_in_A: "y \<in> A" and
       x_neq_y: "x \<noteq> y" and
       not_y_x_rel: "(y, x) \<notin> r"
     have "\<forall> x y. \<forall> l \<in> permutations_of_set A. x \<in> A \<and> y \<in> A \<and> x \<noteq> y \<and> (\<not> y \<lesssim>\<^sub>l x) \<longrightarrow> x \<lesssim>\<^sub>l y"
-      using  is_less_preferred_than_l.simps
+      using is_less_preferred_than_l.simps
       unfolding permutations_of_set_def
       by auto
     hence "\<forall> x y. \<forall> l \<in> pl_\<alpha> ` permutations_of_set A.
@@ -355,24 +355,23 @@ next
   qed
 qed
 
-lemma lin_order_pl_\<alpha>: 
+lemma lin_order_pl_\<alpha>:
   fixes
     r :: "'a rel" and
     A :: "'a set"
-  assumes 
+  assumes
     lin_order: "linear_order_on A r" and
     fin: "finite A"
   shows "r \<in> pl_\<alpha> ` permutations_of_set A"
 proof -
-  let ?\<phi> = "\<lambda>a. card ((underS r a) \<inter> A)"
+  let ?\<phi> = "\<lambda> a. card ((underS r a) \<inter> A)"
   let ?inv = "the_inv_into A ?\<phi>"
-  let ?l = "map (\<lambda>x. ?inv x) (rev [0 ..< card A])"
+  let ?l = "map (\<lambda> x. ?inv x) (rev [0 ..< card A])"
   have antisym: "\<forall> a b. a \<in> ((underS r b) \<inter> A) \<and> b \<in> ((underS r a) \<inter> A) \<longrightarrow> False"
     using lin_order
     unfolding underS_def linear_order_on_def partial_order_on_def antisym_def
     by auto
-  hence "\<forall> a b c. a \<in> (underS r b) \<inter> A \<longrightarrow> b \<in> (underS r c) \<inter> A
-                            \<longrightarrow> a \<in> (underS r c) \<inter> A"
+  hence "\<forall> a b c. a \<in> (underS r b) \<inter> A \<longrightarrow> b \<in> (underS r c) \<inter> A \<longrightarrow> a \<in> (underS r c) \<inter> A"
     using lin_order CollectD CollectI transD IntE IntI
     unfolding underS_def linear_order_on_def partial_order_on_def preorder_on_def
     by (metis (mono_tags, lifting))
@@ -380,14 +379,16 @@ proof -
     using antisym
     by blast
   hence mon: "\<forall> a b. a \<in> (underS r b) \<inter> A \<longrightarrow> ?\<phi> a < ?\<phi> b"
-    by (simp add: fin psubset_card_mono)
-  moreover have total_underS: "\<forall> a b. a \<in> A \<and> b \<in> A \<and> a \<noteq> b
-                    \<longrightarrow> a \<in> ((underS r b) \<inter> A) \<or> b \<in> ((underS r a) \<inter> A)"
+    using fin
+    by (simp add: psubset_card_mono)
+  moreover have total_underS:
+    "\<forall> a b. a \<in> A \<and> b \<in> A \<and> a \<noteq> b \<longrightarrow> a \<in> ((underS r b) \<inter> A) \<or> b \<in> ((underS r a) \<inter> A)"
     using lin_order totalp_onD totalp_on_total_on_eq
     unfolding underS_def linear_order_on_def partial_order_on_def antisym_def
     by fastforce
   ultimately have "\<forall> a b. a \<in> A \<and> b \<in> A \<and> a \<noteq> b \<longrightarrow> ?\<phi> a \<noteq> ?\<phi> b"
-    by (metis order_less_imp_not_eq2)
+    using order_less_imp_not_eq2
+    by metis
   hence inj: "inj_on ?\<phi> A"
     using inj_on_def
     by blast
@@ -404,31 +405,38 @@ proof -
   ultimately have "?\<phi> ` A = {0 ..< card A}"
     by (simp add: card_subset_eq)
   hence bij: "bij_betw ?\<phi> A {0 ..< card A}"
-    using inj bij_betw_def
-    by fastforce
+    using inj
+    unfolding bij_betw_def
+    by safe
   hence bij_inv: "bij_betw ?inv {0 ..< card A} A"
-    by (rule bij_betw_the_inv_into)
+    using bij_betw_the_inv_into
+    by metis
   hence "?inv ` {0 ..< card A} = A"
-    using bij_inv bij_betw_def
-    by meson
-  hence "set ?l = A" by simp
+    unfolding bij_betw_def
+    by metis
+  hence "set ?l = A"
+    by simp
   moreover have dist_l: "distinct ?l"
     using bij_inv
-    by (simp add: bij_betw_imp_inj_on distinct_map)
-  ultimately have "?l \<in> permutations_of_set A" by auto
+    unfolding distinct_map
+    using bij_betw_imp_inj_on
+    by simp
+  ultimately have "?l \<in> permutations_of_set A"
+    by auto
   moreover have index_eq: "\<forall> a \<in> A. index ?l a = card A - 1 - ?\<phi> a"
-  proof 
-    fix 
-      a :: 'a
+  proof
+    fix a :: "'a"
     assume a_in_A: "a \<in> A"
     have "\<forall> xs. \<forall> i < length xs. (rev xs)!i = xs!(length xs - 1 - i)"
-      using rev_nth 
+      using rev_nth
       by auto
     hence "\<forall> i < length [0 ..< card A]. (rev [0 ..< card A])!i
               = [0 ..< card A]!(length [0 ..< card A] - 1 - i)"
       by blast
-    moreover have "\<forall> i < card A. [0 ..< card A]!i = i" by simp
-    moreover have card_A_len: "length [0 ..< card A] = card A" by simp
+    moreover have "\<forall> i < card A. [0 ..< card A]!i = i"
+      by simp
+    moreover have card_A_len: "length [0 ..< card A] = card A"
+      by simp
     ultimately have "\<forall> i < card A. (rev [0 ..< card A])!i = card A - 1 - i"
       using diff_Suc_eq_diff_pred diff_less diff_self_eq_0 less_imp_diff_less zero_less_Suc
       by metis
@@ -451,14 +459,13 @@ proof -
       by metis
   qed
   moreover have "pl_\<alpha> ?l = r"
-  proof 
+  proof
     show "r \<subseteq> pl_\<alpha> ?l"
     proof (unfold pl_\<alpha>_def, auto)
       fix
-        a :: 'a and
-        b :: 'a
-      assume
-        "(a, b) \<in> r"
+        a :: "'a" and
+        b :: "'a"
+      assume "(a, b) \<in> r"
       hence "a \<in> A"
         using lin_order
         unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
@@ -468,10 +475,9 @@ proof -
         by metis
     next
       fix
-        a :: 'a and
-        b :: 'a
-      assume 
-        "(a, b) \<in> r"
+        a :: "'a" and
+        b :: "'a"
+      assume "(a, b) \<in> r"
       hence "b \<in> A"
         using lin_order
         unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
@@ -481,10 +487,9 @@ proof -
         by metis
     next
       fix
-        a :: 'a and
-        b :: 'a
-      assume 
-        rel: "(a, b) \<in> r"
+        a :: "'a" and
+        b :: "'a"
+      assume rel: "(a, b) \<in> r"
       hence el_A: "a \<in> A \<and> b \<in> A"
         using lin_order
         unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
@@ -504,8 +509,8 @@ proof -
     show "pl_\<alpha> ?l \<subseteq> r"
     proof (unfold pl_\<alpha>_def, auto)
       fix
-        a :: nat and
-        b :: nat
+        a :: "nat" and
+        b :: "nat"
       assume
         in_bnds_a: "a < card A" and
         in_bnds_b: "b < card A" and
@@ -557,35 +562,35 @@ proof -
         by auto
     qed
   qed
-  ultimately show "r \<in> pl_\<alpha> ` permutations_of_set A" by auto
+  ultimately show "r \<in> pl_\<alpha> ` permutations_of_set A"
+    by auto
 qed
 
 lemma index_helper:
   fixes
     xs :: "'x list" and
-    x :: 'x
+    x :: "'x"
   assumes
     fin_set_xs: "finite (set xs)" and
     dist_xs: "distinct xs" and
     "x \<in> set xs"
-  shows
-    "index xs x = card {y \<in> set xs. index xs y < index xs x}"
+  shows "index xs x = card {y \<in> set xs. index xs y < index xs x}"
 proof -
-  have bij: "bij_betw (index xs) (set xs) {0..<length xs}"
-    using assms bij_betw_index 
+  have bij: "bij_betw (index xs) (set xs) {0 ..< length xs}"
+    using assms bij_betw_index
     by blast
-  hence "card {y \<in> set xs. index xs y < index xs x} = 
-    card (index xs ` {y \<in> set xs. index xs y < index xs x})"
-    by (metis (no_types, lifting) CollectD bij_betw_same_card bij_betw_subset subsetI)
-  also have "index xs ` {y \<in> set xs. index xs y < index xs x} =
-    {m |m. m \<in> index xs ` (set xs) \<and> m < index xs x}"
+  hence "card {y \<in> set xs. index xs y < index xs x}
+        = card (index xs ` {y \<in> set xs. index xs y < index xs x})"
+    using CollectD bij_betw_same_card bij_betw_subset subsetI
+    by (metis (no_types, lifting))
+  also have "index xs ` {y \<in> set xs. index xs y < index xs x}
+        = {m | m. m \<in> index xs ` (set xs) \<and> m < index xs x}"
     by blast
-  also have 
-    "{m |m. m \<in> index xs ` (set xs) \<and> m < index xs x} = {m |m. m < index xs x}"
-    using bij assms atLeastLessThan_iff bot_nat_0.extremum 
+  also have "{m | m. m \<in> index xs ` (set xs) \<and> m < index xs x} = {m | m. m < index xs x}"
+    using bij assms atLeastLessThan_iff bot_nat_0.extremum
           index_image index_less_size_conv order_less_trans
     by metis
-  also have "card {m |m. m < index xs x} = index xs x"
+  also have "card {m | m. m < index xs x} = index xs x"
     by simp
   finally show ?thesis
     by simp
@@ -601,42 +606,47 @@ lemma pl_\<alpha>_eq_imp_list_eq:
     dist_xs: "distinct xs" and
     dist_ys: "distinct ys" and
     pl_\<alpha>_eq: "pl_\<alpha> xs = pl_\<alpha> ys"
-  shows
-    "xs = ys"
+  shows "xs = ys"
 proof (rule ccontr)
   assume "xs \<noteq> ys"
-  moreover with this have "xs \<noteq> [] \<and> ys \<noteq> []"
+  moreover with this
+  have "xs \<noteq> [] \<and> ys \<noteq> []"
     using set_eq
     by auto
-  ultimately obtain i :: nat and x :: 'x where 
-    "i < length xs" and
-    "xs!i \<noteq> ys!i" and
-    "x = xs!i" and "x \<in> set xs"
-    using dist_xs dist_ys distinct_remdups_id 
+  ultimately obtain
+    i :: "nat" and
+    x :: "'x" where
+      "i < length xs" and
+      "xs!i \<noteq> ys!i" and
+      "x = xs!i" and
+      "x \<in> set xs"
+    using dist_xs dist_ys distinct_remdups_id
           length_remdups_card_conv nth_equalityI nth_mem set_eq
     by metis
-  moreover with this have neq_ind: "index xs x \<noteq> index ys x"
-    by (metis dist_xs index_nth_id nth_index set_eq)
-  ultimately have "card {y \<in> set xs. index xs y < index xs x} \<noteq> 
-    card {y \<in> set xs. index ys y < index ys x}"
+  moreover with this
+    have neq_ind: "index xs x \<noteq> index ys x"
+    using dist_xs index_nth_id nth_index set_eq
+    by metis
+  ultimately have
+    "card {y \<in> set xs. index xs y < index xs x} \<noteq> card {y \<in> set xs. index ys y < index ys x}"
     using dist_xs dist_ys set_eq index_helper fin_set_xs
     by (metis (mono_tags))
-  then obtain y :: 'x where
-    "y \<in> set xs" and
-    "y \<noteq> x" and
+  then obtain y :: "'x" where
+    y_in_set_xs: "y \<in> set xs" and
+    y_neq_x: "y \<noteq> x" and
     neq_indices:
       "(index xs y < index xs x \<and> index ys y > index ys x) \<or>
         (index ys y < index ys x \<and> index xs y > index xs x)"
-    by (metis (mono_tags, lifting) index_eq_index_conv not_less_iff_gr_or_eq set_eq)
-  hence "(is_less_preferred_than_l x xs y \<and> is_less_preferred_than_l y ys x) \<or> 
-    (is_less_preferred_than_l x ys y \<and> is_less_preferred_than_l y xs x)"
+    using index_eq_index_conv not_less_iff_gr_or_eq set_eq
+    by (metis (mono_tags, lifting))
+  hence "(is_less_preferred_than_l x xs y \<and> is_less_preferred_than_l y ys x)
+            \<or> (is_less_preferred_than_l x ys y \<and> is_less_preferred_than_l y xs x)"
     unfolding is_less_preferred_than_l.simps
-    using \<open>x \<in> set xs\<close> less_imp_le_nat set_eq 
-    by blast
-  hence 
-    "((x, y) \<in> pl_\<alpha> xs \<and> (x, y) \<notin> pl_\<alpha> ys) \<or> ((x, y) \<in> pl_\<alpha> ys \<and> (x, y) \<notin> pl_\<alpha> xs)"
+    using y_in_set_xs less_imp_le_nat set_eq
+    by blast (* TODO *)
+  hence "((x, y) \<in> pl_\<alpha> xs \<and> (x, y) \<notin> pl_\<alpha> ys) \<or> ((x, y) \<in> pl_\<alpha> ys \<and> (x, y) \<notin> pl_\<alpha> xs)"
     unfolding pl_\<alpha>_def
-    using is_less_preferred_than_l.simps \<open>y \<noteq> x\<close> neq_indices
+    using is_less_preferred_than_l.simps y_neq_x neq_indices
           case_prod_conv linorder_not_less mem_Collect_eq
     by metis
   thus "False"
@@ -645,30 +655,23 @@ proof (rule ccontr)
 qed
   
 lemma pl_\<alpha>_bij_betw:
-  fixes
-    X :: "'x set"
-  assumes
-    "finite X"
-  shows
-    "bij_betw pl_\<alpha> (permutations_of_set X) {r. linear_order_on X r}"
+  fixes X :: "'x set"
+  assumes "finite X"
+  shows "bij_betw pl_\<alpha> (permutations_of_set X) {r. linear_order_on X r}"
 proof (unfold bij_betw_def, safe)
   show "inj_on pl_\<alpha> (permutations_of_set X)"
     unfolding inj_on_def permutations_of_set_def
     using pl_\<alpha>_eq_imp_list_eq assms
     by fastforce
 next
-  fix
-    xs :: "'x list"
-  assume
-    "xs \<in> permutations_of_set X"
+  fix xs :: "'x list"
+  assume "xs \<in> permutations_of_set X"
   thus "linear_order_on X (pl_\<alpha> xs)"
     using assms pl_\<alpha>_lin_order
     by blast
 next
-  fix
-    r :: "'x rel"
-  assume
-    "linear_order_on X r"
+  fix r :: "'x rel"
+  assume "linear_order_on X r"
   thus "r \<in> pl_\<alpha> ` permutations_of_set X"
     using assms lin_order_pl_\<alpha>
     by blast
@@ -878,7 +881,7 @@ next
       show "index (a#l) c \<le> index (a#l) b"
       proof (unfold index_def, simp, safe)
         assume "a = b"
-        thus False
+        thus "False"
           using a_not_in_A b_less_c case_prod_conv is_less_preferred_than_l.elims
                 mem_Collect_eq set_filter wf_a_l
           unfolding pl_\<alpha>_def
@@ -997,8 +1000,8 @@ lemma lin_ord_imp_connex_l:
 lemma above_trans:
   fixes
     l :: "'a Preference_List" and
-    a :: 'a and
-    b :: 'a
+    a :: "'a" and
+    b :: "'a"
   assumes
     "trans l" and
     "a \<lesssim>\<^sub>l b"
@@ -1011,8 +1014,8 @@ lemma above_trans:
 lemma less_preferred_l_rel_equiv:
   fixes
     l :: "'a Preference_List" and
-    a :: 'a and
-    b :: 'a
+    a :: "'a" and
+    b :: "'a"
   shows "a \<lesssim>\<^sub>l b = Preference_Relation.is_less_preferred_than a (pl_\<alpha> l) b"
   unfolding pl_\<alpha>_def
   by simp
@@ -1020,7 +1023,7 @@ lemma less_preferred_l_rel_equiv:
 theorem above_equiv:
   fixes
     l :: "'a Preference_List" and
-    a :: 'a
+    a :: "'a"
   shows "set (above_l l a) = above (pl_\<alpha> l) a"
 proof (safe)
   fix b :: "'a"
@@ -1114,7 +1117,7 @@ lemma ranked_alt_not_at_pos_before:
   fixes
     l :: "'a Preference_List" and
     a :: "'a" and
-    n :: nat
+    n :: "nat"
   assumes
     "a \<in> set l" and
     "n < (rank_l l a) - 1"

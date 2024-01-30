@@ -143,18 +143,17 @@ proof (unfold only_voters_vote_def elimination_module.simps, safe)
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
     p' :: "('a, 'v) Profile" 
-  assume 
-    "\<forall>v\<in>V. p v = p' v"
+  assume "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> a \<in> A. (e V a A p) = (e V a A p')"
     using assms
-    by (simp add: only_voters_count_def)
+    unfolding only_voters_count_def
+    by simp
   hence "{a \<in> A. r (e V a A p) t} = {a \<in> A. r (e V a A p') t}"
-    by fastforce
+    by metis
   hence "elimination_set e t r V A p = elimination_set e t r V A p'"
     unfolding elimination_set.simps
     by presburger
-  thus 
-    "(if elimination_set e t r V A p \<noteq> A
+  thus "(if elimination_set e t r V A p \<noteq> A
         then ({}, elimination_set e t r V A p, A - elimination_set e t r V A p) else ({}, {}, A)) =
      (if elimination_set e t r V A p' \<noteq> A
         then ({}, elimination_set e t r V A p', A - elimination_set e t r V A p') else ({}, {}, A))"
@@ -186,21 +185,20 @@ lemma max_elim_only_voters[simp]:
   assumes "only_voters_count e"
   shows "only_voters_vote (max_eliminator e)"
 proof (unfold max_eliminator.simps only_voters_vote_def, safe)
-  fix 
+  fix
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile" 
-  assume 
-    coinciding: "\<forall>v\<in>V. p v = p' v"
+    p' :: "('a, 'v) Profile"
+  assume coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms 
     unfolding only_voters_count_def
     by simp
-  hence "Max {e V x A p |x. x \<in> A} = Max {e V x A p' |x. x \<in> A}"
+  hence "Max {e V x A p | x. x \<in> A} = Max {e V x A p' | x. x \<in> A}"
     by metis
-  thus "less_eliminator e (Max {e V x A p |x. x \<in> A}) V A p =
-       less_eliminator e (Max {e V x A p' |x. x \<in> A}) V A p'"
+  thus "less_eliminator e (Max {e V x A p | x. x \<in> A}) V A p =
+       less_eliminator e (Max {e V x A p' | x. x \<in> A}) V A p'"
     using coinciding assms less_elim_only_voters
     unfolding only_voters_vote_def 
     by (metis (no_types, lifting))
@@ -217,15 +215,15 @@ proof (unfold min_eliminator.simps only_voters_vote_def, safe)
     p :: "('a, 'v) Profile" and
     p' :: "('a, 'v) Profile" 
   assume 
-    coinciding: "\<forall>v\<in>V. p v = p' v"
+    coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms 
     unfolding only_voters_count_def
     by simp
-  hence "Min {e V x A p |x. x \<in> A} = Min {e V x A p' |x. x \<in> A}"
+  hence "Min {e V x A p | x. x \<in> A} = Min {e V x A p' | x. x \<in> A}"
     by metis
-  thus "leq_eliminator e (Min {e V x A p |x. x \<in> A}) V A p =
-       leq_eliminator e (Min {e V x A p' |x. x \<in> A}) V A p'"
+  thus "leq_eliminator e (Min {e V x A p | x. x \<in> A}) V A p =
+       leq_eliminator e (Min {e V x A p' | x. x \<in> A}) V A p'"
     using coinciding assms leq_elim_only_voters
     unfolding only_voters_vote_def 
     by (metis (no_types, lifting))
@@ -241,8 +239,7 @@ proof (unfold less_average_eliminator.simps only_voters_vote_def, safe)
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
     p' :: "('a, 'v) Profile" 
-  assume 
-    coinciding: "\<forall>v\<in>V. p v = p' v"
+  assume coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms 
     unfolding only_voters_count_def
@@ -267,8 +264,7 @@ proof (unfold leq_average_eliminator.simps only_voters_vote_def, safe)
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
     p' :: "('a, 'v) Profile" 
-  assume 
-    coinciding: "\<forall>v\<in>V. p v = p' v"
+  assume coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms 
     unfolding only_voters_count_def
@@ -479,7 +475,7 @@ proof (unfold defer_condorcet_consistency_def, safe, simp)
     have "e V a A p = Max {e V x A p | x. x \<in> A}"
       using winner assms cond_winner_imp_max_eval_val
       by fastforce
-    hence "\<forall>b \<in> A. b \<noteq> a \<longleftrightarrow> b \<in> {c \<in> A. e V c A p < Max {e V b A p |b. b \<in> A}}"
+    hence "\<forall> b \<in> A. b \<noteq> a \<longleftrightarrow> b \<in> {c \<in> A. e V c A p < Max {e V b A p | b. b \<in> A}}"
       using winner assms mem_Collect_eq linorder_neq_iff
       unfolding condorcet_rating_def
       by (metis (mono_tags, lifting))   

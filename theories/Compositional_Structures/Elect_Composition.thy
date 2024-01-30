@@ -50,7 +50,8 @@ lemma elector_only_voters:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   assumes "only_voters_vote m"
   shows "only_voters_vote (elector m)"
-  by (simp add: assms elect_mod_only_voters seq_comp_only_voters)
+  using assms
+  by (simp add: elect_mod_only_voters seq_comp_only_voters)
 
 subsection \<open>Electing\<close>
 

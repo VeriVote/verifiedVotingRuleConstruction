@@ -52,7 +52,7 @@ next
   fix
     A :: "'a set" and
     A' :: "'b set" and
-    x :: nat
+    x :: "nat"
   assume
     IH: "\<And> A A'. x = card A \<Longrightarrow>
             bij_betw f A A' \<Longrightarrow> sum g A = (\<Sum> a \<in> A'. g (the_inv_into A f a))" and

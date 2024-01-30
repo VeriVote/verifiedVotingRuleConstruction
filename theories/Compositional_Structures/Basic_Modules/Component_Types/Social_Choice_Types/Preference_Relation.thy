@@ -29,13 +29,15 @@ type_synonym 'a Preference_Relation = "'a rel"
 
 type_synonym 'a Vote = "'a set \<times> 'a Preference_Relation"
 
-fun is_less_preferred_than ::
-  "'a \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> bool" ("_ \<preceq>\<^sub>_ _" [50, 1000, 51] 50) where
+fun is_less_preferred_than :: "'a \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> bool"
+        ("_ \<preceq>\<^sub>_ _" [50, 1000, 51] 50) where
     "a \<preceq>\<^sub>r b = ((a, b) \<in> r)"
 
-fun alts_\<V> :: "'a Vote \<Rightarrow> 'a set" where "alts_\<V> V = fst V"
+fun alts_\<V> :: "'a Vote \<Rightarrow> 'a set" where
+  "alts_\<V> V = fst V"
 
-fun pref_\<V> :: "'a Vote \<Rightarrow> 'a Preference_Relation" where "pref_\<V> V = snd V"
+fun pref_\<V> :: "'a Vote \<Rightarrow> 'a Preference_Relation" where
+  "pref_\<V> V = snd V"
 
 lemma lin_imp_antisym:
   fixes
@@ -67,7 +69,7 @@ lemma rank_gt_zero:
     a :: "'a"
   assumes
     refl: "a \<preceq>\<^sub>r a" and
-    fin:  "finite r"
+    fin: "finite r"
   shows "rank r a \<ge> 1"
 proof (unfold rank.simps above_def)
   have "a \<in> {b \<in> Field r. (a, b) \<in> r}"
@@ -476,7 +478,7 @@ lemma above_one:
     non_empty_A: "A \<noteq> {}"
   shows "\<exists> a \<in> A. above r a = {a} \<and> (\<forall> a' \<in> A. above r a' = {a'} \<longrightarrow> a' = a)"
 proof -
-  obtain n :: nat where
+  obtain n :: "nat" where
     len_n_plus_one: "n + 1 = card A"
     using Suc_eq_plus1 antisym_conv2 fin_A non_empty_A card_eq_0_iff
           gr0_implies_Suc le0
@@ -882,8 +884,8 @@ lemma lifted_imp_switched:
 proof (safe)
   fix b :: "'a"
   assume
-    b_in_A:   "b \<in> A" and
-    b_neq_a:  "b \<noteq> a" and
+    b_in_A: "b \<in> A" and
+    b_neq_a: "b \<noteq> a" and
     b_pref_a: "b \<preceq>\<^sub>r a" and
     a_pref_b: "a \<preceq>\<^sub>r' b"
   hence b_pref_a_rel: "(b, a) \<in> r"
@@ -904,7 +906,7 @@ proof (safe)
     using assms
     unfolding lifted_def
     by metis
-  then obtain c :: 'a where
+  then obtain c :: "'a" where
     "c \<in> A - {a} \<and> a \<preceq>\<^sub>r c \<and> c \<preceq>\<^sub>r' a"
     by metis
   hence c_eq_r_s_exc_a: "c \<in> A - {a} \<and> (a, c) \<in> r \<and> (c, a) \<in> r'"

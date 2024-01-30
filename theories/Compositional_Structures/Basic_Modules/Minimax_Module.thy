@@ -49,7 +49,7 @@ lemma non_cond_winner_minimax_score:
     l_neq_w: "l \<noteq> w"
   shows "minimax_score V l A p \<le> prefer_count V p l w"
 proof (simp, clarify)
-  assume "finite V"
+  assume fin_V: "finite V"
   have "w \<in> A" 
     using winner 
     by simp
@@ -59,9 +59,11 @@ proof (simp, clarify)
   moreover have fin: "finite {(card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l}"
   proof -
     have "\<forall> y \<in> A. card {v \<in> V. (y, l) \<in> p v} \<le> card V"
-      by (simp add: \<open>finite V\<close> card_mono)
-    hence "\<forall> y \<in> A. card {v \<in> V. (y, l) \<in> p v} \<in> {..card V}"
-      by (simp add: less_Suc_eq_le)
+      using fin_V
+      by (simp add: card_mono)
+    hence "\<forall> y \<in> A. card {v \<in> V. (y, l) \<in> p v} \<in> {.. card V}"
+      unfolding less_Suc_eq_le
+      by simp
     hence "{(card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l} \<subseteq> {0..card V}"
       by auto
     thus ?thesis
@@ -75,17 +77,17 @@ proof (simp, clarify)
                     \<le> enat (card {v \<in> V. (w, l) \<in> p v})"
     using enat_ord_simps
     by simp
-  have "\<forall> S::(nat set). finite S \<longrightarrow> (\<forall>m. (\<forall>x \<in> S. m \<le> x) \<longrightarrow> (\<forall> x \<in> S. enat m \<le> enat x))"
-    using enat_ord_simps 
+  have "\<forall> S::(nat set). finite S \<longrightarrow> (\<forall> m. (\<forall> x \<in> S. m \<le> x) \<longrightarrow> (\<forall> x \<in> S. enat m \<le> enat x))"
+    using enat_ord_simps
     by simp
   hence "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow> (\<forall> x. x \<in> S \<longrightarrow> enat (Min S) \<le> enat x)"
     by simp
-  hence "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow> 
+  hence "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow>
           (\<forall> x. x \<in> {enat x | x. x \<in> S} \<longrightarrow> enat (Min S) \<le> x)"
     by auto
   moreover have "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow> enat (Min S) \<in> {enat x | x. x \<in> S}"
     by simp
-  moreover have "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow> finite {enat x | x. x \<in> S} 
+  moreover have "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow> finite {enat x | x. x \<in> S}
                                                         \<and> {enat x | x. x \<in> S} \<noteq> {}"
     by simp
   ultimately have "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow> 
@@ -117,15 +119,17 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
     A :: "'b set" and 
     V :: "'a set" and 
     p :: "('b, 'a) Profile" and 
-    w :: 'b and
-    l :: 'b
+    w :: "'b" and
+    l :: "'b"
   assume
     winner: "condorcet_winner V A p w" and
     l_in_A: "l \<in> A" and
     l_neq_w:"l \<noteq> w" and
     min_leq:
-      "\<not> Min {if finite V then enat (card {v \<in> V. let r = p v in y \<preceq>\<^sub>r l}) else \<infinity> |y. y \<in> A - {l}}
-       < Min {if finite V then enat (card {v \<in> V. let r = p v in y \<preceq>\<^sub>r w}) else \<infinity> |y. y \<in> A - {w}}"
+      "\<not> Min {if finite V then enat (card {v \<in> V. let r = p v in y \<preceq>\<^sub>r l}) else \<infinity> | y. y \<in> A - {l}}
+       < Min {if finite V then
+          enat (card {v \<in> V. let r = p v in y \<preceq>\<^sub>r w}) else
+            \<infinity> | y. y \<in> A - {w}}"
   hence min_count_ineq:
     "Min {prefer_count V p l y | y. y \<in> A - {l}} \<ge>
         Min {prefer_count V p w y | y. y \<in> A - {w}}"
@@ -136,8 +140,8 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
           minimax_score.simps
     by metis
   have l_in_A_without_w: "l \<in> A - {w}"
-    using l_in_A
-    by (simp add: l_neq_w)
+    using l_in_A l_neq_w
+    by simp
   hence pref_counts_non_empty: "{prefer_count V p w y | y . y \<in> A - {w}} \<noteq> {}"
     by blast
   have "finite (A - {w})"
@@ -208,8 +212,8 @@ next
   have max_mmaxscore_dcc:
     "defer_condorcet_consistency ((max_eliminator minimax_score)
                                     ::('b, 'a, 'b Result) Electoral_Module)"
-    using cr_eval_imp_dcc_max_elim
-    by (simp add: minimax_score_cond_rating)
+    using cr_eval_imp_dcc_max_elim minimax_score_cond_rating
+    by metis
   hence
     "max_eliminator minimax_score V A p =
       ({},

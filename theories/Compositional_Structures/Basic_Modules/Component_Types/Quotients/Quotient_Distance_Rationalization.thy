@@ -123,7 +123,7 @@ qed
 
 lemma relation_paths_subset:
   fixes
-    n :: nat and
+    n :: "nat" and
     p :: "'x list" and
     r :: "'x rel" and
     X :: "'x set"
@@ -739,13 +739,13 @@ qed
 
 subsection \<open>Quotient Distance Rationalization\<close>
 
-fun (in result) \<R>\<^sub>\<Q> :: "('a, 'v) Election rel \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow>
-        ('a, 'v, 'r Result) Consensus_Class \<Rightarrow> ('a, 'v) Election set \<Rightarrow> 'r set" where
+fun (in result) \<R>\<^sub>\<Q> :: "('a, 'v) Election rel \<Rightarrow> ('a, 'v) Election Distance
+        \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class \<Rightarrow> ('a, 'v) Election set \<Rightarrow> 'r set" where
   "\<R>\<^sub>\<Q> r d C A = \<Union> (minimizer (\<pi>\<^sub>\<Q> (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))) (\<K>_els\<^sub>\<Q> r C)
                               (inf_dist\<^sub>\<Q> d) (singleton_set_system (limit_set\<^sub>\<Q> A UNIV)) A)"
 
-fun (in result) distance_\<R>\<^sub>\<Q> :: "('a, 'v) Election rel \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow>
-        ('a, 'v, 'r Result) Consensus_Class \<Rightarrow> ('a, 'v) Election set \<Rightarrow> 'r Result" where
+fun (in result) distance_\<R>\<^sub>\<Q> :: "('a, 'v) Election rel \<Rightarrow> ('a, 'v) Election Distance
+        \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class \<Rightarrow> ('a, 'v) Election set \<Rightarrow> 'r Result" where
   "distance_\<R>\<^sub>\<Q> r d C A =
     (\<R>\<^sub>\<Q> r d C A, \<pi>\<^sub>\<Q> (\<lambda> E. limit_set (alts_\<E> E) UNIV) A - \<R>\<^sub>\<Q> r d C A, {})"
 
@@ -860,7 +860,7 @@ proof -
       using Setcompr_eq_image preimg_partition
       by metis
     have "\<forall> y'.
-        {Inf A |A. A \<in> {{d a b | b. b \<in> B} | B.
+        {Inf A | A. A \<in> {{d a b | b. b \<in> B} | B.
             B \<in> preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<Union> (range (\<K>\<^sub>\<E> C))) y' // r}} =
         {Inf {d a b | b. b \<in> B} | B. B \<in> preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) y' // r}"
       by blast
@@ -900,7 +900,7 @@ proof -
         Inf {Inf {d a b | b. b \<in> B} | B.
           B \<in> preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) y' // r}"
       by simp
-    thus "?thesis"
+    thus ?thesis
       using valid_res_eq rewrite_inf_dist preimg_partition_dist
       by presburger
   qed
@@ -978,17 +978,15 @@ proof -
   moreover have "\<pi>\<^sub>\<Q> (fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)) A = \<R>\<^sub>\<Q> r d C A"
     using invar_dr_simple_dist_imp_quotient_dr_winners assms
     by blast
-  moreover have
-    "\<forall> E \<in> A. limit_set (alts_\<E> E) UNIV = \<pi>\<^sub>\<Q> (\<lambda> E. limit_set (alts_\<E> E) UNIV) A"
+  moreover have "\<forall> E \<in> A. limit_set (alts_\<E> E) UNIV = \<pi>\<^sub>\<Q> (\<lambda> E. limit_set (alts_\<E> E) UNIV) A"
     using invar_res invariance_is_congruence' pass_to_quotient cls equiv_rel
-    by blast
+    by metis
   ultimately have all_eq:
     "\<forall> E \<in> A. fun\<^sub>\<E> (distance_\<R> d C) E =
       (\<R>\<^sub>\<Q> r d C A, \<pi>\<^sub>\<Q> (\<lambda> E. limit_set (alts_\<E> E) UNIV) A - \<R>\<^sub>\<Q> r d C A, {})"
     by fastforce
-  hence
-    "{(\<R>\<^sub>\<Q> r d C A, \<pi>\<^sub>\<Q> (\<lambda> E. limit_set (alts_\<E> E) UNIV) A - \<R>\<^sub>\<Q> r d C A, {})} \<supseteq>
-      fun\<^sub>\<E> (distance_\<R> d C) ` A"
+  hence "{(\<R>\<^sub>\<Q> r d C A, \<pi>\<^sub>\<Q> (\<lambda> E. limit_set (alts_\<E> E) UNIV) A - \<R>\<^sub>\<Q> r d C A, {})} \<supseteq>
+            fun\<^sub>\<E> (distance_\<R> d C) ` A"
     by blast
   moreover have "A \<noteq> {}"
     using cls equiv_rel in_quotient_imp_non_empty
@@ -1007,7 +1005,7 @@ proof -
           (\<R>\<^sub>\<Q> r d C A, \<pi>\<^sub>\<Q> (\<lambda> E. limit_set (alts_\<E> E) UNIV) A - \<R>\<^sub>\<Q> r d C A, {})"
     using singleton_insert_inj_eq singleton_set.elims singleton_set_def_if_card_one
     by (metis (no_types))
-  ultimately show "?thesis"
+  ultimately show ?thesis
     unfolding distance_\<R>\<^sub>\<Q>.simps
     using \<pi>\<^sub>\<Q>.simps[of "fun\<^sub>\<E> (distance_\<R> d C)"] singleton_set.simps[of "fun\<^sub>\<E> (distance_\<R> d C) ` A"]
     by presburger

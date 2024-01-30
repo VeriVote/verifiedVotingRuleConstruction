@@ -55,7 +55,7 @@ function loop_comp_helper ::
     loop_comp_helper acc m t V A p = loop_comp_helper (acc \<triangleright> m) m t V A p"
 proof -
   fix
-    P :: bool and
+    P :: "bool" and
     accum ::
     "('a, 'v, 'a Result) Electoral_Module \<times> ('a, 'v, 'a Result) Electoral_Module 
         \<times> 'a Termination_Condition \<times> 'v set \<times> 'a set \<times> ('a, 'v) Profile"
@@ -193,7 +193,8 @@ lemma loop_comp_code_helper[code]:
       (if (t (acc V A p) \<or> \<not> ((defer (acc \<triangleright> m) V A p) \<subset> (defer acc V A p)) \<or>
         infinite (defer acc V A p))
       then (acc V A p) else (loop_comp_helper (acc \<triangleright> m) m t V A p))"
-  by (metis (mono_tags, lifting) loop_comp_helper.simps)
+  using loop_comp_helper.simps
+  by (metis (no_types))
 
 function loop_composition ::
   "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Termination_Condition 
@@ -231,7 +232,7 @@ lemma loop_comp_helper_imp_partit:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    n :: nat
+    n :: "nat"
   assumes
     module_m: "social_choice_result.electoral_module m" and
     profile: "profile V A p" and
@@ -284,7 +285,7 @@ lemma loop_comp_helper_imp_no_def_incr:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    n :: nat
+    n :: "nat"
   assumes
     module_m: "social_choice_result.electoral_module m" and
     profile: "profile V A p" and
@@ -661,7 +662,7 @@ lemma loop_comp_presv_non_electing_helper:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    n :: nat
+    n :: "nat"
   assumes
     non_electing_m: "non_electing m" and
     non_electing_acc: "non_electing acc" and
@@ -724,8 +725,8 @@ lemma loop_comp_helper_iter_elim_def_n_helper:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    n :: nat and
-    x :: nat
+    n :: "nat" and
+    x :: "nat"
   assumes
     non_electing_m: "non_electing m" and
     single_elimination: "eliminates 1 m" and
@@ -834,7 +835,7 @@ lemma loop_comp_helper_iter_elim_def_n:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    x :: nat
+    x :: "nat"
   assumes
     "non_electing m" and
     "eliminates 1 m" and
@@ -855,7 +856,7 @@ lemma iter_elim_def_n_helper:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    x :: nat
+    x :: "nat"
   assumes
     non_electing_m: "non_electing m" and
     single_elimination: "eliminates 1 m" and
@@ -973,7 +974,7 @@ theorem iter_elim_def_n[simp]:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition" and
-    n :: nat
+    n :: "nat"
   assumes
     non_electing_m: "non_electing m" and
     single_elimination: "eliminates 1 m" and
