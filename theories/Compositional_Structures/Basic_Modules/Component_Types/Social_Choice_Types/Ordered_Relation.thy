@@ -13,7 +13,7 @@ lemma fin_ordered:
     "linear_order_on X ord"
 proof -
   assume
-    ex: "\<And> ord. linear_order_on X ord \<Longrightarrow> thesis"
+    ex: "\<And> ord. linear_order_on X ord \<Longrightarrow> ?thesis"
   obtain l :: "'x list" where
     set_l: "set l = X"
     using finite_list assms
@@ -37,7 +37,7 @@ proof -
   ultimately have "linear_order_on X ?r"
     unfolding linear_order_on_def preorder_on_def partial_order_on_def
     by blast
-  thus thesis
+  thus ?thesis
     using ex
     by blast
 qed
