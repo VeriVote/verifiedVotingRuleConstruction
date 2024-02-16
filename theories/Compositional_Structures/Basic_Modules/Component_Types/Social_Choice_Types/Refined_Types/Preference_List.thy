@@ -619,7 +619,7 @@ proof (rule ccontr)
       "i < length xs" and
       "xs!i \<noteq> ys!i" and
       "x = xs!i" and
-      "x \<in> set xs"
+    x_in_xs: "x \<in> set xs"
     using dist_xs dist_ys distinct_remdups_id
           length_remdups_card_conv nth_equalityI nth_mem set_eq
     by metis
@@ -642,8 +642,8 @@ proof (rule ccontr)
   hence "(is_less_preferred_than_l x xs y \<and> is_less_preferred_than_l y ys x)
             \<or> (is_less_preferred_than_l x ys y \<and> is_less_preferred_than_l y xs x)"
     unfolding is_less_preferred_than_l.simps
-    using y_in_set_xs less_imp_le_nat set_eq
-    by blast (* TODO *)
+    using y_in_set_xs less_imp_le_nat set_eq x_in_xs
+    by blast
   hence "((x, y) \<in> pl_\<alpha> xs \<and> (x, y) \<notin> pl_\<alpha> ys) \<or> ((x, y) \<in> pl_\<alpha> ys \<and> (x, y) \<notin> pl_\<alpha> xs)"
     unfolding pl_\<alpha>_def
     using is_less_preferred_than_l.simps y_neq_x neq_indices
