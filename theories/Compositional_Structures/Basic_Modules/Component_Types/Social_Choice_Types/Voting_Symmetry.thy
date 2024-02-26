@@ -637,7 +637,7 @@ proof -
     bijection_\<pi>: "bij \<pi>" and 
     renamed: "E' = rename \<pi> E"
     unfolding anonymity\<^sub>\<R>.simps anonymity\<^sub>\<G>_def
-    using bij_car_el
+    using universal_set_carrier_imp_bij_group
     by auto
   hence eq_alts: "alts_\<E> E' = alts_\<E> E"
     using eq_fst_iff rename.simps
@@ -952,7 +952,7 @@ proof (unfold group_action_def group_hom_def anonymity\<^sub>\<G>_def group_hom_
     using valid_closed'
     by auto
   moreover have "\<forall> E. E \<in> valid_elections \<longrightarrow> rename \<pi> (rename \<pi>' E) = rename (\<pi> \<circ> \<pi>') E"
-    using rename_comp bij bij' Symmetry_Of_Functions.bij_car_el comp_apply
+    using rename_comp bij bij' universal_set_carrier_imp_bij_group comp_apply
     by metis
   moreover have
     "\<forall> E. E \<in> valid_elections \<longrightarrow>
@@ -1342,7 +1342,7 @@ proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def neutra
     fix \<pi> :: "'a \<Rightarrow> 'a"
     assume "\<pi> \<in> carrier (BijGroup UNIV)"
     hence "bij \<pi>"
-      using bij_car_el
+      using universal_set_carrier_imp_bij_group
       by blast
     hence "bij_betw (alts_rename \<pi>) valid_elections valid_elections"
       using alts_rename_bij
@@ -1512,7 +1512,7 @@ proof (simp del: limit_set_welfare.simps \<phi>_neutr.simps
       using bij_betw_the_inv_into
       by simp
     moreover have "the_inv \<pi> \<circ> \<pi> = id"
-      using carrier_\<pi> bij_car_el bij_is_inj the_inv_f_f 
+      using carrier_\<pi> universal_set_carrier_imp_bij_group bij_is_inj the_inv_f_f
       unfolding neutrality\<^sub>\<G>_def
       by fastforce
     moreover have "\<one> \<^bsub>neutrality\<^sub>\<G>\<^esub> = id"
@@ -1535,12 +1535,12 @@ proof (simp del: limit_set_welfare.simps \<phi>_neutr.simps
     hence lin: "linear_order_on (\<pi> ` A) r"
       by auto
     have bij_inv: "bij (the_inv \<pi>)"
-      using carrier_\<pi> bij_betw_the_inv_into bij_car_el
+      using carrier_\<pi> bij_betw_the_inv_into universal_set_carrier_imp_bij_group
       unfolding neutrality\<^sub>\<G>_def
       by blast
     hence "(the_inv \<pi>) ` \<pi> ` A = A"
-      using carrier_\<pi> UNIV_I bij_betw_imp_surj bij_car_el f_the_inv_into_f_bij_betw
-            image_f_inv_f surj_imp_inv_eq
+      using carrier_\<pi> UNIV_I bij_betw_imp_surj universal_set_carrier_imp_bij_group
+            f_the_inv_into_f_bij_betw image_f_inv_f surj_imp_inv_eq
       unfolding neutrality\<^sub>\<G>_def
       by metis
     hence lin_inv: "linear_order_on A ?r_inv"
