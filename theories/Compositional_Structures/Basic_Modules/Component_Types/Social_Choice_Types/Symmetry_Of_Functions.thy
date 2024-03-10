@@ -228,21 +228,14 @@ proof (unfold equivar_ind_by_act_def, simp, safe)
     "x \<in> s" and
     "y \<in> t" and
     "\<phi> y x \<in> s"
-  {
-    moreover assume
-      "\<forall> x\<^sub>1 x\<^sub>2. x\<^sub>1 \<in> s \<and> x\<^sub>2 \<in> s \<and> (\<exists> y' \<in> t. \<phi> y' x\<^sub>1 = x\<^sub>2) \<longrightarrow> f x\<^sub>1 = f x\<^sub>2"
-    ultimately show "f (\<phi> y x) = id (f x)"
-      unfolding id_def
-      by metis
-  }
-  {
-    moreover assume
-      "\<forall> x' y'. (\<exists> z. x' = \<phi> z \<and> y' = id \<and> z \<in> t)
-        \<longrightarrow> (\<forall> z \<in> s. x' z \<in> s \<longrightarrow> f (x' z) = y' (f z))"
-    ultimately show "f x = f (\<phi> y x)"
-      unfolding id_def
-      by metis
-  }
+  thus
+    "(\<forall> x' y'. x' \<in> s \<and> y' \<in> s \<and> (\<exists> z \<in> t. \<phi> z x' = y') \<longrightarrow> f x' = f y')
+        \<Longrightarrow> (f (\<phi> y x) = id (f x))" and
+    "(\<forall> x' y'. (\<exists> z. x' = \<phi> z \<and> y' = id \<and> z \<in> t) \<longrightarrow>
+        (\<forall> z \<in> s. x' z \<in> s \<longrightarrow> f (x' z) = y' (f z)))
+        \<Longrightarrow> (f x = f (\<phi> y x))"
+    unfolding id_def
+    by (metis, metis)
 qed
 
 lemma rewrite_invar_ind_by_act:
@@ -258,19 +251,19 @@ proof (safe)
     y :: "'x" and
     x :: "'z"
   assume
-    invar: "satisfies f (Invariance (rel_induced_by_action s t \<phi>))" and
-    a_in_X: "y \<in> t" and
-    g_in_G: "x \<in> s" and
-    \<phi>_g_a_in_X: "\<phi> x y \<in> t"
-  hence "(y, \<phi> x y) \<in> rel_induced_by_action s t \<phi>"
+    "satisfies f (Invariance (rel_induced_by_action s t \<phi>))" and
+    "y \<in> t" and
+    "x \<in> s" and
+    "\<phi> x y \<in> t"
+  moreover from this have "(y, \<phi> x y) \<in> rel_induced_by_action s t \<phi>"
     unfolding rel_induced_by_action.simps
     by blast
-  thus "f y = f (\<phi> x y)"
-    using invar
+  ultimately show "f y = f (\<phi> x y)"
     by simp
 next
   assume "\<forall> x \<in> s. \<forall> y \<in> t. \<phi> x y \<in> t \<longrightarrow> f y = f (\<phi> x y)"
-  moreover have "\<forall> (x, y) \<in> rel_induced_by_action s t \<phi>. x \<in> t \<and> y \<in> t \<and> (\<exists> z \<in> s. y = \<phi> z x)"
+  moreover have
+    "\<forall> (x, y) \<in> rel_induced_by_action s t \<phi>. x \<in> t \<and> y \<in> t \<and> (\<exists> z \<in> s. y = \<phi> z x)"
     by auto
   ultimately show "satisfies f (Invariance (rel_induced_by_action s t \<phi>))"
     by auto
@@ -288,7 +281,7 @@ lemma rewrite_equivar_ind_by_act:
   unfolding equivar_ind_by_act_def
   by auto
 
-lemma rewrite_grp_act_img:
+lemma rewrite_group_act_img:
   fixes
     m :: "'x monoid" and
     s :: "'y set" and
@@ -407,7 +400,7 @@ lemma coinciding_actions_ind_equal_rel:
 
 subsection \<open>Group Actions\<close>
 
-lemma const_id_is_grp_act:
+lemma const_id_is_group_act:
   fixes m :: "'x monoid"
   assumes "group m"
   shows "group_action m UNIV (\<lambda> x. id)"
@@ -428,13 +421,13 @@ next
     by metis
 qed
 
-theorem grp_act_induces_set_grp_act:
+theorem group_act_induces_set_group_act:
   fixes
     m :: "'x monoid" and
     s :: "'y set" and
     \<phi> :: "('x, 'y) binary_fun"
   defines "\<phi>_img \<equiv> (\<lambda> x. extensional_continuation (image (\<phi> x)) (Pow s))"
-  assumes grp_act: "group_action m s \<phi>"
+  assumes "group_action m s \<phi>"
   shows "group_action m (Pow s) \<phi>_img"
 proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def, safe)
   show "group m"
@@ -450,7 +443,7 @@ next
     fix x :: "'x"
     assume car_x: "x \<in> carrier m"
     hence "bij_betw (\<phi> x) s s"
-      using grp_act group_action.surj_prop
+      using assms group_action.surj_prop
       unfolding bij_betw_def
       by (simp add: group_action.inj_prop)
     hence "bij_betw (image (\<phi> x)) (Pow s) (Pow s)"
@@ -503,7 +496,7 @@ next
     by simp
   moreover have "\<forall> t. t \<in> Pow s \<longrightarrow> \<phi>_img (x \<otimes> \<^bsub>m\<^esub> y) t = \<phi> x ` \<phi> y ` t"
     unfolding \<phi>_img_def extensional_continuation.simps
-    using rewrite_grp_act_img car_x car_y grp_act PowD
+    using rewrite_group_act_img car_x car_y assms PowD
     by metis
   ultimately have "\<forall> t. \<phi>_img (x \<otimes> \<^bsub>m\<^esub> y) t = (\<phi>_img x \<otimes> \<^bsub>BijGroup (Pow s)\<^esub> \<phi>_img y) t"
     by metis
@@ -531,7 +524,7 @@ theorem invar_generating_system_imp_invar:
     \<phi> :: "('z, 'x) binary_fun"
   assumes
     invar: "satisfies f (Invariance (rel_induced_by_action s t \<phi>))" and
-    grp_act: "group_action m t \<phi>" and
+    action_\<phi>: "group_action m t \<phi>" and
     gen: "carrier m = generate m s"
   shows "satisfies f (Invariance (rel_induced_by_action (carrier m) t \<phi>))"
 proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
@@ -539,26 +532,26 @@ proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
     g :: "'z" and
     x :: "'x"
   assume
-    grp_el: "g \<in> carrier m" and
+    group_elem: "g \<in> carrier m" and
     x_in_t: "x \<in> t"
-  interpret grp_act: "group_action" "m" "t" "\<phi>"
-    using grp_act
+  interpret interpr_action_\<phi>: "group_action" "m" "t" "\<phi>"
+    using action_\<phi>
     by blast
   have "g \<in> generate m s"
-    using grp_el gen
+    using group_elem gen
     by blast
   hence "\<forall> x \<in> t. f x = f (\<phi> g x)"
   proof (induct g rule: generate.induct)
     case one
     hence "\<forall> x \<in> t. \<phi> \<one> \<^bsub>m\<^esub> x = x"
-      using grp_act group_action.id_eq_one restrict_apply
+      using action_\<phi> group_action.id_eq_one restrict_apply
       by metis
     thus ?case
       by simp
   next
     case (incl g)
     hence "\<forall> x \<in> t. (x, \<phi> g x) \<in> rel_induced_by_action s t \<phi>"
-      using gen grp_act generate.incl group_action.element_image
+      using gen action_\<phi> generate.incl group_action.element_image
       unfolding rel_induced_by_action.simps
       by fastforce
     thus ?case
@@ -568,15 +561,15 @@ proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
   next
     case (inv g)
     hence "\<forall> x \<in> t. \<phi> (inv \<^bsub>m\<^esub> g) x \<in> t"
-      using grp_act gen generate.inv group_action.element_image
+      using action_\<phi> gen generate.inv group_action.element_image
       by metis
     hence "\<forall> x \<in> t. f (\<phi> g (\<phi> (inv \<^bsub>m\<^esub> g) x)) = f (\<phi> (inv \<^bsub>m\<^esub> g) x)"
-      using gen generate.incl group_action.element_image grp_act
+      using gen generate.incl group_action.element_image action_\<phi>
             invar local.inv rewrite_invar_ind_by_act
       by metis
     moreover have "\<forall> x \<in> t. \<phi> g (\<phi> (inv \<^bsub>m\<^esub> g) x) = x"
-      using grp_act gen generate.incl group.inv_closed group_action.orbit_sym_aux
-            group.inv_inv group_hom.axioms(1) grp_act.group_hom local.inv
+      using action_\<phi> gen generate.incl group.inv_closed group_action.orbit_sym_aux
+            group.inv_inv group_hom.axioms(1) interpr_action_\<phi>.group_hom local.inv
       by (metis (full_types))
     ultimately show ?case
       by simp
@@ -588,7 +581,7 @@ proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
       gen\<^sub>1: "g\<^sub>1 \<in> generate m s" and
       gen\<^sub>2: "g\<^sub>2 \<in> generate m s"
     hence "\<forall> x \<in> t. \<phi> g\<^sub>2 x \<in> t"
-      using gen grp_act.element_image
+      using gen interpr_action_\<phi>.element_image
       by blast
     hence "\<forall> x \<in> t. f (\<phi> g\<^sub>1 (\<phi> g\<^sub>2 x)) = f (\<phi> g\<^sub>2 x)"
       using invar\<^sub>1
@@ -597,7 +590,7 @@ proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
       using invar\<^sub>2
       by simp
     moreover have "\<forall> x \<in> t. f (\<phi> (g\<^sub>1 \<otimes> \<^bsub>m\<^esub> g\<^sub>2) x) = f (\<phi> g\<^sub>1 (\<phi> g\<^sub>2 x))"
-      using grp_act gen grp_act.composition_rule gen\<^sub>1 gen\<^sub>2
+      using action_\<phi> gen interpr_action_\<phi>.composition_rule gen\<^sub>1 gen\<^sub>2
       by simp
     ultimately show ?case
       by simp
@@ -671,7 +664,7 @@ lemma equivar_under_subset':
   unfolding satisfies.simps
   by blast
 
-theorem grp_act_equivar_f_imp_equivar_preimg:
+theorem group_act_equivar_f_imp_equivar_preimg:
   fixes
     f :: "'x \<Rightarrow> 'y" and
     \<D>\<^sub>f :: "'x set" and
@@ -682,23 +675,23 @@ theorem grp_act_equivar_f_imp_equivar_preimg:
     x :: "'z"
   defines "equivar_prop \<equiv> equivar_ind_by_act (carrier m) \<D>\<^sub>f \<phi> \<psi>"
   assumes
-    grp_act: "group_action m s \<phi>" and
-    grp_act_res: "group_action m UNIV \<psi>" and
+    action_\<phi>: "group_action m s \<phi>" and
+    action_res: "group_action m UNIV \<psi>" and
     dom_in_s: "\<D>\<^sub>f \<subseteq> s" and
     closed_domain: (* Could the closed_domain requirement be weakened? *)
       "closed_under_restr_rel (rel_induced_by_action (carrier m) s \<phi>) s \<D>\<^sub>f" and
     equivar_f: "satisfies f equivar_prop" and
-    grp_el: "x \<in> carrier m"
+    group_elem_x: "x \<in> carrier m"
   shows "\<forall> y. preimg f \<D>\<^sub>f (\<psi> x y) = (\<phi> x) ` (preimg f \<D>\<^sub>f y)"
 proof (safe)
-  interpret grp_act: "group_action" "m" "s" "\<phi>"
-    using grp_act
+  interpret action_\<phi>: "group_action" "m" "s" "\<phi>"
+    using action_\<phi>
     by simp
-  interpret grp_act_results: "group_action" "m" "UNIV" "\<psi>"
-    using grp_act_res
+  interpret action_results: "group_action" "m" "UNIV" "\<psi>"
+    using action_res
     by simp 
-  have grp_el_inv: "(inv \<^bsub>m\<^esub> x) \<in> carrier m"
-    using group.inv_closed group_hom.axioms(1) grp_act.group_hom grp_el
+  have group_elem_inv: "(inv \<^bsub>m\<^esub> x) \<in> carrier m"
+    using group.inv_closed group_hom.axioms(1) action_\<phi>.group_hom group_elem_x
     by metis
   fix
     y :: "'y" and
@@ -711,19 +704,19 @@ proof (safe)
     using preimg_el dom_in_s
     by auto
   hence "a \<in> s"
-    using dom_in_s grp_act grp_el_inv preimg_el img grp_act.element_image
+    using dom_in_s action_\<phi> group_elem_inv preimg_el img action_\<phi>.element_image
     by auto
   hence "(z, a) \<in> (rel_induced_by_action (carrier m) s \<phi>) \<inter> (\<D>\<^sub>f \<times> s)"
-    using img preimg_el domain grp_el_inv
+    using img preimg_el domain group_elem_inv
     by auto
   hence "a \<in> ((rel_induced_by_action (carrier m) s \<phi>) \<inter> (\<D>\<^sub>f \<times> s)) `` \<D>\<^sub>f"
-    using img preimg_el domain grp_el_inv
+    using img preimg_el domain group_elem_inv
     by auto
   hence a_in_domain: "a \<in> \<D>\<^sub>f"
     using closed_domain
     by auto
   moreover have "(\<phi> (inv \<^bsub>m\<^esub> x), \<psi> (inv \<^bsub>m\<^esub> x)) \<in> {(\<phi> g, \<psi> g) | g. g \<in> carrier m}"
-    using grp_el_inv
+    using group_elem_inv
     by auto
   ultimately have "f a = \<psi> (inv \<^bsub>m\<^esub> x) (f z)"
     using domain equivar_f img
@@ -733,7 +726,7 @@ proof (safe)
     using preimg_el
     by simp
   also have "\<psi> (inv \<^bsub>m\<^esub> x) (\<psi> x y) = y"
-    using grp_act_results.group_hom grp_act_results.orbit_sym_aux grp_el
+    using action_results.group_hom action_results.orbit_sym_aux group_elem_x
     by simp
   finally have "f a = y"
     by simp
@@ -741,8 +734,8 @@ proof (safe)
     using a_in_domain
     by simp
   moreover have "z = \<phi> x a"
-    using group_hom.axioms(1) grp_act.group_hom grp_act.orbit_sym_aux
-          img domain a_in_domain grp_el grp_el_inv group.inv_inv
+    using group_hom.axioms(1) action_\<phi>.group_hom action_\<phi>.orbit_sym_aux
+          img domain a_in_domain group_elem_x group_elem_inv group.inv_inv
     by metis
   ultimately show "z \<in> (\<phi> x) ` (preimg f \<D>\<^sub>f y)"
     by simp
@@ -755,16 +748,16 @@ next
     using dom_in_s
     by auto
   hence "\<phi> x z \<in> s"
-    using grp_el group_action.element_image grp_act
+    using group_elem_x group_action.element_image action_\<phi>
     by metis
   hence "(z, \<phi> x z) \<in> (rel_induced_by_action (carrier m) s \<phi>) \<inter> (\<D>\<^sub>f \<times> s) \<inter> \<D>\<^sub>f \<times> s"
-    using grp_el domain
+    using group_elem_x domain
     by auto
   hence "\<phi> x z \<in> \<D>\<^sub>f"
     using closed_domain
     by auto
   moreover have "(\<phi> x, \<psi> x) \<in> {(\<phi> a, \<psi> a) | a. a \<in> carrier m}"
-    using grp_el
+    using group_elem_x
     by blast
   ultimately show "\<phi> x z \<in> preimg f \<D>\<^sub>f (\<psi> x y)"
     using equivar_f domain

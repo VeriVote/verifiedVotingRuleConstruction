@@ -201,9 +201,9 @@ proof (unfold bij_betw_def inj_on_def, standard, standard, standard, standard)
     unfolding congruent_def
     by blast
   have foo: "equiv valid_elections (anonymity\<^sub>\<R> valid_elections)"
-    using rel_ind_by_grp_act_equiv[of "anonymity\<^sub>\<G>" "valid_elections" "\<phi>_anon valid_elections"]
+    using rel_ind_by_group_act_equiv[of "anonymity\<^sub>\<G>" "valid_elections" "\<phi>_anon valid_elections"]
           rel_ind_by_coinciding_action_on_subset_eq_restr
-    by (simp add: anon_grp_act.group_action_axioms)
+    by (simp add: anonymous_group_action.group_action_axioms)
   moreover have
     "\<forall> \<pi> \<in> carrier anonymity\<^sub>\<G>.
       \<forall> E \<in> fixed_alt_elections UNIV.
@@ -296,9 +296,9 @@ next
   have subset: "fixed_alt_elections UNIV \<subseteq> valid_elections"
       by simp
   have "equiv valid_elections (anonymity\<^sub>\<R> valid_elections)"
-    using rel_ind_by_grp_act_equiv[of "anonymity\<^sub>\<G>" "valid_elections" "\<phi>_anon valid_elections"]
+    using rel_ind_by_group_act_equiv[of "anonymity\<^sub>\<G>" "valid_elections" "\<phi>_anon valid_elections"]
           rel_ind_by_coinciding_action_on_subset_eq_restr
-    by (simp add: anon_grp_act.group_action_axioms)
+    by (simp add: anonymous_group_action.group_action_axioms)
   (* TODO: Remove this duplicate, already shown in the previous subgoal... *)
   moreover have
     "\<forall> \<pi> \<in> carrier anonymity\<^sub>\<G>.

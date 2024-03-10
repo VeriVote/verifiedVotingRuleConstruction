@@ -43,9 +43,8 @@ text \<open>
 
 type_synonym ('a, 'v, 'r) Electoral_Module = "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r"
 
-abbreviation fun\<^sub>\<E> :: "('v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r)
-        \<Rightarrow> (('a, 'v) Election \<Rightarrow> 'r)" where
-  "fun\<^sub>\<E> m \<equiv> (\<lambda> E. m (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E))"
+fun fun\<^sub>\<E> :: "('v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r) \<Rightarrow> (('a, 'v) Election \<Rightarrow> 'r)" where
+  "fun\<^sub>\<E> m = (\<lambda> E. m (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E))"
 
 text \<open>
   The next three functions take an electoral module and turn it into a

@@ -323,7 +323,7 @@ lemma invar_dist_image:
   assumes
     invar_d: "invariant_dist d (carrier G) Y \<phi>" and 
     Y'_in_Y: "Y' \<subseteq> Y" and
-    grp_act: "group_action G Y \<phi>" and
+    action_\<phi>: "group_action G Y \<phi>" and
     g_carrier: "g \<in> carrier G" and
     y_in_Y: "y \<in> Y"
   shows "d (\<phi> g y) ` (\<phi> g) ` Y' = d y ` Y'"

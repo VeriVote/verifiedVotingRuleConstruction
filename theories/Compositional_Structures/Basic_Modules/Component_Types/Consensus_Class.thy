@@ -206,7 +206,7 @@ proof -
     unfolding \<K>\<^sub>\<E>.simps
     by force
   thus "elections_\<K> C \<subseteq> finite_elections"
-    unfolding finite_elections_def
+    unfolding finite_elections_def fun\<^sub>\<E>.simps
     by blast
   thus "elections_\<K> C \<subseteq> finite_voter_elections"
     unfolding finite_elections_def finite_voter_elections_def

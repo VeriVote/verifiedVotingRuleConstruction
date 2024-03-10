@@ -390,14 +390,14 @@ lemma invar_dist_simple:
     Y :: "'y set" and
     \<phi> :: "('x, 'y) binary_fun"
   assumes
-    grp_act: "group_action G Y \<phi>" and
+    action_\<phi>: "group_action G Y \<phi>" and
     invar: "invariant_dist d (carrier G) Y \<phi>"
   shows "simple (rel_induced_by_action (carrier G) Y \<phi>) Y d"
 proof (unfold simple.simps, safe)
   fix A :: "'y set"
   assume class\<^sub>Y: "A \<in> Y // rel_induced_by_action (carrier G) Y \<phi>"
   have equiv_rel: "equiv Y (rel_induced_by_action (carrier G) Y \<phi>)"
-    using assms rel_ind_by_grp_act_equiv
+    using assms rel_ind_by_group_act_equiv
     by blast
   with class\<^sub>Y obtain a :: "'y" where
     a_in_A: "a \<in> A"
@@ -420,7 +420,7 @@ proof (unfold simple.simps, safe)
     by metis
   have "\<forall> b \<in> Y. \<forall> g \<in> carrier G. (b, \<phi> g b) \<in> rel_induced_by_action (carrier G) Y \<phi>"
     unfolding rel_induced_by_action.simps
-    using group_action.element_image grp_act
+    using group_action.element_image action_\<phi>
     by fastforce
   hence "\<forall> b \<in> Y. \<forall> g \<in> carrier G. \<phi> g b \<in> rel_induced_by_action (carrier G) Y \<phi> `` {b}"
     unfolding Image_def

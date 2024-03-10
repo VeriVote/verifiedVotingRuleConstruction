@@ -173,7 +173,7 @@ next
     by blast
 qed
 
-lemma rel_ind_by_grp_act_equiv:
+lemma rel_ind_by_group_act_equiv:
   fixes
     m :: "'x monoid" and
     s :: "'y set" and

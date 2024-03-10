@@ -16,29 +16,29 @@ text \<open>
 \<close>
 
 lemma electoral_module_soc_choice_code_lemma: "social_choice_result.electoral_module m \<equiv>
-    \<forall> A V p. profile V A p \<longrightarrow> well_formed_soc_choice A (m V A p)"
+    \<forall> A V p. profile V A p \<longrightarrow> well_formed_social_choice A (m V A p)"
   unfolding social_choice_result.electoral_module_def
   by simp
 
 lemma \<R>\<^sub>\<W>_soc_choice_code_lemma: "social_choice_result.\<R>\<^sub>\<W> d K V A p =
-    arg_min_set (score d K (A, V, p)) (limit_set_soc_choice A UNIV)"
+    arg_min_set (score d K (A, V, p)) (limit_set_social_choice A UNIV)"
   unfolding social_choice_result.\<R>\<^sub>\<W>.simps
   by safe
 
 lemma distance_\<R>_soc_choice_code_lemma: "social_choice_result.distance_\<R> d K V A p =
     (social_choice_result.\<R>\<^sub>\<W> d K V A p,
-      (limit_set_soc_choice A UNIV) - social_choice_result.\<R>\<^sub>\<W> d K V A p, {})"
+      (limit_set_social_choice A UNIV) - social_choice_result.\<R>\<^sub>\<W> d K V A p, {})"
   unfolding social_choice_result.distance_\<R>.simps
   by safe
 
 lemma \<R>\<^sub>\<W>_std_soc_choice_code_lemma: "social_choice_result.\<R>\<^sub>\<W>_std d K V A p =
-    arg_min_set (score_std d K (A, V, p)) (limit_set_soc_choice A UNIV)"
+    arg_min_set (score_std d K (A, V, p)) (limit_set_social_choice A UNIV)"
   unfolding social_choice_result.\<R>\<^sub>\<W>_std.simps
   by safe
 
 lemma distance_\<R>_std_soc_choice_code_lemma: "social_choice_result.distance_\<R>_std d K V A p =
     (social_choice_result.\<R>\<^sub>\<W>_std d K V A p,
-    (limit_set_soc_choice A UNIV) - social_choice_result.\<R>\<^sub>\<W>_std d K V A p, {})"
+    (limit_set_social_choice A UNIV) - social_choice_result.\<R>\<^sub>\<W>_std d K V A p, {})"
   unfolding social_choice_result.distance_\<R>_std.simps
   by safe
 
@@ -68,12 +68,12 @@ text \<open>
   Constant aliases to use when exporting code instead of the interpreted functions
 \<close>
 
-definition "\<R>\<^sub>\<W>_soc_choice_code = social_choice_result.\<R>\<^sub>\<W>"
-definition "\<R>\<^sub>\<W>_std_soc_choice_code = social_choice_result.\<R>\<^sub>\<W>_std"
-definition "distance_\<R>_soc_choice_code = social_choice_result.distance_\<R>"
-definition "distance_\<R>_std_soc_choice_code = social_choice_result.distance_\<R>_std"
-definition "electoral_module_soc_choice_code = social_choice_result.electoral_module"
-definition "anonymity_soc_choice_code = social_choice_result.anonymity"
+definition "\<R>\<^sub>\<W>_social_choice_code = social_choice_result.\<R>\<^sub>\<W>"
+definition "\<R>\<^sub>\<W>_std_social_choice_code = social_choice_result.\<R>\<^sub>\<W>_std"
+definition "distance_\<R>_social_choice_code = social_choice_result.distance_\<R>"
+definition "distance_\<R>_std_social_choice_code = social_choice_result.distance_\<R>_std"
+definition "electoral_module_social_choice_code = social_choice_result.electoral_module"
+definition "anonymity_social_choice_code = social_choice_result.anonymity"
 
 setup Locale_Code.close_block
 

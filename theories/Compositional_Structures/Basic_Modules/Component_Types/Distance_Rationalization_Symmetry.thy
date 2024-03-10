@@ -79,7 +79,7 @@ lemma restr_induced_rel:
   using assms
   by auto
 
-theorem grp_act_invar_dist_and_equivar_f_imp_equivar_minimizer:
+theorem group_act_invar_dist_and_equivar_f_imp_equivar_minimizer:
   fixes
     f :: "'x \<Rightarrow> 'y" and
     domain\<^sub>f :: "'x set" and
@@ -91,8 +91,8 @@ theorem grp_act_invar_dist_and_equivar_f_imp_equivar_minimizer:
     \<psi> :: "('z, 'y) binary_fun"
   defines "equivar_prop_set_valued \<equiv> equivar_ind_by_act (carrier G) X \<phi> (set_action \<psi>)"
   assumes
-    grp_act: "group_action G X \<phi>" and
-    grp_act_res: "group_action G UNIV \<psi>" and
+    action_\<phi>: "group_action G X \<phi>" and
+    group_act_res: "group_action G UNIV \<psi>" and
     dom_in_X: "domain\<^sub>f \<subseteq> X" and
     closed_domain: (* Could the closed_domain requirement be weakened? *)
       "closed_under_restr_rel (rel_induced_by_action (carrier G) X \<phi>) X domain\<^sub>f" and
@@ -106,7 +106,7 @@ proof (unfold equivar_ind_by_act_def equivar_prop_set_valued_def,
     x :: "'x" and
     g :: "'z"
   assume
-    grp_el: "g \<in> carrier G" and
+    group_elem: "g \<in> carrier G" and
     x_in_X: "x \<in> X" and
     img_X: "\<phi> g x \<in> X"
   let ?x' = "\<phi> g x"
@@ -117,10 +117,10 @@ proof (unfold equivar_ind_by_act_def equivar_prop_set_valued_def,
     by fastforce
   hence invar_dist_img:
     "\<forall> y. d x ` (preimg f domain\<^sub>f y) = d ?x' ` (\<phi> g ` (preimg f domain\<^sub>f y))"
-    using x_in_X grp_el invar_dist_image invar_d grp_act
+    using x_in_X group_elem invar_dist_image invar_d action_\<phi>
     by metis
   have "\<forall> y. preimg f domain\<^sub>f (\<psi> g y) = (\<phi> g) ` (preimg f domain\<^sub>f y)"
-    using grp_act_equivar_f_imp_equivar_preimg[of G X \<phi> \<psi> domain\<^sub>f f g] assms grp_el
+    using group_act_equivar_f_imp_equivar_preimg[of G X \<phi> \<psi> domain\<^sub>f f g] assms group_elem
     by blast
   hence "\<forall> y. d ?x' ` preimg f domain\<^sub>f (\<psi> g y) = d ?x' ` (\<phi> g) ` (preimg f domain\<^sub>f y)"
     by presburger
@@ -166,7 +166,7 @@ proof (unfold equivar_ind_by_act_def equivar_prop_set_valued_def,
     using rewrite_arg_min_set[of ?c'] rewrite_arg_min_set[of ?c] eq_preimg_unions
     by presburger
   moreover have "valid_img (\<phi> g x) = \<psi> g ` valid_img x"
-    using equivar_img x_in_X grp_el img_X rewrite_equivar_ind_by_act
+    using equivar_img x_in_X group_elem img_X rewrite_equivar_ind_by_act
     unfolding equivar_prop_set_valued_def set_action.simps
     by metis
   ultimately show
@@ -229,7 +229,7 @@ proof -
     by simp
 qed
 
-theorem grp_act_invar_dist_and_invar_f_imp_invar_minimizer:
+theorem group_act_invar_dist_and_invar_f_imp_invar_minimizer:
   fixes
     f :: "'x \<Rightarrow> 'y" and
     domain\<^sub>f :: "'x set" and
@@ -242,7 +242,7 @@ theorem grp_act_invar_dist_and_invar_f_imp_invar_minimizer:
     "rel \<equiv> rel_induced_by_action (carrier G) X \<phi>" and
     "rel' \<equiv> rel_induced_by_action (carrier G) domain\<^sub>f \<phi>"
   assumes
-    grp_act: "group_action G X \<phi>" and
+    action_\<phi>: "group_action G X \<phi>" and
     "domain\<^sub>f \<subseteq> X" and
     closed_domain: "closed_under_restr_rel rel X domain\<^sub>f" and
     (* Could the closed_domain requirement be weakened? *)
@@ -258,7 +258,7 @@ proof -
     unfolding rel'_def
     by blast
   moreover have "group_action G UNIV ?\<psi>"
-    using const_id_is_grp_act grp_act
+    using const_id_is_group_act action_\<phi>
     unfolding group_action_def group_hom_def
     by blast
   moreover have "satisfies ?img (equivar_ind_by_act (carrier G) X \<phi> (set_action ?\<psi>))"
@@ -267,8 +267,7 @@ proof -
   ultimately have
     "satisfies (\<lambda> x. minimizer f domain\<^sub>f d (?img x) x)
               (equivar_ind_by_act (carrier G) X \<phi> (set_action ?\<psi>))"
-    using assms
-          grp_act_invar_dist_and_equivar_f_imp_equivar_minimizer[of
+    using assms group_act_invar_dist_and_equivar_f_imp_equivar_minimizer[of
             G X \<phi> ?\<psi> domain\<^sub>f ?img d f]
     by blast
   hence "satisfies (minimizer f domain\<^sub>f d img)
@@ -464,7 +463,8 @@ proof -
     using invar_parameterized_fun[of ?min rel]
     by blast
   also have "(\<lambda> E. ?min E E) = fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)"
-    using \<R>\<^sub>\<W>_is_minimizer comp_def
+    using \<R>\<^sub>\<W>_is_minimizer
+    unfolding comp_def fun\<^sub>\<E>.simps
     by metis
   finally have invar_\<R>\<^sub>\<W>: "satisfies (fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)) (Invariance rel)"
     by simp
@@ -487,7 +487,7 @@ theorem (in result) invar_dist_cons_imp_invar_dr_rule:
     "rel \<equiv> rel_induced_by_action (carrier G) B \<phi>" and
     "rel' \<equiv> rel_induced_by_action (carrier G) (elections_\<K> C) \<phi>"
   assumes
-    grp_act: "group_action G B \<phi>" and
+    action_\<phi>: "group_action G B \<phi>" and
     consensus_C_in_B: "elections_\<K> C \<subseteq> B" and
     closed_domain: (* Could the closed_domain requirement be weakened? *)
       "closed_under_restr_rel rel B (elections_\<K> C)" and
@@ -499,8 +499,8 @@ proof -
   let ?min = "\<lambda> E. \<Union> \<circ> (minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d
                                     (singleton_set_system (limit_set (alternatives_\<E> E) UNIV)))"
   have "\<forall> E. satisfies (?min E) (Invariance rel)"
-    using grp_act closed_domain consensus_C_in_B invar_d invar_C_winners
-          grp_act_invar_dist_and_invar_f_imp_invar_minimizer rel_def
+    using action_\<phi> closed_domain consensus_C_in_B invar_d invar_C_winners
+          group_act_invar_dist_and_invar_f_imp_invar_minimizer rel_def
           rel'_def invar_comp
     by (metis (no_types, lifting))
   moreover have "satisfies ?min (Invariance rel)"
@@ -510,7 +510,8 @@ proof -
     using invar_parameterized_fun[of ?min rel]
     by blast
   also have "(\<lambda> E. ?min E E) = fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)"
-    using \<R>\<^sub>\<W>_is_minimizer comp_def
+    using \<R>\<^sub>\<W>_is_minimizer
+    unfolding comp_def fun\<^sub>\<E>.simps
     by metis
   finally have invar_\<R>\<^sub>\<W>: "satisfies (fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)) (Invariance rel)"
     by simp
@@ -543,8 +544,8 @@ theorem (in result) invar_dist_equivar_cons_imp_equivar_dr_rule:
     "equivar_prop_global_result_valued \<equiv>
       equivar_ind_by_act (carrier G) B \<phi> (result_action \<psi>)"
   assumes
-    grp_act: "group_action G B \<phi>" and
-    grp_act_res: "group_action G UNIV \<psi>" and
+    action_\<phi>: "group_action G B \<phi>" and
+    group_act_res: "group_action G UNIV \<psi>" and
     cons_elect_set: "elections_\<K> C \<subseteq> B" and
     closed_domain: "closed_under_restr_rel rel B (elections_\<K> C)" and
     equivar_res: (* Could the closed_domain requirement be weakened? *)
@@ -566,7 +567,7 @@ proof -
   moreover have
     "\<forall> E g. g \<in> carrier G \<longrightarrow> E \<in> B \<longrightarrow>
         limit_set (alternatives_\<E> (\<phi> g E)) UNIV = \<psi> g ` (limit_set (alternatives_\<E> E) UNIV)"
-    using equivar_res grp_act group_action.element_image
+    using equivar_res action_\<phi> group_action.element_image
     unfolding equivar_prop_global_set_valued_def equivar_ind_by_act_def
     by fastforce
   ultimately have "\<forall> E g. g \<in> carrier G \<longrightarrow> E \<in> B \<longrightarrow>
@@ -587,11 +588,11 @@ proof -
     by force
   moreover have "group_action G UNIV (set_action \<psi>)"
     unfolding set_action.simps
-    using grp_act_induces_set_grp_act[of G UNIV \<psi>] grp_act_res
+    using group_act_induces_set_group_act[of G UNIV \<psi>] group_act_res
     by simp
   ultimately have "satisfies ?min_E ?equivar_prop_global_set_valued'"
-    using grp_act invar_d cons_elect_set closed_domain equivar_C_winners
-          grp_act_invar_dist_and_equivar_f_imp_equivar_minimizer[of
+    using action_\<phi> invar_d cons_elect_set closed_domain equivar_C_winners
+          group_act_invar_dist_and_equivar_f_imp_equivar_minimizer[of
               G B \<phi> "set_action \<psi>" "elections_\<K> C"
               "\<lambda> E. singleton_set_system (limit_set (alternatives_\<E> E) UNIV)"
               d "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)"]
@@ -611,12 +612,12 @@ proof -
     by simp
   moreover have "(\<lambda> E. ?min E E) = fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)"
     using \<R>\<^sub>\<W>_is_minimizer
-    unfolding comp_def
+    unfolding comp_def fun\<^sub>\<E>.simps
     by metis
   ultimately have equivar_\<R>\<^sub>\<W>: "satisfies (fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)) equivar_prop_global_set_valued"
     by simp
   moreover have "\<forall> g \<in> carrier G. bij (\<psi> g)"
-    using grp_act_res
+    using group_act_res
     unfolding bij_betw_def
     by (simp add: group_action.inj_prop group_action.surj_prop)
   ultimately have
@@ -659,8 +660,8 @@ proof -
     unfolding consensus_rule_anonymity'.simps anonymity\<^sub>\<R>.simps
     by presburger
   thus ?thesis
-    using cons_domain_valid[of C] assms anon_grp_act.group_action_axioms well_formed_res_anon
-          invar_dist_cons_imp_invar_dr_rule[of "anonymity\<^sub>\<G>"]
+    using cons_domain_valid[of C] assms anonymous_group_action.group_action_axioms
+          well_formed_res_anon invar_dist_cons_imp_invar_dr_rule[of "anonymity\<^sub>\<G>"]
     unfolding distance_anonymity'.simps anonymity\<^sub>\<R>.simps anonymity'.simps
               consensus_rule_anonymity'.simps
     by blast

@@ -824,7 +824,7 @@ proof
     by metis
 qed
 
-interpretation anon_grp_act:
+interpretation anonymous_group_action:
   "group_action" "anonymity\<^sub>\<G>" "valid_elections" "\<phi>_anon valid_elections"
 proof (unfold group_action_def group_hom_def anonymity\<^sub>\<G>_def group_hom_axioms_def hom_def, 
         safe, (rule group_BijGroup)+)
@@ -1344,7 +1344,7 @@ qed
 interpretation \<psi>_neutr\<^sub>\<w>_act: "group_action" "neutrality\<^sub>\<G>" "UNIV" "\<psi>_neutr\<^sub>\<w>"
 proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def group_hom_axioms_def, 
         safe, (rule group_BijGroup)+)
-  show grp_el:
+  show group_elem:
     "\<And> \<pi>. \<pi> \<in> carrier (BijGroup UNIV) \<Longrightarrow> \<psi>_neutr\<^sub>\<w> \<pi> \<in> carrier (BijGroup UNIV)"
   proof -
     fix \<pi> :: "'c \<Rightarrow> 'c"
@@ -1368,7 +1368,7 @@ proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def g
     "\<pi>' \<in> carrier (BijGroup UNIV)"
   moreover from this have
     "\<psi>_neutr\<^sub>\<w> \<pi> \<in> carrier (BijGroup UNIV) \<and> \<psi>_neutr\<^sub>\<w> \<pi>' \<in> carrier (BijGroup UNIV)"
-    using grp_el
+    using group_elem
     by blast
   ultimately show "\<psi>_neutr\<^sub>\<w> (\<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<pi>') = \<psi>_neutr\<^sub>\<w> \<pi> \<otimes> \<^bsub>BijGroup UNIV\<^esub> \<psi>_neutr\<^sub>\<w> \<pi>'"
     unfolding \<psi>_neutr\<^sub>\<w>.simps
@@ -1482,14 +1482,14 @@ proof (unfold rewrite_equivar_ind_by_act voters_\<E>.simps profile_\<E>.simps se
                               (\<phi>_neutr valid_elections \<pi> (A, V, p)))) UNIV"
     using \<phi>_neutr_act.orbit_sym_aux
     by metis
-  moreover have inv_grp_el: "inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> \<in> carrier neutrality\<^sub>\<G>"
+  moreover have inv_group_elem: "inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> \<in> carrier neutrality\<^sub>\<G>"
     using carrier_\<pi> \<psi>_neutr\<^sub>\<c>_act.group_hom
           group.inv_closed group_hom_def
     by metis
   moreover have
     "\<phi>_neutr valid_elections (inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>)
       (\<phi>_neutr valid_elections \<pi> (A, V, p)) \<in> valid_elections"
-    using prof \<phi>_neutr_act.element_image inv_grp_el prof_\<pi>
+    using prof \<phi>_neutr_act.element_image inv_group_elem prof_\<pi>
     by metis
   ultimately have
     "r \<in> \<psi>_neutr\<^sub>\<w> (inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>) `
@@ -1500,7 +1500,7 @@ proof (unfold rewrite_equivar_ind_by_act voters_\<E>.simps profile_\<E>.simps se
     "\<psi>_neutr\<^sub>\<w> \<pi> r \<in> limit_set_welfare (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
     using carrier_\<pi> \<psi>_neutr\<^sub>\<w>_act.group_action_axioms
           \<psi>_neutr\<^sub>\<w>_act.inj_prop group_action.orbit_sym_aux
-          inj_image_mem_iff inv_grp_el iso_tuple_UNIV_I
+          inj_image_mem_iff inv_group_elem iso_tuple_UNIV_I
     by (metis (no_types, lifting))
 qed
 
