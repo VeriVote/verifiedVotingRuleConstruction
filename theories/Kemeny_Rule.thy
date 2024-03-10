@@ -60,6 +60,7 @@ theorem kemeny_rule_neutral: "\<S>\<C>\<F>_properties.neutrality valid_elections
   unfolding kemeny_rule.simps swap_\<R>.simps
   by blast
 
+(*
 subsection \<open>Datatype Instantiation\<close>
 
 datatype alternative = a | b | c | d
@@ -81,7 +82,6 @@ instance proof
       enum_ex_alternative_def alternative_univ, simp_all)
 end
 
-(*
 value "swap_\<R> strong_unanimity {a, b, c :: alternative}
          [{(a, c), (b, c), (c, c), (a, b), (b, b), (a, a)},
           {(c, b), (a, b), (b, b), (c, a), (a, a), (c, c)}]"

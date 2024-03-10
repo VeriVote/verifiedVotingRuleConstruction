@@ -28,8 +28,6 @@ fun black :: "('a, 'v, 'a Result) Electoral_Module" where
 fun blacks_rule :: "('a, 'v, 'a Result) Electoral_Module" where
   "blacks_rule A p = elector black A p"
 
-export_code blacks_rule in Haskell
-
 declare seq_comp_alt_eq[simp del]
 
 subsection \<open>Soundness\<close>
