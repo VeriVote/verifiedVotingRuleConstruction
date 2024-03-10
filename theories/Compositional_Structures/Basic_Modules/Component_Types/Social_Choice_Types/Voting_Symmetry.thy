@@ -9,6 +9,7 @@ theory Voting_Symmetry
   imports Symmetry_Of_Functions
           Social_Choice_Result
           Social_Welfare_Result
+          Profile
 begin
 
 subsection \<open>Definitions\<close>

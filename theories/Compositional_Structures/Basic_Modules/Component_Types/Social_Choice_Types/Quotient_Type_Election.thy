@@ -1,3 +1,8 @@
+(*  File:       Quotient_Type_Election.thy
+    Copyright   2024  Karlsruhe Institute of Technology (KIT)
+*)
+\<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
+
 section \<open>Alternative Election Type\<close>
 
 theory Quotient_Type_Election

@@ -55,13 +55,12 @@ session Verified_Voting_Rule_Construction = HOL +
   (* "Quotient Rules" *)
     "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Relation_Quotients"
     "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Election_Quotients"
-    "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Quotient_Modules"
-    "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Quotient_Distance_Rationalization"
   (* "Component Types" *)
     "Compositional_Structures/Basic_Modules/Component_Types/Distance"
     "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance"
     "Compositional_Structures/Basic_Modules/Component_Types/Consensus"
     "Compositional_Structures/Basic_Modules/Component_Types/Electoral_Module"
+    "Compositional_Structures/Basic_Modules/Component_Types/Quotient_Module"
     "Compositional_Structures/Basic_Modules/Component_Types/Evaluation_Function"
     "Compositional_Structures/Basic_Modules/Component_Types/Elimination_Module"
     "Compositional_Structures/Basic_Modules/Component_Types/Aggregator"
@@ -72,6 +71,8 @@ session Verified_Voting_Rule_Construction = HOL +
     "Compositional_Structures/Basic_Modules/Component_Types/Distance_Rationalization"
     "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance_Rationalization"
     "Compositional_Structures/Basic_Modules/Component_Types/Distance_Rationalization_Symmetry"
+    "Compositional_Structures/Basic_Modules/Component_Types/Quotient_Distance_Rationalization"
+    "Compositional_Structures/Basic_Modules/Component_Types/Interpretation_Code"
   (* "Basic Modules" *)
     "Compositional_Structures/Basic_Modules/Defer_Module"
     "Compositional_Structures/Basic_Modules/Drop_Module"

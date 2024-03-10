@@ -7,6 +7,7 @@ section \<open>Social Welfare Result\<close>
 
 theory Social_Welfare_Result
   imports Result
+          Preference_Relation
 begin
 
 subsection \<open>Social Welfare Result\<close>

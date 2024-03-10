@@ -92,7 +92,7 @@ subsection \<open>Properties\<close>
 
 text \<open>
   We only require voting rules to behave a specific way on admissible elections,
-  i.e. elections that are valid profiles (= votes are linear orders on the alternatives).
+  i.e., elections that are valid profiles (= votes are linear orders on the alternatives).
   Note that we do not assume finiteness of voter or alternative sets by default.
 \<close>
 
@@ -100,7 +100,7 @@ subsubsection \<open>Anonymity\<close>
 
 text \<open>
   An electoral module is anonymous iff the result is invariant under renamings of voters,
-  i.e. any permutation of the voter set that does not change the preferences leads to an
+  i.e., any permutation of the voter set that does not change the preferences leads to an
   identical result.
 \<close>
 
@@ -200,7 +200,7 @@ subsection \<open>Social Choice Modules\<close>
 
 text \<open>
   The following results require electoral modules to return social choice results,
-  i.e. sets of elected, rejected and deferred alternatives.
+  i.e., sets of elected, rejected and deferred alternatives.
   In order to export code, we use the hack provided by Locale-Code.
 \<close>
 

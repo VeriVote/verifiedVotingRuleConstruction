@@ -6,8 +6,8 @@
 section \<open>Distance Rationalization on Election Quotients\<close>
 
 theory Quotient_Distance_Rationalization
-  imports Quotient_Modules
-          "../Distance_Rationalization_Symmetry"
+  imports Quotient_Module
+          Distance_Rationalization_Symmetry
 begin
 
 subsection \<open>Quotient Distances\<close>

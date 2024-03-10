@@ -8,7 +8,7 @@
 section \<open>Electoral Result\<close>
 
 theory Result
-  imports Profile
+  imports Main
 begin
 
 text \<open>

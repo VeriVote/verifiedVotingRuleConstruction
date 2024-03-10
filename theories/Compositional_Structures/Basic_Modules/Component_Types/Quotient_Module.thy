@@ -1,13 +1,13 @@
-(*  File:       Quotient_Modules.thy
+(*  File:       Quotient_Module.thy
     Copyright   2024  Karlsruhe Institute of Technology (KIT)
 *)
 \<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
 
-section \<open>Electoral Modules on Election Quotients\<close>
+section \<open>Electoral Module on Election Quotients\<close>
 
-theory Quotient_Modules
-  imports Relation_Quotients
-          "../Electoral_Module"
+theory Quotient_Module
+  imports "Quotients/Relation_Quotients"
+          Electoral_Module
 begin
 
 lemma invariance_is_congruence:
@@ -25,7 +25,7 @@ lemma invariance_is_congruence':
   shows "(satisfies f (Invariance r)) = (f respects r)"
   unfolding satisfies.simps congruent_def
   by blast
-  
+
 theorem pass_to_election_quotient:
   fixes
     m :: "('a, 'v, 'r) Electoral_Module" and

@@ -29,7 +29,7 @@ fun nonempty_set\<^sub>\<C> :: "('a, 'v) Consensus" where
   "nonempty_set\<^sub>\<C> (A, V, p) = (A \<noteq> {})"
 
 text \<open>
-  Nonempty profile, i.e. nonempty voter set.
+  Nonempty profile, i.e., nonempty voter set.
   Note that this is also true if p v = {} for all voters v in V.
 \<close>
 

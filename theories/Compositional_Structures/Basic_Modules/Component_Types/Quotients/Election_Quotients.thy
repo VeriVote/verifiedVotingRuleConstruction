@@ -171,7 +171,7 @@ text \<open>
   Then we can work on the natural-number-vectors of dimension n! instead of the equivalence
   classes of the anonymity relation:
   Each dimension corresponds to one possible linear order on the alternative set,
-  i.e. the possible preferences.
+  i.e., the possible preferences.
   Each equivalence class of elections corresponds to a vector whose entries denote the amount
   of voters per election in that class who vote the respective corresponding preference.
 \<close>
@@ -950,7 +950,7 @@ text \<open>
   Then we can work on the standard simplex of dimension n! instead of the equivalence
   classes of the equivalence relation for anonymous + homogeneous voting rules (anon hom):
   Each dimension corresponds to one possible linear order on the alternative set,
-  i.e. the possible preferences.
+  i.e., the possible preferences.
   Each equivalence class of elections corresponds to a vector whose entries denote the fraction
   of voters per election in that class who vote the respective corresponding preference.
 \<close>

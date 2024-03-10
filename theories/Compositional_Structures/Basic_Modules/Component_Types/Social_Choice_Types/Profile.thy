@@ -83,7 +83,7 @@ fun fixed_alt_elections :: "'a set \<Rightarrow> ('a, 'v) Election set" where
     {E. alternatives_\<E> E = A \<and> finite (voters_\<E> E) \<and> (\<forall> v. v \<notin> voters_\<E> E \<longrightarrow> profile_\<E> E v = {})}"
 
 \<comment> \<open>Counts the occurrences of a ballot in an election,
-    i.e. how many voters chose that exact ballot.\<close>
+    i.e., how many voters chose that exact ballot.\<close>
 fun vote_count :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election \<Rightarrow> nat" where
   "vote_count p E = card {v \<in> (voters_\<E> E). (profile_\<E> E) v = p}"
 
@@ -570,7 +570,7 @@ proof -
   then obtain \<phi> where
     index_\<phi>: "\<forall> v \<in> V. \<phi> v < card V \<and> (sorted_list_of_set V!(\<phi> v)) = v"
     by metis
-  (* \<phi> x = ?c, i.e. \<phi> x \<ge> ?c and \<phi> x \<le> ?c *)
+  (* \<phi> x = ?c, i.e., \<phi> x \<ge> ?c and \<phi> x \<le> ?c *)
   let ?i = "\<phi> x"
   have inj_\<phi>: "inj_on \<phi> V"
     using inj_onI index_\<phi>
