@@ -10,9 +10,8 @@ section \<open>Preference Profile\<close>
 
 theory Profile
   imports Preference_Relation
-          "HOL.Finite_Set"
           "HOL-Library.Extended_Nat"
-          "HOL-Combinatorics.List_Permutation"
+          "HOL-Combinatorics.Permutations"
 begin
 
 text \<open>
@@ -42,11 +41,14 @@ type_synonym ('a, 'v) Election = "'a set \<times> 'v set \<times> ('a, 'v) Profi
 fun election_equality :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Election \<Rightarrow> bool" where
   "election_equality (A, V, p) (A', V', p') = (A = A' \<and> V = V' \<and> (\<forall> v \<in> V. p v = p' v))"
 
-abbreviation alts_\<E> :: "('a, 'v) Election \<Rightarrow> 'a set" where "alts_\<E> E \<equiv> fst E"
+fun alternatives_\<E> :: "('a, 'v) Election \<Rightarrow> 'a set" where
+  "alternatives_\<E> E = fst E"
 
-abbreviation votrs_\<E> :: "('a, 'v) Election \<Rightarrow> 'v set" where "votrs_\<E> E \<equiv> fst (snd E)"
+fun voters_\<E> :: "('a, 'v) Election \<Rightarrow> 'v set" where
+  "voters_\<E> E = fst (snd E)"
 
-abbreviation prof_\<E> :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Profile" where "prof_\<E> E \<equiv> snd (snd E)"
+fun profile_\<E> :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Profile" where
+  "profile_\<E> E = snd (snd E)"
 
 text \<open>
   A profile on a set of alternatives A and a voter set V consists of ballots
@@ -61,29 +63,29 @@ abbreviation finite_profile :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, '
   "finite_profile V A p \<equiv> finite A \<and> finite V \<and> profile V A p"
 
 abbreviation finite_election :: "('a,'v) Election \<Rightarrow> bool" where
-  "finite_election E \<equiv> finite_profile (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E)"
+  "finite_election E \<equiv> finite_profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)"
 
 definition finite_voter_elections :: "('a, 'v) Election set" where
   "finite_voter_elections =
-    {el :: ('a, 'v) Election. finite (votrs_\<E> el)}"
+    {el :: ('a, 'v) Election. finite (voters_\<E> el)}"
 
 definition finite_elections :: "('a, 'v) Election set" where
   "finite_elections =
-    {el :: ('a, 'v) Election. finite_profile (votrs_\<E> el) (alts_\<E> el) (prof_\<E> el)}"
+    {el :: ('a, 'v) Election. finite_profile (voters_\<E> el) (alternatives_\<E> el) (profile_\<E> el)}"
 
 definition valid_elections :: "('a,'v) Election set" where
-  "valid_elections = {E. profile (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E)}"
+  "valid_elections = {E. profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)}"
 
 \<comment> \<open>Elections with fixed alternatives,
     finite voters and a default value for the profile value on non-voters.\<close>
 fun fixed_alt_elections :: "'a set \<Rightarrow> ('a, 'v) Election set" where
   "fixed_alt_elections A = valid_elections \<inter>
-    {E. alts_\<E> E = A \<and> finite (votrs_\<E> E) \<and> (\<forall> v. v \<notin> votrs_\<E> E \<longrightarrow> prof_\<E> E v = {})}"
+    {E. alternatives_\<E> E = A \<and> finite (voters_\<E> E) \<and> (\<forall> v. v \<notin> voters_\<E> E \<longrightarrow> profile_\<E> E v = {})}"
 
 \<comment> \<open>Counts the occurrences of a ballot in an election,
     i.e. how many voters chose that exact ballot.\<close>
 fun vote_count :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election \<Rightarrow> nat" where
-  "vote_count p E = card {v \<in> (votrs_\<E> E). (prof_\<E> E) v = p}"
+  "vote_count p E = card {v \<in> (voters_\<E> E). (profile_\<E> E) v = p}"
 
 subsection \<open>Vote Count\<close>
 
@@ -146,115 +148,117 @@ qed
 lemma vote_count_sum:
   fixes E :: "('a, 'v) Election"
   assumes
-    "finite (votrs_\<E> E)" and
+    "finite (voters_\<E> E)" and
     "finite (UNIV::('a \<times> 'a) set)"
-  shows "sum (\<lambda> p. vote_count p E) UNIV = card (votrs_\<E> E)"
-proof (simp)
-  have "\<forall> p. finite {v \<in> votrs_\<E> E. prof_\<E> E v = p}"
+  shows "sum (\<lambda> p. vote_count p E) UNIV = card (voters_\<E> E)"
+proof (unfold vote_count.simps)
+  have "\<forall> p. finite {v \<in> voters_\<E> E. profile_\<E> E v = p}"
     using assms
     by force
   moreover have
-    "disjoint {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p. p \<in> UNIV}"
+    "disjoint {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
     unfolding disjoint_def
     by blast
   moreover have partition:
-    "votrs_\<E> E = \<Union> {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p. p \<in> UNIV}"
-    using Union_eq[of "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p. p \<in> UNIV}"]
+    "voters_\<E> E = \<Union> {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
+    using Union_eq[of "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"]
     by blast
   ultimately have card_eq_sum':
-    "card (votrs_\<E> E) = sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p. p \<in> UNIV}"
-    using card_Union_disjoint[of "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p. p \<in> UNIV}"]
+    "card (voters_\<E> E) = sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
+    using card_Union_disjoint[of "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"]
     by auto
-  have "finite {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p. p \<in> UNIV}"
+  have "finite {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
     using partition assms
     by (simp add: finite_UnionD)
   moreover have
-    "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p. p \<in> UNIV} =
-        {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-              p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} \<union>
-        {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-              p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}"
+    "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV} =
+        {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+              p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} \<union>
+        {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+              p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
     by blast
   moreover have
-    "{} = {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-              p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} \<inter>
-          {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-              p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}"
+    "{} = {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+              p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} \<inter>
+          {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+              p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
     by blast
-  ultimately have "sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p. p \<in> UNIV} =
-    sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-                p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} +
-    sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-                p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}"
+  ultimately have "sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV} =
+    sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+                p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} +
+    sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+                p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
     using sum.union_disjoint[of
-            "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-              p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
-            "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-                p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}"]
+            "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+              p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
+            "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+                p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"]
     by simp
   moreover have
-    "\<forall> X \<in> {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-            p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}. card X = 0"
+    "\<forall> X \<in> {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+            p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}. card X = 0"
     using card_eq_0_iff
     by fastforce
   ultimately have card_eq_sum:
-    "card (votrs_\<E> E) = sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-                          p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+    "card (voters_\<E> E) = sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+                          p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     using card_eq_sum'
     by simp
-  have "inj_on (\<lambda> p. {v \<in> votrs_\<E> E. prof_\<E> E v = p})
-                {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+  have "inj_on (\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p})
+                {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     unfolding inj_on_def
     by blast
   moreover have
-    "(\<lambda> p. {v \<in> votrs_\<E> E. prof_\<E> E v = p}) ` {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} \<subseteq>
-         {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-                          p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+    "(\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p}) ` {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} \<subseteq>
+         {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+                          p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     by blast
   moreover have
-    "(\<lambda> p. {v \<in> votrs_\<E> E. prof_\<E> E v = p}) ` {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} \<supseteq>
-      {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-        p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+    "(\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p}) ` {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} \<supseteq>
+      {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+        p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     by blast
-  ultimately have "bij_betw (\<lambda> p. {v \<in> votrs_\<E> E. prof_\<E> E v = p})
-    {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}
-    {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-      p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+  ultimately have "bij_betw (\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p})
+    {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}
+    {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+      p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     unfolding bij_betw_def
     by simp
   hence sum_rewrite:
-    "(\<Sum> x \<in> {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}.
-            card {v \<in> votrs_\<E> E. prof_\<E> E v = x}) =
-      sum card {{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-        p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+    "(\<Sum> x \<in> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}.
+            card {v \<in> voters_\<E> E. profile_\<E> E v = x}) =
+      sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+        p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     using sum_comp[of
-        "\<lambda> p. {v \<in> votrs_\<E> E. prof_\<E> E v = p}"
-        "{p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
-        "{{v \<in> votrs_\<E> E. prof_\<E> E v = p} | p.
-          p \<in> UNIV \<and> {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"
+        "\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p}"
+        "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
+        "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
+          p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
         "card"]
     unfolding comp_def
     by simp
-  have "{p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}} \<inter>
-    {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} = {}"
+  have "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}} \<inter>
+    {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} = {}"
     by blast
-  moreover have "{p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}} \<union>
-    {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}} = UNIV"
+  moreover have "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}} \<union>
+    {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} = UNIV"
     by blast
-  ultimately have "(\<Sum> p \<in> UNIV. card {v \<in> votrs_\<E> E. prof_\<E> E v = p}) =
-    (\<Sum> x \<in> {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}. card {v \<in> votrs_\<E> E. prof_\<E> E v = x}) +
-    (\<Sum> x \<in> {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}. card {v \<in> votrs_\<E> E. prof_\<E> E v = x})"
+  ultimately have "(\<Sum> p \<in> UNIV. card {v \<in> voters_\<E> E. profile_\<E> E v = p}) =
+    (\<Sum> x \<in> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}.
+        card {v \<in> voters_\<E> E. profile_\<E> E v = x}) +
+    (\<Sum> x \<in> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}.
+        card {v \<in> voters_\<E> E. profile_\<E> E v = x})"
     using assms sum.union_disjoint[of
-      "{p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}"
-      "{p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} \<noteq> {}}"]
+      "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
+      "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"]
     using Finite_Set.finite_set add.commute finite_Un
     by (metis (mono_tags, lifting))
   moreover have
-    "\<forall> x \<in> {p. {v \<in> votrs_\<E> E. prof_\<E> E v = p} = {}}.
-        card {v \<in> votrs_\<E> E. prof_\<E> E v = x} = 0"
+    "\<forall> x \<in> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}.
+        card {v \<in> voters_\<E> E. profile_\<E> E v = x} = 0"
     using card_eq_0_iff
     by fastforce
-  ultimately show "(\<Sum> p \<in> UNIV. card {v \<in> votrs_\<E> E. prof_\<E> E v = p}) = card (votrs_\<E> E)"
+  ultimately show "(\<Sum> p \<in> UNIV. card {v \<in> voters_\<E> E. profile_\<E> E v = p}) = card (voters_\<E> E)"
     using card_eq_sum sum_rewrite
     by simp
 qed
@@ -262,8 +266,8 @@ qed
 subsection \<open>Voter Permutations\<close>
 
 text \<open>
-  A common action of interest on elections is renaming the voters, 
-  e.g. when talking about anonymity.
+  A common action of interest on elections is renaming the voters,
+  e.g., when talking about anonymity.
 \<close>
 
 fun rename :: "('v \<Rightarrow> 'v) \<Rightarrow> ('a, 'v) Election \<Rightarrow> ('a, 'v) Election" where
@@ -644,12 +648,12 @@ proof -
     hence "?c + 1 \<le> ?c"
       using subset card_mono fin_img
       by (metis (no_types, lifting))
-    thus "False"
+    thus False
       by simp
   next
     case False
     assume "\<not> ?i \<le> ?c"
-    thus "False"
+    thus False
       using False x_V index_\<phi> geq order_le_less_trans 
       by blast
   qed

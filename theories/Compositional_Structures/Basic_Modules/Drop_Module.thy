@@ -57,7 +57,7 @@ proof (unfold social_choice_result.electoral_module_def, safe)
     by simp
   hence "{a \<in> A. rank (limit A r) a \<le> n} \<inter> {a \<in> A. rank (limit A r) a > n} = {}"
     by blast
-  thus "well_formed_soc_choice A (?mod V A p)"
+  thus "well_formed_social_choice A (?mod V A p)"
     using set_partition
     by simp
 qed

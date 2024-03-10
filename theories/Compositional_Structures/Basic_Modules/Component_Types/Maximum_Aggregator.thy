@@ -38,8 +38,8 @@ lemma max_agg_rej_set:
     r' :: "'a set" and
     a :: "'a"
   assumes
-    wf_first_mod: "well_formed_soc_choice A (e, r, d)" and
-    wf_second_mod: "well_formed_soc_choice A (e', r', d')"
+    wf_first_mod: "well_formed_social_choice A (e, r, d)" and
+    wf_second_mod: "well_formed_social_choice A (e', r', d')"
   shows "reject_r (max_aggregator A (e, r, d) (e', r', d')) = r \<inter> r'"
 proof -
   have "A - (e \<union> d) = r"
@@ -137,7 +137,7 @@ next
     r' :: "'a set" and
     a :: "'a"
   assume
-    wf_result: "well_formed_soc_choice A (e', r', d')" and
+    wf_result: "well_formed_social_choice A (e', r', d')" and
     reject_a: "a \<in> reject_r (max_aggregator A (e, r, d) (e', r', d'))" and
     a_not_in_r': "a \<notin> r'"
   have "a \<in> r \<union> r'"

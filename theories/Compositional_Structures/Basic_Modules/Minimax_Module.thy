@@ -197,10 +197,10 @@ proof (unfold defer_condorcet_consistency_def social_choice_result.electoral_mod
     V :: "'a set" and
     p :: "('b, 'a) Profile"
   assume "profile V A p"
-  hence "well_formed_soc_choice A (max_eliminator minimax_score V A p)"
+  hence "well_formed_social_choice A (max_eliminator minimax_score V A p)"
     using max_elim_sound par_comp_result_sound
     by metis
-  thus "well_formed_soc_choice A (minimax V A p)"
+  thus "well_formed_social_choice A (minimax V A p)"
     by simp
 next
   fix

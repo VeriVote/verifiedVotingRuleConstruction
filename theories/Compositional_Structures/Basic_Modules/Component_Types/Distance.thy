@@ -7,22 +7,19 @@ section \<open>Distance\<close>
 
 theory Distance
   imports "HOL-Library.Extended_Real"
-          "HOL-Combinatorics.List_Permutation"
-          "Social_Choice_Types/Profile"
           "Social_Choice_Types/Voting_Symmetry"
 begin
 
 text \<open>
   A general distance on a set X is a mapping \<open>d: X \<times> X \<mapsto> R \<union> {+\<infinity>}\<close> such
   that for every \<open>x, y, z\<close> in X, the following four conditions are satisfied:
-  \<^item> \<open>d(x, y) \<ge> 0\<close> (nonnegativity);
+  \<^item> \<open>d(x, y) \<ge> 0\<close> (non-negativity);
   \<^item> \<open>d(x, y) = 0\<close> if and only if \<open>x = y\<close> (identity of indiscernibles);
   \<^item> \<open>d(x, y) = d(y, x)\<close> (symmetry);
   \<^item> \<open>d(x, y) \<le> d(x, z) + d(z, y)\<close> (triangle inequality).
 
-
   Moreover, a mapping that satisfies all but the second conditions is called
-  a pseudodistance, whereas a quasidistance needs to satisfy the first three
+  a pseudo-distance, whereas a quasi-distance needs to satisfy the first three
   conditions (and not necessarily the last one).
 \<close>
 
@@ -30,9 +27,10 @@ subsection \<open>Definition\<close>
 
 type_synonym 'a Distance = "'a \<Rightarrow> 'a \<Rightarrow> ereal"
 
-\<comment> \<open>The not curried version of a distanace is defined on tuples.\<close>
-fun dist\<^sub>\<T> :: "'a Distance \<Rightarrow> ('a * 'a \<Rightarrow> ereal)" where
-  "dist\<^sub>\<T> d = (\<lambda> pair. d (fst pair) (snd pair))"
+text \<open>The un-curried version of a distance is defined on tuples.\<close>
+
+fun tup :: "'a Distance \<Rightarrow> ('a * 'a \<Rightarrow> ereal)" where
+  "tup d = (\<lambda> pair. d (fst pair) (snd pair))"
 
 definition distance :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
   "distance S d \<equiv> \<forall> x y. x \<in> S \<and> y \<in> S \<longrightarrow> d x x = 0 \<and> 0 \<le> d x y"
@@ -201,10 +199,10 @@ text \<open>
 subsubsection \<open>Definitions\<close>
 
 fun totally_invariant_dist :: "'x Distance \<Rightarrow> 'x rel \<Rightarrow> bool" where
-  "totally_invariant_dist d rel = satisfies (dist\<^sub>\<T> d) (Invariance (product_rel rel))"
+  "totally_invariant_dist d rel = satisfies (tup d) (Invariance (product_rel rel))"
 
 fun invariant_dist :: "'y Distance \<Rightarrow> 'x set \<Rightarrow> 'y set \<Rightarrow> ('x, 'y) binary_fun \<Rightarrow> bool" where
-  "invariant_dist d X Y \<phi> = satisfies (dist\<^sub>\<T> d) (Invariance (equivariance_rel X Y \<phi>))"
+  "invariant_dist d X Y \<phi> = satisfies (tup d) (Invariance (equivariance_rel X Y \<phi>))"
 
 definition distance_anonymity :: "('a, 'v) Election Distance \<Rightarrow> bool" where
   "distance_anonymity d \<equiv>
@@ -250,7 +248,7 @@ proof (safe)
     "(x, y) \<in> r"
   hence rel: "((a, x), (b, y)) \<in> product_rel r"
     by simp
-  hence "dist\<^sub>\<T> d (a, x) = dist\<^sub>\<T> d (b, y)"
+  hence "tup d (a, x) = tup d (b, y)"
     using inv
     unfolding totally_invariant_dist.simps satisfies.simps
     by simp
@@ -270,7 +268,7 @@ next
       "(snd (x, a), snd (y, b)) \<in> r"
     hence "d x a = d y b"
       by auto
-    thus "dist\<^sub>\<T> d (x, a) = dist\<^sub>\<T> d (y, b)"
+    thus "tup d (x, a) = tup d (y, b)"
       by simp
   qed
 qed
@@ -308,7 +306,7 @@ next
       "b \<in> Y"
     hence "d a b = d (\<phi> x a) (\<phi> x b)"
       by blast
-    thus "dist\<^sub>\<T> d (a, b) = dist\<^sub>\<T> d (\<phi> x a, \<phi> x b)"
+    thus "tup d (a, b) = tup d (\<phi> x a, \<phi> x b)"
       by simp
   qed
 qed
@@ -336,7 +334,7 @@ proof (safe)
     using Y'_in_Y y_in_Y g_carrier
     unfolding equivariance_rel.simps
     by blast
-  hence eq_dist: "dist\<^sub>\<T> d ((\<phi> g y), (\<phi> g y')) = dist\<^sub>\<T> d (y, y')"
+  hence eq_dist: "tup d ((\<phi> g y), (\<phi> g y')) = tup d (y, y')"
     using invar_d
     unfolding invariant_dist.simps
     by fastforce

@@ -61,7 +61,7 @@ proof (unfold is_arg_min_def, cases "x \<notin> S", clarsimp)
       hence "g x = f x"
         using x_in_S
         by presburger
-      thus "False"
+      thus False
         using f_eq_g_for_elems_in_S g_y_lt_g_x not_y y_in_S
         by (metis (no_types))
     qed
@@ -649,7 +649,7 @@ proof (rule ccontr)
     using is_less_preferred_than_l.simps y_neq_x neq_indices
           case_prod_conv linorder_not_less mem_Collect_eq
     by metis
-  thus "False"
+  thus False
     using pl_\<alpha>_eq
     by blast
 qed
@@ -881,7 +881,7 @@ next
       show "index (a#l) c \<le> index (a#l) b"
       proof (unfold index_def, simp, safe)
         assume "a = b"
-        thus "False"
+        thus False
           using a_not_in_A b_less_c case_prod_conv is_less_preferred_than_l.elims
                 mem_Collect_eq set_filter wf_a_l
           unfolding pl_\<alpha>_def

@@ -6,8 +6,7 @@
 section \<open>Distance Rationalization\<close>
 
 theory Distance_Rationalization
-  imports "HOL-Combinatorics.Multiset_Permutations"
-          "Social_Choice_Types/Refined_Types/Preference_List"
+  imports "Social_Choice_Types/Refined_Types/Preference_List"
           "Consensus_Class"
           "Distance"
 begin
@@ -76,8 +75,6 @@ fun all_profiles :: "'v set \<Rightarrow> 'a set \<Rightarrow> (('a, 'v) Profile
     (if (infinite A \<or> infinite V)
       then {} else {p. p ` V \<subseteq> (pl_\<alpha> ` permutations_of_set A)})"
 
-export_code all_profiles in Haskell
-
 fun \<K>\<^sub>\<E>_std :: "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> 'a set \<Rightarrow> 'v set
           \<Rightarrow> ('a, 'v) Election set" where
   "\<K>\<^sub>\<E>_std K w A V =
@@ -94,8 +91,8 @@ text \<open>
 fun score_std :: "('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class \<Rightarrow>
         ('a, 'v) Election \<Rightarrow> 'r \<Rightarrow> ereal" where
   "score_std d K E w =
-        (if \<K>\<^sub>\<E>_std K w (alts_\<E> E) (votrs_\<E> E) = {}
-          then \<infinity> else Min (d E ` (\<K>\<^sub>\<E>_std K w (alts_\<E> E) (votrs_\<E> E))))"
+        (if \<K>\<^sub>\<E>_std K w (alternatives_\<E> E) (voters_\<E> E) = {}
+          then \<infinity> else Min (d E ` (\<K>\<^sub>\<E>_std K w (alternatives_\<E> E) (voters_\<E> E))))"
 
 fun (in result) \<R>\<^sub>\<W>_std :: "('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class \<Rightarrow>
         'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r set" where
@@ -109,10 +106,10 @@ subsection \<open>Auxiliary Lemmas\<close>
 
 lemma \<K>_els_fin:
   fixes C :: "('a, 'v, 'r Result) Consensus_Class"
-  shows "\<K>_els C \<subseteq> finite_elections"
+  shows "elections_\<K> C \<subseteq> finite_elections"
 proof
   fix E :: "('a,'v) Election"
-  assume "E \<in> \<K>_els C"
+  assume "E \<in> elections_\<K> C"
   hence "finite_election E"
     unfolding \<K>\<^sub>\<E>.simps
     by force
@@ -123,7 +120,7 @@ qed
 
 lemma \<K>_els_univ:
   fixes C :: "('a, 'v, 'r Result) Consensus_Class"
-  shows "\<K>_els C \<subseteq> UNIV"
+  shows "elections_\<K> C \<subseteq> UNIV"
   by simp
 
 lemma list_cons_presv_finiteness:
@@ -284,12 +281,12 @@ proof (cases "A = {}")
   hence "\<forall> p \<in> ?profs. (\<forall> v. v \<in> V \<longrightarrow> p v = {}) \<and> (\<forall> v. v \<notin> V \<longrightarrow> p v = x)"
     by simp
   hence "\<forall> p \<in> ?profs. p = (\<lambda> v. if v \<in> V then {} else x)"
-    by meson
+    by (metis (no_types, lifting))
   hence "?profs \<subseteq> {\<lambda> v. if v \<in> V then {} else x}"
     by blast
   thus "finite ?profs"
     using finite.emptyI finite_insert finite_subset
-    by meson
+    by (metis (no_types, lifting))
 next
   let ?profs = "(all_profiles V A \<inter> {p. \<forall> v. v \<notin> V \<longrightarrow> p v = x})"
   case False

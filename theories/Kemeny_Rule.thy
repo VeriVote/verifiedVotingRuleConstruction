@@ -9,7 +9,6 @@ theory Kemeny_Rule
   imports
     "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance_Rationalization"
     "Compositional_Structures/Basic_Modules/Component_Types/Distance_Rationalization_Symmetry"
-    "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Quotient_Distance_Rationalization"
 begin
 
 text \<open>

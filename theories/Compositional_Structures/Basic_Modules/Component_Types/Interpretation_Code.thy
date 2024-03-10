@@ -1,3 +1,8 @@
+(*  File:       Interpretation_Code.thy
+    Copyright   2024  Karlsruhe Institute of Technology (KIT)
+*)
+\<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
+
 section \<open>Result + Property Locale Code Generation\<close>
 
 theory Interpretation_Code
@@ -71,10 +76,5 @@ definition "electoral_module_soc_choice_code = social_choice_result.electoral_mo
 definition "anonymity_soc_choice_code = social_choice_result.anonymity"
 
 setup Locale_Code.close_block
-
-export_code electoral_module_soc_choice_code in Haskell
-export_code \<R>\<^sub>\<W>_std_soc_choice_code in Haskell
-export_code distance_\<R>_std_soc_choice_code in Haskell
-export_code anonymity_soc_choice_code in Haskell
 
 end

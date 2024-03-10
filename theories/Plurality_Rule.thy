@@ -75,7 +75,7 @@ next
     "a \<in> A" and
     "card {v \<in> V. above (p v) a = {a}} < card {v \<in> V. above (p v) b = {b}}" and
     "\<forall> c \<in> A. card {v \<in> V. above (p v) c = {c}} \<le> card {v \<in> V. above (p v) a = {a}}"
-  thus "False"
+  thus False
     by auto
 qed
 
@@ -115,7 +115,7 @@ proof (unfold social_choice_result.electoral_module_def, safe)
       {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x} = A"
     using not_le_imp_less
     by auto
-  ultimately show "well_formed_soc_choice A (plurality_rule' V A p)"
+  ultimately show "well_formed_social_choice A (plurality_rule' V A p)"
     by simp
 qed
 

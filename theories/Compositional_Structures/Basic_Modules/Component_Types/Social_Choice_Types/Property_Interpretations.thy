@@ -1,7 +1,13 @@
+(*  File:       Property_Interpretations.thy
+    Copyright   2024  Karlsruhe Institute of Technology (KIT)
+*)
+\<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
+
 section \<open>Result-Dependent Voting Rule Properties\<close>
 
 theory Property_Interpretations
   imports Voting_Symmetry
+          Result_Interpretations
 begin
 
 subsection \<open>Properties Dependent on the Result Type\<close>
@@ -16,11 +22,12 @@ text \<open>
 \<close>
 
 locale result_properties = result +
-  fixes \<psi>_neutr :: "('a \<Rightarrow> 'a, 'b) binary_fun"
+  fixes \<psi>_neutr :: "('a \<Rightarrow> 'a, 'b) binary_fun" and
+        \<E> :: "('a, 'v) Election"
   assumes
     act_neutr: "group_action neutrality\<^sub>\<G> UNIV \<psi>_neutr" and
     well_formed_res_neutr:
-      "satisfies (\<lambda> (E::('a, 'c) Election). limit_set (alts_\<E> E) UNIV)
+      "satisfies (\<lambda> \<E> :: ('a, 'v) Election. limit_set (alternatives_\<E> \<E>) UNIV)
                 (equivar_ind_by_act (carrier neutrality\<^sub>\<G>)
                     valid_elections (\<phi>_neutr valid_elections) (set_action \<psi>_neutr))"
 
@@ -31,16 +38,16 @@ sublocale result_properties \<subseteq> result
 subsection \<open>Interpretations\<close>
 
 global_interpretation social_choice_properties:
-  "result_properties" "well_formed_soc_choice" "limit_set_soc_choice" "\<psi>_neutr\<^sub>\<c>"
+  "result_properties" "well_formed_social_choice" "limit_set_social_choice" "\<psi>_neutr\<^sub>\<c>"
   unfolding result_properties_def result_properties_axioms_def
-  using wf_res_neutr_soc_choice \<psi>_neutr\<^sub>\<c>_act.group_action_axioms
+  using wf_res_neutr_social_choice \<psi>_neutr\<^sub>\<c>_act.group_action_axioms
         social_choice_result.result_axioms
   by blast
 
 global_interpretation social_welfare_properties:
   "result_properties" "well_formed_welfare" "limit_set_welfare" "\<psi>_neutr\<^sub>\<w>"
   unfolding result_properties_def result_properties_axioms_def
-  using wf_res_neutr_soc_welfare \<psi>_neutr\<^sub>\<w>_act.group_action_axioms
+  using wf_res_neutr_social_welfare \<psi>_neutr\<^sub>\<w>_act.group_action_axioms
         social_welfare_result.result_axioms
   by blast
 

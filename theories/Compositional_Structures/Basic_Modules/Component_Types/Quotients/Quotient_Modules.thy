@@ -1,7 +1,12 @@
+(*  File:       Quotient_Modules.thy
+    Copyright   2024  Karlsruhe Institute of Technology (KIT)
+*)
+\<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
+
 section \<open>Electoral Modules on Election Quotients\<close>
 
 theory Quotient_Modules
-  imports Election_Quotients 
+  imports Relation_Quotients
           "../Electoral_Module"
 begin
 

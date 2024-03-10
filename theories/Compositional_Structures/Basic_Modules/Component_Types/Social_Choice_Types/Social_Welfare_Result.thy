@@ -1,3 +1,8 @@
+(*  File:       Social_Welfare_Result.thy
+    Copyright   2024  Karlsruhe Institute of Technology (KIT)
+*)
+\<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
+
 section \<open>Social Welfare Result\<close>
 
 theory Social_Welfare_Result

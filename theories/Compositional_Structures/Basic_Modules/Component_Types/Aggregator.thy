@@ -9,8 +9,7 @@
 section \<open>Aggregator\<close>
 
 theory Aggregator
-  imports "Social_Choice_Types/Result"
-          "Social_Choice_Types/Social_Choice_Result"
+  imports "Social_Choice_Types/Social_Choice_Result"
 begin
 
 text \<open>
@@ -30,8 +29,8 @@ type_synonym 'a Aggregator = "'a set \<Rightarrow> 'a Result \<Rightarrow> 'a Re
 definition aggregator :: "'a Aggregator \<Rightarrow> bool" where
   "aggregator agg \<equiv>
     \<forall> A e e' d d' r r'.
-      (well_formed_soc_choice A (e, r, d) \<and> well_formed_soc_choice A (e', r', d')) \<longrightarrow>
-      well_formed_soc_choice A (agg A (e, r, d) (e', r', d'))"
+      (well_formed_social_choice A (e, r, d) \<and> well_formed_social_choice A (e', r', d')) \<longrightarrow>
+      well_formed_social_choice A (agg A (e, r, d) (e', r', d'))"
 
 subsection \<open>Properties\<close>
 
@@ -44,7 +43,7 @@ definition agg_conservative :: "'a Aggregator \<Rightarrow> bool" where
   "agg_conservative agg \<equiv>
     aggregator agg \<and>
     (\<forall> A e e' d d' r r'.
-      ((well_formed_soc_choice A (e, r, d) \<and> well_formed_soc_choice A (e', r', d')) \<longrightarrow>
+      ((well_formed_social_choice A (e, r, d) \<and> well_formed_social_choice A (e', r', d')) \<longrightarrow>
         elect_r (agg A (e, r, d) (e', r', d')) \<subseteq> (e \<union> e') \<and>
         reject_r (agg A (e, r, d) (e', r', d')) \<subseteq> (r \<union> r') \<and>
         defer_r (agg A (e, r, d) (e', r', d')) \<subseteq> (d \<union> d')))"

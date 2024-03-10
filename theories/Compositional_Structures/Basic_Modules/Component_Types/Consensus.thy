@@ -6,9 +6,7 @@
 section \<open>Consensus\<close>
 
 theory Consensus
-  imports "HOL-Combinatorics.List_Permutation"
-          "Social_Choice_Types/Profile"
-          "Social_Choice_Types/Property_Interpretations"
+  imports "Social_Choice_Types/Voting_Symmetry"
 begin
 
 text \<open>

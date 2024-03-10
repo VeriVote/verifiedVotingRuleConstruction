@@ -8,7 +8,6 @@ section \<open>Votewise Distance Rationalization\<close>
 theory Votewise_Distance_Rationalization
   imports "Distance_Rationalization"
           "Votewise_Distance"
-          "Interpretation_Code"
 begin
 
 text \<open>

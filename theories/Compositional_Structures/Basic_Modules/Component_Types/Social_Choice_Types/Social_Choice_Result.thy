@@ -18,11 +18,11 @@ text \<open>
   elected, rejected, and deferred alternatives.
 \<close>
 
-fun well_formed_soc_choice :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
-  "well_formed_soc_choice A res = (disjoint3 res \<and> set_equals_partition A res)"
+fun well_formed_social_choice :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
+  "well_formed_social_choice A res = (disjoint3 res \<and> set_equals_partition A res)"
 
-fun limit_set_soc_choice :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
-  "limit_set_soc_choice A r = A \<inter> r"
+fun limit_set_social_choice :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
+  "limit_set_social_choice A r = A \<inter> r"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -32,7 +32,7 @@ lemma result_imp_rej:
     e :: "'a set" and
     r :: "'a set" and
     d :: "'a set"
-  assumes "well_formed_soc_choice A (e, r, d)"
+  assumes "well_formed_social_choice A (e, r, d)"
   shows "A - (e \<union> d) = r"
 proof (safe)
   fix a :: "'a"
@@ -61,7 +61,7 @@ next
   moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
     using assms
     by simp
-  ultimately show "False"
+  ultimately show False
     by auto
 next
   fix a :: "'a"
@@ -71,7 +71,7 @@ next
   moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
     using assms
     by simp
-  ultimately show "False"
+  ultimately show False
     by blast
 qed
 
@@ -82,7 +82,7 @@ lemma result_count:
     r :: "'a set" and
     d :: "'a set"
   assumes
-    wf_result: "well_formed_soc_choice A (e, r, d)" and
+    wf_result: "well_formed_social_choice A (e, r, d)" and
     fin_A: "finite A"
   shows "card A = card e + card r + card d"
 proof -
@@ -101,7 +101,7 @@ lemma defer_subset:
   fixes
     A :: "'a set" and
     r :: "'a Result"
-  assumes "well_formed_soc_choice A r"
+  assumes "well_formed_social_choice A r"
   shows "defer_r r \<subseteq> A"
 proof (safe)
   fix a :: "'a"
@@ -112,7 +112,7 @@ proof (safe)
     "A = f r A \<and> r = g r A \<and> disjoint3 (g r A) \<and> set_equals_partition (f r A) (g r A)"
     using assms
     by simp
-  moreover have "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
+  moreover have "\<forall> p. \<exists> e r d. set_equals_partition A p \<longrightarrow> (e, r, d) = p \<and> e \<union> r \<union> d = A"
     by simp
   ultimately show "a \<in> A"
     using UnCI snd_conv
@@ -123,7 +123,7 @@ lemma elect_subset:
   fixes
     A :: "'a set" and
     r :: "'a Result"
-  assumes "well_formed_soc_choice A r"
+  assumes "well_formed_social_choice A r"
   shows "elect_r r \<subseteq> A"
 proof (safe)
   fix a :: "'a"
@@ -135,7 +135,7 @@ proof (safe)
     using assms
     by simp
   moreover have
-    "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
+    "\<forall> p. \<exists> e r d. set_equals_partition A p \<longrightarrow> (e, r, d) = p \<and> e \<union> r \<union> d = A"
     by simp
   ultimately show "a \<in> A"
     using UnCI assms fst_conv
@@ -146,7 +146,7 @@ lemma reject_subset:
   fixes
     A :: "'a set" and
     r :: "'a Result"
-  assumes "well_formed_soc_choice A r"
+  assumes "well_formed_social_choice A r"
   shows "reject_r r \<subseteq> A"
 proof (safe)
   fix a :: "'a"
@@ -158,7 +158,7 @@ proof (safe)
     using assms
     by simp
   moreover have
-    "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
+    "\<forall> p. \<exists> e r d. set_equals_partition A p \<longrightarrow> (e, r, d) = p \<and> e \<union> r \<union> d = A"
     by simp
   ultimately show "a \<in> A"
     using UnCI assms fst_conv snd_conv disjoint3.cases

@@ -1,3 +1,8 @@
+(*  File:       Ordered_Relation.thy
+    Copyright   2024  Karlsruhe Institute of Technology (KIT)
+*)
+\<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
+
 section \<open>Ordered Relation Type\<close>
 
 theory Ordered_Relation
@@ -70,16 +75,8 @@ proof
 qed
 
 lemma range_ord2pref: "range ord2pref = {p. linear_order p}"
-proof -
-  have "range ord2pref = {p :: 'a Preference_Relation. linear_order_on (UNIV::'a set) p}"
-    using type_definition.Rep_range type_definition_Ordered_Preference
-    by metis
-  also have "... = {p. linear_order p}"
-    by simp
-  finally show ?thesis
-    using type_definition.Rep_range type_definition_Ordered_Preference
-    by metis
-qed
+  using type_definition.Rep_range type_definition_Ordered_Preference
+  by metis
 
 lemma card_ord_pref: "card (UNIV::'a::finite Ordered_Preference set) = fact (card (UNIV::'a set))"
 proof -

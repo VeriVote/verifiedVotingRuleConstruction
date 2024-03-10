@@ -11,10 +11,7 @@ chapter \<open>Component Types\<close>
 section \<open>Electoral Module\<close>
 
 theory Electoral_Module
-  imports "Social_Choice_Types/Profile"
-          "Social_Choice_Types/Result_Interpretations"
-          "HOL-Combinatorics.List_Permutation"
-          "Social_Choice_Types/Property_Interpretations"
+  imports "Social_Choice_Types/Property_Interpretations"
 begin
 
 text \<open>
@@ -48,7 +45,7 @@ type_synonym ('a, 'v, 'r) Electoral_Module = "'v set \<Rightarrow> 'a set \<Righ
 
 abbreviation fun\<^sub>\<E> :: "('v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r)
         \<Rightarrow> (('a, 'v) Election \<Rightarrow> 'r)" where
-  "fun\<^sub>\<E> m \<equiv> (\<lambda> E. m (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E))"
+  "fun\<^sub>\<E> m \<equiv> (\<lambda> E. m (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E))"
 
 text \<open>
   The next three functions take an electoral module and turn it into a
@@ -148,7 +145,7 @@ lemma (in result) hom_imp_anon:
   fixes X :: "('a, 'v) Election set"
   assumes
     "homogeneity X m" and
-    "\<forall> E \<in> X. finite (votrs_\<E> E)"
+    "\<forall> E \<in> X. finite (voters_\<E> E)"
   shows "anonymity' X m"
 proof (unfold anonymity'.simps satisfies.simps, standard, standard, standard)
   fix
@@ -159,7 +156,7 @@ proof (unfold anonymity'.simps satisfies.simps, standard, standard, standard)
     unfolding anonymity\<^sub>\<R>.simps rel_induced_by_action.simps
     by blast
   moreover with this
-    have fin: "finite (votrs_\<E> E) \<and> finite (votrs_\<E> E')"
+    have fin: "finite (voters_\<E> E) \<and> finite (voters_\<E> E')"
     using assms
     by simp
   moreover with this
@@ -167,7 +164,7 @@ proof (unfold anonymity'.simps satisfies.simps, standard, standard, standard)
     using anon_rel_vote_count rel mult_1
     by metis
   moreover with fin
-    have "alts_\<E> E = alts_\<E> E'"
+    have "alternatives_\<E> E = alternatives_\<E> E'"
     using anon_rel_vote_count rel
     by blast
   ultimately show "fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
@@ -342,7 +339,7 @@ lemma par_comp_result_sound:
   assumes
     "social_choice_result.electoral_module m" and
     "profile V A p"
-  shows "well_formed_soc_choice A (m V A p)"
+  shows "well_formed_social_choice A (m V A p)"
   using assms
   unfolding social_choice_result.electoral_module_def
   by simp
@@ -436,7 +433,7 @@ proof (safe)
   assume
     "a \<in> elect m V A p" and
     "a \<in> reject m V A p"
-  moreover have "well_formed_soc_choice A (m V A p)"
+  moreover have "well_formed_social_choice A (m V A p)"
     using assms
     unfolding social_choice_result.electoral_module_def
     by metis
@@ -452,7 +449,7 @@ next
     "\<forall> p'. disjoint3 p' \<longrightarrow>
       (\<exists> B C D. p' = (B, C, D) \<and> B \<inter> C = {} \<and> B \<inter> D = {} \<and> C \<inter> D = {})"
     by simp
-  have "well_formed_soc_choice A (m V A p)"
+  have "well_formed_social_choice A (m V A p)"
     using assms
     unfolding social_choice_result.electoral_module_def
     by metis
@@ -483,7 +480,7 @@ next
   assume
     "a \<in> reject m V A p" and
     "a \<in> defer m V A p"
-  moreover have "well_formed_soc_choice A (m V A p)"
+  moreover have "well_formed_social_choice A (m V A p)"
     using assms
     unfolding social_choice_result.electoral_module_def
     by simp
@@ -586,7 +583,7 @@ lemma reject_not_elec_or_def:
     "profile V A p"
   shows "reject m V A p = A - (elect m V A p) - (defer m V A p)"
 proof -
-  have "well_formed_soc_choice A (m V A p)"
+  have "well_formed_social_choice A (m V A p)"
     using assms
     unfolding social_choice_result.electoral_module_def
     by simp
@@ -633,7 +630,7 @@ lemma defer_not_elec_or_rej:
     "profile V A p"
   shows "defer m V A p = A - (elect m V A p) - (reject m V A p)"
 proof -
-  have "well_formed_soc_choice A (m V A p)"
+  have "well_formed_social_choice A (m V A p)"
     using assms
     unfolding social_choice_result.electoral_module_def
     by simp

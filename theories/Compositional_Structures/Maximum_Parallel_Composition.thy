@@ -126,11 +126,11 @@ next
         by blast
       have set_intersect: "\<forall> a' A' A''. (a' \<in> A' \<inter> A'') = (a' \<in> A' \<and> a' \<in> A'')"
         by blast
-      have wf_n: "well_formed_soc_choice A (n V A p)"
+      have wf_n: "well_formed_social_choice A (n V A p)"
         using prof_p module_n
         unfolding social_choice_result.electoral_module_def
         by blast
-      have wf_m: "well_formed_soc_choice A (m V A p)"
+      have wf_m: "well_formed_social_choice A (m V A p)"
         using prof_p module_m
         unfolding social_choice_result.electoral_module_def
         by blast
@@ -187,8 +187,8 @@ next
         by simp
       have well_f_max:
         "\<forall> r' r'' e' e'' d' d'' A'.
-          well_formed_soc_choice A' (e', r', d') \<and> 
-          well_formed_soc_choice A' (e'', r'', d'') \<longrightarrow>
+          well_formed_social_choice A' (e', r', d') \<and>
+          well_formed_social_choice A' (e'', r'', d'') \<longrightarrow>
             reject_r (max_aggregator A' (e', r', d') (e'', r'', d'')) = r' \<inter> r''"
         using max_agg_rej_set
         by metis
@@ -785,7 +785,7 @@ proof (unfold defer_lift_invariance_def, safe)
     have "\<forall> b \<in> B. mod_contains_result (m \<parallel>\<^sub>\<up> n) n V A p b"
       using alts compatible f_profs max_agg_rej_snd_imp_seq_contained mod_contains_result_comm
       unfolding disjoint_compatibility_def
-      by meson
+      by metis
     have "\<forall> b \<in> B. mod_contains_result_sym (m \<parallel>\<^sub>\<up> n) n V A p b"
       using alts max_agg_rej_snd_equiv_seq_contained monotone_m monotone_n f_profs
       unfolding defer_lift_invariance_def
@@ -1024,7 +1024,7 @@ next
     by blast
   ultimately have card_reject_m: "card (reject m V A p) = card A - 1"
   proof -
-    have "well_formed_soc_choice A (elect m V A p, reject m V A p, defer m V A p)"
+    have "well_formed_social_choice A (elect m V A p, reject m V A p, defer m V A p)"
       using prof module
       unfolding social_choice_result.electoral_module_def
       by simp

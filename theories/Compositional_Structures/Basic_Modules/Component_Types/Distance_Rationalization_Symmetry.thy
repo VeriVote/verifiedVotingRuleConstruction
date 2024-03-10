@@ -1,3 +1,8 @@
+(*  File:       Distance_Rationalization_Symmetry.thy
+    Copyright   2024  Karlsruhe Institute of Technology (KIT)
+*)
+\<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
+
 section \<open>Symmetry in Distance-Rationalizable Rules\<close>
 
 theory Distance_Rationalization_Symmetry
@@ -283,33 +288,41 @@ lemma \<K>\<^sub>\<E>_is_preimg:
     C :: "('a, 'v, 'r Result) Consensus_Class" and
     E :: "('a, 'v) Election" and
     w :: "'r"
-  shows "preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) {w} = \<K>\<^sub>\<E> C w"
+  shows "preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w} = \<K>\<^sub>\<E> C w"
 proof -
-  have "preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) {w} =
-    {E \<in> \<K>_els C. (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) E = {w}}"
+  have "preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w} =
+    {E \<in> elections_\<K> C. (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) E = {w}}"
     by simp
-  also have "{E \<in> \<K>_els C. (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) E = {w}} =
-    {E \<in> \<K>_els C. elect (rule_\<K> C) (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E) = {w}}"
+  also have "{E \<in> elections_\<K> C. (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) E = {w}} =
+    {E \<in> elections_\<K> C. elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}"
     by simp
-  also have "{E \<in> \<K>_els C. elect (rule_\<K> C) (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E) = {w}} =
-    \<K>_els C \<inter> {E. elect (rule_\<K> C) (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E) = {w}}"
+  also have
+    "{E \<in> elections_\<K> C. elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}} =
+      elections_\<K> C \<inter> {E. elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}"
     by blast
-  also have "\<K>_els C \<inter> {E. elect (rule_\<K> C) (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E) = {w}} = \<K>\<^sub>\<E> C w"
-  proof (standard)
-    show "\<K>_els C \<inter> {E. elect (rule_\<K> C) (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E) = {w}} \<subseteq> \<K>\<^sub>\<E> C w"
+  also have
+    "elections_\<K> C \<inter> {E. elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}
+      = \<K>\<^sub>\<E> C w"
+  proof
+    show
+      "elections_\<K> C \<inter> {E. elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}
+        \<subseteq> \<K>\<^sub>\<E> C w"
       unfolding \<K>\<^sub>\<E>.simps
       by force
   next
-    have "\<forall> E \<in> \<K>\<^sub>\<E> C w. E \<in> {E. elect (rule_\<K> C) (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E) = {w}}"
+    have
+      "\<forall> E \<in> \<K>\<^sub>\<E> C w. E \<in> {E. elect (rule_\<K> C) (voters_\<E> E)
+        (alternatives_\<E> E) (profile_\<E> E) = {w}}"
       unfolding \<K>\<^sub>\<E>.simps
       by force
     hence "\<forall> E \<in> \<K>\<^sub>\<E> C w. E \<in>
-      \<K>_els C \<inter> {E. elect (rule_\<K> C) (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E) = {w}}"
+      elections_\<K> C \<inter> {E. elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}"
       by simp
-    thus "\<K>\<^sub>\<E> C w \<subseteq> \<K>_els C \<inter> {E. elect (rule_\<K> C) (votrs_\<E> E) (alts_\<E> E) (prof_\<E> E) = {w}}"
+    thus "\<K>\<^sub>\<E> C w \<subseteq> elections_\<K> C \<inter> {E. elect (rule_\<K> C) (voters_\<E> E)
+            (alternatives_\<E> E) (profile_\<E> E) = {w}}"
       by blast
   qed
-  finally show "preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) {w} = \<K>\<^sub>\<E> C w"
+  finally show "preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w} = \<K>\<^sub>\<E> C w"
     by simp
 qed
 
@@ -319,15 +332,15 @@ lemma score_is_closest_preimg_dist:
     C :: "('a, 'v, 'r Result) Consensus_Class" and
     E :: "('a, 'v) Election" and
     w :: "'r"
-  shows "score d C E w = closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E {w}"
+  shows "score d C E w = closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E {w}"
 proof -
   have "score d C E w = Inf (d E ` (\<K>\<^sub>\<E> C w))"
     by simp
-  also have "\<K>\<^sub>\<E> C w = preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) {w}"
+  also have "\<K>\<^sub>\<E> C w = preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w}"
     using \<K>\<^sub>\<E>_is_preimg
     by metis
-  also have "Inf (d E ` (preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) {w}))
-              = closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E {w}"
+  also have "Inf (d E ` (preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w}))
+              = closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E {w}"
     by simp
   finally show ?thesis
     by simp
@@ -338,83 +351,84 @@ lemma (in result) \<R>\<^sub>\<W>_is_minimizer:
     d :: "('a, 'v) Election Distance" and
     C :: "('a, 'v, 'r Result) Consensus_Class"
   shows "fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) =
-    (\<lambda> E. \<Union> (minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d
-                      (singleton_set_system (limit_set (alts_\<E> E) UNIV)) E))"
-proof (standard)
+    (\<lambda> E. \<Union> (minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d
+                      (singleton_set_system (limit_set (alternatives_\<E> E) UNIV)) E))"
+proof
   fix E :: "('a, 'v) Election"
-  let ?min = "(minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d
-                          (singleton_set_system (limit_set (alts_\<E> E) UNIV)) E)"
+  let ?min = "(minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d
+                          (singleton_set_system (limit_set (alternatives_\<E> E) UNIV)) E)"
   have "?min = arg_min_set
-              (closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E)
-                (singleton_set_system (limit_set (alts_\<E> E) UNIV))"
+              (closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E)
+                (singleton_set_system (limit_set (alternatives_\<E> E) UNIV))"
     by simp
   also have
-    "... = singleton_set_system (arg_min_set (score d C E) (limit_set (alts_\<E> E) UNIV))"
+    "... = singleton_set_system (arg_min_set (score d C E) (limit_set (alternatives_\<E> E) UNIV))"
   proof (safe)
     fix R :: "'r set"
     assume
       min: "R \<in> arg_min_set
-                  (closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E)
-                    (singleton_set_system (limit_set (alts_\<E> E) UNIV))"
-    hence "R \<in> singleton_set_system (limit_set (alts_\<E> E) UNIV)"
+                  (closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E)
+                    (singleton_set_system (limit_set (alternatives_\<E> E) UNIV))"
+    hence "R \<in> singleton_set_system (limit_set (alternatives_\<E> E) UNIV)"
       using arg_min_subset subsetD
-      by meson
+      by (metis (no_types, lifting))
     then obtain r :: "'r" where
       res_singleton: "R = {r}" and
-      r_in_lim_set: "r \<in> limit_set (alts_\<E> E) UNIV"
+      r_in_lim_set: "r \<in> limit_set (alternatives_\<E> E) UNIV"
       by auto
-    have "\<nexists> R'. R' \<in> singleton_set_system (limit_set (alts_\<E> E) UNIV) \<and>
-            closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E R'
-              < closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E R"
+    have "\<nexists> R'. R' \<in> singleton_set_system (limit_set (alternatives_\<E> E) UNIV) \<and>
+            closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E R'
+              < closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E R"
       using min arg_min_set.simps is_arg_min_def CollectD
       by (metis (mono_tags, lifting))
-    hence "\<nexists> r'. r' \<in> limit_set (alts_\<E> E) UNIV \<and>
-            closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E {r'}
-              < closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E {r}"
+    hence "\<nexists> r'. r' \<in> limit_set (alternatives_\<E> E) UNIV \<and>
+            closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E {r'}
+              < closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E {r}"
       using res_singleton
       by auto
-    hence "\<nexists> r'. r' \<in> limit_set (alts_\<E> E) UNIV \<and> score d C E r' < score d C E r"
+    hence "\<nexists> r'. r' \<in> limit_set (alternatives_\<E> E) UNIV \<and> score d C E r' < score d C E r"
       using score_is_closest_preimg_dist
       by metis
-    hence "r \<in> arg_min_set (score d C E) (limit_set (alts_\<E> E) UNIV)"
+    hence "r \<in> arg_min_set (score d C E) (limit_set (alternatives_\<E> E) UNIV)"
       using r_in_lim_set arg_min_set.simps is_arg_min_def CollectI
       by metis
-    thus "R \<in> singleton_set_system (arg_min_set (score d C E) (limit_set (alts_\<E> E) UNIV))"
+    thus "R \<in> singleton_set_system (arg_min_set (score d C E) (limit_set (alternatives_\<E> E) UNIV))"
       using res_singleton
       by simp
   next
     fix R :: "'r set"
-    assume "R \<in> singleton_set_system (arg_min_set (score d C E) (limit_set (alts_\<E> E) UNIV))"
+    assume
+      "R \<in> singleton_set_system (arg_min_set (score d C E) (limit_set (alternatives_\<E> E) UNIV))"
     then obtain r :: "'r" where
       res_singleton: "R = {r}" and
-      r_min_lim_set: "r \<in> arg_min_set (score d C E) (limit_set (alts_\<E> E) UNIV)"
+      r_min_lim_set: "r \<in> arg_min_set (score d C E) (limit_set (alternatives_\<E> E) UNIV)"
       by auto
-    hence "\<nexists> r'. r' \<in> limit_set (alts_\<E> E) UNIV \<and> score d C E r' < score d C E r"
+    hence "\<nexists> r'. r' \<in> limit_set (alternatives_\<E> E) UNIV \<and> score d C E r' < score d C E r"
       using CollectD arg_min_set.simps is_arg_min_def
       by metis
-    hence "\<nexists> r'. r' \<in> limit_set (alts_\<E> E) UNIV \<and>
-            closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E {r'}
-              < closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E {r}"
+    hence "\<nexists> r'. r' \<in> limit_set (alternatives_\<E> E) UNIV \<and>
+            closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E {r'}
+              < closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E {r}"
       using score_is_closest_preimg_dist
       by metis
-    moreover have "\<forall> R' \<in> singleton_set_system (limit_set (alts_\<E> E) UNIV).
-                      \<exists> r' \<in> limit_set (alts_\<E> E) UNIV. R' = {r'}"
+    moreover have "\<forall> R' \<in> singleton_set_system (limit_set (alternatives_\<E> E) UNIV).
+                      \<exists> r' \<in> limit_set (alternatives_\<E> E) UNIV. R' = {r'}"
       by auto
-    ultimately have "\<nexists> R'. R' \<in> singleton_set_system (limit_set (alts_\<E> E) UNIV) \<and>
-        closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E R'
-          < closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E R"
+    ultimately have "\<nexists> R'. R' \<in> singleton_set_system (limit_set (alternatives_\<E> E) UNIV) \<and>
+        closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E R'
+          < closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E R"
       using res_singleton
       by auto
-    moreover have "R \<in> singleton_set_system (limit_set (alts_\<E> E) UNIV)"
+    moreover have "R \<in> singleton_set_system (limit_set (alternatives_\<E> E) UNIV)"
       using r_min_lim_set res_singleton arg_min_subset
       by fastforce
     ultimately show "R \<in> arg_min_set
-                  (closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d E)
-                    (singleton_set_system (limit_set (alts_\<E> E) UNIV))"
+                  (closest_preimg_dist (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E)
+                    (singleton_set_system (limit_set (alternatives_\<E> E) UNIV))"
       using arg_min_set.simps is_arg_min_def CollectI
       by (metis (mono_tags, lifting))
   qed
-  also have "(arg_min_set (score d C E) (limit_set (alts_\<E> E) UNIV)) = fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) E"
+  also have "(arg_min_set (score d C E) (limit_set (alternatives_\<E> E) UNIV)) = fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) E"
     by simp
   finally have "\<Union> ?min = \<Union> (singleton_set_system (fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) E))"
     by presburger
@@ -431,17 +445,17 @@ theorem (in result) tot_invar_dist_imp_invar_dr_rule:
     C :: "('a, 'v, 'r Result) Consensus_Class" and
     rel :: "('a, 'v) Election rel"
   assumes
-    r_refl: "refl_on (\<K>_els C) (Restr rel (\<K>_els C))" and
+    r_refl: "refl_on (elections_\<K> C) (Restr rel (elections_\<K> C))" and
     tot_invar_d: "totally_invariant_dist d rel" and
-    invar_res: "satisfies (\<lambda> E. limit_set (alts_\<E> E) UNIV) (Invariance rel)"
+    invar_res: "satisfies (\<lambda> E. limit_set (alternatives_\<E> E) UNIV) (Invariance rel)"
   shows "satisfies (fun\<^sub>\<E> (distance_\<R> d C)) (Invariance rel)"
 proof -
-  let ?min = "\<lambda> E. \<Union> \<circ> (minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d
-                                    (singleton_set_system (limit_set (alts_\<E> E) UNIV)))"
+  let ?min = "\<lambda> E. \<Union> \<circ> (minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d
+                                    (singleton_set_system (limit_set (alternatives_\<E> E) UNIV)))"
   have "\<forall> E. satisfies (?min E) (Invariance rel)"
     using r_refl tot_invar_d invar_comp
           refl_rel_and_tot_invar_dist_imp_invar_minimizer[of
-            "\<K>_els C" rel d "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)"]
+            "elections_\<K> C" rel d "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)"]
     by blast
   moreover have "satisfies ?min (Invariance rel)"
     using invar_res
@@ -454,7 +468,7 @@ proof -
     by metis
   finally have invar_\<R>\<^sub>\<W>: "satisfies (fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)) (Invariance rel)"
     by simp
-  hence "satisfies (\<lambda> E. limit_set (alts_\<E> E) UNIV - fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) E) (Invariance rel)"
+  hence "satisfies (\<lambda> E. limit_set (alternatives_\<E> E) UNIV - fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) E) (Invariance rel)"
     using invar_res
     by fastforce
   thus "satisfies (fun\<^sub>\<E> (distance_\<R> d C)) (Invariance rel)"
@@ -471,19 +485,19 @@ theorem (in result) invar_dist_cons_imp_invar_dr_rule:
     B :: "('a, 'v) Election set"
   defines
     "rel \<equiv> rel_induced_by_action (carrier G) B \<phi>" and
-    "rel' \<equiv> rel_induced_by_action (carrier G) (\<K>_els C) \<phi>"
+    "rel' \<equiv> rel_induced_by_action (carrier G) (elections_\<K> C) \<phi>"
   assumes
     grp_act: "group_action G B \<phi>" and
-    consensus_C_in_B: "\<K>_els C \<subseteq> B" and
+    consensus_C_in_B: "elections_\<K> C \<subseteq> B" and
     closed_domain: (* Could the closed_domain requirement be weakened? *)
-      "closed_under_restr_rel rel B (\<K>_els C)" and
-    invar_res: "satisfies (\<lambda> E. limit_set (alts_\<E> E) UNIV) (Invariance rel)" and
+      "closed_under_restr_rel rel B (elections_\<K> C)" and
+    invar_res: "satisfies (\<lambda> E. limit_set (alternatives_\<E> E) UNIV) (Invariance rel)" and
     invar_d: "invariant_dist d (carrier G) B \<phi>" and
     invar_C_winners: "satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (Invariance rel')"
   shows "satisfies (fun\<^sub>\<E> (distance_\<R> d C)) (Invariance rel)"
 proof -
-  let ?min = "\<lambda> E. \<Union> \<circ> (minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d
-                                    (singleton_set_system (limit_set (alts_\<E> E) UNIV)))"
+  let ?min = "\<lambda> E. \<Union> \<circ> (minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d
+                                    (singleton_set_system (limit_set (alternatives_\<E> E) UNIV)))"
   have "\<forall> E. satisfies (?min E) (Invariance rel)"
     using grp_act closed_domain consensus_C_in_B invar_d invar_C_winners
           grp_act_invar_dist_and_invar_f_imp_invar_minimizer rel_def
@@ -500,7 +514,7 @@ proof -
     by metis
   finally have invar_\<R>\<^sub>\<W>: "satisfies (fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)) (Invariance rel)"
     by simp
-  hence "satisfies (\<lambda> E. limit_set (alts_\<E> E) UNIV -
+  hence "satisfies (\<lambda> E. limit_set (alternatives_\<E> E) UNIV -
     fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) E) (Invariance rel)"
     using invar_res
     by fastforce
@@ -521,9 +535,9 @@ theorem (in result) invar_dist_equivar_cons_imp_equivar_dr_rule:
     B :: "('a, 'v) Election set"
   defines
     "rel \<equiv> rel_induced_by_action (carrier G) B \<phi>" and
-    "rel' \<equiv> rel_induced_by_action (carrier G) (\<K>_els C) \<phi>" and
+    "rel' \<equiv> rel_induced_by_action (carrier G) (elections_\<K> C) \<phi>" and
     "equivar_prop \<equiv>
-      equivar_ind_by_act (carrier G) (\<K>_els C) \<phi> (set_action \<psi>)" and
+      equivar_ind_by_act (carrier G) (elections_\<K> C) \<phi> (set_action \<psi>)" and
     "equivar_prop_global_set_valued \<equiv>
       equivar_ind_by_act (carrier G) B \<phi> (set_action \<psi>)" and
     "equivar_prop_global_result_valued \<equiv>
@@ -531,54 +545,55 @@ theorem (in result) invar_dist_equivar_cons_imp_equivar_dr_rule:
   assumes
     grp_act: "group_action G B \<phi>" and
     grp_act_res: "group_action G UNIV \<psi>" and
-    "\<K>_els C \<subseteq> B" and
-    closed_domain: "closed_under_restr_rel rel B (\<K>_els C)" and
+    cons_elect_set: "elections_\<K> C \<subseteq> B" and
+    closed_domain: "closed_under_restr_rel rel B (elections_\<K> C)" and
     equivar_res: (* Could the closed_domain requirement be weakened? *)
-      "satisfies (\<lambda> E. limit_set (alts_\<E> E) UNIV) equivar_prop_global_set_valued" and
+      "satisfies (\<lambda> E. limit_set (alternatives_\<E> E) UNIV) equivar_prop_global_set_valued" and
     invar_d: "invariant_dist d (carrier G) B \<phi>" and
     equivar_C_winners: "satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) equivar_prop"
   shows "satisfies (fun\<^sub>\<E> (distance_\<R> d C)) equivar_prop_global_result_valued"
 proof -
-  let ?min_E = "\<lambda> E. minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d
-                                (singleton_set_system (limit_set (alts_\<E> E) UNIV)) E"
-  let ?min = "\<lambda> E. \<Union> \<circ> (minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (\<K>_els C) d
-                                    (singleton_set_system (limit_set (alts_\<E> E) UNIV)))"
+  let ?min_E = "\<lambda> E. minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d
+                                (singleton_set_system (limit_set (alternatives_\<E> E) UNIV)) E"
+  let ?min = "\<lambda> E. \<Union> \<circ> (minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d
+                                    (singleton_set_system (limit_set (alternatives_\<E> E) UNIV)))"
   let ?\<psi>' = "set_action (set_action \<psi>)"
   let ?equivar_prop_global_set_valued' = "equivar_ind_by_act (carrier G) B \<phi> ?\<psi>'"
   have "\<forall> E g. g \<in> carrier G \<longrightarrow> E \<in> B \<longrightarrow>
-          singleton_set_system (limit_set (alts_\<E> (\<phi> g E)) UNIV) =
-            {{r} | r. r \<in> limit_set (alts_\<E> (\<phi> g E)) UNIV}"
+          singleton_set_system (limit_set (alternatives_\<E> (\<phi> g E)) UNIV) =
+            {{r} | r. r \<in> limit_set (alternatives_\<E> (\<phi> g E)) UNIV}"
     by simp
-  moreover have "\<forall> E g. g \<in> carrier G \<longrightarrow> E \<in> B \<longrightarrow>
-                    limit_set (alts_\<E> (\<phi> g E)) UNIV = \<psi> g ` (limit_set (alts_\<E> E) UNIV)"
+  moreover have
+    "\<forall> E g. g \<in> carrier G \<longrightarrow> E \<in> B \<longrightarrow>
+        limit_set (alternatives_\<E> (\<phi> g E)) UNIV = \<psi> g ` (limit_set (alternatives_\<E> E) UNIV)"
     using equivar_res grp_act group_action.element_image
     unfolding equivar_prop_global_set_valued_def equivar_ind_by_act_def
     by fastforce
   ultimately have "\<forall> E g. g \<in> carrier G \<longrightarrow> E \<in> B \<longrightarrow>
-      singleton_set_system (limit_set (alts_\<E> (\<phi> g E)) UNIV) =
-        {{r} | r. r \<in> \<psi> g ` (limit_set (alts_\<E> E) UNIV)}"
+      singleton_set_system (limit_set (alternatives_\<E> (\<phi> g E)) UNIV) =
+        {{r} | r. r \<in> \<psi> g ` (limit_set (alternatives_\<E> E) UNIV)}"
     by simp
-  moreover have "\<forall> E g. {{r} | r. r \<in> \<psi> g ` (limit_set (alts_\<E> E) UNIV)}
-                  = {\<psi> g ` {r} | r. r \<in> limit_set (alts_\<E> E) UNIV}"
+  moreover have "\<forall> E g. {{r} | r. r \<in> \<psi> g ` (limit_set (alternatives_\<E> E) UNIV)}
+                  = {\<psi> g ` {r} | r. r \<in> limit_set (alternatives_\<E> E) UNIV}"
     by blast
-  moreover have "\<forall> E g. {\<psi> g ` {r} | r. r \<in> limit_set (alts_\<E> E) UNIV} =
-                  ?\<psi>' g {{r} | r. r \<in> limit_set (alts_\<E> E) UNIV}"
+  moreover have "\<forall> E g. {\<psi> g ` {r} | r. r \<in> limit_set (alternatives_\<E> E) UNIV} =
+                  ?\<psi>' g {{r} | r. r \<in> limit_set (alternatives_\<E> E) UNIV}"
     unfolding set_action.simps
     by blast
-  ultimately have "satisfies (\<lambda> E. singleton_set_system (limit_set (alts_\<E> E) UNIV))
+  ultimately have "satisfies (\<lambda> E. singleton_set_system (limit_set (alternatives_\<E> E) UNIV))
                       ?equivar_prop_global_set_valued'"
     using rewrite_equivar_ind_by_act[of
-            "\<lambda> E. singleton_set_system (limit_set (alts_\<E> E) UNIV)" "carrier G" B \<phi> ?\<psi>']
+            "\<lambda> E. singleton_set_system (limit_set (alternatives_\<E> E) UNIV)" "carrier G" B \<phi> ?\<psi>']
     by force
   moreover have "group_action G UNIV (set_action \<psi>)"
     unfolding set_action.simps
     using grp_act_induces_set_grp_act[of G UNIV \<psi>] grp_act_res
     by simp
   ultimately have "satisfies ?min_E ?equivar_prop_global_set_valued'"
-    using grp_act invar_d \<open>\<K>_els C \<subseteq> B\<close> closed_domain equivar_C_winners
+    using grp_act invar_d cons_elect_set closed_domain equivar_C_winners
           grp_act_invar_dist_and_equivar_f_imp_equivar_minimizer[of
-              G B \<phi> "set_action \<psi>" "\<K>_els C"
-              "\<lambda> E. singleton_set_system (limit_set (alts_\<E> E) UNIV)"
+              G B \<phi> "set_action \<psi>" "elections_\<K> C"
+              "\<lambda> E. singleton_set_system (limit_set (alternatives_\<E> E) UNIV)"
               d "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)"]
     unfolding rel'_def rel_def equivar_prop_def
     by metis
@@ -605,7 +620,8 @@ proof -
     unfolding bij_betw_def
     by (simp add: group_action.inj_prop group_action.surj_prop)
   ultimately have
-    "satisfies (\<lambda> E. limit_set (alts_\<E> E) UNIV - fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) E) equivar_prop_global_set_valued"
+    "satisfies (\<lambda> E. limit_set (alternatives_\<E> E) UNIV - fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) E)
+        equivar_prop_global_set_valued"
     using equivar_res equivar_set_minus
     unfolding equivar_prop_global_set_valued_def equivar_ind_by_act_def set_action.simps
     by blast
@@ -624,21 +640,21 @@ theorem (in result) anon_dist_and_cons_imp_anon_dr:
     C :: "('a, 'v, 'r Result) Consensus_Class"
   assumes
     anon_d: "distance_anonymity' valid_elections d" and
-    anon_C: "consensus_rule_anonymity' (\<K>_els C) C" and
-    closed_C: "closed_under_restr_rel (anonymity\<^sub>\<R> valid_elections) valid_elections (\<K>_els C)"
+    anon_C: "consensus_rule_anonymity' (elections_\<K> C) C" and
+    closed_C: "closed_under_restr_rel (anonymity\<^sub>\<R> valid_elections) valid_elections (elections_\<K> C)"
     shows "anonymity' valid_elections (distance_\<R> d C)"
 proof -
-  have "\<forall> \<pi>. \<forall> E \<in> \<K>_els C. \<phi>_anon (\<K>_els C) \<pi> E = \<phi>_anon valid_elections \<pi> E"
+  have "\<forall> \<pi>. \<forall> E \<in> elections_\<K> C. \<phi>_anon (elections_\<K> C) \<pi> E = \<phi>_anon valid_elections \<pi> E"
     using cons_domain_valid extensional_continuation_subset
     unfolding \<phi>_anon.simps
     by metis
-  hence "rel_induced_by_action (carrier anonymity\<^sub>\<G>) (\<K>_els C) (\<phi>_anon valid_elections) =
-      rel_induced_by_action (carrier anonymity\<^sub>\<G>) (\<K>_els C) (\<phi>_anon (\<K>_els C))"
-    using coinciding_actions_ind_equal_rel[of "carrier anonymity\<^sub>\<G>" "\<K>_els C"]
+  hence "rel_induced_by_action (carrier anonymity\<^sub>\<G>) (elections_\<K> C) (\<phi>_anon valid_elections) =
+      rel_induced_by_action (carrier anonymity\<^sub>\<G>) (elections_\<K> C) (\<phi>_anon (elections_\<K> C))"
+    using coinciding_actions_ind_equal_rel[of "carrier anonymity\<^sub>\<G>" "elections_\<K> C"]
     by metis
   hence "satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
           (Invariance (rel_induced_by_action
-            (carrier anonymity\<^sub>\<G>) (\<K>_els C) (\<phi>_anon valid_elections)))"
+            (carrier anonymity\<^sub>\<G>) (elections_\<K> C) (\<phi>_anon valid_elections)))"
     using anon_C
     unfolding consensus_rule_anonymity'.simps anonymity\<^sub>\<R>.simps
     by presburger
@@ -652,20 +668,21 @@ qed
 
 theorem (in result_properties) neutr_dist_and_cons_imp_neutr_dr:
   fixes
-    d :: "('a, 'c) Election Distance" and
-    C :: "('a, 'c, 'b Result) Consensus_Class"
+    d :: "('a, 'v) Election Distance" and
+    C :: "('a, 'v, 'b Result) Consensus_Class"
   assumes
     neutr_d: "distance_neutrality valid_elections d" and
-    neutr_C: "consensus_rule_neutrality (\<K>_els C) C" and
-    closed_C: "closed_under_restr_rel (neutrality\<^sub>\<R> valid_elections) valid_elections (\<K>_els C)"
+    neutr_C: "consensus_rule_neutrality (elections_\<K> C) C" and
+    closed_C:
+    "closed_under_restr_rel (neutrality\<^sub>\<R> valid_elections) valid_elections (elections_\<K> C)"
   shows "neutrality valid_elections (distance_\<R> d C)"
 proof -
-  have "\<forall> \<pi>. \<forall> E \<in> \<K>_els C. \<phi>_neutr valid_elections \<pi> E = \<phi>_neutr (\<K>_els C) \<pi> E"
+  have "\<forall> \<pi>. \<forall> E \<in> elections_\<K> C. \<phi>_neutr valid_elections \<pi> E = \<phi>_neutr (elections_\<K> C) \<pi> E"
     using cons_domain_valid extensional_continuation_subset
     unfolding \<phi>_neutr.simps
     by metis
   hence "satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
-          (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) (\<K>_els C)
+          (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) (elections_\<K> C)
             (\<phi>_neutr valid_elections) (set_action \<psi>_neutr))"
     using neutr_C equivar_ind_by_act_coincide[of "carrier neutrality\<^sub>\<G>"]
     unfolding consensus_rule_neutrality.simps
@@ -683,16 +700,16 @@ theorem reversal_sym_dist_and_cons_imp_reversal_sym_dr:
     C :: "('a, 'c, 'a rel Result) Consensus_Class"
   assumes
     rev_sym_d: "distance_reversal_symmetry valid_elections d" and
-    rev_sym_C: "consensus_rule_reversal_symmetry (\<K>_els C) C" and
-    closed_C: "closed_under_restr_rel (reversal\<^sub>\<R> valid_elections) valid_elections (\<K>_els C)"
+    rev_sym_C: "consensus_rule_reversal_symmetry (elections_\<K> C) C" and
+    closed_C: "closed_under_restr_rel (reversal\<^sub>\<R> valid_elections) valid_elections (elections_\<K> C)"
   shows "reversal_symmetry valid_elections (social_welfare_result.distance_\<R> d C)"
 proof -
-  have "\<forall> \<pi>. \<forall> E \<in> \<K>_els C. \<phi>_rev valid_elections \<pi> E = \<phi>_rev (\<K>_els C) \<pi> E"
+  have "\<forall> \<pi>. \<forall> E \<in> elections_\<K> C. \<phi>_rev valid_elections \<pi> E = \<phi>_rev (elections_\<K> C) \<pi> E"
     using cons_domain_valid extensional_continuation_subset
     unfolding \<phi>_rev.simps
     by metis
   hence "satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
-          (equivar_ind_by_act (carrier reversal\<^sub>\<G>) (\<K>_els C)
+          (equivar_ind_by_act (carrier reversal\<^sub>\<G>) (elections_\<K> C)
             (\<phi>_rev valid_elections) (set_action \<psi>_rev))"
     using rev_sym_C equivar_ind_by_act_coincide[of "carrier reversal\<^sub>\<G>"]
     unfolding consensus_rule_reversal_symmetry.simps
@@ -713,15 +730,16 @@ theorem (in result) tot_hom_dist_imp_hom_dr:
   assumes "distance_homogeneity finite_voter_elections d"
   shows "homogeneity finite_voter_elections (distance_\<R> d C)"
 proof -
-  have "Restr (homogeneity\<^sub>\<R> finite_voter_elections) (\<K>_els C) = homogeneity\<^sub>\<R> (\<K>_els C)"
+  have "Restr (homogeneity\<^sub>\<R> finite_voter_elections) (elections_\<K> C) = homogeneity\<^sub>\<R> (elections_\<K> C)"
     using cons_domain_finite[of C]
     unfolding homogeneity\<^sub>\<R>.simps finite_voter_elections_def
     by blast
-  hence "refl_on (\<K>_els C) (Restr (homogeneity\<^sub>\<R> finite_voter_elections) (\<K>_els C))"
-    using refl_homogeneity\<^sub>\<R>[of "\<K>_els C"] cons_domain_finite[of C]
+  hence "refl_on (elections_\<K> C) (Restr (homogeneity\<^sub>\<R> finite_voter_elections) (elections_\<K> C))"
+    using refl_homogeneity\<^sub>\<R>[of "elections_\<K> C"] cons_domain_finite[of C]
     by presburger
   moreover have
-    "satisfies (\<lambda> E. limit_set (alts_\<E> E) UNIV) (Invariance (homogeneity\<^sub>\<R> finite_voter_elections))"
+    "satisfies (\<lambda> E. limit_set (alternatives_\<E> E) UNIV)
+        (Invariance (homogeneity\<^sub>\<R> finite_voter_elections))"
     using well_formed_res_homogeneity
     by simp
   ultimately show ?thesis
@@ -737,15 +755,17 @@ theorem (in result) tot_hom_dist_imp_hom_dr':
   assumes "distance_homogeneity' finite_voter_elections d"
   shows "homogeneity' finite_voter_elections (distance_\<R> d C)"
 proof -
-  have "Restr (homogeneity\<^sub>\<R>' finite_voter_elections) (\<K>_els C) = homogeneity\<^sub>\<R>' (\<K>_els C)"
+  have "Restr (homogeneity\<^sub>\<R>' finite_voter_elections) (elections_\<K> C)
+          = homogeneity\<^sub>\<R>' (elections_\<K> C)"
     using cons_domain_finite
     unfolding homogeneity\<^sub>\<R>'.simps finite_voter_elections_def
     by blast
-  hence "refl_on (\<K>_els C) (Restr (homogeneity\<^sub>\<R>' finite_voter_elections) (\<K>_els C))"
-    using refl_homogeneity\<^sub>\<R>'[of "\<K>_els C"] cons_domain_finite[of C]
+  hence "refl_on (elections_\<K> C) (Restr (homogeneity\<^sub>\<R>' finite_voter_elections) (elections_\<K> C))"
+    using refl_homogeneity\<^sub>\<R>'[of "elections_\<K> C"] cons_domain_finite[of C]
     by presburger
   moreover have
-    "satisfies (\<lambda> E. limit_set (alts_\<E> E) UNIV) (Invariance (homogeneity\<^sub>\<R>' finite_voter_elections))"
+    "satisfies (\<lambda> E. limit_set (alternatives_\<E> E) UNIV)
+        (Invariance (homogeneity\<^sub>\<R>' finite_voter_elections))"
     using well_formed_res_homogeneity'
     by simp
   ultimately show ?thesis

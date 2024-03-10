@@ -1,9 +1,12 @@
+(*  File:       Symmetry_Of_Functions.thy
+    Copyright   2024  Karlsruhe Institute of Technology (KIT)
+*)
+\<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
+
 section \<open>Function Symmetry Properties\<close>
 
 theory Symmetry_Of_Functions
-  imports "HOL.Equiv_Relations"
-          "HOL-Algebra.Bij"
-          "HOL-Algebra.Group_Action"
+  imports "HOL-Algebra.Group_Action"
           "HOL-Algebra.Generated_Groups"
 begin
 

@@ -1,11 +1,14 @@
+(*  File:       Relation_Quotients.thy
+    Copyright   2024  Karlsruhe Institute of Technology (KIT)
+*)
+\<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
+
 chapter \<open>Quotient Rules\<close>
 
 section \<open>Quotients of Equivalence Relations\<close>
 
 theory Relation_Quotients
-  imports HOL.Equiv_Relations
-          "../Social_Choice_Types/Symmetry_Of_Functions"
-          Main
+  imports "../Social_Choice_Types/Symmetry_Of_Functions"
 begin
 
 subsection \<open>Definitions\<close>
@@ -14,8 +17,6 @@ fun singleton_set :: "'x set \<Rightarrow> 'x" where
   "singleton_set s = (if (card s = 1) then (the_inv (\<lambda> x. {x}) s) else undefined)"
 \<comment> \<open>This is undefined if card s != 1.
     Note that "undefined = undefined" is the only provable equality for undefined.\<close>
-
-(* export_code singleton_set in Haskell *)
 
 text \<open>
   For a given function, we define a function on sets that maps each set to the
@@ -29,13 +30,13 @@ text \<open>
   For a given function f on sets and a mapping from elements to sets,
   we define a function on the set element type that maps each element to the
   image of its corresponding set under f.
-  A natural mapping is from elements to their classes under a relation (rel cls).
+  A natural mapping is from elements to their classes under a relation.
 \<close>
 fun inv_\<pi>\<^sub>\<Q> :: "('x \<Rightarrow> 'x set) \<Rightarrow> ('x set \<Rightarrow> 'y) \<Rightarrow> ('x \<Rightarrow> 'y)" where
   "inv_\<pi>\<^sub>\<Q> cls f x = f (cls x)"
 
-fun rel_cls :: "'x rel \<Rightarrow> 'x \<Rightarrow> 'x set" where
-  "rel_cls r x = r `` {x}"
+fun relation_class :: "'x rel \<Rightarrow> 'x \<Rightarrow> 'x set" where
+  "relation_class r x = r `` {x}"
 
 subsection \<open>Well-Definedness\<close>
 
@@ -71,30 +72,28 @@ proof (safe)
   fix
     t :: "'x set" and
     x :: "'x"
-  assume
-    "t \<in> s // r" and
-    x_in_A: "x \<in> t"
-  hence r_img_elem_x_eq_A: "r `` {x} = t"
-    using assms ImageI equiv_class_eq_iff quotientI quotient_eq_iff singleton_iff
-    by meson
   have "\<forall> y \<in> r``{x}. (x, y) \<in> r"
     unfolding Image_def
     by simp
-  hence "\<forall> y \<in> r``{x}. f y = f x"
+  hence func_eq_x: "{f y | y. y \<in> r``{x}} = {f x | y. y \<in> r``{x}}"
     using assms
     unfolding congruent_def
     by fastforce
-  hence "{f y | y. y \<in> r``{x}} = {f x | y. y \<in> r``{x}}"
-    using assms
-    unfolding congruent_def
+  assume
+    "t \<in> s // r" and
+    x_in_t: "x \<in> t"
+  moreover from this have "r `` {x} \<in> s // r"
+    using assms quotient_eq_iff equiv_class_eq_iff quotientI
     by metis
-  also have "{f x | y. y \<in> r``{x}} = {f x}"
-    using assms x_in_A r_img_elem_x_eq_A
-    unfolding refl_on_def
+  ultimately have r_img_elem_x_eq_t: "r `` {x} = t"
+    using assms quotient_eq_iff Image_singleton_iff
+    by metis
+  hence "{f x | y. y \<in> r``{x}} = {f x}"
+    using x_in_t
     by blast
-  finally have "f ` t = {f x}"
-    using r_img_elem_x_eq_A
-    by auto
+  hence "f ` t = {f x}"
+    using Setcompr_eq_image r_img_elem_x_eq_t func_eq_x
+    by metis
   thus "\<pi>\<^sub>\<Q> f t = f x"
     using singleton_set_def_if_card_one is_singletonI is_singleton_altdef the_elem_eq
     unfolding \<pi>\<^sub>\<Q>.simps
@@ -111,39 +110,36 @@ theorem pass_to_quotient_inv:
     r :: "'x rel" and
     s :: "'x set"
   assumes "equiv s r"
-  defines "induced_fun \<equiv> (inv_\<pi>\<^sub>\<Q> (rel_cls r) f)"
+  defines "induced_fun \<equiv> (inv_\<pi>\<^sub>\<Q> (relation_class r) f)"
   shows
-    invar: "induced_fun respects r" and
-    inv: "\<forall> A \<in> s // r. \<pi>\<^sub>\<Q> induced_fun A = f A"
+    "induced_fun respects r" and
+    "\<forall> A \<in> s // r. \<pi>\<^sub>\<Q> induced_fun A = f A"
 proof (safe)
-  have "\<forall> (a, b) \<in> r. rel_cls r a = rel_cls r b"
+  have "\<forall> (a, b) \<in> r. relation_class r a = relation_class r b"
     using assms equiv_class_eq
-    unfolding rel_cls.simps
+    unfolding relation_class.simps
     by fastforce
   hence "\<forall> (a, b) \<in> r. induced_fun a = induced_fun b"
     unfolding induced_fun_def inv_\<pi>\<^sub>\<Q>.simps
     by auto
-  thus invar: "induced_fun respects r"
+  thus "induced_fun respects r"
     unfolding congruent_def
-    by blast
-  \<comment> \<open>We want to reuse this fact, so no "next".\<close>
-  fix A :: "'x set"
-  assume A_in_quot_s_r: "A \<in> s // r"
-  then obtain a :: 'x where
-    a_in_A: "a \<in> A" and
-    A_eq_rel_class_r_a: "A = rel_cls r a"
-    using assms equiv_Eps_in proj_Eps
-    unfolding proj_def rel_cls.simps
     by metis
-  with invar A_in_quot_s_r pass_to_quotient
-  have "\<pi>\<^sub>\<Q> induced_fun A = induced_fun a"
-    using assms
+  moreover fix A :: "'x set"
+  assume "A \<in> s // r"
+  moreover with assms
+  obtain a :: "'x" where
+    "a \<in> A" and
+    A_eq_rel_class_r_a: "A = relation_class r a"
+    using equiv_Eps_in proj_Eps
+    unfolding proj_def relation_class.simps
+    by metis
+  ultimately have "\<pi>\<^sub>\<Q> induced_fun A = induced_fun a"
+    using pass_to_quotient assms
     by blast
-  also have "induced_fun a = f A"
+  thus "\<pi>\<^sub>\<Q> induced_fun A = f A"
     using A_eq_rel_class_r_a
     unfolding induced_fun_def
-    by simp
-  finally show "\<pi>\<^sub>\<Q> induced_fun A = f A"
     by simp
 qed
 
@@ -161,13 +157,10 @@ lemma equiv_rel_restr:
 proof (unfold equiv_def refl_on_def, safe)
   fix x :: "'x"
   assume "x \<in> t"
-  hence "x \<in> s"
-    using assms
-    by blast
   thus "(x, x) \<in> r"
     using assms
     unfolding equiv_def refl_on_def
-    by simp
+    by blast
 next
   show "sym (Restr r t)"
     using assms
@@ -204,13 +197,12 @@ next
     g :: "'x"
   assume
     y_in_s: "y \<in> s" and
-    \<phi>_g_y_in_s: "\<phi> g y \<in> s" and
     carrier_g: "g \<in> carrier m"
   hence "y = \<phi> (inv \<^bsub>m\<^esub> g) (\<phi> g y)"
     using assms
     by (simp add: group_action.orbit_sym_aux)
   thus "\<exists> h \<in> carrier m. \<phi> h (\<phi> g y) = y"
-    using carrier_g assms group.inv_closed group_action.group_hom group_hom.axioms(1)
+    using assms carrier_g group.inv_closed group_action.group_hom group_hom.axioms(1)
     by metis
 next
   fix
@@ -225,8 +217,9 @@ next
     using assms
     by (simp add: group_action.composition_rule)
   thus "\<exists> f \<in> carrier m. \<phi> f y = \<phi> h (\<phi> g y)"
-    using Group.group_def carrier_g carrier_h assms group_action.group_hom
+    using assms carrier_g carrier_h group_action.group_hom
           group_hom.axioms(1) monoid.m_closed
+    unfolding group_def
     by metis
 qed
 

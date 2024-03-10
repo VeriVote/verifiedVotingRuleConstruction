@@ -26,8 +26,6 @@ fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm
     then n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))
     else \<infinity>)"
 
-(* export_code votewise_distance in Haskell *)
-
 subsection \<open>Inference Rules\<close>
 
 lemma symmetric_norm_inv_under_map2_permute:
