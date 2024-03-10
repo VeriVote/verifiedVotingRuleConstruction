@@ -1,4 +1,4 @@
-(*  File:       Result.thy
+(*  File:       Social_Choice_Result.thy
     Copyright   2021  Karlsruhe Institute of Technology (KIT)
 *)
 \<^marker>\<open>creator "Jonas Kraemer, Karlsruhe Institute of Technology (KIT)"\<close>
@@ -18,11 +18,11 @@ text \<open>
   elected, rejected, and deferred alternatives.
 \<close>
 
-fun well_formed_social_choice :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
-  "well_formed_social_choice A res = (disjoint3 res \<and> set_equals_partition A res)"
+fun well_formed_\<S>\<C>\<F> :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
+  "well_formed_\<S>\<C>\<F> A res = (disjoint3 res \<and> set_equals_partition A res)"
 
-fun limit_set_social_choice :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
-  "limit_set_social_choice A r = A \<inter> r"
+fun limit_set_\<S>\<C>\<F> :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
+  "limit_set_\<S>\<C>\<F> A r = A \<inter> r"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -32,7 +32,7 @@ lemma result_imp_rej:
     e :: "'a set" and
     r :: "'a set" and
     d :: "'a set"
-  assumes "well_formed_social_choice A (e, r, d)"
+  assumes "well_formed_\<S>\<C>\<F> A (e, r, d)"
   shows "A - (e \<union> d) = r"
 proof (safe)
   fix a :: "'a"
@@ -82,7 +82,7 @@ lemma result_count:
     r :: "'a set" and
     d :: "'a set"
   assumes
-    wf_result: "well_formed_social_choice A (e, r, d)" and
+    wf_result: "well_formed_\<S>\<C>\<F> A (e, r, d)" and
     fin_A: "finite A"
   shows "card A = card e + card r + card d"
 proof -
@@ -101,7 +101,7 @@ lemma defer_subset:
   fixes
     A :: "'a set" and
     r :: "'a Result"
-  assumes "well_formed_social_choice A r"
+  assumes "well_formed_\<S>\<C>\<F> A r"
   shows "defer_r r \<subseteq> A"
 proof (safe)
   fix a :: "'a"
@@ -123,7 +123,7 @@ lemma elect_subset:
   fixes
     A :: "'a set" and
     r :: "'a Result"
-  assumes "well_formed_social_choice A r"
+  assumes "well_formed_\<S>\<C>\<F> A r"
   shows "elect_r r \<subseteq> A"
 proof (safe)
   fix a :: "'a"
@@ -146,7 +146,7 @@ lemma reject_subset:
   fixes
     A :: "'a set" and
     r :: "'a Result"
-  assumes "well_formed_social_choice A r"
+  assumes "well_formed_\<S>\<C>\<F> A r"
   shows "reject_r r \<subseteq> A"
 proof (safe)
   fix a :: "'a"

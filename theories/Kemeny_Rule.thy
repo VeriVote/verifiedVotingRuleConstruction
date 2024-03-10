@@ -26,23 +26,23 @@ fun kemeny_rule :: "('a, 'v::wellorder, 'a Result) Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-theorem kemeny_rule_sound: "social_choice_result.electoral_module kemeny_rule"
+theorem kemeny_rule_sound: "\<S>\<C>\<F>_result.electoral_module kemeny_rule"
   unfolding kemeny_rule.simps swap_\<R>.simps
-  using social_choice_result.\<R>_sound
+  using \<S>\<C>\<F>_result.\<R>_sound
   by metis
 
 subsection \<open>Anonymity Property\<close>
 
-theorem kemeny_rule_anonymous: "social_choice_result.anonymity kemeny_rule"
+theorem kemeny_rule_anonymous: "\<S>\<C>\<F>_result.anonymity kemeny_rule"
 proof (unfold kemeny_rule.simps swap_\<R>.simps)
   let ?swap_dist = "votewise_distance swap l_one"
   have "distance_anonymity ?swap_dist"
     using l_one_is_sym symmetric_norm_imp_distance_anonymous[of l_one]
     by simp
-  thus "social_choice_result.anonymity
-          (social_choice_result.distance_\<R> ?swap_dist strong_unanimity)"
+  thus "\<S>\<C>\<F>_result.anonymity
+          (\<S>\<C>\<F>_result.distance_\<R> ?swap_dist strong_unanimity)"
     using strong_unanimity_anonymous
-          social_choice_result.anonymous_distance_and_consensus_imp_rule_anonymity
+          \<S>\<C>\<F>_result.anonymous_distance_and_consensus_imp_rule_anonymity
     by metis
 qed
 
@@ -52,10 +52,10 @@ lemma swap_dist_neutral: "distance_neutrality valid_elections (votewise_distance
   using neutral_dist_imp_neutral_votewise_dist swap_neutral
   by blast
 
-theorem kemeny_rule_neutral: "social_choice_properties.neutrality valid_elections kemeny_rule"
+theorem kemeny_rule_neutral: "\<S>\<C>\<F>_properties.neutrality valid_elections kemeny_rule"
   using strong_unanimity_neutral' swap_dist_neutral
         strong_unanimity_closed_under_neutrality
-        social_choice_properties.neutr_dist_and_cons_imp_neutr_dr[of
+        \<S>\<C>\<F>_properties.neutr_dist_and_cons_imp_neutr_dr[of
           "votewise_distance swap l_one" strong_unanimity]
   unfolding kemeny_rule.simps swap_\<R>.simps
   by blast

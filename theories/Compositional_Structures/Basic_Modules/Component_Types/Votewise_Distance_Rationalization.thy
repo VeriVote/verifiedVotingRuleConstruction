@@ -21,7 +21,7 @@ subsection \<open>Common Rationalizations\<close>
 
 fun swap_\<R> :: "('a, 'v::linorder, 'a Result) Consensus_Class \<Rightarrow>
             ('a, 'v, 'a Result) Electoral_Module" where
-  "swap_\<R> K = social_choice_result.distance_\<R> (votewise_distance swap l_one) K"
+  "swap_\<R> K = \<S>\<C>\<F>_result.distance_\<R> (votewise_distance swap l_one) K"
 
 subsection \<open>Theorems\<close>
 
@@ -127,11 +127,11 @@ type_synonym ('a, 'v) dist_type = "('a, 'v) Election Distance \<Rightarrow>
 lemma equal_score_swap: "(score::(('a, 'v::linorder) score_type)) (votewise_distance swap l_one) =
             score_std (votewise_distance swap l_one)"
   using votewise_non_voters_irrelevant swap_standard
-        social_choice_result.standard_distance_imp_equal_score
+        \<S>\<C>\<F>_result.standard_distance_imp_equal_score
   by fast
 
 lemma swap_\<R>_code[code]: "swap_\<R> =
-            (social_choice_result.distance_\<R>_std::(('a, 'v::linorder) dist_rat_std_type))
+            (\<S>\<C>\<F>_result.distance_\<R>_std::(('a, 'v::linorder) dist_rat_std_type))
               (votewise_distance swap l_one)"
 proof -
   from equal_score_swap
@@ -140,14 +140,14 @@ proof -
                   (votewise_distance swap l_one) K E a =
               score_std (votewise_distance swap l_one) K E a"
     by metis
-  hence "\<forall> K V A p. (social_choice_result.\<R>\<^sub>\<W>::(('a, 'v::linorder) dist_rat_type))
+  hence "\<forall> K V A p. (\<S>\<C>\<F>_result.\<R>\<^sub>\<W>::(('a, 'v::linorder) dist_rat_type))
                         (votewise_distance swap l_one) K V A p =
-                    social_choice_result.\<R>\<^sub>\<W>_std
+                    \<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std
                         (votewise_distance swap l_one) K V A p"
      by (simp add: equal_score_swap)
-  hence "\<forall> K V A p. (social_choice_result.distance_\<R>::(('a, 'v::linorder) dist_type))
+  hence "\<forall> K V A p. (\<S>\<C>\<F>_result.distance_\<R>::(('a, 'v::linorder) dist_type))
                         (votewise_distance swap l_one) K V A p
-                    = social_choice_result.distance_\<R>_std
+                    = \<S>\<C>\<F>_result.distance_\<R>_std
                         (votewise_distance swap l_one) K V A p"
     by fastforce
   thus ?thesis

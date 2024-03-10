@@ -30,7 +30,7 @@ fun condorcet :: "('a, 'v, 'a Result) Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-theorem condorcet_sound: "social_choice_result.electoral_module condorcet"
+theorem condorcet_sound: "\<S>\<C>\<F>_result.electoral_module condorcet"
   unfolding condorcet.simps
   using max_elim_sound
   by metis
@@ -61,18 +61,18 @@ proof (unfold condorcet_rating_def, safe)
 qed
 
 theorem condorcet_is_dcc: "defer_condorcet_consistency condorcet"
-proof (unfold defer_condorcet_consistency_def social_choice_result.electoral_module_def, safe)
+proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module_def, safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile"
   assume
     "profile V A p"
-  hence "well_formed_social_choice A (max_eliminator condorcet_score V A p)"
+  hence "well_formed_\<S>\<C>\<F> A (max_eliminator condorcet_score V A p)"
     using max_elim_sound
-    unfolding social_choice_result.electoral_module_def
+    unfolding \<S>\<C>\<F>_result.electoral_module_def
     by metis
-  thus "well_formed_social_choice A (condorcet V A p)"
+  thus "well_formed_\<S>\<C>\<F> A (condorcet V A p)"
     by simp
 next
   fix

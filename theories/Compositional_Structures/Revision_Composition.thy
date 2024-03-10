@@ -31,8 +31,8 @@ subsection \<open>Soundness\<close>
 
 theorem rev_comp_sound[simp]:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
-  assumes "social_choice_result.electoral_module m"
-  shows "social_choice_result.electoral_module (revision_composition m)"
+  assumes "\<S>\<C>\<F>_result.electoral_module m"
+  shows "\<S>\<C>\<F>_result.electoral_module (revision_composition m)"
 proof -
   from assms
   have "\<forall> A V p. profile V A p \<longrightarrow> elect m V A p \<subseteq> A"
@@ -51,7 +51,7 @@ proof -
     by simp
   from unity disjoint
   show ?thesis
-    unfolding social_choice_result.electoral_module_def
+    unfolding \<S>\<C>\<F>_result.electoral_module_def
     by simp
 qed
 
@@ -71,7 +71,7 @@ text \<open>
 
 theorem rev_comp_non_electing[simp]:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
-  assumes "social_choice_result.electoral_module m"
+  assumes "\<S>\<C>\<F>_result.electoral_module m"
   shows "non_electing (m\<down>)"
   using assms
   unfolding non_electing_def
@@ -87,7 +87,7 @@ theorem rev_comp_non_blocking[simp]:
   assumes "electing m"
   shows "non_blocking (m\<down>)"
 proof (unfold non_blocking_def, safe, simp_all)
-  show "social_choice_result.electoral_module (m\<down>)"
+  show "\<S>\<C>\<F>_result.electoral_module (m\<down>)"
     using assms rev_comp_sound
     unfolding electing_def
     by (metis (no_types, lifting))
@@ -124,7 +124,7 @@ theorem rev_comp_def_inv_mono[simp]:
   assumes "invariant_monotonicity m"
   shows "defer_invariant_monotonicity (m\<down>)"
 proof (unfold defer_invariant_monotonicity_def, safe)
-  show "social_choice_result.electoral_module (m\<down>)"
+  show "\<S>\<C>\<F>_result.electoral_module (m\<down>)"
     using assms rev_comp_sound
     unfolding invariant_monotonicity_def
     by simp

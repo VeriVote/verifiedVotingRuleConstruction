@@ -40,8 +40,8 @@ text \<open>
 theorem smc_sound:
   fixes x :: "'a Preference_Relation"
   assumes "linear_order x"
-  shows "social_choice_result.electoral_module (smc x)"
-proof (unfold social_choice_result.electoral_module_def, simp, safe, simp_all)
+  shows "\<S>\<C>\<F>_result.electoral_module (smc x)"
+proof (unfold \<S>\<C>\<F>_result.electoral_module_def, simp, safe, simp_all)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -98,7 +98,7 @@ next
   assume
     prof: "profile V A p" and
     elect_x': "x' \<in> elect (?smc) V A p"
-  have "social_choice_result.electoral_module ?smc"
+  have "\<S>\<C>\<F>_result.electoral_module ?smc"
     by (simp add: loop_comp_sound)
   thus "x' \<in> A"
     using prof elect_x' elect_in_alts
@@ -118,7 +118,7 @@ next
   assume
     prof: "profile V A p" and
     defer_x': "x' \<in> defer (?smc) V A p"
-  have "social_choice_result.electoral_module ?smc"
+  have "\<S>\<C>\<F>_result.electoral_module ?smc"
     by (simp add: loop_comp_sound)
   thus "x' \<in> A"
     using prof defer_x' defer_in_alts
@@ -138,7 +138,7 @@ next
   assume
     prof: "profile V A p" and
     reject_x': "x' \<in> reject (?smc) V A p"
-  have "social_choice_result.electoral_module ?smc"
+  have "\<S>\<C>\<F>_result.electoral_module ?smc"
     by (simp add: loop_comp_sound)
   thus "x' \<in> A"
     using prof reject_x' reject_in_alts

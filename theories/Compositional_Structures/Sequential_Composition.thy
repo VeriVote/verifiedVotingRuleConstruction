@@ -96,8 +96,8 @@ lemma seq_comp_presv_disj:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
-  assumes module_m: "social_choice_result.electoral_module m" and
-          module_n: "social_choice_result.electoral_module n" and
+  assumes module_m: "\<S>\<C>\<F>_result.electoral_module m" and
+          module_n: "\<S>\<C>\<F>_result.electoral_module n" and
           prof:  "profile V A p"
   shows "disjoint3 ((m \<triangleright> n) V A p)"
 proof -
@@ -109,18 +109,18 @@ proof -
   have defer_in_A:
     "\<forall> A' V' p' m' a.
       (profile V' A' p' \<and> 
-       social_choice_result.electoral_module m' \<and>
+       \<S>\<C>\<F>_result.electoral_module m' \<and>
        (a::'a) \<in> defer m' V' A' p') \<longrightarrow>
       a \<in> A'"
     using UnCI result_presv_alts
     by fastforce
   from module_m prof
   have disjoint_m: "disjoint3 (m V A p)"
-    unfolding social_choice_result.electoral_module_def well_formed_social_choice.simps
+    unfolding \<S>\<C>\<F>_result.electoral_module_def well_formed_\<S>\<C>\<F>.simps
     by blast
   from module_m module_n def_presv_prof prof
   have disjoint_n: "disjoint3 (n V ?new_A ?new_p)"
-    unfolding social_choice_result.electoral_module_def well_formed_social_choice.simps
+    unfolding \<S>\<C>\<F>_result.electoral_module_def well_formed_\<S>\<C>\<F>.simps
     by metis
   have disj_n:
     "elect m V A p \<inter> reject m V A p = {} \<and>
@@ -247,8 +247,8 @@ lemma seq_comp_presv_alts:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
-  assumes module_m: "social_choice_result.electoral_module m" and
-          module_n: "social_choice_result.electoral_module n" and
+  assumes module_m: "\<S>\<C>\<F>_result.electoral_module m" and
+          module_n: "\<S>\<C>\<F>_result.electoral_module n" and
           prof:  "profile V A p"
   shows "set_equals_partition A ((m \<triangleright> n) V A p)"
 proof -
@@ -306,20 +306,20 @@ theorem seq_comp_sound[simp]:
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     n :: "('a, 'v, 'a Result) Electoral_Module"
   assumes
-    "social_choice_result.electoral_module m" and
-    "social_choice_result.electoral_module n"
-  shows "social_choice_result.electoral_module (m \<triangleright> n)"
-proof (unfold social_choice_result.electoral_module_def, safe)
+    "\<S>\<C>\<F>_result.electoral_module m" and
+    "\<S>\<C>\<F>_result.electoral_module n"
+  shows "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
+proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assume
     prof_A: "profile V A p"
-  have "\<forall> r. well_formed_social_choice (A::'a set) r =
+  have "\<forall> r. well_formed_\<S>\<C>\<F> (A::'a set) r =
           (disjoint3 r \<and> set_equals_partition A r)"
     by simp
-  thus "well_formed_social_choice A ((m \<triangleright> n) V A p)"
+  thus "well_formed_\<S>\<C>\<F> A ((m \<triangleright> n) V A p)"
     using assms seq_comp_presv_disj seq_comp_presv_alts prof_A
     by metis
 qed
@@ -334,14 +334,14 @@ lemma seq_comp_dec_only_def:
     V :: "'v set" and
     p :: "('a,'v) Profile"
   assumes
-    module_m: "social_choice_result.electoral_module m" and
-    module_n: "social_choice_result.electoral_module n" and
+    module_m: "\<S>\<C>\<F>_result.electoral_module m" and
+    module_n: "\<S>\<C>\<F>_result.electoral_module n" and
     prof: "profile V A p" and
     empty_defer: "defer m V A p = {}"
   shows "(m \<triangleright> n) V A p =  m V A p"
 proof -
   have "\<forall> m' A' V' p'.
-      (social_choice_result.electoral_module m' \<and> profile V' A' p') \<longrightarrow>
+      (\<S>\<C>\<F>_result.electoral_module m' \<and> profile V' A' p') \<longrightarrow>
         profile V' (defer m' V' A' p') (limit_profile (defer m' V' A' p') p')"
     using def_presv_prof prof
     by metis
@@ -353,7 +353,7 @@ proof -
       have
       "(elect m V A p) \<union> (elect n V (defer m V A p) (limit_profile (defer m V A p) p)) =
           elect m V A p"
-      using elect_in_alts[of n V "defer m V A p" "(limit_profile (defer m V A p) p)"]
+      using elect_in_alts[of "n" "V" "defer m V A p" "(limit_profile (defer m V A p) p)"]
             empty_defer module_n prof prof_no_alt
       by auto
     thus "elect (m \<triangleright> n) V A p = elect m V A p"
@@ -363,7 +363,7 @@ proof -
   next
     have rej_empty:
       "\<forall> m' V' p'.
-        (social_choice_result.electoral_module m' 
+        (\<S>\<C>\<F>_result.electoral_module m'
           \<and> profile V' ({}::'a set) p') \<longrightarrow> reject m' V' {} p' = {}"
       using bot.extremum_uniqueI reject_in_alts
       by metis
@@ -446,8 +446,8 @@ lemma seq_comp_def_card_bounded:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    "social_choice_result.electoral_module m" and
-    "social_choice_result.electoral_module n" and
+    "\<S>\<C>\<F>_result.electoral_module m" and
+    "\<S>\<C>\<F>_result.electoral_module n" and
     "finite_profile V A p"
   shows "card (defer (m \<triangleright> n) V A p) \<le> card (defer m V A p)"
   using card_mono defer_in_alts assms def_presv_prof snd_conv finite_subset
@@ -462,8 +462,8 @@ lemma seq_comp_def_set_bounded:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    "social_choice_result.electoral_module m" and
-    "social_choice_result.electoral_module n" and
+    "\<S>\<C>\<F>_result.electoral_module m" and
+    "\<S>\<C>\<F>_result.electoral_module n" and
     "profile V A p"
   shows "defer (m \<triangleright> n) V A p \<subseteq> defer m V A p"
   using defer_in_alts assms snd_conv def_presv_prof
@@ -503,7 +503,7 @@ lemma seq_comp_elim_one_red_def_set:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    "social_choice_result.electoral_module m" and
+    "\<S>\<C>\<F>_result.electoral_module m" and
     "eliminates 1 n" and
     "profile V A p" and
     "card (defer m V A p) > 1"
@@ -522,7 +522,7 @@ lemma seq_comp_def_set_trans:
     a :: "'a"
   assumes
     "a \<in> (defer (m \<triangleright> n) V A p)" and
-    "social_choice_result.electoral_module m \<and> social_choice_result.electoral_module n" and
+    "\<S>\<C>\<F>_result.electoral_module m \<and> \<S>\<C>\<F>_result.electoral_module n" and
     "profile V A p"
   shows "a \<in> defer n V (defer m V A p) (limit_profile (defer m V A p) p) \<and>
           a \<in> defer m V A p"
@@ -559,8 +559,8 @@ proof -
     unfolding non_blocking_def
     by metis
   from non_blocking_m
-  have "?input_sound \<longrightarrow> well_formed_social_choice A (m V A p)"
-    unfolding social_choice_result.electoral_module_def non_blocking_def
+  have "?input_sound \<longrightarrow> well_formed_\<S>\<C>\<F> A (m V A p)"
+    unfolding \<S>\<C>\<F>_result.electoral_module_def non_blocking_def
     by simp
   hence "?input_sound \<longrightarrow> elect m V A p \<union> defer m V A p = A - reject m V A p"
     using non_blocking_m elec_and_def_not_rej
@@ -576,16 +576,16 @@ proof -
   proof (unfold non_blocking_def)
     assume
       emod_reject_m:
-      "social_choice_result.electoral_module m \<and>
+      "\<S>\<C>\<F>_result.electoral_module m \<and>
         (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> reject m V A p \<noteq> A)" and
       emod_reject_n:
-      "social_choice_result.electoral_module n \<and>
+      "\<S>\<C>\<F>_result.electoral_module n \<and>
         (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> reject n V A p \<noteq> A)"
     show
-      "social_choice_result.electoral_module (m \<triangleright> n) \<and>
+      "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n) \<and>
         (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> reject (m \<triangleright> n) V A p \<noteq> A)"
     proof (safe)
-      show "social_choice_result.electoral_module (m \<triangleright> n)"
+      show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
         using emod_reject_m emod_reject_n
         by simp
     next
@@ -659,11 +659,11 @@ theorem seq_comp_presv_non_electing[simp]:
     "non_electing n"
   shows "non_electing (m \<triangleright> n)"
 proof (unfold non_electing_def, safe)
-  have "social_choice_result.electoral_module m \<and> social_choice_result.electoral_module n"
+  have "\<S>\<C>\<F>_result.electoral_module m \<and> \<S>\<C>\<F>_result.electoral_module n"
     using assms
     unfolding non_electing_def
     by blast
-  thus "social_choice_result.electoral_module (m \<triangleright> n)"
+  thus "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     by simp
 next
   fix
@@ -709,17 +709,17 @@ proof -
   thus ?thesis
   proof -
     have "\<forall> m'.
-          (\<not> electing m' \<or> social_choice_result.electoral_module m' \<and>
-              (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
-          (electing m' \<or> \<not> social_choice_result.electoral_module m' \<or> 
+          (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
+              (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') \<longrightarrow> elect m' V' A' p' \<noteq> {}))
+        \<and> (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m' \<or>
               (\<exists> A V p. (A \<noteq> {} \<and> finite A \<and> profile V A p \<and> elect m' V A p = {})))"
       unfolding electing_def
       by blast
     hence "\<forall> m'.
-          (\<not> electing m' \<or> social_choice_result.electoral_module m' \<and>
-              (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
-          (\<exists> A V p. (electing m' \<or> \<not> social_choice_result.electoral_module m' \<or> A \<noteq> {} \<and> 
-              finite A \<and> profile V A p \<and> elect m' V A p = {}))"
+          (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
+              (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') \<longrightarrow> elect m' V' A' p' \<noteq> {}))
+        \<and> (\<exists> A V p. (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m' \<or> A \<noteq> {}
+            \<and> finite A \<and> profile V A p \<and> elect m' V A p = {}))"
       by simp
     then obtain
       A :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set" and
@@ -727,25 +727,25 @@ proof -
       p :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v) Profile" where
       f_mod:
        "\<forall> m'::('a, 'v, 'a Result) Electoral_Module.
-        (\<not> electing m' \<or> social_choice_result.electoral_module m' \<and>
+        (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
           (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') 
             \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
-          (electing m' \<or> \<not> social_choice_result.electoral_module m' \<or> A m' \<noteq> {} \<and> 
+          (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m' \<or> A m' \<noteq> {} \<and>
           finite (A m') \<and> profile (V m') (A m') (p m') \<and> elect m' (V m') (A m') (p m') = {})"
       by metis
     hence f_elect:
-      "social_choice_result.electoral_module n \<and>
+      "\<S>\<C>\<F>_result.electoral_module n \<and>
         (\<forall> A V p. (A \<noteq> {} \<and> finite A \<and> profile V A p) \<longrightarrow> elect n V A p \<noteq> {})"
       using electing_n
       unfolding electing_def
       by metis
     have def_card_one:
-      "social_choice_result.electoral_module m \<and>
+      "\<S>\<C>\<F>_result.electoral_module m \<and>
         (\<forall> A V p. (1 \<le> card A \<and> finite A \<and> profile V A p) \<longrightarrow> card (defer m V A p) = 1)"
       using def_one_m defer_card_eq_one
       unfolding defers_def
       by blast
-    hence "social_choice_result.electoral_module (m \<triangleright> n)"
+    hence "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
       using f_elect seq_comp_sound
       by metis
     with f_mod f_elect def_card_one
@@ -778,8 +778,7 @@ proof -
   let ?new_p = "limit_profile ?new_Ap p"
   let ?new_q = "limit_profile ?new_Aq q"
   from monotone_m monotone_n
-  have modules: "social_choice_result.electoral_module m 
-                  \<and> social_choice_result.electoral_module n"
+  have modules: "\<S>\<C>\<F>_result.electoral_module m \<and> \<S>\<C>\<F>_result.electoral_module n"
     unfolding defer_lift_invariance_def
     by simp
   hence "profile V A p \<longrightarrow> defer (m \<triangleright> n) V A p \<subseteq> defer m V A p"
@@ -875,7 +874,7 @@ theorem seq_comp_presv_def_lift_inv[simp]:
     "only_voters_vote n"
   shows "defer_lift_invariance (m \<triangleright> n)"
 proof (unfold defer_lift_invariance_def, safe)
-  show "social_choice_result.electoral_module (m \<triangleright> n)"
+  show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     using assms seq_comp_sound
     unfolding defer_lift_invariance_def
     by blast
@@ -912,15 +911,15 @@ theorem seq_comp_def_one[simp]:
     def_one_n: "defers 1 n"
   shows "defers 1 (m \<triangleright> n)"
 proof (unfold defers_def, safe)
-  have "social_choice_result.electoral_module m"
+  have "\<S>\<C>\<F>_result.electoral_module m"
     using non_electing_m
     unfolding non_electing_def
     by simp
-  moreover have "social_choice_result.electoral_module n"
+  moreover have "\<S>\<C>\<F>_result.electoral_module n"
     using def_one_n
     unfolding defers_def
     by simp
-  ultimately show "social_choice_result.electoral_module (m \<triangleright> n)"
+  ultimately show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     by simp
 next
   fix
@@ -955,7 +954,7 @@ next
     by metis
   moreover have
     "\<forall> i m'. defers i m' =
-      (social_choice_result.electoral_module m' \<and>
+      (\<S>\<C>\<F>_result.electoral_module m' \<and>
         (\<forall> A' V' p'. (i \<le> card A' \<and> finite A' \<and> profile V' A' p') \<longrightarrow>
             card (defer m' V' A' p') = i))"
     unfolding defers_def
@@ -988,16 +987,16 @@ theorem disj_compat_seq[simp]:
     n :: "('a, 'v, 'a Result) Electoral_Module"
   assumes
     compatible: "disjoint_compatibility m n" and
-    module_m': "social_choice_result.electoral_module m'" and
+    module_m': "\<S>\<C>\<F>_result.electoral_module m'" and
     only_voters: "only_voters_vote m'"
   shows "disjoint_compatibility (m \<triangleright> m') n"
 proof (unfold disjoint_compatibility_def, safe)
-  show "social_choice_result.electoral_module (m \<triangleright> m')"
+  show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> m')"
     using compatible module_m' seq_comp_sound
     unfolding disjoint_compatibility_def
     by metis
 next
-  show "social_choice_result.electoral_module n"
+  show "\<S>\<C>\<F>_result.electoral_module n"
     using compatible
     unfolding disjoint_compatibility_def
     by metis
@@ -1006,11 +1005,11 @@ next
     S :: "'a set" and
     V :: "'v set"
   have modules:
-    "social_choice_result.electoral_module (m \<triangleright> m') \<and> social_choice_result.electoral_module n"
+    "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> m') \<and> \<S>\<C>\<F>_result.electoral_module n"
     using compatible module_m' seq_comp_sound
     unfolding disjoint_compatibility_def
     by metis
-  obtain A where rej_A:
+  obtain A :: "'a set" where rej_A:
     "A \<subseteq> S \<and>
       (\<forall> a \<in> A.
         indep_of_alt m V S a \<and> (\<forall> p. profile V S p \<longrightarrow> a \<in> reject m V S p)) \<and>
@@ -1096,17 +1095,17 @@ theorem seq_comp_cond_compat[simp]:
     ne_n: "non_electing n"
   shows "condorcet_compatibility (m \<triangleright> n)"
 proof (unfold condorcet_compatibility_def, safe)
-  have "social_choice_result.electoral_module m"
+  have "\<S>\<C>\<F>_result.electoral_module m"
     using dcc_m
     unfolding defer_condorcet_consistency_def
     by presburger
-  moreover have "social_choice_result.electoral_module n"
+  moreover have "\<S>\<C>\<F>_result.electoral_module n"
     using nb_n
     unfolding non_blocking_def
     by presburger
-  ultimately have "social_choice_result.electoral_module (m \<triangleright> n)"
+  ultimately have "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     by simp
-  thus "social_choice_result.electoral_module (m \<triangleright> n)"
+  thus "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     by presburger
 next
   fix
@@ -1123,15 +1122,15 @@ next
   hence "m V A p = ({}, A - (defer m V A p), {a})"
     using defer_condorcet_consistency_def cw_a cond_winner_unique
     by (metis (no_types, lifting))
-  have sound_m: "social_choice_result.electoral_module m"
+  have sound_m: "\<S>\<C>\<F>_result.electoral_module m"
     using dcc_m
     unfolding defer_condorcet_consistency_def
     by presburger
-  moreover have "social_choice_result.electoral_module n"
+  moreover have "\<S>\<C>\<F>_result.electoral_module n"
     using nb_n
     unfolding non_blocking_def
     by presburger
-  ultimately have sound_seq_m_n: "social_choice_result.electoral_module (m \<triangleright> n)"
+  ultimately have sound_seq_m_n: "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     by simp
   have def_m: "defer m V A p = {a}"
     using cw_a cond_winner_unique dcc_m snd_conv
@@ -1155,7 +1154,7 @@ next
   have "\<forall> a' A'. (a'::'a) \<in> A' \<longrightarrow> insert a' (A' - {a'}) = A'"
     by blast
   have nb_n_full:
-    "social_choice_result.electoral_module n \<and>
+    "\<S>\<C>\<F>_result.electoral_module n \<and>
       (\<forall> A' V' p'. A' \<noteq> {} \<and> finite A' \<and> finite V' \<and> profile V' A' p' \<longrightarrow> reject n V' A' p' \<noteq> A')"
     using nb_n non_blocking_def
     by metis
@@ -1218,15 +1217,15 @@ next
   hence result_m: "m V A p = ({}, A - (defer m V A p), {a})"
     using defer_condorcet_consistency_def cw_a cond_winner_unique
     by (metis (no_types, lifting))
-  have sound_m: "social_choice_result.electoral_module m"
+  have sound_m: "\<S>\<C>\<F>_result.electoral_module m"
     using dcc_m
     unfolding defer_condorcet_consistency_def
     by presburger
-  moreover have "social_choice_result.electoral_module n"
+  moreover have "\<S>\<C>\<F>_result.electoral_module n"
     using nb_n
     unfolding non_blocking_def
     by presburger
-  ultimately have sound_seq_m_n: "social_choice_result.electoral_module (m \<triangleright> n)"
+  ultimately have sound_seq_m_n: "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     by simp
   have "reject m V A p = A - {a}"
     using cw_a dcc_m prod.sel(1) snd_conv result_m
@@ -1335,11 +1334,11 @@ theorem seq_comp_dcc[simp]:
     ne_n: "non_electing n"
   shows "defer_condorcet_consistency (m \<triangleright> n)"
 proof (unfold defer_condorcet_consistency_def, safe)
-  have "social_choice_result.electoral_module m"
+  have "\<S>\<C>\<F>_result.electoral_module m"
     using dcc_m
     unfolding defer_condorcet_consistency_def
     by metis
-  thus "social_choice_result.electoral_module (m \<triangleright> n)"
+  thus "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     using ne_n
     unfolding non_electing_def
     by simp
@@ -1359,11 +1358,11 @@ next
   hence elect_m_empty: "elect m V A p = {}"
     using eq_fst_iff
     by metis
-  have sound_m: "social_choice_result.electoral_module m"
+  have sound_m: "\<S>\<C>\<F>_result.electoral_module m"
     using dcc_m
     unfolding defer_condorcet_consistency_def
     by metis
-  hence sound_seq_m_n: "social_choice_result.electoral_module (m \<triangleright> n)"
+  hence sound_seq_m_n: "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     using ne_n
     unfolding non_electing_def
     by simp
@@ -1464,15 +1463,15 @@ theorem seq_comp_mono[simp]:
     electing_n: "electing n"
   shows "monotonicity (m \<triangleright> n)"
 proof (unfold monotonicity_def, safe)
-  have "social_choice_result.electoral_module m"
+  have "\<S>\<C>\<F>_result.electoral_module m"
     using non_ele_m
     unfolding non_electing_def
     by simp
-  moreover have "social_choice_result.electoral_module n"
+  moreover have "\<S>\<C>\<F>_result.electoral_module n"
     using electing_n
     unfolding electing_def
     by simp
-  ultimately show "social_choice_result.electoral_module (m \<triangleright> n)"
+  ultimately show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     by simp
 next
   fix
@@ -1509,15 +1508,15 @@ theorem def_inv_mono_imp_def_lift_inv[simp]:
     only_voters: "only_voters_vote n"
   shows "defer_lift_invariance (m \<triangleright> n)"
 proof (unfold defer_lift_invariance_def, safe)
-  have "social_choice_result.electoral_module m"
+  have "\<S>\<C>\<F>_result.electoral_module m"
     using strong_def_mon_m
     unfolding defer_invariant_monotonicity_def
     by metis
-  moreover have "social_choice_result.electoral_module n"
+  moreover have "\<S>\<C>\<F>_result.electoral_module n"
     using defers_one
     unfolding defers_def
     by metis
-  ultimately show "social_choice_result.electoral_module (m \<triangleright> n)"
+  ultimately show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     by simp
 next
   fix
@@ -1533,11 +1532,11 @@ next
     using strong_def_mon_m
     unfolding defer_invariant_monotonicity_def
     by simp
-  have electoral_mod_m: "social_choice_result.electoral_module m"
+  have electoral_mod_m: "\<S>\<C>\<F>_result.electoral_module m"
     using strong_def_mon_m
     unfolding defer_invariant_monotonicity_def
     by metis
-  have electoral_mod_n: "social_choice_result.electoral_module n"
+  have electoral_mod_n: "\<S>\<C>\<F>_result.electoral_module n"
     using defers_one
     unfolding defers_def
     by metis

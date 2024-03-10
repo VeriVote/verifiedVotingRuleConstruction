@@ -42,9 +42,9 @@ theorem max_par_comp_sound:
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     n :: "('a, 'v, 'a Result) Electoral_Module"
   assumes
-     "social_choice_result.electoral_module m" and
-     "social_choice_result.electoral_module n"
-  shows "social_choice_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
+     "\<S>\<C>\<F>_result.electoral_module m" and
+     "\<S>\<C>\<F>_result.electoral_module n"
+  shows "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
   using assms
   by simp
 
@@ -73,8 +73,8 @@ lemma max_agg_eq_result:
     p :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
-    module_m: "social_choice_result.electoral_module m" and
-    module_n: "social_choice_result.electoral_module n" and
+    module_m: "\<S>\<C>\<F>_result.electoral_module m" and
+    module_n: "\<S>\<C>\<F>_result.electoral_module n" and
     prof_p: "profile V A p" and
     a_in_A: "a \<in> A"
   shows "mod_contains_result (m \<parallel>\<^sub>\<up> n) m V A p a \<or>
@@ -90,15 +90,15 @@ proof (cases)
   moreover have
     "\<forall> m' n' V' A' p' a'.
       mod_contains_result m' n' V' A' p' (a'::'a) =
-        (social_choice_result.electoral_module m' 
-          \<and> social_choice_result.electoral_module n'
+        (\<S>\<C>\<F>_result.electoral_module m'
+          \<and> \<S>\<C>\<F>_result.electoral_module n'
           \<and> profile V' A' p' \<and> a' \<in> A'
           \<and> (a' \<notin> elect m' V' A' p' \<or> a' \<in> elect n' V' A' p')
           \<and> (a' \<notin> reject m' V' A' p' \<or> a' \<in> reject n' V' A' p')
           \<and> (a' \<notin> defer m' V' A' p' \<or> a' \<in> defer n' V' A' p'))"
     unfolding mod_contains_result_def
     by simp
-  moreover have module_mn: "social_choice_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
+  moreover have module_mn: "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
     using module_m module_n
     by simp
   moreover have "a \<notin> defer (m \<parallel>\<^sub>\<up> n) V A p"
@@ -119,25 +119,25 @@ next
     proof (safe)
       assume not_mod_cont_mn: "\<not> mod_contains_result (m \<parallel>\<^sub>\<up> n) n V A p a"
       have par_emod: "\<forall> m' n'.
-        social_choice_result.electoral_module m' \<and> 
-        social_choice_result.electoral_module n' \<longrightarrow> 
-        social_choice_result.electoral_module (m' \<parallel>\<^sub>\<up> n')"
+        \<S>\<C>\<F>_result.electoral_module m' \<and>
+        \<S>\<C>\<F>_result.electoral_module n' \<longrightarrow>
+        \<S>\<C>\<F>_result.electoral_module (m' \<parallel>\<^sub>\<up> n')"
         using max_par_comp_sound
         by blast
       have set_intersect: "\<forall> a' A' A''. (a' \<in> A' \<inter> A'') = (a' \<in> A' \<and> a' \<in> A'')"
         by blast
-      have wf_n: "well_formed_social_choice A (n V A p)"
+      have wf_n: "well_formed_\<S>\<C>\<F> A (n V A p)"
         using prof_p module_n
-        unfolding social_choice_result.electoral_module_def
+        unfolding \<S>\<C>\<F>_result.electoral_module_def
         by blast
-      have wf_m: "well_formed_social_choice A (m V A p)"
+      have wf_m: "well_formed_\<S>\<C>\<F> A (m V A p)"
         using prof_p module_m
-        unfolding social_choice_result.electoral_module_def
+        unfolding \<S>\<C>\<F>_result.electoral_module_def
         by blast
-      have e_mod_par: "social_choice_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
+      have e_mod_par: "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
         using par_emod module_m module_n
         by blast
-      hence "social_choice_result.electoral_module (m \<parallel>\<^sub>max_aggregator n)"
+      hence "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>max_aggregator n)"
         by simp
       hence result_disj_max:
         "elect (m \<parallel>\<^sub>max_aggregator n) V A p \<inter>
@@ -173,8 +173,8 @@ next
       have mod_cont_res_fg:
         "\<forall> m' n' A' V' p' (a'::'a).
           mod_contains_result m' n' V' A' p' a' =
-            (social_choice_result.electoral_module m' 
-              \<and> social_choice_result.electoral_module n'
+            (\<S>\<C>\<F>_result.electoral_module m'
+              \<and> \<S>\<C>\<F>_result.electoral_module n'
               \<and> profile V' A' p' \<and> a' \<in> A'
               \<and> (a' \<in> elect m' V' A' p' \<longrightarrow> a' \<in> elect n' V' A' p')
               \<and> (a' \<in> reject m' V' A' p' \<longrightarrow> a' \<in> reject n' V' A' p')
@@ -187,14 +187,14 @@ next
         by simp
       have well_f_max:
         "\<forall> r' r'' e' e'' d' d'' A'.
-          well_formed_social_choice A' (e', r', d') \<and>
-          well_formed_social_choice A' (e'', r'', d'') \<longrightarrow>
+          well_formed_\<S>\<C>\<F> A' (e', r', d') \<and>
+          well_formed_\<S>\<C>\<F> A' (e'', r'', d'') \<longrightarrow>
             reject_r (max_aggregator A' (e', r', d') (e'', r'', d'')) = r' \<inter> r''"
         using max_agg_rej_set
         by metis
       have e_mod_disj:
-        "\<forall> m' (V'::'v set) (A'::'a set) p'. 
-          social_choice_result.electoral_module m' \<and> profile V' A' p'
+        "\<forall> m' (V'::'v set) (A'::'a set) p'.
+          \<S>\<C>\<F>_result.electoral_module m' \<and> profile V' A' p'
           \<longrightarrow> elect m' V' A' p' \<union> reject m' V' A' p' \<union> defer m' V' A' p' = A'"
         using result_presv_alts
         by blast
@@ -203,8 +203,8 @@ next
         by metis
       have "\<forall> m' n' A' V' p' (b::'a).
               mod_contains_result m' n' V' A' p' b =
-                (social_choice_result.electoral_module m' 
-                  \<and> social_choice_result.electoral_module n'
+                (\<S>\<C>\<F>_result.electoral_module m'
+                  \<and> \<S>\<C>\<F>_result.electoral_module n'
                   \<and> profile V' A' p' \<and> b \<in> A'
                   \<and> (b \<in> elect m' V' A' p' \<longrightarrow> b \<in> elect n' V' A' p')
                   \<and> (b \<in> reject m' V' A' p' \<longrightarrow> b \<in> reject n' V' A' p')
@@ -268,8 +268,8 @@ lemma max_agg_rej_iff_both_reject:
     a :: "'a"
   assumes
     "finite_profile V A p" and
-    "social_choice_result.electoral_module m" and
-    "social_choice_result.electoral_module n"
+    "\<S>\<C>\<F>_result.electoral_module m" and
+    "\<S>\<C>\<F>_result.electoral_module n"
   shows "(a \<in> reject (m \<parallel>\<^sub>\<up> n) V A p) = (a \<in> reject m V A p \<and> a \<in> reject n V A p)"
 proof
   assume rej_a: "a \<in> reject (m \<parallel>\<^sub>\<up> n) V A p"
@@ -318,13 +318,13 @@ lemma max_agg_rej_fst_imp_seq_contained:
     a :: "'a"
   assumes
     f_prof: "finite_profile V A p" and
-    module_m: "social_choice_result.electoral_module m" and
-    module_n: "social_choice_result.electoral_module n" and
+    module_m: "\<S>\<C>\<F>_result.electoral_module m" and
+    module_n: "\<S>\<C>\<F>_result.electoral_module n" and
     rejected: "a \<in> reject n V A p"
   shows "mod_contains_result m (m \<parallel>\<^sub>\<up> n) V A p a"
   using assms
 proof (unfold mod_contains_result_def, safe)
-  show "social_choice_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
+  show "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
     using module_m module_n
     by simp
 next
@@ -366,7 +366,7 @@ next
     by (metis (no_types))
   have
     "\<forall> m' A' V' p'.
-      (social_choice_result.electoral_module m' \<and> finite A' \<and> finite V' \<and> profile V' A' p') \<longrightarrow>
+      (\<S>\<C>\<F>_result.electoral_module m' \<and> finite A' \<and> finite V' \<and> profile V' A' p') \<longrightarrow>
         elect m' V' A' p' \<union> reject m' V' A' p' \<union> defer m' V' A' p' = A'"
     using result_presv_alts
     by metis
@@ -391,8 +391,8 @@ lemma max_agg_rej_fst_equiv_seq_contained:
     a :: "'a"
   assumes
     "finite_profile V A p" and
-    "social_choice_result.electoral_module m" and
-    "social_choice_result.electoral_module n" and
+    "\<S>\<C>\<F>_result.electoral_module m" and
+    "\<S>\<C>\<F>_result.electoral_module n" and
     "a \<in> reject n V A p"
   shows "mod_contains_result_sym (m \<parallel>\<^sub>\<up> n) m V A p a"
   using assms
@@ -413,7 +413,7 @@ next
     by (metis (full_types), metis (full_types))
 next
   show
-    "social_choice_result.electoral_module (m \<parallel>\<^sub>\<up> n)" and
+    "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)" and
     "a \<in> A"
     using assms max_agg_rej_fst_imp_seq_contained
     unfolding mod_contains_result_def
@@ -438,13 +438,13 @@ lemma max_agg_rej_snd_imp_seq_contained:
     a :: "'a"
   assumes
     f_prof:  "finite_profile V A p" and
-    module_m: "social_choice_result.electoral_module m" and
-    module_n: "social_choice_result.electoral_module n" and
+    module_m: "\<S>\<C>\<F>_result.electoral_module m" and
+    module_n: "\<S>\<C>\<F>_result.electoral_module n" and
     rejected: "a \<in> reject m V A p"
   shows "mod_contains_result n (m \<parallel>\<^sub>\<up> n) V A p a"
   using assms
 proof (unfold mod_contains_result_def, safe)
-  show "social_choice_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
+  show "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
     using module_m module_n
     by simp
 next
@@ -487,8 +487,8 @@ lemma max_agg_rej_snd_equiv_seq_contained:
     a :: "'a"
   assumes
     "finite_profile V A p" and
-    "social_choice_result.electoral_module m" and
-    "social_choice_result.electoral_module n" and
+    "\<S>\<C>\<F>_result.electoral_module m" and
+    "\<S>\<C>\<F>_result.electoral_module n" and
     "a \<in> reject m V A p"
   shows "mod_contains_result_sym (m \<parallel>\<^sub>\<up> n) n V A p a"
   using assms
@@ -509,7 +509,7 @@ next
     by (metis (full_types), metis (full_types))
 next
   show
-    "social_choice_result.electoral_module (m \<parallel>\<^sub>\<up> n)" and
+    "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)" and
     "a \<in> A"
     using assms max_agg_rej_snd_imp_seq_contained
     unfolding mod_contains_result_def
@@ -532,8 +532,8 @@ lemma max_agg_rej_intersect:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    "social_choice_result.electoral_module m" and
-    "social_choice_result.electoral_module n" and
+    "\<S>\<C>\<F>_result.electoral_module m" and
+    "\<S>\<C>\<F>_result.electoral_module n" and
     "profile V A p" and "finite A"
   shows "reject (m \<parallel>\<^sub>\<up> n) V A p = (reject m V A p) \<inter> (reject n V A p)"
 proof -
@@ -606,15 +606,15 @@ theorem par_comp_def_lift_inv[simp]:
     monotone_n: "defer_lift_invariance n"
   shows "defer_lift_invariance (m \<parallel>\<^sub>\<up> n)"
 proof (unfold defer_lift_invariance_def, safe)
-  have mod_m: "social_choice_result.electoral_module m"
+  have mod_m: "\<S>\<C>\<F>_result.electoral_module m"
     using monotone_m
     unfolding defer_lift_invariance_def
     by simp
-  moreover have mod_n: "social_choice_result.electoral_module n"
+  moreover have mod_n: "\<S>\<C>\<F>_result.electoral_module n"
     using monotone_n
     unfolding defer_lift_invariance_def
     by simp
-  ultimately show "social_choice_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
+  ultimately show "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
     by simp
   fix
     A :: "'a set" and
@@ -657,13 +657,13 @@ proof (unfold defer_lift_invariance_def, safe)
     proof (unfold prof_contains_result_def, clarify)
       fix b :: "'a"
       assume b_in_A: "b \<in> A"
-      show "social_choice_result.electoral_module n \<and> profile V A p 
+      show "\<S>\<C>\<F>_result.electoral_module n \<and> profile V A p
               \<and> profile V A q \<and> b \<in> A \<and>
               (b \<in> elect n V A p \<longrightarrow> b \<in> elect n V A q) \<and>
               (b \<in> reject n V A p \<longrightarrow> b \<in> reject n V A q) \<and>
               (b \<in> defer n V A p \<longrightarrow> b \<in> defer n V A q)"
       proof (safe)
-        show "social_choice_result.electoral_module n"
+        show "\<S>\<C>\<F>_result.electoral_module n"
           using monotone_n
           unfolding defer_lift_invariance_def
           by metis
@@ -716,13 +716,13 @@ proof (unfold defer_lift_invariance_def, safe)
     proof (unfold prof_contains_result_def, clarify)
       fix b :: "'a"
       assume b_in_A: "b \<in> A"
-      show "social_choice_result.electoral_module m \<and> profile V A p \<and> 
+      show "\<S>\<C>\<F>_result.electoral_module m \<and> profile V A p \<and>
               profile V A q \<and> b \<in> A \<and>
               (b \<in> elect m V A p \<longrightarrow> b \<in> elect m V A q) \<and>
               (b \<in> reject m V A p \<longrightarrow> b \<in> reject m V A q) \<and>
               (b \<in> defer m V A p \<longrightarrow> b \<in> defer m V A q)"
       proof (safe)
-        show "social_choice_result.electoral_module m"
+        show "\<S>\<C>\<F>_result.electoral_module m"
           using monotone_m
           unfolding defer_lift_invariance_def
           by metis
@@ -794,13 +794,13 @@ proof (unfold defer_lift_invariance_def, safe)
     proof (unfold prof_contains_result_def, clarify)
       fix b :: "'a"
       assume b_in_A: "b \<in> A"
-      show "social_choice_result.electoral_module n \<and> profile V A p \<and> 
+      show "\<S>\<C>\<F>_result.electoral_module n \<and> profile V A p \<and>
               profile V A q \<and> b \<in> A \<and>
               (b \<in> elect n V A p \<longrightarrow> b \<in> elect n V A q) \<and>
               (b \<in> reject n V A p \<longrightarrow> b \<in> reject n V A q) \<and>
               (b \<in> defer n V A p \<longrightarrow> b \<in> defer n V A q)"
       proof (safe)
-        show "social_choice_result.electoral_module n"
+        show "\<S>\<C>\<F>_result.electoral_module n"
           using monotone_n
           unfolding defer_lift_invariance_def
           by metis
@@ -853,13 +853,13 @@ proof (unfold defer_lift_invariance_def, safe)
   proof (unfold prof_contains_result_def, clarify)
     fix b :: "'a"
     assume b_in_A: "b \<in> A"
-    show "social_choice_result.electoral_module m \<and> profile V A p \<and> 
+    show "\<S>\<C>\<F>_result.electoral_module m \<and> profile V A p \<and>
             profile V A q \<and> b \<in> A \<and>
             (b \<in> elect m V A p \<longrightarrow> b \<in> elect m V A q) \<and>
             (b \<in> reject m V A p \<longrightarrow> b \<in> reject m V A q) \<and>
             (b \<in> defer m V A p \<longrightarrow> b \<in> defer m V A q)"
     proof (safe)
-      show "social_choice_result.electoral_module m"
+      show "\<S>\<C>\<F>_result.electoral_module m"
         using monotone_m
         unfolding defer_lift_invariance_def
         by simp
@@ -942,7 +942,7 @@ proof -
     using prof fin_A compatible max_agg_rej_intersect
     unfolding disjoint_compatibility_def
     by metis
-  have "social_choice_result.electoral_module m \<and> social_choice_result.electoral_module n"
+  have "\<S>\<C>\<F>_result.electoral_module m \<and> \<S>\<C>\<F>_result.electoral_module n"
     using compatible
     unfolding disjoint_compatibility_def
     by simp
@@ -986,15 +986,15 @@ theorem par_comp_elim_one[simp]:
     disj_comp: "disjoint_compatibility m n"
   shows "eliminates 1 (m \<parallel>\<^sub>\<up> n)"
 proof (unfold eliminates_def, safe)
-  have "social_choice_result.electoral_module m"
+  have "\<S>\<C>\<F>_result.electoral_module m"
     using non_elec_m
     unfolding non_electing_def
     by simp
-  moreover have "social_choice_result.electoral_module n"
+  moreover have "\<S>\<C>\<F>_result.electoral_module n"
     using rejec_n_two
     unfolding rejects_def
     by simp
-  ultimately show "social_choice_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
+  ultimately show "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
     by simp
 next
   fix
@@ -1009,7 +1009,7 @@ next
   have fin_A: "finite A"
     using min_card_two card.infinite not_one_less_zero
     by metis
-  have module: "social_choice_result.electoral_module m"
+  have module: "\<S>\<C>\<F>_result.electoral_module m"
     using non_elec_m
     unfolding non_electing_def
     by simp
@@ -1024,9 +1024,9 @@ next
     by blast
   ultimately have card_reject_m: "card (reject m V A p) = card A - 1"
   proof -
-    have "well_formed_social_choice A (elect m V A p, reject m V A p, defer m V A p)"
+    have "well_formed_\<S>\<C>\<F> A (elect m V A p, reject m V A p, defer m V A p)"
       using prof module
-      unfolding social_choice_result.electoral_module_def
+      unfolding \<S>\<C>\<F>_result.electoral_module_def
       by simp
     hence
       "card A = card (elect m V A p) + card (reject m V A p) + card (defer m V A p)"

@@ -19,16 +19,23 @@ text \<open>
 
 setup Locale_Code.open_block
 
-global_interpretation social_choice_result:
-  result "well_formed_social_choice" "limit_set_social_choice"
+\<comment> \<open>Results from social choice functions (\<S>\<C>\<F>s), for the purposes of a modular framework
+    given as three sets of (potentially tied) alternatives. See \<^file>\<open>Social_Choice_Result.thy\<close>
+    for the details.\<close>
+global_interpretation \<S>\<C>\<F>_result:
+  result "well_formed_\<S>\<C>\<F>" "limit_set_\<S>\<C>\<F>"
 proof (unfold_locales, auto) qed
 
+\<comment> \<open>Results from committee functions. TODO: What is the semantics?\<close>
 global_interpretation committee_result:
   result "\<lambda> A r. set_equals_partition (Pow A) r \<and> disjoint3 r" "\<lambda> A rs. {r \<inter> A | r. r \<in> rs}"
 proof (unfold_locales, safe, auto) qed
 
-global_interpretation social_welfare_result:
-  result "well_formed_welfare" "limit_set_welfare"
+\<comment> \<open>Results from social welfare functions (\<S>\<W>\<F>s), for the purposes of a modular framework
+    given as three linear orders over the alternatives. See \<^file>\<open>Social_Welfare_Result.thy\<close>
+    for the details.\<close>
+global_interpretation \<S>\<W>\<F>_result:
+  result "well_formed_\<S>\<W>\<F>" "limit_set_\<S>\<W>\<F>"
 proof (unfold_locales, safe)
   fix 
     A :: "'a set" and
@@ -36,9 +43,9 @@ proof (unfold_locales, safe)
     r :: "('a Preference_Relation) set" and
     d :: "('a Preference_Relation) set"
   assume
-    partition: "set_equals_partition (limit_set_welfare A UNIV) (e, r, d)" and
+    partition: "set_equals_partition (limit_set_\<S>\<W>\<F> A UNIV) (e, r, d)" and
     disj: "disjoint3 (e, r, d)"
-  have "limit_set_welfare A UNIV =
+  have "limit_set_\<S>\<W>\<F> A UNIV =
           {limit A r' | r'. r' \<in> UNIV \<and> linear_order_on A (limit A r')}"
     by simp
   also have "... = {limit A r' | r'. r' \<in> UNIV} \<inter>
@@ -65,7 +72,7 @@ proof (unfold_locales, safe)
       using lin_ord
       by metis
   qed
-  thus "well_formed_welfare A (e, r, d)"
+  thus "well_formed_\<S>\<W>\<F> A (e, r, d)"
     using partition disj
     by simp
 qed

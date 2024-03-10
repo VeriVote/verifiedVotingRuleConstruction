@@ -29,7 +29,7 @@ export_code classic_nanson_rule in Haskell
 
 subsection \<open>Soundness\<close>
 
-theorem classic_nanson_rule_sound: "social_choice_result.electoral_module classic_nanson_rule"
+theorem classic_nanson_rule_sound: "\<S>\<C>\<F>_result.electoral_module classic_nanson_rule"
   unfolding classic_nanson_rule.simps
   by (simp add: loop_comp_sound)
 

@@ -34,12 +34,12 @@ declare seq_comp_alt_eq[simp del]
 
 subsection \<open>Soundness\<close>
 
-theorem blacks_sound: "social_choice_result.electoral_module black"
+theorem blacks_sound: "\<S>\<C>\<F>_result.electoral_module black"
   unfolding black.simps
   using seq_comp_sound condorcet_sound borda_sound
   by metis
 
-theorem blacks_rule_sound: "social_choice_result.electoral_module blacks_rule"
+theorem blacks_rule_sound: "\<S>\<C>\<F>_result.electoral_module blacks_rule"
   unfolding blacks_rule.simps
   using blacks_sound elector_sound
   by metis

@@ -562,7 +562,7 @@ qed
 lemma strong_unanimity_neutral:
   defines "domain \<equiv> valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
   \<comment> \<open>We want to show neutrality on a set as general as possible, as it implies subset neutrality.\<close>
-  shows "social_choice_properties.consensus_rule_neutrality domain strong_unanimity"
+  shows "\<S>\<C>\<F>_properties.consensus_rule_neutrality domain strong_unanimity"
 proof -
   have coincides: "\<forall> \<pi>. \<forall> E \<in> domain. \<phi>_neutr domain \<pi> E = \<phi>_neutr valid_elections \<pi> E"
     unfolding domain_def \<phi>_neutr.simps
@@ -594,12 +594,12 @@ proof -
     unfolding strong_unanimity_def
     by metis
   thus ?thesis
-    unfolding social_choice_properties.consensus_rule_neutrality.simps
+    unfolding \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
     using coincides equivar_ind_by_act_coincide
     by (metis (no_types, lifting))
 qed
 
-lemma strong_unanimity_neutral': "social_choice_properties.consensus_rule_neutrality
+lemma strong_unanimity_neutral': "\<S>\<C>\<F>_properties.consensus_rule_neutrality
     (elections_\<K> strong_unanimity) strong_unanimity"
 proof -
   have "elections_\<K> strong_unanimity \<subseteq> valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
@@ -622,10 +622,10 @@ proof -
             "valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
             "{(\<phi>_neutr (valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>) g, set_action \<psi>_neutr\<^sub>\<c> g) | g.
                 g \<in> carrier neutrality\<^sub>\<G>}" "elections_\<K> strong_unanimity"]
-    unfolding equivar_ind_by_act_def social_choice_properties.consensus_rule_neutrality.simps
+    unfolding equivar_ind_by_act_def \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
     by blast
   thus ?thesis
-    unfolding social_choice_properties.consensus_rule_neutrality.simps
+    unfolding \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
     using coincide
           equivar_ind_by_act_coincide[of
             "carrier neutrality\<^sub>\<G>" "elections_\<K> strong_unanimity"
@@ -691,7 +691,7 @@ proof (unfold closed_under_restr_rel.simps restr_rel.simps neutrality\<^sub>\<R>
             "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)"
             "carrier neutrality\<^sub>\<G>" ?domain
             "\<phi>_neutr ?domain" "set_action \<psi>_neutr\<^sub>\<c>"]
-    unfolding social_choice_properties.consensus_rule_neutrality.simps
+    unfolding \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
     by blast
   have img': "\<phi>_neutr ?domain \<pi> (A, V, p) = (A', V', p')"
     using img unanimous

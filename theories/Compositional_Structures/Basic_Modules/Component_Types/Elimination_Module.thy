@@ -20,7 +20,7 @@ text \<open>
 
 subsection \<open>General Definitions\<close>
 
-type_synonym Threshold_Value = enat
+type_synonym Threshold_Value = "enat"
 
 type_synonym Threshold_Relation = "enat \<Rightarrow> enat \<Rightarrow> bool"
 
@@ -84,48 +84,48 @@ lemma elim_mod_sound[simp]:
     e :: "('a, 'v) Evaluation_Function" and
     t :: "Threshold_Value" and
     r :: "Threshold_Relation"
-  shows "social_choice_result.electoral_module (elimination_module e t r)"
-  unfolding social_choice_result.electoral_module_def
+  shows "\<S>\<C>\<F>_result.electoral_module (elimination_module e t r)"
+  unfolding \<S>\<C>\<F>_result.electoral_module_def
   by auto
 
 lemma less_elim_sound[simp]:
   fixes
     e :: "('a, 'v) Evaluation_Function" and
     t :: "Threshold_Value"
-  shows "social_choice_result.electoral_module (less_eliminator e t)"
-  unfolding social_choice_result.electoral_module_def
+  shows "\<S>\<C>\<F>_result.electoral_module (less_eliminator e t)"
+  unfolding \<S>\<C>\<F>_result.electoral_module_def
   by auto
 
 lemma leq_elim_sound[simp]:
   fixes
     e :: "('a, 'v) Evaluation_Function" and
     t :: "Threshold_Value"
-  shows "social_choice_result.electoral_module (leq_eliminator e t)"
-  unfolding social_choice_result.electoral_module_def
+  shows "\<S>\<C>\<F>_result.electoral_module (leq_eliminator e t)"
+  unfolding \<S>\<C>\<F>_result.electoral_module_def
   by auto
 
 lemma max_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  shows "social_choice_result.electoral_module (max_eliminator e)"
-  unfolding social_choice_result.electoral_module_def
+  shows "\<S>\<C>\<F>_result.electoral_module (max_eliminator e)"
+  unfolding \<S>\<C>\<F>_result.electoral_module_def
   by auto
 
 lemma min_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  shows "social_choice_result.electoral_module (min_eliminator e)"
-  unfolding social_choice_result.electoral_module_def
+  shows "\<S>\<C>\<F>_result.electoral_module (min_eliminator e)"
+  unfolding \<S>\<C>\<F>_result.electoral_module_def
   by auto
 
 lemma less_avg_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  shows "social_choice_result.electoral_module (less_average_eliminator e)"
-  unfolding social_choice_result.electoral_module_def
+  shows "\<S>\<C>\<F>_result.electoral_module (less_average_eliminator e)"
+  unfolding \<S>\<C>\<F>_result.electoral_module_def
   by auto
 
 lemma leq_avg_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  shows "social_choice_result.electoral_module (leq_average_eliminator e)"
-  unfolding social_choice_result.electoral_module_def
+  shows "\<S>\<C>\<F>_result.electoral_module (leq_average_eliminator e)"
+  unfolding \<S>\<C>\<F>_result.electoral_module_def
   by auto
 
 subsection \<open>Only participating voters impact the result\<close>
@@ -312,28 +312,28 @@ lemma max_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (max_eliminator e)"
   unfolding non_blocking_def
-  using social_choice_result.electoral_module_def
+  using \<S>\<C>\<F>_result.electoral_module_def
   by auto
 
 lemma min_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (min_eliminator e)"
   unfolding non_blocking_def
-  using social_choice_result.electoral_module_def
+  using \<S>\<C>\<F>_result.electoral_module_def
   by auto
 
 lemma less_avg_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (less_average_eliminator e)"
   unfolding non_blocking_def
-  using social_choice_result.electoral_module_def
+  using \<S>\<C>\<F>_result.electoral_module_def
   by auto
 
 lemma leq_avg_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (leq_average_eliminator e)"
   unfolding non_blocking_def
-  using social_choice_result.electoral_module_def
+  using \<S>\<C>\<F>_result.electoral_module_def
   by auto
 
 subsection \<open>Non-Electing\<close>
@@ -400,7 +400,7 @@ theorem cr_eval_imp_ccomp_max_elim[simp]:
   assumes "condorcet_rating e"
   shows "condorcet_compatibility (max_eliminator e)"
 proof (unfold condorcet_compatibility_def, safe)
-  show "social_choice_result.electoral_module (max_eliminator e)"
+  show "\<S>\<C>\<F>_result.electoral_module (max_eliminator e)"
     by simp
 next
   fix

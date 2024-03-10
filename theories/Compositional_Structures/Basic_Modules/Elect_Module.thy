@@ -25,8 +25,8 @@ fun elect_module :: "('a, 'v, 'a Result) Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-theorem elect_mod_sound[simp]: "social_choice_result.electoral_module elect_module"
-  unfolding social_choice_result.electoral_module_def
+theorem elect_mod_sound[simp]: "\<S>\<C>\<F>_result.electoral_module elect_module"
+  unfolding \<S>\<C>\<F>_result.electoral_module_def
   by simp
 
 lemma elect_mod_only_voters: "only_voters_vote elect_module"

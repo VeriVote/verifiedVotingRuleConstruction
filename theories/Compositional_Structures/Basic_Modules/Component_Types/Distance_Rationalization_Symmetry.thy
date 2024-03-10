@@ -703,7 +703,7 @@ theorem reversal_sym_dist_and_cons_imp_reversal_sym_dr:
     rev_sym_d: "distance_reversal_symmetry valid_elections d" and
     rev_sym_C: "consensus_rule_reversal_symmetry (elections_\<K> C) C" and
     closed_C: "closed_under_restr_rel (reversal\<^sub>\<R> valid_elections) valid_elections (elections_\<K> C)"
-  shows "reversal_symmetry valid_elections (social_welfare_result.distance_\<R> d C)"
+  shows "reversal_symmetry valid_elections (\<S>\<W>\<F>_result.distance_\<R> d C)"
 proof -
   have "\<forall> \<pi>. \<forall> E \<in> elections_\<K> C. \<phi>_rev valid_elections \<pi> E = \<phi>_rev (elections_\<K> C) \<pi> E"
     using cons_domain_valid extensional_continuation_subset
@@ -718,7 +718,7 @@ proof -
   thus ?thesis
     using cons_domain_valid rev_sym_d closed_C \<phi>_rev_act.group_action_axioms
           \<psi>_rev_act.group_action_axioms \<phi>_\<psi>_rev_well_formed
-          social_welfare_result.invar_dist_equivar_cons_imp_equivar_dr_rule[of
+          \<S>\<W>\<F>_result.invar_dist_equivar_cons_imp_equivar_dr_rule[of
           reversal\<^sub>\<G> valid_elections "\<phi>_rev valid_elections" \<psi>_rev C d]
     unfolding distance_reversal_symmetry.simps reversal_symmetry_def reversal\<^sub>\<R>.simps
     by metis

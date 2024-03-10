@@ -30,7 +30,7 @@ fun borda :: "('a, 'v, 'a Result) Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-theorem borda_sound: "social_choice_result.electoral_module borda"
+theorem borda_sound: "\<S>\<C>\<F>_result.electoral_module borda"
   unfolding borda.simps
   using max_elim_sound
   by metis

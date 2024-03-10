@@ -24,7 +24,7 @@ fun copeland_rule :: "('a, 'v, 'a Result) Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-theorem copeland_rule_sound: "social_choice_result.electoral_module copeland_rule"
+theorem copeland_rule_sound: "\<S>\<C>\<F>_result.electoral_module copeland_rule"
   unfolding copeland_rule.simps
   using elector_sound copeland_sound
   by metis

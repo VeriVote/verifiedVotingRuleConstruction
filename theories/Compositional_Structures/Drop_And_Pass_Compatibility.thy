@@ -26,7 +26,7 @@ theorem drop_zero_mod_rej_zero[simp]:
   assumes "linear_order r"
   shows "rejects 0 (drop_module 0 r)"
 proof (unfold rejects_def, safe)
-  show "social_choice_result.electoral_module (drop_module 0 r)"
+  show "\<S>\<C>\<F>_result.electoral_module (drop_module 0 r)"
     using assms
     by simp
 next
@@ -69,7 +69,7 @@ theorem drop_two_mod_rej_n[simp]:
   assumes "linear_order r"
   shows "rejects n (drop_module n r)"
 proof (unfold rejects_def, safe)
-  show "social_choice_result.electoral_module (drop_module n r)"
+  show "\<S>\<C>\<F>_result.electoral_module (drop_module n r)"
     by simp
 next
   fix
@@ -186,11 +186,11 @@ theorem drop_pass_disj_compat[simp]:
   assumes "linear_order r"
   shows "disjoint_compatibility (drop_module n r) (pass_module n r)"
 proof (unfold disjoint_compatibility_def, safe)
-  show "social_choice_result.electoral_module (drop_module n r)"
+  show "\<S>\<C>\<F>_result.electoral_module (drop_module n r)"
     using assms
     by simp
 next
-  show "social_choice_result.electoral_module (pass_module n r)"
+  show "\<S>\<C>\<F>_result.electoral_module (pass_module n r)"
     using assms
     by simp
 next

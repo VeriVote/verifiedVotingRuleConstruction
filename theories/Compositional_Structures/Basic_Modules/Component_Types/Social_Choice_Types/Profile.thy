@@ -66,12 +66,11 @@ abbreviation finite_election :: "('a,'v) Election \<Rightarrow> bool" where
   "finite_election E \<equiv> finite_profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)"
 
 definition finite_voter_elections :: "('a, 'v) Election set" where
-  "finite_voter_elections =
-    {el :: ('a, 'v) Election. finite (voters_\<E> el)}"
+  "finite_voter_elections = {E :: ('a, 'v) Election. finite (voters_\<E> E)}"
 
 definition finite_elections :: "('a, 'v) Election set" where
   "finite_elections =
-    {el :: ('a, 'v) Election. finite_profile (voters_\<E> el) (alternatives_\<E> el) (profile_\<E> el)}"
+    {E :: ('a, 'v) Election. finite_profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)}"
 
 definition valid_elections :: "('a,'v) Election set" where
   "valid_elections = {E. profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)}"
@@ -155,8 +154,7 @@ proof (unfold vote_count.simps)
   have "\<forall> p. finite {v \<in> voters_\<E> E. profile_\<E> E v = p}"
     using assms
     by force
-  moreover have
-    "disjoint {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
+  moreover have "disjoint {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
     unfolding disjoint_def
     by blast
   moreover have partition:

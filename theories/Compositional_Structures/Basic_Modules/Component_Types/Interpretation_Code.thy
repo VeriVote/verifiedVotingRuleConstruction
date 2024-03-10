@@ -15,45 +15,67 @@ text \<open>
   Lemmas stating the explicit instantiations of interpreted abstract functions from locales.
 \<close>
 
-lemma electoral_module_social_choice_code_lemma:
-  "social_choice_result.electoral_module m \<equiv>
-      \<forall> A V p. profile V A p \<longrightarrow> well_formed_social_choice A (m V A p)"
-  unfolding social_choice_result.electoral_module_def
+lemma electoral_module_\<S>\<C>\<F>_code_lemma:
+  fixes m :: "('a, 'v, 'a Result) Electoral_Module"
+  shows "\<S>\<C>\<F>_result.electoral_module m = (\<forall> A V p. profile V A p \<longrightarrow> well_formed_\<S>\<C>\<F> A (m V A p))"
+  unfolding \<S>\<C>\<F>_result.electoral_module_def
   by simp
 
-lemma \<R>\<^sub>\<W>_social_choice_code_lemma:
-  "social_choice_result.\<R>\<^sub>\<W> d K V A p =
-      arg_min_set (score d K (A, V, p)) (limit_set_social_choice A UNIV)"
-  unfolding social_choice_result.\<R>\<^sub>\<W>.simps
+lemma \<R>\<^sub>\<W>_\<S>\<C>\<F>_code_lemma:
+  fixes
+    d :: "('a, 'v) Election Distance" and
+    K :: "('a, 'v, 'a Result) Consensus_Class" and
+    V :: "'v set" and
+    A :: "'a set" and
+    p :: "('a, 'v) Profile"
+  shows "\<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p = arg_min_set (score d K (A, V, p)) (limit_set_\<S>\<C>\<F> A UNIV)"
+  unfolding \<S>\<C>\<F>_result.\<R>\<^sub>\<W>.simps
   by safe
 
-lemma distance_\<R>_social_choice_code_lemma:
-  "social_choice_result.distance_\<R> d K V A p =
-      (social_choice_result.\<R>\<^sub>\<W> d K V A p,
-          (limit_set_social_choice A UNIV) - social_choice_result.\<R>\<^sub>\<W> d K V A p, {})"
-  unfolding social_choice_result.distance_\<R>.simps
+lemma distance_\<R>_\<S>\<C>\<F>_code_lemma:
+  fixes
+    d :: "('a, 'v) Election Distance" and
+    K :: "('a, 'v, 'a Result) Consensus_Class" and
+    V :: "'v set" and
+    A :: "'a set" and
+    p :: "('a, 'v) Profile"
+  shows "\<S>\<C>\<F>_result.distance_\<R> d K V A p =
+      (\<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p, (limit_set_\<S>\<C>\<F> A UNIV) - \<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p, {})"
+  unfolding \<S>\<C>\<F>_result.distance_\<R>.simps
   by safe
 
-lemma \<R>\<^sub>\<W>_std_social_choice_code_lemma:
-  "social_choice_result.\<R>\<^sub>\<W>_std d K V A p =
-      arg_min_set (score_std d K (A, V, p)) (limit_set_social_choice A UNIV)"
-  unfolding social_choice_result.\<R>\<^sub>\<W>_std.simps
+lemma \<R>\<^sub>\<W>_std_\<S>\<C>\<F>_code_lemma:
+  fixes
+    d :: "('a, 'v) Election Distance" and
+    K :: "('a, 'v, 'a Result) Consensus_Class" and
+    V :: "'v set" and
+    A :: "'a set" and
+    p :: "('a, 'v) Profile"
+  shows "\<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std d K V A p =
+      arg_min_set (score_std d K (A, V, p)) (limit_set_\<S>\<C>\<F> A UNIV)"
+  unfolding \<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std.simps
   by safe
 
-lemma distance_\<R>_std_social_choice_code_lemma:
-  "social_choice_result.distance_\<R>_std d K V A p =
-      (social_choice_result.\<R>\<^sub>\<W>_std d K V A p,
-          (limit_set_social_choice A UNIV) - social_choice_result.\<R>\<^sub>\<W>_std d K V A p, {})"
-  unfolding social_choice_result.distance_\<R>_std.simps
+lemma distance_\<R>_std_\<S>\<C>\<F>_code_lemma:
+  fixes
+    d :: "('a, 'v) Election Distance" and
+    K :: "('a, 'v, 'a Result) Consensus_Class" and
+    V :: "'v set" and
+    A :: "'a set" and
+    p :: "('a, 'v) Profile"
+  shows "\<S>\<C>\<F>_result.distance_\<R>_std d K V A p =
+      (\<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std d K V A p, (limit_set_\<S>\<C>\<F> A UNIV) - \<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std d K V A p, {})"
+  unfolding \<S>\<C>\<F>_result.distance_\<R>_std.simps
   by safe
 
-lemma anonymity_social_choice_code_lemma:
-  "social_choice_result.anonymity =
-      (\<lambda> m. social_choice_result.electoral_module m \<and>
+lemma anonymity_\<S>\<C>\<F>_code_lemma:
+  shows "\<S>\<C>\<F>_result.anonymity =
+    (\<lambda> m::(('a, 'v, 'a Result) Electoral_Module).
+      \<S>\<C>\<F>_result.electoral_module m \<and>
           (\<forall> A V p \<pi>::('v \<Rightarrow> 'v).
                 bij \<pi> \<longrightarrow> (let (A', V', q) = (rename \<pi> (A, V, p)) in
             finite_profile V A p \<and> finite_profile V' A' q \<longrightarrow> m V A p = m V' A' q)))"
-  unfolding social_choice_result.anonymity_def
+  unfolding \<S>\<C>\<F>_result.anonymity_def
   by simp
 
 
@@ -62,24 +84,24 @@ text \<open>
   by their explicit instantiations for code generation.
 \<close>
 
-declare [[lc_add "social_choice_result.electoral_module" electoral_module_social_choice_code_lemma]]
-declare [[lc_add "social_choice_result.\<R>\<^sub>\<W>" \<R>\<^sub>\<W>_social_choice_code_lemma]]
-declare [[lc_add "social_choice_result.\<R>\<^sub>\<W>_std" \<R>\<^sub>\<W>_std_social_choice_code_lemma]]
-declare [[lc_add "social_choice_result.distance_\<R>" distance_\<R>_social_choice_code_lemma]]
-declare [[lc_add "social_choice_result.distance_\<R>_std" distance_\<R>_std_social_choice_code_lemma]]
-declare [[lc_add "social_choice_result.anonymity" anonymity_social_choice_code_lemma]]
+declare [[lc_add "\<S>\<C>\<F>_result.electoral_module" electoral_module_\<S>\<C>\<F>_code_lemma]]
+declare [[lc_add "\<S>\<C>\<F>_result.\<R>\<^sub>\<W>" \<R>\<^sub>\<W>_\<S>\<C>\<F>_code_lemma]]
+declare [[lc_add "\<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std" \<R>\<^sub>\<W>_std_\<S>\<C>\<F>_code_lemma]]
+declare [[lc_add "\<S>\<C>\<F>_result.distance_\<R>" distance_\<R>_\<S>\<C>\<F>_code_lemma]]
+declare [[lc_add "\<S>\<C>\<F>_result.distance_\<R>_std" distance_\<R>_std_\<S>\<C>\<F>_code_lemma]]
+declare [[lc_add "\<S>\<C>\<F>_result.anonymity" anonymity_\<S>\<C>\<F>_code_lemma]]
 
 
 text \<open>
   Constant aliases to use when exporting code instead of the interpreted functions
 \<close>
 
-definition "\<R>\<^sub>\<W>_social_choice_code = social_choice_result.\<R>\<^sub>\<W>"
-definition "\<R>\<^sub>\<W>_std_social_choice_code = social_choice_result.\<R>\<^sub>\<W>_std"
-definition "distance_\<R>_social_choice_code = social_choice_result.distance_\<R>"
-definition "distance_\<R>_std_social_choice_code = social_choice_result.distance_\<R>_std"
-definition "electoral_module_social_choice_code = social_choice_result.electoral_module"
-definition "anonymity_social_choice_code = social_choice_result.anonymity"
+definition "\<R>\<^sub>\<W>_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.\<R>\<^sub>\<W>"
+definition "\<R>\<^sub>\<W>_std_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std"
+definition "distance_\<R>_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.distance_\<R>"
+definition "distance_\<R>_std_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.distance_\<R>_std"
+definition "electoral_module_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.electoral_module"
+definition "anonymity_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.anonymity"
 
 setup Locale_Code.close_block
 

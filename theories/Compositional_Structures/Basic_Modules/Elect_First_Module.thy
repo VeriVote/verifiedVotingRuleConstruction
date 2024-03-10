@@ -27,8 +27,8 @@ fun elect_first_module :: "('a, 'v::wellorder, 'a Result) Electoral_Module" wher
 
 subsection \<open>Soundness\<close>
 
-theorem elect_first_mod_sound: "social_choice_result.electoral_module elect_first_module"
-proof (intro social_choice_result.electoral_modI)
+theorem elect_first_mod_sound: "\<S>\<C>\<F>_result.electoral_module elect_first_module"
+proof (intro \<S>\<C>\<F>_result.electoral_modI)
   fix
     A :: "'a set" and
     V :: "'v::wellorder set" and
@@ -45,7 +45,7 @@ proof (intro social_choice_result.electoral_modI)
     by blast
   hence "disjoint3 (elect_first_module V A p)"
     by simp
-  ultimately show "well_formed_social_choice A (elect_first_module V A p)"
+  ultimately show "well_formed_\<S>\<C>\<F> A (elect_first_module V A p)"
     by simp
 qed
 

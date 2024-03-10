@@ -172,13 +172,13 @@ qed
 
 subsection \<open>Soundness\<close>
 
-theorem plurality_sound[simp]: "social_choice_result.electoral_module plurality"
+theorem plurality_sound[simp]: "\<S>\<C>\<F>_result.electoral_module plurality"
   unfolding plurality.simps
   using max_elim_sound
   by metis
 
-theorem plurality'_sound[simp]: "social_choice_result.electoral_module plurality'"
-proof (unfold social_choice_result.electoral_module_def, safe)
+theorem plurality'_sound[simp]: "\<S>\<C>\<F>_result.electoral_module plurality'"
+proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -193,7 +193,7 @@ proof (unfold social_choice_result.electoral_module_def, safe)
       {a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a} = A"
     using not_le_imp_less
     by blast
-  ultimately show "well_formed_social_choice A (plurality' V A p)"
+  ultimately show "well_formed_\<S>\<C>\<F> A (plurality' V A p)"
     by simp
 qed
 
@@ -449,7 +449,7 @@ text \<open>
 
 theorem plurality_mod_def_inv_mono[simp]: "defer_invariant_monotonicity plurality"
 proof (unfold defer_invariant_monotonicity_def, intro conjI impI allI)
-  show "social_choice_result.electoral_module plurality"
+  show "\<S>\<C>\<F>_result.electoral_module plurality"
     by simp
 next
   show "non_electing plurality"

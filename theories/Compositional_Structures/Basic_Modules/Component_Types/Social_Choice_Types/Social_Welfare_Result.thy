@@ -19,12 +19,12 @@ text \<open>
   orders on the alternatives.
 \<close>
 
-fun well_formed_welfare :: "'a set \<Rightarrow> ('a Preference_Relation) Result \<Rightarrow> bool" where
-  "well_formed_welfare A res = (disjoint3 res \<and>
+fun well_formed_\<S>\<W>\<F> :: "'a set \<Rightarrow> ('a Preference_Relation) Result \<Rightarrow> bool" where
+  "well_formed_\<S>\<W>\<F> A res = (disjoint3 res \<and>
                                   set_equals_partition {r. linear_order_on A r} res)"
 
-fun limit_set_welfare ::
+fun limit_set_\<S>\<W>\<F> ::
   "'a set \<Rightarrow> ('a Preference_Relation) set \<Rightarrow> ('a Preference_Relation) set" where
-  "limit_set_welfare A res = {limit A r | r. r \<in> res \<and> linear_order_on A (limit A r)}"
+  "limit_set_\<S>\<W>\<F> A res = {limit A r | r. r \<in> res \<and> linear_order_on A (limit A r)}"
 
 end

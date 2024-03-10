@@ -29,19 +29,19 @@ fun borda_rule\<^sub>\<R> :: "('a, 'v::wellorder, 'a Result) Electoral_Module" w
 
 subsection \<open>Soundness\<close>
 
-theorem borda_rule_sound: "social_choice_result.electoral_module borda_rule"
+theorem borda_rule_sound: "\<S>\<C>\<F>_result.electoral_module borda_rule"
   unfolding borda_rule.simps
   using elector_sound borda_sound
   by metis
 
-theorem borda_rule\<^sub>\<R>_sound: "social_choice_result.electoral_module borda_rule\<^sub>\<R>"
+theorem borda_rule\<^sub>\<R>_sound: "\<S>\<C>\<F>_result.electoral_module borda_rule\<^sub>\<R>"
   unfolding borda_rule\<^sub>\<R>.simps swap_\<R>.simps
-  using social_choice_result.\<R>_sound
+  using \<S>\<C>\<F>_result.\<R>_sound
   by metis
 
 subsection \<open>Anonymity Property\<close>
 
-theorem borda_rule\<^sub>\<R>_anonymous: "social_choice_result.anonymity borda_rule\<^sub>\<R>"
+theorem borda_rule\<^sub>\<R>_anonymous: "\<S>\<C>\<F>_result.anonymity borda_rule\<^sub>\<R>"
 proof (unfold borda_rule\<^sub>\<R>.simps swap_\<R>.simps)
   let ?swap_dist = "votewise_distance swap l_one"
   from l_one_is_sym
@@ -49,9 +49,8 @@ proof (unfold borda_rule\<^sub>\<R>.simps swap_\<R>.simps)
     using symmetric_norm_imp_distance_anonymous[of l_one]
     by simp
   with unanimity_anonymous
-  show "social_choice_result.anonymity 
-          (social_choice_result.distance_\<R> ?swap_dist unanimity)"
-    using social_choice_result.anonymous_distance_and_consensus_imp_rule_anonymity
+  show "\<S>\<C>\<F>_result.anonymity (\<S>\<C>\<F>_result.distance_\<R> ?swap_dist unanimity)"
+    using \<S>\<C>\<F>_result.anonymous_distance_and_consensus_imp_rule_anonymity
     by metis
 qed
 

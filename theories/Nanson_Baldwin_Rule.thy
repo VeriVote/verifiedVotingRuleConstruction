@@ -25,8 +25,7 @@ fun nanson_baldwin_rule :: "('a, 'v, 'a Result) Electoral_Module" where
 
 subsection \<open>Soundness\<close>
 
-theorem nanson_baldwin_rule_sound: 
-"social_choice_result.electoral_module nanson_baldwin_rule"
+theorem nanson_baldwin_rule_sound: "\<S>\<C>\<F>_result.electoral_module nanson_baldwin_rule"
   unfolding nanson_baldwin_rule.simps
   by (simp add: loop_comp_sound)
 

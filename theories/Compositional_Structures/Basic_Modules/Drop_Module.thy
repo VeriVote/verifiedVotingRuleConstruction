@@ -36,8 +36,8 @@ theorem drop_mod_sound[simp]:
   fixes
     r :: "'a Preference_Relation" and
     n :: "nat"
-  shows "social_choice_result.electoral_module (drop_module n r)"
-proof (unfold social_choice_result.electoral_module_def, safe)
+  shows "\<S>\<C>\<F>_result.electoral_module (drop_module n r)"
+proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -57,7 +57,7 @@ proof (unfold social_choice_result.electoral_module_def, safe)
     by simp
   hence "{a \<in> A. rank (limit A r) a \<le> n} \<inter> {a \<in> A. rank (limit A r) a > n} = {}"
     by blast
-  thus "well_formed_social_choice A (?mod V A p)"
+  thus "well_formed_\<S>\<C>\<F> A (?mod V A p)"
     using set_partition
     by simp
 qed

@@ -1377,22 +1377,22 @@ proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def g
     by metis
 qed
 
-lemma wf_res_neutr_social_choice:
-  "satisfies (\<lambda> \<E>. limit_set_social_choice (alternatives_\<E> \<E>) UNIV)
+lemma wf_result_neutrality_\<S>\<C>\<F>:
+  "satisfies (\<lambda> \<E>. limit_set_\<S>\<C>\<F> (alternatives_\<E> \<E>) UNIV)
             (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) valid_elections
                                 (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<c>))"
 proof (unfold rewrite_equivar_ind_by_act, safe, auto) qed
 
-lemma wf_res_neutr_social_welfare:
-  "satisfies (\<lambda> \<E>. limit_set_welfare (alternatives_\<E> \<E>) UNIV)
+lemma wf_result_neutrality_\<S>\<W>\<F>:
+  "satisfies (\<lambda> \<E>. limit_set_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)
             (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) valid_elections
                                 (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<w>))"
 proof (unfold rewrite_equivar_ind_by_act voters_\<E>.simps profile_\<E>.simps set_action.simps, safe)
   show lim_el_\<pi>:
     "\<And> \<pi> A V p r. \<pi> \<in> carrier neutrality\<^sub>\<G> \<Longrightarrow> (A, V, p) \<in> valid_elections \<Longrightarrow>
         \<phi>_neutr valid_elections \<pi> (A, V, p) \<in> valid_elections \<Longrightarrow>
-        r \<in> limit_set_welfare (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV \<Longrightarrow>
-        r \<in> \<psi>_neutr\<^sub>\<w> \<pi> ` limit_set_welfare (alternatives_\<E> (A, V, p)) UNIV"
+        r \<in> limit_set_\<S>\<W>\<F> (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV \<Longrightarrow>
+        r \<in> \<psi>_neutr\<^sub>\<w> \<pi> ` limit_set_\<S>\<W>\<F> (alternatives_\<E> (A, V, p)) UNIV"
   proof -
     fix
       \<pi> :: "'c \<Rightarrow> 'c" and
@@ -1405,7 +1405,7 @@ proof (unfold rewrite_equivar_ind_by_act voters_\<E>.simps profile_\<E>.simps se
       carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
       prof: "(A, V, p) \<in> valid_elections" and
       "\<phi>_neutr valid_elections \<pi> (A, V, p) \<in> valid_elections" and
-      lim_el: "r \<in> limit_set_welfare (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
+      lim_el: "r \<in> limit_set_\<S>\<W>\<F> (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
     hence inv_carrier: "the_inv \<pi> \<in> carrier neutrality\<^sub>\<G>"
       unfolding neutrality\<^sub>\<G>_def rewrite_carrier
       using bij_betw_the_inv_into
@@ -1427,7 +1427,7 @@ proof (unfold rewrite_equivar_ind_by_act voters_\<E>.simps profile_\<E>.simps se
             group.l_inv group_BijGroup group_hom.hom_one group_hom.one_closed
       unfolding neutrality\<^sub>\<G>_def
       by metis
-    have "r \<in> limit_set_welfare (\<pi> ` A) UNIV"
+    have "r \<in> limit_set_\<S>\<W>\<F> (\<pi> ` A) UNIV"
       unfolding \<phi>_neutr.simps
       using prof lim_el
       by simp
@@ -1455,15 +1455,15 @@ proof (unfold rewrite_equivar_ind_by_act voters_\<E>.simps profile_\<E>.simps se
       by blast
     finally have "... = limit A ?r_inv"
       by blast
-    hence "?r_inv \<in> limit_set_welfare (alternatives_\<E> (A, V, p)) UNIV"
-      unfolding limit_set_welfare.simps
+    hence "?r_inv \<in> limit_set_\<S>\<W>\<F> (alternatives_\<E> (A, V, p)) UNIV"
+      unfolding limit_set_\<S>\<W>\<F>.simps
       using lin_inv UNIV_I fst_conv mem_Collect_eq alternatives_\<E>.elims
             iso_tuple_UNIV_I CollectI
       by (metis (mono_tags, lifting))
     moreover have "r = \<psi>_neutr\<^sub>\<w> \<pi> ?r_inv"
       using carrier_\<pi> inv_eq inv_carrier iso_tuple_UNIV_I \<psi>_neutr\<^sub>\<w>_act.orbit_sym_aux
       by metis
-    ultimately show "r \<in> \<psi>_neutr\<^sub>\<w> \<pi> ` limit_set_welfare (alternatives_\<E> (A, V, p)) UNIV"
+    ultimately show "r \<in> \<psi>_neutr\<^sub>\<w> \<pi> ` limit_set_\<S>\<W>\<F> (alternatives_\<E> (A, V, p)) UNIV"
       by blast
   qed
   fix
@@ -1477,9 +1477,9 @@ proof (unfold rewrite_equivar_ind_by_act voters_\<E>.simps profile_\<E>.simps se
     carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
     prof: "(A, V, p) \<in> valid_elections" and
     prof_\<pi>: "\<phi>_neutr valid_elections \<pi> (A, V, p) \<in> valid_elections" and
-    "r \<in> limit_set_welfare (alternatives_\<E> (A, V, p)) UNIV"
+    "r \<in> limit_set_\<S>\<W>\<F> (alternatives_\<E> (A, V, p)) UNIV"
   hence
-    "r \<in> limit_set_welfare (alternatives_\<E> (\<phi>_neutr valid_elections (inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>)
+    "r \<in> limit_set_\<S>\<W>\<F> (alternatives_\<E> (\<phi>_neutr valid_elections (inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>)
                               (\<phi>_neutr valid_elections \<pi> (A, V, p)))) UNIV"
     using \<phi>_neutr_act.orbit_sym_aux
     by metis
@@ -1494,11 +1494,11 @@ proof (unfold rewrite_equivar_ind_by_act voters_\<E>.simps profile_\<E>.simps se
     by metis
   ultimately have
     "r \<in> \<psi>_neutr\<^sub>\<w> (inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>) `
-            limit_set_welfare (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
+            limit_set_\<S>\<W>\<F> (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
     using prof_\<pi> lim_el_\<pi> prod.collapse
     by metis
   thus
-    "\<psi>_neutr\<^sub>\<w> \<pi> r \<in> limit_set_welfare (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
+    "\<psi>_neutr\<^sub>\<w> \<pi> r \<in> limit_set_\<S>\<W>\<F> (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
     using carrier_\<pi> \<psi>_neutr\<^sub>\<w>_act.group_action_axioms
           \<psi>_neutr\<^sub>\<w>_act.inj_prop group_action.orbit_sym_aux
           inj_image_mem_iff inv_group_elem iso_tuple_UNIV_I
@@ -1697,7 +1697,7 @@ proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def \<psi>
 qed
 
 lemma \<phi>_\<psi>_rev_well_formed:
-  shows "satisfies (\<lambda> \<E>. limit_set_welfare (alternatives_\<E> \<E>) UNIV)
+  shows "satisfies (\<lambda> \<E>. limit_set_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)
                (equivar_ind_by_act (carrier reversal\<^sub>\<G>) valid_elections
                                     (\<phi>_rev valid_elections) (set_action \<psi>_rev))"
 proof (unfold rewrite_equivar_ind_by_act, clarify)
@@ -1729,28 +1729,28 @@ proof (unfold rewrite_equivar_ind_by_act, clarify)
     "{limit A (rev_rel r') | r'. rev_rel r' \<in> UNIV \<and> linear_order_on A (limit A (rev_rel r'))} \<subseteq>
       {limit A r | r. r \<in> UNIV \<and> linear_order_on A (limit A r)}"
     by blast
-  ultimately have "\<forall> r \<in> limit_set_welfare A UNIV. rev_rel r \<in> limit_set_welfare A UNIV"
-    unfolding limit_set_welfare.simps
+  ultimately have "\<forall> r \<in> limit_set_\<S>\<W>\<F> A UNIV. rev_rel r \<in> limit_set_\<S>\<W>\<F> A UNIV"
+    unfolding limit_set_\<S>\<W>\<F>.simps
     by blast
-  hence subset: "\<forall> r \<in> limit_set_welfare A UNIV. \<pi> r \<in> limit_set_welfare A UNIV"
+  hence subset: "\<forall> r \<in> limit_set_\<S>\<W>\<F> A UNIV. \<pi> r \<in> limit_set_\<S>\<W>\<F> A UNIV"
     using cases
     by fastforce
-  hence "\<forall> r \<in> limit_set_welfare A UNIV. r \<in> \<pi> ` limit_set_welfare A UNIV"
+  hence "\<forall> r \<in> limit_set_\<S>\<W>\<F> A UNIV. r \<in> \<pi> ` limit_set_\<S>\<W>\<F> A UNIV"
     using rev_rev_id comp_apply empty_iff id_apply image_eqI insert_iff cases
     by metis
-  hence "\<pi> ` limit_set_welfare A UNIV = limit_set_welfare A UNIV"
+  hence "\<pi> ` limit_set_\<S>\<W>\<F> A UNIV = limit_set_\<S>\<W>\<F> A UNIV"
     using subset
     by blast
-  hence "set_action \<psi>_rev \<pi> (limit_set_welfare A UNIV) = limit_set_welfare A UNIV"
+  hence "set_action \<psi>_rev \<pi> (limit_set_\<S>\<W>\<F> A UNIV) = limit_set_\<S>\<W>\<F> A UNIV"
     unfolding set_action.simps
     by simp
   also have
-    "... = limit_set_welfare (alternatives_\<E> (\<phi>_rev valid_elections \<pi> (A, V, p))) UNIV"
+    "... = limit_set_\<S>\<W>\<F> (alternatives_\<E> (\<phi>_rev valid_elections \<pi> (A, V, p))) UNIV"
     using eq_A
     by simp
   finally show
-    "limit_set_welfare (alternatives_\<E> (\<phi>_rev valid_elections \<pi> (A, V, p))) UNIV =
-       set_action \<psi>_rev \<pi> (limit_set_welfare (alternatives_\<E> (A, V, p)) UNIV)"
+    "limit_set_\<S>\<W>\<F> (alternatives_\<E> (\<phi>_rev valid_elections \<pi> (A, V, p))) UNIV =
+       set_action \<psi>_rev \<pi> (limit_set_\<S>\<W>\<F> (alternatives_\<E> (A, V, p)) UNIV)"
     by simp
 qed
 

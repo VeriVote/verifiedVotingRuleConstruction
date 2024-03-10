@@ -57,7 +57,7 @@ proof -
   fix
     P :: "bool" and
     accum ::
-    "('a, 'v, 'a Result) Electoral_Module \<times> ('a, 'v, 'a Result) Electoral_Module 
+    "('a, 'v, 'a Result) Electoral_Module \<times> ('a, 'v, 'a Result) Electoral_Module
         \<times> 'a Termination_Condition \<times> 'v set \<times> 'a set \<times> ('a, 'v) Profile"
   have accum_exists: "\<exists> m n t V A p. (m, n, t, V, A, p) = accum"
     using prod_cases5
@@ -166,7 +166,7 @@ proof (safe)
     using term_rel
     by presburger
   have "\<forall> R'.
-    All (loop_comp_helper_dom :: 
+    All (loop_comp_helper_dom ::
       ('b, 'a, 'b Result) Electoral_Module \<times> ('b, 'a, 'b Result) Electoral_Module
       \<times> 'b Termination_Condition \<times> 'a set \<times> 'b set \<times> ('b, 'a) Profile \<Rightarrow> bool) \<or>
       (\<exists> t' m' A' V' p' n'. wf R' \<longrightarrow>
@@ -196,9 +196,8 @@ lemma loop_comp_code_helper[code]:
   using loop_comp_helper.simps
   by (metis (no_types))
 
-function loop_composition ::
-  "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Termination_Condition 
-    \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+function loop_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Termination_Condition
+            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "t ({}, {}, A) \<Longrightarrow> loop_composition m t V A p = defer_module V A p" |
   "\<not>(t ({}, {}, A)) \<Longrightarrow> loop_composition m t V A p = (loop_comp_helper m m t) V A p"
   by (fastforce, simp_all)
@@ -206,10 +205,8 @@ termination
   using "termination" wf_empty
   by blast
 
-abbreviation loop ::
-  "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Termination_Condition 
-    \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
-    ("_ \<circlearrowleft>\<^sub>_" 50) where
+abbreviation loop :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Termination_Condition
+            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" ("_ \<circlearrowleft>\<^sub>_" 50) where
   "m \<circlearrowleft>\<^sub>t \<equiv> loop_composition m t"
 
 lemma loop_comp_code[code]:
@@ -234,30 +231,30 @@ lemma loop_comp_helper_imp_partit:
     p :: "('a, 'v) Profile" and
     n :: "nat"
   assumes
-    module_m: "social_choice_result.electoral_module m" and
+    module_m: "\<S>\<C>\<F>_result.electoral_module m" and
     profile: "profile V A p" and
-    module_acc: "social_choice_result.electoral_module acc" and
+    module_acc: "\<S>\<C>\<F>_result.electoral_module acc" and
     defer_card_n: "n = card (defer acc V A p)"
-  shows "well_formed_social_choice A (loop_comp_helper acc m t V A p)"
+  shows "well_formed_\<S>\<C>\<F> A (loop_comp_helper acc m t V A p)"
   using assms
 proof (induct arbitrary: acc rule: less_induct)
   case (less)
   have "\<forall> m' n'.
-    (social_choice_result.electoral_module m' \<and> social_choice_result.electoral_module n') 
-      \<longrightarrow> social_choice_result.electoral_module (m' \<triangleright> n')"
+    (\<S>\<C>\<F>_result.electoral_module m' \<and> \<S>\<C>\<F>_result.electoral_module n')
+      \<longrightarrow> \<S>\<C>\<F>_result.electoral_module (m' \<triangleright> n')"
     by auto
-  hence "social_choice_result.electoral_module (acc \<triangleright> m)"
+  hence "\<S>\<C>\<F>_result.electoral_module (acc \<triangleright> m)"
     using less.prems module_m
     by blast
   hence "\<not> t (acc V A p) \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p \<and>
             finite (defer acc V A p) \<longrightarrow>
-          well_formed_social_choice A (loop_comp_helper acc m t V A p)"
+          well_formed_\<S>\<C>\<F> A (loop_comp_helper acc m t V A p)"
     using less.hyps less.prems loop_comp_helper.simps(2)
           psubset_card_mono
   by metis
-  moreover have "well_formed_social_choice A (acc V A p)"
+  moreover have "well_formed_\<S>\<C>\<F> A (acc V A p)"
     using less.prems profile
-    unfolding social_choice_result.electoral_module_def
+    unfolding \<S>\<C>\<F>_result.electoral_module_def
     by blast
   ultimately show ?case
     using loop_comp_code_helper
@@ -270,11 +267,11 @@ theorem loop_comp_sound:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition"
-  assumes "social_choice_result.electoral_module m"
-  shows "social_choice_result.electoral_module (m \<circlearrowleft>\<^sub>t)"
+  assumes "\<S>\<C>\<F>_result.electoral_module m"
+  shows "\<S>\<C>\<F>_result.electoral_module (m \<circlearrowleft>\<^sub>t)"
   using def_mod_sound loop_composition.simps
         loop_comp_helper_imp_partit assms
-  unfolding social_choice_result.electoral_module_def
+  unfolding \<S>\<C>\<F>_result.electoral_module_def
   by metis
 
 lemma loop_comp_helper_imp_no_def_incr:
@@ -287,15 +284,15 @@ lemma loop_comp_helper_imp_no_def_incr:
     p :: "('a, 'v) Profile" and
     n :: "nat"
   assumes
-    module_m: "social_choice_result.electoral_module m" and
+    module_m: "\<S>\<C>\<F>_result.electoral_module m" and
     profile: "profile V A p" and
-    mod_acc: "social_choice_result.electoral_module acc" and
+    mod_acc: "\<S>\<C>\<F>_result.electoral_module acc" and
     card_n_defer_acc: "n = card (defer acc V A p)"
   shows "defer (loop_comp_helper acc m t) V A p \<subseteq> defer acc V A p"
   using assms
 proof (induct arbitrary: acc rule: less_induct)
   case (less)
-  have emod_acc_m: "social_choice_result.electoral_module (acc \<triangleright> m)"
+  have emod_acc_m: "\<S>\<C>\<F>_result.electoral_module (acc \<triangleright> m)"
     using less.prems module_m seq_comp_sound 
     by blast
   have "\<forall> A A'. (finite A \<and> A' \<subset> A) \<longrightarrow> card A' < card A"
@@ -372,11 +369,11 @@ proof (induct n arbitrary: acc rule: less_induct)
         dli_acc: "defer_lift_invariance acc" and
         a_in_def_acc: "a \<in> defer acc V A p" and
         lifted_A: "Profile.lifted V A p q a"
-      moreover have "social_choice_result.electoral_module m"
+      moreover have "\<S>\<C>\<F>_result.electoral_module m"
         using monotone_m
         unfolding defer_lift_invariance_def
         by simp
-      moreover have emod_acc: "social_choice_result.electoral_module acc"
+      moreover have emod_acc: "\<S>\<C>\<F>_result.electoral_module acc"
         using dli_acc
         unfolding defer_lift_invariance_def
         by simp
@@ -414,7 +411,7 @@ proof (induct n arbitrary: acc rule: less_induct)
     assume card_changed: "\<not> (card (defer (acc \<triangleright> m) V A p) = card (defer acc V A p))"
     with prof
     have card_smaller_for_p:
-      "social_choice_result.electoral_module acc \<and> finite A \<longrightarrow>
+      "\<S>\<C>\<F>_result.electoral_module acc \<and> finite A \<longrightarrow>
         card (defer (acc \<triangleright> m) V A p) < card (defer acc V A p)"
       using monotone_m order.not_eq_order_implies_strict
             card_mono less.prems seq_comp_def_set_bounded
@@ -444,11 +441,11 @@ proof (induct n arbitrary: acc rule: less_induct)
       proof -
         have
           "\<forall> m'.
-            (\<not> defer_lift_invariance m' \<and> social_choice_result.electoral_module m' \<longrightarrow>
+            (\<not> defer_lift_invariance m' \<and> \<S>\<C>\<F>_result.electoral_module m' \<longrightarrow>
               (\<exists> V' A' p' q' a.
                 m' V' A' p' \<noteq> m' V' A' q' \<and> lifted V' A' p' q' a \<and> a \<in> defer m' V' A' p')) \<and>
             (defer_lift_invariance m' \<longrightarrow>
-              social_choice_result.electoral_module m' \<and>
+              \<S>\<C>\<F>_result.electoral_module m' \<and>
                 (\<forall> V' A' p' q' a.
                   m' V' A' p' \<noteq> m' V' A' q' \<longrightarrow> lifted V' A' p' q' a \<longrightarrow> a \<notin> defer m' V' A' p'))"
           unfolding defer_lift_invariance_def
@@ -482,7 +479,7 @@ proof (induct n arbitrary: acc rule: less_induct)
           lifted_pq_a: "lifted V A p q a"
         hence "defer (acc \<triangleright> m) V A q \<subset> defer acc V A q"
           by metis
-        moreover have "social_choice_result.electoral_module acc"
+        moreover have "\<S>\<C>\<F>_result.electoral_module acc"
           using dli_acc
           unfolding defer_lift_invariance_def
           by simp
@@ -496,13 +493,12 @@ proof (induct n arbitrary: acc rule: less_induct)
           by (metis (mono_tags, lifting))
       qed
       have rec_step_p:
-        "social_choice_result.electoral_module acc \<longrightarrow>
+        "\<S>\<C>\<F>_result.electoral_module acc \<longrightarrow>
             loop_comp_helper acc m t V A p = loop_comp_helper (acc \<triangleright> m) m t V A p"
       proof (safe)
-        assume emod_acc: "social_choice_result.electoral_module acc"
+        assume emod_acc: "\<S>\<C>\<F>_result.electoral_module acc"
         have sound_imp_defer_subset:
-          "social_choice_result.electoral_module m \<longrightarrow> 
-            defer (acc \<triangleright> m) V A p \<subseteq> defer acc V A p"
+          "\<S>\<C>\<F>_result.electoral_module m \<longrightarrow> defer (acc \<triangleright> m) V A p \<subseteq> defer acc V A p"
           using emod_acc prof seq_comp_def_set_bounded
           by blast
         hence card_ineq: "card (defer (acc \<triangleright> m) V A p) < card (defer acc V A p)"
@@ -532,7 +528,7 @@ proof (induct n arbitrary: acc rule: less_induct)
         assume
           a_in_defer_lch: "a \<in> defer (loop_comp_helper acc m t) V A p" and
           a_lifted: "Profile.lifted V A p q a"
-        have mod_acc: "social_choice_result.electoral_module acc"
+        have mod_acc: "\<S>\<C>\<F>_result.electoral_module acc"
           using less.prems
           unfolding defer_lift_invariance_def 
           by simp
@@ -556,7 +552,7 @@ proof (induct n arbitrary: acc rule: less_induct)
           assume
             dli_acc_seq_m: "defer_lift_invariance (acc \<triangleright> m)" and
             a_in_def_seq: "a \<in> defer (acc \<triangleright> m) V A p"
-          moreover from this have "social_choice_result.electoral_module (acc \<triangleright> m)"
+          moreover from this have "\<S>\<C>\<F>_result.electoral_module (acc \<triangleright> m)"
             unfolding defer_lift_invariance_def
             by blast
           moreover have "a \<in> defer (loop_comp_helper (acc \<triangleright> m) m t) V A p"
@@ -634,9 +630,9 @@ lemma loop_comp_helper_presv_def_lift_inv:
     "defer_lift_invariance acc"
   shows "defer_lift_invariance (loop_comp_helper acc m t)"
 proof (unfold defer_lift_invariance_def, safe)
-  show "social_choice_result.electoral_module (loop_comp_helper acc m t)"
+  show "\<S>\<C>\<F>_result.electoral_module (loop_comp_helper acc m t)"
     using loop_comp_helper_imp_partit assms 
-    unfolding social_choice_result.electoral_module_def 
+    unfolding \<S>\<C>\<F>_result.electoral_module_def
               defer_lift_invariance_def
     by metis
 next
@@ -741,7 +737,7 @@ lemma loop_comp_helper_iter_elim_def_n_helper:
   using n_ge_x def_card_gt_one acc_nonelect n_acc_defer_card
 proof (induct n arbitrary: acc rule: less_induct)
   case (less n)
-  have mod_acc: "social_choice_result.electoral_module acc"
+  have mod_acc: "\<S>\<C>\<F>_result.electoral_module acc"
     using less
     unfolding non_electing_def
     by metis
@@ -804,7 +800,7 @@ proof (induct n arbitrary: acc rule: less_induct)
         using step_reduces_defer_set step_profile psubset_card_mono
               new_card_k less fin_def_acc
         by metis
-      moreover have "social_choice_result.electoral_module (acc \<triangleright> m)"
+      moreover have "\<S>\<C>\<F>_result.electoral_module (acc \<triangleright> m)"
         using mod_acc eliminates_def seq_comp_sound single_elimination
         by metis
       moreover have "non_electing (acc \<triangleright> m)"
@@ -913,11 +909,11 @@ theorem loop_comp_presv_def_lift_inv[simp]:
   assumes "defer_lift_invariance m" and "only_voters_vote m"
   shows "defer_lift_invariance (m \<circlearrowleft>\<^sub>t)"
 proof (unfold defer_lift_invariance_def, safe)
-  have "social_choice_result.electoral_module m"
+  have "\<S>\<C>\<F>_result.electoral_module m"
     using assms
     unfolding defer_lift_invariance_def
     by simp
-  thus "social_choice_result.electoral_module (m \<circlearrowleft>\<^sub>t)"
+  thus "\<S>\<C>\<F>_result.electoral_module (m \<circlearrowleft>\<^sub>t)"
     by (simp add: loop_comp_sound)
 next
   fix
@@ -950,7 +946,7 @@ theorem loop_comp_presv_non_electing[simp]:
   assumes "non_electing m"
   shows "non_electing (m \<circlearrowleft>\<^sub>t)"
 proof (unfold non_electing_def, safe)
-  show "social_choice_result.electoral_module (m \<circlearrowleft>\<^sub>t)"
+  show "\<S>\<C>\<F>_result.electoral_module (m \<circlearrowleft>\<^sub>t)"
     using loop_comp_sound assms
     unfolding non_electing_def
     by metis
@@ -982,7 +978,7 @@ theorem iter_elim_def_n[simp]:
     x_greater_zero: "n > 0"
   shows "defers n (m \<circlearrowleft>\<^sub>t)"
 proof (unfold defers_def, safe)
-  show "social_choice_result.electoral_module (m \<circlearrowleft>\<^sub>t)"
+  show "\<S>\<C>\<F>_result.electoral_module (m \<circlearrowleft>\<^sub>t)"
     using loop_comp_sound non_electing_m
     unfolding non_electing_def
     by metis

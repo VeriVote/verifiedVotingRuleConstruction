@@ -94,13 +94,13 @@ lemma plurality_elim_equiv:
 
 subsection \<open>Soundness\<close>
 
-theorem plurality_rule_sound[simp]: "social_choice_result.electoral_module plurality_rule"
+theorem plurality_rule_sound[simp]: "\<S>\<C>\<F>_result.electoral_module plurality_rule"
   unfolding plurality_rule.simps
   using elector_sound plurality_sound
   by metis
 
-theorem plurality_rule'_sound[simp]: "social_choice_result.electoral_module plurality_rule'"
-proof (unfold social_choice_result.electoral_module_def, safe)
+theorem plurality_rule'_sound[simp]: "\<S>\<C>\<F>_result.electoral_module plurality_rule'"
+proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -115,7 +115,7 @@ proof (unfold social_choice_result.electoral_module_def, safe)
       {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x} = A"
     using not_le_imp_less
     by auto
-  ultimately show "well_formed_social_choice A (plurality_rule' V A p)"
+  ultimately show "well_formed_\<S>\<C>\<F> A (plurality_rule' V A p)"
     by simp
 qed
 
@@ -175,7 +175,7 @@ text \<open>
 
 theorem plurality_rule_electing[simp]: "electing plurality_rule"
 proof (unfold electing_def, safe)
-  show "social_choice_result.electoral_module plurality_rule"
+  show "\<S>\<C>\<F>_result.electoral_module plurality_rule"
     using plurality_rule_sound
     by simp
 next
@@ -240,7 +240,7 @@ text \<open>
 
 theorem plurality_rule_inv_mono[simp]: "invariant_monotonicity plurality_rule"
 proof (unfold invariant_monotonicity_def, intro conjI impI allI)
-  show "social_choice_result.electoral_module plurality_rule"
+  show "\<S>\<C>\<F>_result.electoral_module plurality_rule"
     by simp
 next
   fix

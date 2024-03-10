@@ -27,9 +27,8 @@ text \<open>
   under the given consensus elections and consensus rule.
 \<close>
 
-fun score :: 
-"('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class \<Rightarrow> ('a, 'v) Election \<Rightarrow>
-        'r \<Rightarrow> ereal" where
+fun score :: "('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class
+        \<Rightarrow> ('a, 'v) Election \<Rightarrow> 'r \<Rightarrow> ereal" where
   "score d K E w = Inf (d E ` (\<K>\<^sub>\<E> K w))"
 
 fun (in result) \<R>\<^sub>\<W> :: "('a, 'v) Election Distance \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class \<Rightarrow>
@@ -104,7 +103,7 @@ fun (in result) distance_\<R>_std :: "('a, 'v) Election Distance \<Rightarrow>
 
 subsection \<open>Auxiliary Lemmas\<close>
 
-lemma \<K>_els_fin:
+lemma fin_\<K>\<^sub>\<E>:
   fixes C :: "('a, 'v, 'r Result) Consensus_Class"
   shows "elections_\<K> C \<subseteq> finite_elections"
 proof
@@ -118,7 +117,7 @@ proof
     by simp
 qed
 
-lemma \<K>_els_univ:
+lemma univ_\<K>\<^sub>\<E>:
   fixes C :: "('a, 'v, 'r Result) Consensus_Class"
   shows "elections_\<K> C \<subseteq> UNIV"
   by simp

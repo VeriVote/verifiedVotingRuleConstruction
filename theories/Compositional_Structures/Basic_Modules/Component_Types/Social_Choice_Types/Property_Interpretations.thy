@@ -37,18 +37,18 @@ sublocale result_properties \<subseteq> result
 
 subsection \<open>Interpretations\<close>
 
-global_interpretation social_choice_properties:
-  "result_properties" "well_formed_social_choice" "limit_set_social_choice" "\<psi>_neutr\<^sub>\<c>"
+global_interpretation \<S>\<C>\<F>_properties:
+  "result_properties" "well_formed_\<S>\<C>\<F>" "limit_set_\<S>\<C>\<F>" "\<psi>_neutr\<^sub>\<c>"
   unfolding result_properties_def result_properties_axioms_def
-  using wf_res_neutr_social_choice \<psi>_neutr\<^sub>\<c>_act.group_action_axioms
-        social_choice_result.result_axioms
+  using wf_result_neutrality_\<S>\<C>\<F> \<psi>_neutr\<^sub>\<c>_act.group_action_axioms
+        \<S>\<C>\<F>_result.result_axioms
   by blast
 
-global_interpretation social_welfare_properties:
-  "result_properties" "well_formed_welfare" "limit_set_welfare" "\<psi>_neutr\<^sub>\<w>"
+global_interpretation \<S>\<W>\<F>_properties:
+  "result_properties" "well_formed_\<S>\<W>\<F>" "limit_set_\<S>\<W>\<F>" "\<psi>_neutr\<^sub>\<w>"
   unfolding result_properties_def result_properties_axioms_def
-  using wf_res_neutr_social_welfare \<psi>_neutr\<^sub>\<w>_act.group_action_axioms
-        social_welfare_result.result_axioms
+  using wf_result_neutrality_\<S>\<W>\<F> \<psi>_neutr\<^sub>\<w>_act.group_action_axioms
+        \<S>\<W>\<F>_result.result_axioms
   by blast
 
 end

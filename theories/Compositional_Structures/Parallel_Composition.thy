@@ -39,11 +39,11 @@ theorem par_comp_sound[simp]:
     n :: "('a, 'v, 'a Result) Electoral_Module" and
     a :: "'a Aggregator"
   assumes
-    "social_choice_result.electoral_module m" and
-    "social_choice_result.electoral_module n" and
+    "\<S>\<C>\<F>_result.electoral_module m" and
+    "\<S>\<C>\<F>_result.electoral_module n" and
     "aggregator a"
-  shows "social_choice_result.electoral_module (m \<parallel>\<^sub>a n)"
-proof (unfold social_choice_result.electoral_module_def, safe)
+  shows "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>a n)"
+proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -53,21 +53,21 @@ proof (unfold social_choice_result.electoral_module_def, safe)
   moreover have
     "\<forall> a'. aggregator a' =
       (\<forall> A' e r d e' r' d'.
-        (well_formed_social_choice (A'::'a set) (e, r', d)
-        \<and> well_formed_social_choice A' (r, d', e'))
-            \<longrightarrow> well_formed_social_choice A' (a' A' (e, r', d) (r, d', e')))"
+        (well_formed_\<S>\<C>\<F> (A'::'a set) (e, r', d)
+        \<and> well_formed_\<S>\<C>\<F> A' (r, d', e'))
+            \<longrightarrow> well_formed_\<S>\<C>\<F> A' (a' A' (e, r', d) (r, d', e')))"
     unfolding aggregator_def
     by blast
   moreover have
     "\<forall> m' V' A' p'.
-      (social_choice_result.electoral_module m' \<and> finite (A'::'a set) 
-        \<and> finite (V'::'v set) \<and> profile V' A' p') \<longrightarrow> well_formed_social_choice A' (m' V' A' p')"
+      (\<S>\<C>\<F>_result.electoral_module m' \<and> finite (A'::'a set)
+        \<and> finite (V'::'v set) \<and> profile V' A' p') \<longrightarrow> well_formed_\<S>\<C>\<F> A' (m' V' A' p')"
     using par_comp_result_sound
     by (metis (no_types))
-  ultimately have "well_formed_social_choice A (a A (m V A p) (n V A p))"
+  ultimately have "well_formed_\<S>\<C>\<F> A (a A (m V A p) (n V A p))"
     using elect_rej_def_combination assms
     by (metis par_comp_result_sound)
-  thus "well_formed_social_choice A ((m \<parallel>\<^sub>a n) V A p)"
+  thus "well_formed_\<S>\<C>\<F> A ((m \<parallel>\<^sub>a n) V A p)"
     by simp
 qed
 
@@ -89,11 +89,11 @@ theorem conserv_agg_presv_non_electing[simp]:
     conservative: "agg_conservative a"
   shows "non_electing (m \<parallel>\<^sub>a n)"
 proof (unfold non_electing_def, safe)
-  have "social_choice_result.electoral_module m"
+  have "\<S>\<C>\<F>_result.electoral_module m"
     using non_electing_m
     unfolding non_electing_def
     by simp
-  moreover have "social_choice_result.electoral_module n"
+  moreover have "\<S>\<C>\<F>_result.electoral_module n"
     using non_electing_n
     unfolding non_electing_def
     by simp
@@ -101,7 +101,7 @@ proof (unfold non_electing_def, safe)
     using conservative
     unfolding agg_conservative_def
     by simp
-  ultimately show "social_choice_result.electoral_module (m \<parallel>\<^sub>a n)"
+  ultimately show "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>a n)"
     using par_comp_sound
     by simp
 next
@@ -113,22 +113,22 @@ next
   assume
     prof_A: "profile V A p" and
     w_wins: "w \<in> elect (m \<parallel>\<^sub>a n) V A p"
-  have emod_m: "social_choice_result.electoral_module m"
+  have emod_m: "\<S>\<C>\<F>_result.electoral_module m"
     using non_electing_m
     unfolding non_electing_def
     by simp
-  have emod_n: "social_choice_result.electoral_module n"
+  have emod_n: "\<S>\<C>\<F>_result.electoral_module n"
     using non_electing_n
     unfolding non_electing_def
     by simp
   have "\<forall> r r' d d' e e' A' f.
-          ((well_formed_social_choice (A'::'a set) (e', r', d') \<and>
-            well_formed_social_choice A' (e, r, d)) \<longrightarrow>
+          ((well_formed_\<S>\<C>\<F> (A'::'a set) (e', r', d') \<and>
+            well_formed_\<S>\<C>\<F> A' (e, r, d)) \<longrightarrow>
             elect_r (f A' (e', r', d') (e, r, d)) \<subseteq> e' \<union> e \<and>
               reject_r (f A' (e', r', d') (e, r, d)) \<subseteq> r' \<union> r \<and>
               defer_r (f A' (e', r', d') (e, r, d)) \<subseteq> d' \<union> d) =
-                ((well_formed_social_choice A' (e', r', d') \<and>
-                  well_formed_social_choice A' (e, r, d)) \<longrightarrow>
+                ((well_formed_\<S>\<C>\<F> A' (e', r', d') \<and>
+                  well_formed_\<S>\<C>\<F> A' (e, r, d)) \<longrightarrow>
                   elect_r (f A' (e', r', d') (e, r, d)) \<subseteq> e' \<union> e \<and>
                     reject_r (f A' (e', r', d') (e, r, d)) \<subseteq> r' \<union> r \<and>
                     defer_r (f A' (e', r', d') (e, r, d)) \<subseteq> d' \<union> d)"
@@ -136,8 +136,8 @@ next
   hence "\<forall> a'. agg_conservative a' =
           (aggregator a' \<and>
             (\<forall> A' e e' d d' r r'.
-              (well_formed_social_choice (A'::'a set) (e, r, d) \<and>
-               well_formed_social_choice A' (e', r', d')) \<longrightarrow>
+              (well_formed_\<S>\<C>\<F> (A'::'a set) (e, r, d) \<and>
+               well_formed_\<S>\<C>\<F> A' (e', r', d')) \<longrightarrow>
                 elect_r (a' A' (e, r, d) (e', r', d')) \<subseteq> e \<union> e' \<and>
                   reject_r (a' A' (e, r, d) (e', r', d')) \<subseteq> r \<union> r' \<and>
                   defer_r (a' A' (e, r, d) (e', r', d')) \<subseteq> d \<union> d'))"
@@ -145,8 +145,8 @@ next
     by simp
   hence "aggregator a \<and>
           (\<forall> A' e e' d d' r r'.
-            (well_formed_social_choice A' (e, r, d) \<and>
-             well_formed_social_choice A' (e', r', d')) \<longrightarrow>
+            (well_formed_\<S>\<C>\<F> A' (e, r, d) \<and>
+             well_formed_\<S>\<C>\<F> A' (e', r', d')) \<longrightarrow>
               elect_r (a A' (e, r, d) (e', r', d')) \<subseteq> e \<union> e' \<and>
                 reject_r (a A' (e, r, d) (e', r', d')) \<subseteq> r \<union> r' \<and>
                 defer_r (a A' (e, r, d) (e', r', d')) \<subseteq> d \<union> d')"

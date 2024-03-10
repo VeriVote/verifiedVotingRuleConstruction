@@ -28,7 +28,7 @@ fun minimax :: "('a, 'v, 'a Result) Electoral_Module" where
                            
 subsection \<open>Soundness\<close>
 
-theorem minimax_sound: "social_choice_result.electoral_module minimax"
+theorem minimax_sound: "\<S>\<C>\<F>_result.electoral_module minimax"
   unfolding minimax.simps
   using max_elim_sound
   by metis
@@ -191,16 +191,16 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
 qed
 
 theorem minimax_is_dcc: "defer_condorcet_consistency minimax"
-proof (unfold defer_condorcet_consistency_def social_choice_result.electoral_module_def, safe)
+proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module_def, safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile"
   assume "profile V A p"
-  hence "well_formed_social_choice A (max_eliminator minimax_score V A p)"
+  hence "well_formed_\<S>\<C>\<F> A (max_eliminator minimax_score V A p)"
     using max_elim_sound par_comp_result_sound
     by metis
-  thus "well_formed_social_choice A (minimax V A p)"
+  thus "well_formed_\<S>\<C>\<F> A (minimax V A p)"
     by simp
 next
   fix

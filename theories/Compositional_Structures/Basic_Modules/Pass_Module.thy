@@ -33,8 +33,8 @@ theorem pass_mod_sound[simp]:
   fixes
     r :: "'a Preference_Relation" and
     n :: "nat"
-  shows "social_choice_result.electoral_module (pass_module n r)"
-proof (unfold social_choice_result.electoral_module_def, safe)
+  shows "\<S>\<C>\<F>_result.electoral_module (pass_module n r)"
+proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -55,7 +55,7 @@ proof (unfold social_choice_result.electoral_module_def, safe)
     by simp
   hence "{a \<in> A. rank (limit A r) a > n} \<inter> {a \<in> A. rank (limit A r) a \<le> n} = {}"
     by blast
-  ultimately show "well_formed_social_choice A (?mod V A p)"
+  ultimately show "well_formed_\<S>\<C>\<F> A (?mod V A p)"
     by simp
 qed
 
@@ -82,7 +82,7 @@ theorem pass_mod_non_blocking[simp]:
     g0_n: "n > 0"
   shows "non_blocking (pass_module n r)"
 proof (unfold non_blocking_def, safe)
-  show "social_choice_result.electoral_module (pass_module n r)"
+  show "\<S>\<C>\<F>_result.electoral_module (pass_module n r)"
     by simp
 next
   fix
@@ -150,7 +150,7 @@ theorem pass_zero_mod_def_zero[simp]:
   assumes "linear_order r"
   shows "defers 0 (pass_module 0 r)"
 proof (unfold defers_def, safe)
-  show "social_choice_result.electoral_module (pass_module 0 r)"
+  show "\<S>\<C>\<F>_result.electoral_module (pass_module 0 r)"
     using pass_mod_sound assms
     by simp
 next
@@ -198,7 +198,7 @@ theorem pass_one_mod_def_one[simp]:
   assumes "linear_order r"
   shows "defers 1 (pass_module 1 r)"
 proof (unfold defers_def, safe)
-  show "social_choice_result.electoral_module (pass_module 1 r)"
+  show "\<S>\<C>\<F>_result.electoral_module (pass_module 1 r)"
     using pass_mod_sound assms
     by simp
 next
@@ -295,7 +295,7 @@ theorem pass_two_mod_def_two:
   assumes "linear_order r"
   shows "defers 2 (pass_module 2 r)"
 proof (unfold defers_def, safe)
-  show "social_choice_result.electoral_module (pass_module 2 r)"
+  show "\<S>\<C>\<F>_result.electoral_module (pass_module 2 r)"
     using assms
     by simp
 next
