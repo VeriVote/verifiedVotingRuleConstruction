@@ -22,8 +22,8 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun elector :: 
-"('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun elector :: "('a, 'v, 'a Result) Electoral_Module
+                  \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "elector m = (m \<triangleright> elect_module)"
 
 subsection \<open>Auxiliary Lemmas\<close>
@@ -74,8 +74,8 @@ proof -
         (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
           (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p')
             \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and>
-        (\<exists> A V p. (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m' \<or> A \<noteq> {} \<and>
-          finite A \<and> profile V A p \<and> elect m' V A p = {}))"
+        (\<exists> A V p. (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m' \<or> A \<noteq> {}
+          \<and> finite A \<and> profile V A p \<and> elect m' V A p = {}))"
     by simp
   then obtain
     A :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set" and
@@ -86,8 +86,9 @@ proof -
       (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
         (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p')
           \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and>
-        (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m' \<or> A m' \<noteq> {} \<and>
-        finite (A m') \<and> profile (V m') (A m') (p m') \<and> elect m' (V m') (A m') (p m') = {})"
+        (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m'
+        \<or> A m' \<noteq> {} \<and> finite (A m') \<and> profile (V m') (A m') (p m')
+                    \<and> elect m' (V m') (A m') (p m') = {})"
     by metis
   moreover have non_block: 
     "non_blocking (elect_module::'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a Result)"
@@ -103,8 +104,9 @@ proof -
   have "\<forall> s. (elect_r s, r s, d s) = s"
     by simp
   moreover from this
-  have "profile (V (elector m)) (A (elector m)) (p (elector m)) \<and> finite (A (elector m)) \<longrightarrow>
-          d (elector m (V (elector m)) (A (elector m)) (p (elector m))) = {}"
+  have
+    "profile (V (elector m)) (A (elector m)) (p (elector m)) \<and> finite (A (elector m))
+      \<longrightarrow> d (elector m (V (elector m)) (A (elector m)) (p (elector m))) = {}"
     by simp
   moreover have "\<S>\<C>\<F>_result.electoral_module (elector m)"
     using elector_sound module_m
@@ -158,11 +160,12 @@ next
     using c_win
     by simp
   have max_card_w: "\<forall> y \<in> A - {w}.
-          card {i \<in> V. (w, y) \<in> (p i)} <
-            card {i \<in> V. (y, w) \<in> (p i)}"
+          card {i \<in> V. (w, y) \<in> (p i)}
+            < card {i \<in> V. (y, w) \<in> (p i)}"
     using c_win fin_V
     by simp
-  have rej_is_complement: "reject m V A p = A - (elect m V A p \<union> defer m V A p)"
+  have rej_is_complement:
+    "reject m V A p = A - (elect m V A p \<union> defer m V A p)"
     using double_diff sup_bot.left_neutral Un_upper2 assms fin_A prof_A fin_V
           defer_condorcet_consistency_def elec_and_def_not_rej reject_in_alts
     by (metis (no_types, opaque_lifting))
@@ -190,8 +193,8 @@ next
       by auto
     thus "x \<in> {e \<in> A. e \<in> A \<and>
             (\<forall> x \<in> A - {e}.
-              card {i \<in> V. (e, x) \<in> p i} <
-                card {i \<in> V. (x, e) \<in> p i})}"
+              card {i \<in> V. (e, x) \<in> p i}
+                < card {i \<in> V. (x, e) \<in> p i})}"
       using x_eq_w max_card_w
       by auto
   qed
@@ -207,20 +210,23 @@ next
       x_not_in_defer: "x \<notin> defer m V A p" and
       "x \<in> A" and
       "\<forall> x' \<in> A - {x}.
-        card {i \<in> V. (x, x') \<in> p i} <
-          card {i \<in> V. (x', x) \<in> p i}"
+        card {i \<in> V. (x, x') \<in> p i}
+          < card {i \<in> V. (x', x) \<in> p i}"
     hence c_win_x: "condorcet_winner V A p x"
       using fin_A prof_A fin_V
       by simp
     have "(\<S>\<C>\<F>_result.electoral_module m \<and> \<not> defer_condorcet_consistency m \<longrightarrow>
           (\<exists> A V rs a. condorcet_winner V A rs a \<and>
-            m V A rs \<noteq> ({}, A - defer m V A rs, {a \<in> A. condorcet_winner V A rs a}))) \<and>
-        (defer_condorcet_consistency m \<longrightarrow>
+            m V A rs \<noteq> ({}, A - defer m V A rs,
+            {a \<in> A. condorcet_winner V A rs a})))
+        \<and> (defer_condorcet_consistency m \<longrightarrow>
           (\<forall> A V rs a. finite A \<longrightarrow> finite V \<longrightarrow> condorcet_winner V A rs a \<longrightarrow>
-            m V A rs = ({}, A - defer m V A rs, {a \<in> A. condorcet_winner V A rs a})))"
+            m V A rs =
+      ({}, A - defer m V A rs, {a \<in> A. condorcet_winner V A rs a})))"
       unfolding defer_condorcet_consistency_def
       by blast
-    hence "m V A p = ({}, A - defer m V A p, {a \<in> A. condorcet_winner V A p a})"
+    hence
+      "m V A p = ({}, A - defer m V A p, {a \<in> A. condorcet_winner V A p a})"
       using c_win_x assms fin_A fin_V
       by blast
     thus "x \<in> elect m V A p"

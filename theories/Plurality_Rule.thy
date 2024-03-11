@@ -44,10 +44,10 @@ proof (unfold plurality_rule'.simps plurality'.simps revision_composition.simps,
   assume
     "finite V" and
     "b \<in> A" and
-    "card {i. i \<in> V \<and> above (p i) a = {a}} <
-      card {i. i \<in> V \<and> above (p i) b = {b}}" and
-    "\<forall> a' \<in> A. card {i. i \<in> V \<and> above (p i) a' = {a'}} \<le>
-      card {i. i \<in> V \<and> above (p i) a = {a}}"
+    "card {i. i \<in> V \<and> above (p i) a = {a}}
+      < card {i. i \<in> V \<and> above (p i) b = {b}}" and
+    "\<forall> a' \<in> A. card {i. i \<in> V \<and> above (p i) a' = {a'}}
+              \<le> card {i. i \<in> V \<and> above (p i) a = {a}}"
   thus False
     using leD
     by blast
@@ -58,8 +58,8 @@ next
   assume
     "finite V" and
     "b \<in> A" and
-    "\<not> card {i. i \<in> V \<and> above (p i) b = {b}} \<le>
-      card {i. i \<in> V \<and> above (p i) a = {a}}"
+    "\<not> card {i. i \<in> V \<and> above (p i) b = {b}}
+      \<le> card {i. i \<in> V \<and> above (p i) a = {a}}"
   thus "\<exists> x \<in> A.
           card {i. i \<in> V \<and> above (p i) a = {a}}
           < card {i. i \<in> V \<and> above (p i) x = {x}}"
@@ -74,7 +74,8 @@ next
     "b \<in> A" and
     "a \<in> A" and
     "card {v \<in> V. above (p v) a = {a}} < card {v \<in> V. above (p v) b = {b}}" and
-    "\<forall> c \<in> A. card {v \<in> V. above (p v) c = {c}} \<le> card {v \<in> V. above (p v) a = {a}}"
+    "\<forall> c \<in> A. card {v \<in> V. above (p v) c = {c}}
+                \<le> card {v \<in> V. above (p v) a = {a}}"
   thus False
     by auto
 qed
@@ -189,7 +190,8 @@ next
     prof_p: "profile V A p" and
     elect_none: "elect plurality_rule V A p = {}" and
     a_in_A: "a \<in> A"
-  have "\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> elect plurality_rule V A p \<noteq> {}"
+  have "\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p
+          \<longrightarrow> elect plurality_rule V A p \<noteq> {}"
     using plurality_rule_elect_non_empty
     by (metis (no_types))
   hence empty_A: "A = {}"
@@ -212,8 +214,8 @@ lemma plurality_rule_inv_mono_eq:
   assumes
     elect_a: "a \<in> elect plurality_rule V A p" and
     lift_a: "lifted V A p q a"
-  shows "elect plurality_rule V A q = elect plurality_rule V A p \<or>
-          elect plurality_rule V A q = {a}"
+  shows "elect plurality_rule V A q = elect plurality_rule V A p
+          \<or> elect plurality_rule V A q = {a}"
 proof -
   have "a \<in> elect (elector plurality) V A p"
     using elect_a
@@ -222,14 +224,15 @@ proof -
     by simp
   ultimately have "a \<in> defer plurality V A p"
     by blast
-  hence "defer plurality V A q = defer plurality V A p \<or> defer plurality V A q = {a}"
+  hence "defer plurality V A q = defer plurality V A p
+          \<or> defer plurality V A q = {a}"
     using lift_a plurality_def_inv_mono_alts
     by metis
   moreover have "elect (elector plurality) V A q = defer plurality V A q"
     by simp
   ultimately show
-    "elect plurality_rule V A q = elect plurality_rule V A p \<or>
-      elect plurality_rule V A q = {a}"
+    "elect plurality_rule V A q = elect plurality_rule V A p
+      \<or> elect plurality_rule V A q = {a}"
     using eq_p
     by simp
 qed
@@ -250,8 +253,8 @@ next
     q :: "('b, 'a) Profile" and
     a :: "'b"
   assume "a \<in> elect plurality_rule V A p \<and> Profile.lifted V A p q a"
-  thus "elect plurality_rule V A q = elect plurality_rule V A p \<or>
-          elect plurality_rule V A q = {a}"
+  thus "elect plurality_rule V A q = elect plurality_rule V A p
+          \<or> elect plurality_rule V A q = {a}"
     using plurality_rule_inv_mono_eq
     by metis
 qed

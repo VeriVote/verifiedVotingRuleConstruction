@@ -19,21 +19,25 @@ text \<open>
 
 setup Locale_Code.open_block
 
-\<comment> \<open>Results from social choice functions (\<S>\<C>\<F>s), for the purposes of a modular framework
-    given as three sets of (potentially tied) alternatives. See \<^file>\<open>Social_Choice_Result.thy\<close>
-    for the details.\<close>
+text \<open>
+  Results from social choice functions (\<open>\<S>\<C>\<F>s\<close>), for the purpose of composability and
+  modularity given as three sets of (potentially tied) alternatives. See
+  \<^file>\<open>Social_Choice_Result.thy\<close> for details.
+\<close>
 global_interpretation \<S>\<C>\<F>_result:
   result "well_formed_\<S>\<C>\<F>" "limit_set_\<S>\<C>\<F>"
-proof (unfold_locales, auto) qed
+proof (unfold_locales, simp) qed
 
-\<comment> \<open>Results from committee functions. TODO: What is the semantics?\<close>
+text \<open>Results from committee functions. TODO: What is the semantics?\<close>
 global_interpretation committee_result:
   result "\<lambda> A r. set_equals_partition (Pow A) r \<and> disjoint3 r" "\<lambda> A rs. {r \<inter> A | r. r \<in> rs}"
-proof (unfold_locales, safe, auto) qed
+proof (unfold_locales, safe, force) qed
 
-\<comment> \<open>Results from social welfare functions (\<S>\<W>\<F>s), for the purposes of a modular framework
-    given as three linear orders over the alternatives. See \<^file>\<open>Social_Welfare_Result.thy\<close>
-    for the details.\<close>
+text \<open>
+  Results from social welfare functions (\<open>\<S>\<W>\<F>s\<close>), for the purpose of composability and
+  modularity given as three linear orders over the alternatives. See
+  \<^file>\<open>Social_Welfare_Result.thy\<close> for details.
+\<close>
 global_interpretation \<S>\<W>\<F>_result:
   result "well_formed_\<S>\<W>\<F>" "limit_set_\<S>\<W>\<F>"
 proof (unfold_locales, safe)
@@ -55,19 +59,17 @@ proof (unfold_locales, safe)
     by blast
   also have "... = {r'. linear_order_on A r'}"
   proof (safe)
-    fix
-      r' :: "'a Preference_Relation"
-    assume
-      lin_ord: "linear_order_on A r'"
+    fix r' :: "'a Preference_Relation"
+    assume lin_ord: "linear_order_on A r'"
     hence "\<forall> a b. (a, b) \<in> r' \<longrightarrow> (a, b) \<in> limit A r'"
       unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
-      by fastforce
+      by force
     hence "r' \<subseteq> limit A r'"
-      by fastforce
+      by slow
     moreover have "limit A r' \<subseteq> r'"
-      by fastforce
+      by auto
     ultimately have "r' = limit A r'"
-      by simp
+      by safe
     thus "\<exists> x. r' = limit A x \<and> linear_order_on A (limit A x)"
       using lin_ord
       by metis

@@ -242,8 +242,8 @@ definition above_l :: "'a Preference_List \<Rightarrow> 'a \<Rightarrow> 'a Pref
 
 subsection \<open>Definition\<close>
 
-fun is_less_preferred_than_l :: "'a \<Rightarrow> 'a Preference_List \<Rightarrow> 'a
-        \<Rightarrow> bool" ("_ \<lesssim>\<^sub>_ _" [50, 1000, 51] 50) where
+fun is_less_preferred_than_l :: "'a \<Rightarrow> 'a Preference_List \<Rightarrow> 'a \<Rightarrow> bool"
+        ("_ \<lesssim>\<^sub>_ _" [50, 1000, 51] 50) where
     "a \<lesssim>\<^sub>l b = (a \<in> set l \<and> b \<in> set l \<and> index l a \<ge> index l b)"
 
 lemma rank_gt_zero:
@@ -272,16 +272,9 @@ lemma pl_\<alpha>_lin_order:
   shows "linear_order_on A r"
 proof (cases "A = {}")
   case True
-  hence "permutations_of_set A = {[]}"
-    by simp
-  hence "r = pl_\<alpha> []"
-    using assms
-    by simp
-  hence "r = {}"
-    unfolding pl_\<alpha>_def is_less_preferred_than_l.simps
-    by simp
   thus ?thesis
-    using True
+    using assms
+    unfolding pl_\<alpha>_def is_less_preferred_than_l.simps
     by simp
 next
   case False
