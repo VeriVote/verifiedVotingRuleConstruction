@@ -6,8 +6,6 @@
 \<^marker>\<open>contributor "Michael Kirsten, Karlsruhe Institute of Technology (KIT)"\<close>
 \<^marker>\<open>contributor "Stephan Bohr, Karlsruhe Institute of Technology (KIT)"\<close>
 
-chapter \<open>Component Types\<close>
-
 section \<open>Electoral Module\<close>
 
 theory Electoral_Module

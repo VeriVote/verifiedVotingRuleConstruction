@@ -21,6 +21,8 @@ session Verified_Voting_Rule_Construction = HOL +
   options [browser_info, timeout = 500, document = pdf, document_output = "output"]
 
   sessions
+    "HOL-Library"
+    "HOL-Analysis"
     "HOL-Combinatorics"
     "HOL-Algebra"
     "List-Index"

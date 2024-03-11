@@ -3,7 +3,7 @@
 *)
 \<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
 
-section \<open>Result + Property Locale Code Generation\<close>
+section \<open>Result and Property Locale Code Generation\<close>
 
 theory Interpretation_Code
   imports Electoral_Module

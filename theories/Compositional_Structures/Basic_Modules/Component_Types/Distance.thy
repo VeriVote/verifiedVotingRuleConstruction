@@ -3,6 +3,8 @@
 *)
 \<^marker>\<open>creator "Marion Steinriede, Karlsruhe Institute of Technology (KIT)"\<close>
 
+chapter \<open>Component Types\<close>
+
 section \<open>Distance\<close>
 
 theory Distance

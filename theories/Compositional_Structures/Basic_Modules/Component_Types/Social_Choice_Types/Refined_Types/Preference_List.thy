@@ -3,6 +3,8 @@
 *)
 \<^marker>\<open>creator "Valentin Springsklee, Karlsruhe Institute of Technology (KIT)"\<close>
 
+chapter \<open>Refined Types\<close>
+
 section \<open>Preference List\<close>
 
 theory Preference_List
