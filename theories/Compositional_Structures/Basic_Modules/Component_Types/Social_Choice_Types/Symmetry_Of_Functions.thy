@@ -507,95 +507,103 @@ qed
 subsection \<open>Invariance and Equivariance\<close>
 
 text \<open>
-  It suffices to show invariance under the group action of a generating set of a group
-  to show invariance under the group action of the whole group.
+  It suffices to show equivariance under the group action of a generating set of a group
+  to show equivariance under the group action of the whole group.
   For example, it is enough to show invariance under transpositions to show invariance
   under a complete finite symmetric group.
 \<close>
 
-(* TODO Same for monoid actions? Equivariance? *)
-
-theorem invar_generating_system_imp_invar:
+theorem equivar_generating_system_imp_invar:
   fixes
     f :: "'x \<Rightarrow> 'y" and
     m :: "'z monoid" and
     s :: "'z set" and
     t :: "'x set" and
-    \<phi> :: "('z, 'x) binary_fun"
+    \<phi> :: "('z, 'x) binary_fun" and
+    \<psi> :: "('z, 'y) binary_fun"
   assumes
-    invar: "satisfies f (Invariance (rel_induced_by_action s t \<phi>))" and
+    equivar: "satisfies f (equivar_ind_by_act s t \<phi> \<psi>)" and
     action_\<phi>: "group_action m t \<phi>" and
+    action_\<psi>: "group_action m (f ` t) \<psi>" and
     gen: "carrier m = generate m s"
-  shows "satisfies f (Invariance (rel_induced_by_action (carrier m) t \<phi>))"
-proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
+  shows "satisfies f (equivar_ind_by_act (carrier m) t \<phi> \<psi>)"
+proof (unfold satisfies.simps equivar_ind_by_act_def rel_induced_by_action.simps, safe)
   fix
     g :: "'z" and
     x :: "'x"
   assume
     group_elem: "g \<in> carrier m" and
     x_in_t: "x \<in> t"
-  interpret interpr_action_\<phi>: "group_action" "m" "t" "\<phi>"
-    using action_\<phi>
-    by blast
   have "g \<in> generate m s"
     using group_elem gen
     by blast
-  hence "\<forall> x \<in> t. f x = f (\<phi> g x)"
+  hence "\<forall> x \<in> t. f (\<phi> g x) = \<psi> g (f x)"
   proof (induct g rule: generate.induct)
     case one
     hence "\<forall> x \<in> t. \<phi> \<one> \<^bsub>m\<^esub> x = x"
       using action_\<phi> group_action.id_eq_one restrict_apply
       by metis
-    thus ?case
+    moreover with one have "\<forall> y \<in> (f ` t). \<psi> \<one> \<^bsub>m\<^esub> y = y"
+      using action_\<psi>  group_action.id_eq_one restrict_apply
+      by metis
+    ultimately show ?case
       by simp
   next
     case (incl g)
-    hence "\<forall> x \<in> t. (x, \<phi> g x) \<in> rel_induced_by_action s t \<phi>"
-      using gen action_\<phi> generate.incl group_action.element_image
-      unfolding rel_induced_by_action.simps
-      by fastforce
+    hence "\<forall> x \<in> t. \<phi> g x \<in> t"
+      using action_\<phi> gen generate.incl group_action.element_image
+      by metis
     thus ?case
-      using invar
+      using incl equivar rewrite_equivar_ind_by_act
       unfolding satisfies.simps
-      by blast
+      by meson
   next
     case (inv g)
-    hence "\<forall> x \<in> t. \<phi> (inv \<^bsub>m\<^esub> g) x \<in> t"
+    hence in_t: "\<forall> x \<in> t. \<phi> (inv \<^bsub>m\<^esub> g) x \<in> t"
       using action_\<phi> gen generate.inv group_action.element_image
       by metis
-    hence "\<forall> x \<in> t. f (\<phi> g (\<phi> (inv \<^bsub>m\<^esub> g) x)) = f (\<phi> (inv \<^bsub>m\<^esub> g) x)"
+    hence "\<forall> x \<in> t. f (\<phi> g (\<phi> (inv \<^bsub>m\<^esub> g) x)) = \<psi> g (f (\<phi> (inv \<^bsub>m\<^esub> g) x))"
       using gen generate.incl group_action.element_image action_\<phi>
-            invar local.inv rewrite_invar_ind_by_act
-      by metis
+            equivar local.inv
+      by (metis rewrite_equivar_ind_by_act)
     moreover have "\<forall> x \<in> t. \<phi> g (\<phi> (inv \<^bsub>m\<^esub> g) x) = x"
       using action_\<phi> gen generate.incl group.inv_closed group_action.orbit_sym_aux
-            group.inv_inv group_hom.axioms(1) interpr_action_\<phi>.group_hom local.inv
+            group.inv_inv group_hom.axioms(1) group_action.group_hom local.inv
       by (metis (full_types))
+    ultimately have "\<forall> x \<in> t. \<psi> g (f (\<phi> (inv \<^bsub>m\<^esub> g) x)) = f x"
+      by simp
+    moreover have in_img_t: "\<forall> x \<in> t. f (\<phi> (inv \<^bsub>m\<^esub> g) x) \<in> f ` t"
+      using in_t
+      by blast
+    ultimately have "\<forall> x \<in> t. \<psi> (inv \<^bsub>m\<^esub> g) (\<psi> g (f (\<phi> (inv \<^bsub>m\<^esub> g) x))) = \<psi> (inv \<^bsub>m\<^esub> g) (f x)"
+      using action_\<psi> gen
+      by metis
+    moreover have "\<forall> x \<in> t. \<psi> (inv \<^bsub>m\<^esub> g) (\<psi> g (f (\<phi> (inv \<^bsub>m\<^esub> g) x))) = f (\<phi> (inv \<^bsub>m\<^esub> g) x)"
+      using in_img_t action_\<psi> gen generate.incl group_action.orbit_sym_aux local.inv
+      by metis
     ultimately show ?case
       by simp
   next
     case (eng g\<^sub>1 g\<^sub>2)
     assume
-      invar\<^sub>1: "\<forall> x \<in> t. f x = f (\<phi> g\<^sub>1 x)" and
-      invar\<^sub>2: "\<forall> x \<in> t. f x = f (\<phi> g\<^sub>2 x)" and
+      equivar\<^sub>1: "\<forall> x \<in> t. f (\<phi> g\<^sub>1 x) = \<psi> g\<^sub>1 (f x)" and
+      equivar\<^sub>2: "\<forall> x \<in> t. f (\<phi> g\<^sub>2 x) = \<psi> g\<^sub>2 (f x)" and
       gen\<^sub>1: "g\<^sub>1 \<in> generate m s" and
       gen\<^sub>2: "g\<^sub>2 \<in> generate m s"
     hence "\<forall> x \<in> t. \<phi> g\<^sub>2 x \<in> t"
-      using gen interpr_action_\<phi>.element_image
-      by blast
-    hence "\<forall> x \<in> t. f (\<phi> g\<^sub>1 (\<phi> g\<^sub>2 x)) = f (\<phi> g\<^sub>2 x)"
-      using invar\<^sub>1
+      using gen action_\<phi> group_action.element_image
+      by metis
+    hence "\<forall> x \<in> t. f (\<phi> g\<^sub>1 (\<phi> g\<^sub>2 x)) = \<psi> g\<^sub>1 (f (\<phi> g\<^sub>2 x))"
+      using equivar\<^sub>1
       by simp
-    moreover have "\<forall> x \<in> t. f (\<phi> g\<^sub>2 x) = f x"
-      using invar\<^sub>2
-      by simp
-    moreover have "\<forall> x \<in> t. f (\<phi> (g\<^sub>1 \<otimes> \<^bsub>m\<^esub> g\<^sub>2) x) = f (\<phi> g\<^sub>1 (\<phi> g\<^sub>2 x))"
-      using action_\<phi> gen interpr_action_\<phi>.composition_rule gen\<^sub>1 gen\<^sub>2
+    moreover have "\<forall> x \<in> t. f (\<phi> g\<^sub>2 x) = \<psi> g\<^sub>2 (f x)"
+      using equivar\<^sub>2
       by simp
     ultimately show ?case
-      by simp
+      using action_\<phi> action_\<psi> gen gen\<^sub>1 gen\<^sub>2 group_action.composition_rule imageI
+      by (metis (no_types, lifting))
   qed
-  thus "f x = f (\<phi> g x)"
+  thus "f (\<phi> g x) = \<psi> g (f x)"
     using x_in_t
     by simp
 qed
