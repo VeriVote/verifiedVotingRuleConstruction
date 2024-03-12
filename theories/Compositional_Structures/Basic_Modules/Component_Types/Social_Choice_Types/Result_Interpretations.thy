@@ -28,14 +28,17 @@ global_interpretation \<S>\<C>\<F>_result:
   result "well_formed_\<S>\<C>\<F>" "limit_set_\<S>\<C>\<F>"
 proof (unfold_locales, simp) qed
 
-text \<open>Results from committee functions. TODO: What is the semantics?\<close>
+text \<open>
+  Results from committee functions, for the purpose of composability and
+  modularity given as three sets of (potentially tied) sets of alternatives or committees.
+\<close>
 global_interpretation committee_result:
   result "\<lambda> A r. set_equals_partition (Pow A) r \<and> disjoint3 r" "\<lambda> A rs. {r \<inter> A | r. r \<in> rs}"
 proof (unfold_locales, safe, force) qed
 
 text \<open>
   Results from social welfare functions (\<open>\<S>\<W>\<F>s\<close>), for the purpose of composability and
-  modularity given as three linear orders over the alternatives. See
+  modularity given as three sets of (potentially tied) linear orders over the alternatives. See
   \<^file>\<open>Social_Welfare_Result.thy\<close> for details.
 \<close>
 global_interpretation \<S>\<W>\<F>_result:
