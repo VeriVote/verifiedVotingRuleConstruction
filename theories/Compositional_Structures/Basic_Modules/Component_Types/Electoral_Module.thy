@@ -1079,6 +1079,59 @@ definition defer_lift_invariance :: "('a, 'v, 'a Result) Electoral_Module \<Righ
     \<S>\<C>\<F>_result.electoral_module m \<and>
       (\<forall> A V p q a. (a \<in> (defer m V A p) \<and> lifted V A p q a) \<longrightarrow> m V A p = m V A q)"
 
+fun dli_rel :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v) Election rel" where
+  "dli_rel m = {((A, V, p), (A, V, q)) |A V p q. (\<exists> a \<in> defer m V A p. lifted V A p q a)}"
+
+lemma rewrite_dli_as_invariance:
+  fixes
+    m :: "('a, 'v, 'a Result) Electoral_Module"
+  shows
+    "defer_lift_invariance m =
+      (\<S>\<C>\<F>_result.electoral_module m \<and> (satisfies (fun\<^sub>\<E> m) (Invariance (dli_rel m))))"
+proof (unfold satisfies.simps, safe)
+  assume "defer_lift_invariance m"
+  thus "\<S>\<C>\<F>_result.electoral_module m"
+    unfolding defer_lift_invariance_def
+    by blast
+next
+  fix
+    A :: "'a set" and
+    A' :: "'a set" and
+    V :: "'v set" and
+    V' :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    q :: "('a, 'v) Profile"
+  assume
+    invar: "defer_lift_invariance m" and
+    rel: "((A, V, p), (A', V', q)) \<in> dli_rel m"
+  then obtain a :: 'a where
+    "a \<in> defer m V A p \<and> lifted V A p q a"
+    unfolding dli_rel.simps
+    by blast
+  moreover with rel have "A = A' \<and> V = V'"
+    by simp
+  ultimately show "fun\<^sub>\<E> m (A, V, p) = fun\<^sub>\<E> m (A', V', q)"
+    using invar
+    unfolding defer_lift_invariance_def fun\<^sub>\<E>.simps
+    by (metis alternatives_\<E>.simps fst_eqD profile_\<E>.simps snd_eqD voters_\<E>.simps)
+next
+  assume
+    "\<S>\<C>\<F>_result.electoral_module m" and
+    "\<forall>E E'. (E, E') \<in> dli_rel m \<longrightarrow> fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
+  hence "\<S>\<C>\<F>_result.electoral_module m \<and> (\<forall> A V p q.
+    ((A, V, p), (A, V, q)) \<in> dli_rel m \<longrightarrow> m V A p = m V A q)"
+    unfolding fun\<^sub>\<E>.simps
+    by (metis alternatives_\<E>.simps fst_conv profile_\<E>.elims snd_conv voters_\<E>.elims)
+  moreover have
+    "\<forall> A V p q a. (a \<in> (defer m V A p) \<and> lifted V A p q a) \<longrightarrow>
+      ((A, V, p), (A, V, q)) \<in> dli_rel m"
+    unfolding dli_rel.simps
+    by blast
+  ultimately show "defer_lift_invariance m"
+    unfolding defer_lift_invariance_def
+    by blast
+qed
+
 text \<open>
   Two electoral modules are disjoint-compatible if they only make decisions
   over disjoint sets of alternatives. Electoral modules reject alternatives

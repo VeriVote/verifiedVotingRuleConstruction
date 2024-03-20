@@ -42,20 +42,6 @@ fun simple :: "'x rel \<Rightarrow> 'x set \<Rightarrow> 'x Distance \<Rightarro
     so that the infimum distance between these sets coincides with the infimum
     distance over all b in B for fixed a.\<close>
 
-(* lemma "Min {Inf {y | y::ereal. y < x} | x. x > 0} = -\<infinity>"
-proof -
-  have "\<forall> x > 0. Inf {y | y::ereal. y < x} = -\<infinity>"
-    using Inf_eq_MInfty
-    by simp
-  hence "{Inf {y | y::ereal. y < x} | x. x > 0} \<subseteq> {-\<infinity>}"
-    by blast
-  hence "{Inf {y | y::ereal. y < x} | x. x > 0} = {-\<infinity>}"
-    using subset_singletonD
-    by fastforce
-  thus ?thesis
-    by simp
-qed *)
-
 fun product' :: "'x rel \<Rightarrow> ('x * 'x) rel" where
   "product' r = {(p\<^sub>1, p\<^sub>2). ((fst p\<^sub>1, fst p\<^sub>2) \<in> r \<and> snd p\<^sub>1 = snd p\<^sub>2)
                           \<or> ((snd p\<^sub>1, snd p\<^sub>2) \<in> r \<and> fst p\<^sub>1 = fst p\<^sub>2)}"

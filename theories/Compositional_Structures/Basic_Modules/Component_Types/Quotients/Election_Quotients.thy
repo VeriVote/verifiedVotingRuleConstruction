@@ -165,6 +165,30 @@ fun vote_count\<^sub>\<Q> :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Elec
 fun anonymity_class :: "('a::finite, 'v) Election set \<Rightarrow> (nat, 'a Ordered_Preference) vec" where
   "anonymity_class X = (\<chi> p. vote_count\<^sub>\<Q> (ord2pref p) X)"
 
+lemma anon_rel_equiv:
+ "equiv (elections_\<A> UNIV) (anonymity\<^sub>\<R> (elections_\<A> UNIV))"
+proof -
+  have subset: "elections_\<A> UNIV \<subseteq> valid_elections"
+      by simp
+  have "equiv valid_elections (anonymity\<^sub>\<R> valid_elections)"
+    using rel_ind_by_group_act_equiv[of "anonymity\<^sub>\<G>" "valid_elections" "\<phi>_anon valid_elections"]
+          rel_ind_by_coinciding_action_on_subset_eq_restr
+    by (simp add: anonymous_group_action.group_action_axioms)
+  moreover have
+    "\<forall> \<pi> \<in> carrier anonymity\<^sub>\<G>.
+      \<forall> E \<in> elections_\<A> UNIV.
+        \<phi>_anon (elections_\<A> UNIV) \<pi> E = \<phi>_anon valid_elections \<pi> E"
+    using subset
+    unfolding \<phi>_anon.simps
+    by simp
+  ultimately show ?thesis
+    using subset equiv_rel_restr rel_ind_by_coinciding_action_on_subset_eq_restr[of
+            "elections_\<A> UNIV" "valid_elections" "carrier anonymity\<^sub>\<G>"
+            "\<phi>_anon (elections_\<A> UNIV)"]
+    unfolding anonymity\<^sub>\<R>.simps
+    by (metis (no_types))
+qed
+
 text \<open>
   We assume that all elections consist of a fixed finite alternative set of size \<open>n\<close> and
   finite subsets of an infinite voter universe. Profiles are linear orders on the alternatives.
@@ -200,28 +224,12 @@ proof (unfold bij_betw_def inj_on_def, standard, standard, standard, standard)
   hence vote_count_invar: "\<forall> p. (vote_count p) respects (anonymity\<^sub>\<R> (elections_\<A> UNIV))"
     unfolding congruent_def
     by blast
-  have "equiv valid_elections (anonymity\<^sub>\<R> valid_elections)"
-    using rel_ind_by_group_act_equiv[of "anonymity\<^sub>\<G>" "valid_elections" "\<phi>_anon valid_elections"]
-          rel_ind_by_coinciding_action_on_subset_eq_restr
-    by (simp add: anonymous_group_action.group_action_axioms)
-  moreover have
-    "\<forall> \<pi> \<in> carrier anonymity\<^sub>\<G>.
-      \<forall> E \<in> elections_\<A> UNIV.
-        \<phi>_anon (elections_\<A> UNIV) \<pi> E = \<phi>_anon valid_elections \<pi> E"
-    by simp
-  ultimately have equiv_rel:
-    "equiv (elections_\<A> UNIV) (anonymity\<^sub>\<R> (elections_\<A> UNIV))"
-    using subset rel_ind_by_coinciding_action_on_subset_eq_restr[of "elections_\<A> UNIV"
-            "valid_elections" "carrier anonymity\<^sub>\<G>" "\<phi>_anon (elections_\<A> UNIV)"]
-          equiv_rel_restr
-    unfolding anonymity\<^sub>\<R>.simps
-    by (metis (no_types))
-  with vote_count_invar
   have quotient_count: "\<forall> X \<in> anonymity\<^sub>\<Q> UNIV. \<forall> p. \<forall> E \<in> X. vote_count\<^sub>\<Q> p X = vote_count p E"
     using pass_to_quotient[of "anonymity\<^sub>\<R> (elections_\<A> UNIV)"]
+          vote_count_invar anon_rel_equiv
     unfolding anonymity\<^sub>\<Q>.simps anonymity\<^sub>\<R>.simps vote_count\<^sub>\<Q>.simps
     by metis
-  moreover from equiv_rel
+  moreover from anon_rel_equiv
   obtain
     E :: "('a, 'v) Election" and
     E' :: "('a, 'v) Election" where
@@ -242,7 +250,7 @@ proof (unfold bij_betw_def inj_on_def, standard, standard, standard, standard)
   hence eq: "\<forall> p \<in> {p. linear_order_on (UNIV::'a set) p}. vote_count p E = vote_count p E'"
     using pref2ord_inverse
     by metis
-  from equiv_rel class_X class_Y have subset_fixed_alts:
+  from anon_rel_equiv class_X class_Y have subset_fixed_alts:
     "X \<subseteq> elections_\<A> UNIV \<and> Y \<subseteq> elections_\<A> UNIV"
     unfolding anonymity\<^sub>\<Q>.simps
     using in_quotient_imp_subset
@@ -280,40 +288,19 @@ proof (unfold bij_betw_def inj_on_def, standard, standard, standard, standard)
     by metis
   hence "anonymity\<^sub>\<R> (elections_\<A> UNIV) `` {E} =
             anonymity\<^sub>\<R> (elections_\<A> UNIV) `` {E'}"
-    using equiv_rel equiv_class_eq
+    using anon_rel_equiv equiv_class_eq
     by metis
   also have "anonymity\<^sub>\<R> (elections_\<A> UNIV) `` {E} = X"
-    using E_in_X class_X equiv_rel Image_singleton_iff equiv_class_eq quotientE
+    using E_in_X class_X anon_rel_equiv Image_singleton_iff equiv_class_eq quotientE
     unfolding anonymity\<^sub>\<Q>.simps
     by (metis (no_types, lifting))
   also have "anonymity\<^sub>\<R> (elections_\<A> UNIV) `` {E'} = Y"
-    using E'_in_Y class_Y equiv_rel Image_singleton_iff equiv_class_eq quotientE
+    using E'_in_Y class_Y anon_rel_equiv Image_singleton_iff equiv_class_eq quotientE
     unfolding anonymity\<^sub>\<Q>.simps
     by (metis (no_types, lifting))
   finally show "X = Y"
     by simp
 next
-  have subset: "elections_\<A> UNIV \<subseteq> valid_elections"
-      by simp
-  have "equiv valid_elections (anonymity\<^sub>\<R> valid_elections)"
-    using rel_ind_by_group_act_equiv[of "anonymity\<^sub>\<G>" "valid_elections" "\<phi>_anon valid_elections"]
-          rel_ind_by_coinciding_action_on_subset_eq_restr
-    by (simp add: anonymous_group_action.group_action_axioms)
-  (* TODO: Remove this duplicate, already shown in the previous subgoal... *)
-  moreover have
-    "\<forall> \<pi> \<in> carrier anonymity\<^sub>\<G>.
-      \<forall> E \<in> elections_\<A> UNIV.
-        \<phi>_anon (elections_\<A> UNIV) \<pi> E = \<phi>_anon valid_elections \<pi> E"
-    using subset
-    unfolding \<phi>_anon.simps
-    by simp
-  ultimately have equiv_rel:
-    "equiv (elections_\<A> UNIV) (anonymity\<^sub>\<R> (elections_\<A> UNIV))"
-    using subset equiv_rel_restr rel_ind_by_coinciding_action_on_subset_eq_restr[of
-            "elections_\<A> UNIV" "valid_elections" "carrier anonymity\<^sub>\<G>"
-            "\<phi>_anon (elections_\<A> UNIV)"]
-    unfolding anonymity\<^sub>\<R>.simps
-    by (metis (no_types))
   have "(UNIV::((nat, 'a Ordered_Preference) vec set)) \<subseteq>
       (anonymity_class::('a, 'v) Election set \<Rightarrow> (nat, 'a Ordered_Preference) vec) `
       anonymity\<^sub>\<Q> UNIV"
@@ -392,10 +379,10 @@ next
     hence "\<forall> i. \<forall> E \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, V, p)}.
               vote_count i E = vote_count i (UNIV, V, p)"
       using anon_rel_vote_count[of "(UNIV, V, p)" _ "elections_\<A> UNIV"]
-            fin_V subset
+            fin_V
       by simp
     moreover have "(UNIV, V, p) \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, V, p)}"
-      using equiv_rel valid
+      using anon_rel_equiv valid
       unfolding Image_def equiv_def refl_on_def
       by blast
     ultimately have eq_vote_count:

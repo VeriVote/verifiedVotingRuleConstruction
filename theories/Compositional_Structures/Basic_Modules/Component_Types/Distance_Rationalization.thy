@@ -416,7 +416,6 @@ next
   hence "finite A \<and> finite V \<and> A = {} \<Longrightarrow>
     {\<pi>. \<pi> ` V \<subseteq> (pl_\<alpha> ` permutations_of_set A)} = {\<pi>. \<forall> v \<in> V. \<pi> v = {}}"
     using image_subset_iff singletonD singletonI pl_empty
-      (* TODO make this proof step more understandable *)
     by fastforce
   moreover have "finite A \<and> finite V \<and> A = {}
     \<Longrightarrow> all_profiles V A = {\<pi>. \<pi> ` V \<subseteq> (pl_\<alpha> ` permutations_of_set A)}"

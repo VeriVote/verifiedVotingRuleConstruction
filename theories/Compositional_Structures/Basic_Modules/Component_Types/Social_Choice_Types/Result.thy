@@ -59,9 +59,6 @@ locale result =
   assumes "\<And> (A::('a set)) (r::('r Result)).
     (set_equals_partition (limit_set A UNIV) r \<and> disjoint3 r) \<Longrightarrow> well_formed A r"
 
-(* and "\<And> A B e r d. A \<subseteq> B \<Longrightarrow> well_formed B (e, r, d)
-            \<Longrightarrow> well_formed A ((limit_set A e), (limit_set A r), (limit_set A d))" *)
-
 text \<open>
   These three functions return the elect, reject, or defer set of a result.
 \<close>

@@ -36,8 +36,6 @@ fun average :: "('a, 'v) Evaluation_Function \<Rightarrow> 'v set \<Rightarrow>
                       (if (sum = infinity) then (infinity) 
                        else ((the_enat sum) div (card A))))"
 
-(* Social Choice Specific Results *)
-
 subsection \<open>Social Choice Definitions\<close>
 
 fun elimination_module :: "('a, 'v) Evaluation_Function \<Rightarrow> 

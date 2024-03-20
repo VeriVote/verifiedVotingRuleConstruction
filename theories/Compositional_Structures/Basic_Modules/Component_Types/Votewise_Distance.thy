@@ -94,7 +94,6 @@ lemma linorder_rank_injective:
     v'_in_V: "v' \<in> V" and
     v'_neq_v: "v' \<noteq> v" and
     fin_V: "finite V"
-  (* the rank of v in an ordered list of V is the amount of smaller elements in V *)
   shows "card {x \<in> V. x < v} \<noteq> card {x \<in> V. x < v'}"
 proof -
   have "v < v' \<or> v' < v"
@@ -143,6 +142,8 @@ proof (unfold distance_anonymity_def, safe)
       ?len = "length (to_list V p)" and
       ?sl_V = "sorted_list_of_set V"
   let ?perm = "\<lambda> i. (card ({v \<in> ?rn_V. v < \<pi> (?sl_V!i)}))" and
+      \<comment> \<open>use a total permutation function in order to
+          apply facts like mset_permute_list\<close>
       ?perm_total = "(\<lambda> i. (if (i < ?len)
                            then card ({v \<in> ?rn_V. v < \<pi> (?sl_V!i)})
                            else i))"
@@ -164,7 +165,7 @@ proof (unfold distance_anonymity_def, safe)
     show ?thesis
     proof (cases "finite V \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')")
       case False
-      (* both distances are infinite *)
+      \<comment> \<open>case: both distances are infinite\<close>
       hence inf_dist: "votewise_distance d n (A, V, p) (A', V', p') = \<infinity>"
         by auto
       moreover have "infinite V \<Longrightarrow> infinite ?rn_V"
@@ -184,8 +185,7 @@ proof (unfold distance_anonymity_def, safe)
         by simp
     next
       case True
-      (* both distances are finite *)
-      (* use a total permutation function in order to apply facts like  mset_permute_list *)
+      \<comment> \<open>case: both distances are finite\<close>
       have perm_funs_coincide: "\<forall> i < ?len. ?perm i = ?perm_total i"
         by presburger
       (* the lists of V and V' have equal lengths as the sets are equal by assumption *)
