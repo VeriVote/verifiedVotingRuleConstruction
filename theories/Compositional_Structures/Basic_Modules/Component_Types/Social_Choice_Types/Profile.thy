@@ -568,7 +568,7 @@ proof -
   then obtain \<phi> where
     index_\<phi>: "\<forall> v \<in> V. \<phi> v < card V \<and> (sorted_list_of_set V!(\<phi> v)) = v"
     by metis
-  (* \<phi> x = ?c, i.e., \<phi> x \<ge> ?c and \<phi> x \<le> ?c *)
+  \<comment> \<open>\<phi> x = ?c, i.e., \<phi> x \<ge> ?c and \<phi> x \<le> ?c\<close>
   let ?i = "\<phi> x"
   have inj_\<phi>: "inj_on \<phi> V"
     using inj_onI index_\<phi>
@@ -672,7 +672,7 @@ lemma to_list_permutes_under_bij:
       in (to_list V p) = permute_list \<phi> (to_list (\<pi> ` V) (\<lambda> x. p (the_inv \<pi> x)))"
 proof (cases "finite V")
   case False
-  (* if V is infinite, both lists are empty *)
+  \<comment> \<open>If V is infinite, both lists are empty\<close>
   hence "to_list V p = []"
     by simp
   moreover have "to_list (\<pi> ` V) (\<lambda> x. p (the_inv \<pi> x)) = []"
@@ -692,7 +692,7 @@ next
     ?img = "\<pi> ` V" and
     ?n = "length (to_list V p)" and
     ?perm = "\<lambda> i. card {v \<in> \<pi> ` V. v < \<pi> ((sorted_list_of_set V)!i)}"
-    (* auxiliary statements equating everything with ?n *)
+    \<comment> \<open>Auxiliary statements equating everything with ?n\<close>
   have card_eq: "card ?img = card V"
     using assms bij_betw_same_card bij_betw_subset top_greatest
     by metis
@@ -705,7 +705,7 @@ next
     by simp
   show ?thesis
   proof (unfold Let_def permute_list_def, rule nth_equalityI)
-    (* the lists have equal lengths *)
+    \<comment> \<open>The lists have equal lengths\<close>
     show "length (to_list V p) =
             length
               (map (\<lambda> i. to_list ?img ?q ! card {v \<in> ?img. v < \<pi> (sorted_list_of_set V!i)})
@@ -713,7 +713,7 @@ next
       using eq_length
       by simp
   next
-    (* the ith entries of the lists coincide *)
+    \<comment> \<open>The ith entries of the lists coincide\<close>
     fix i :: "nat"
     assume in_bnds: "i < ?n"
     let ?c = "card {v \<in> ?img. v < \<pi> (sorted_list_of_set V!i)}"
@@ -925,34 +925,6 @@ lemma empty_prof_imp_zero_pref_count:
   using assms
   by simp
 
-(* lemma pref_count_code_incr:
-  fixes
-    p :: "'a Profile" and
-    r :: "'a Preference_Relation" and
-    a :: "'a" and
-    b :: "'a" and
-    n :: "nat"
-  assumes
-    "prefer_count_code p a b = n" and
-    "b \<preceq>\<^sub>r a"
-  shows "prefer_count_code (r#p) a b = n + 1"
-  using assms
-  by simp
-
-lemma pref_count_code_not_smaller_imp_constant:
-  fixes
-    p :: "'a Profile" and
-    r :: "'a Preference_Relation" and
-    a :: "'a" and
-    b :: "'a" and
-    n :: "nat"
-  assumes
-    "prefer_count_code p a b = n" and
-    "\<not> (b \<preceq>\<^sub>r a)"
-  shows "prefer_count_code (r#p) a b = n"
-  using assms
-  by simp *)
-
 fun wins :: "'v set \<Rightarrow> 'a \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "wins V a p b =
     (prefer_count V p a b > prefer_count V p b a)"
@@ -978,7 +950,7 @@ lemma wins_antisym:
     a :: "'a" and
     b :: "'a" and
     V :: "'v set"
-  assumes "wins V a p b" (* \<Longrightarrow> finite V *)
+  assumes "wins V a p b" \<comment> \<open>Already implies finite V\<close>
   shows "\<not> wins V b p a"
   using assms
   by simp
@@ -1114,25 +1086,6 @@ proof -
     by simp
 qed
 
-(* have limit_prof_simp: "limit_profile A p = map (limit A) p"
-    by simp
-  obtain n :: "nat" where
-    prof_limit_n: "n < length (limit_profile A p) \<longrightarrow>
-            linear_order_on A (limit_profile A p!n) \<longrightarrow> profile A (limit_profile A p)"
-    using prof_is_lin_ord
-    by metis
-  have prof_n_lin_ord: "\<forall> n < length p. linear_order_on B (p!n)"
-    using prof_is_lin_ord profile
-    by simp
-  have prof_length: "length p = length (map (limit A) p)"
-    by simp
-  have "n < length p \<longrightarrow> linear_order_on B (p!n)"
-    using prof_n_lin_ord
-    by simp
-  thus "profile A V (limit_profile A p)"
-    using prof_length prof_limit_n limit_prof_simp limit_presv_lin_ord nth_map subset
-    by (metis (no_types)) *)
-
 subsection \<open>Lifting Property\<close>
 
 definition equiv_prof_except_a :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow>
@@ -1187,11 +1140,6 @@ next
     by (metis (no_types))
 qed
 
-(* 
-With the current defs of equiv_prof_except_a and limit_prof we can only conclude that
-the limited profiles coincide on the given voter set because limit_prof may change the 
-profiles everywhere while equiv_prof_except_a only makes statements about the voter set. 
-*)
 lemma negl_diff_imp_eq_limit_prof:
   fixes
     A :: "'a set" and
@@ -1205,6 +1153,9 @@ lemma negl_diff_imp_eq_limit_prof:
     subset: "A \<subseteq> A'" and
     not_in_A: "a \<notin> A"
   shows "\<forall> v \<in> V. (limit_profile A p) v = (limit_profile A q) v"
+  \<comment> \<open>With the current defs of equiv_prof_except_a and limit_prof we can only conclude that
+  the limited profiles coincide on the given voter set because limit_prof may change the 
+  profiles everywhere while equiv_prof_except_a only makes statements about the voter set.\<close>
 proof (clarify)
   fix
     v :: 'v
