@@ -1718,4 +1718,106 @@ next
   qed
 qed
 
+theorem seq_comp_presv_equivar:
+  fixes
+    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    X :: "(('a, 'v) Election) set" and
+    Y :: "'y set" and
+    \<phi> :: "('y, ('a, 'v) Election) binary_fun" and
+    \<psi> :: "('y, 'a) binary_fun"
+  defines
+    "concat_n_defer \<equiv> 
+      (\<lambda> V A p. fun\<^sub>\<E> n (defer m V A p, V, (limit_profile (defer m V A p) p)))"
+  assumes
+    equivar_m: 
+      "satisfies (fun\<^sub>\<E> m) (equivar_ind_by_act Y X \<phi> (result_action \<psi>))" and
+    equivar_n: "satisfies concat_n_defer
+      (equivar_ind_by_act Y UNIV \<phi> (result_action \<psi>))"
+  shows
+    "satisfies (fun\<^sub>\<E> (m \<triangleright> n)) (equivar_ind_by_act Y X \<phi> (result_action \<psi>))"
+proof (simp only: rewrite_equivar_ind_by_act, safe)
+  fix
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    y :: "'y"
+  assume
+    "y \<in> Y" and
+    el_X: "(A, V, p) \<in> X" and
+    img_X: "\<phi> y (A, V, p) \<in> X"
+  obtain A' :: "'a set" and V' :: "'v set" and q :: "('a, 'v) Profile" where
+    def': "(A', V', q) = \<phi> y (A, V, p)"
+    by (metis prod_cases3)
+  obtain fst_win :: "'a set" and fst_lose :: "'a set" and 
+     new_A :: "'a set" and new_q :: "('a, 'v) Profile" where
+    def_w: "fst_win = \<psi> y ` (elect m V A p)" and
+    def_l: "fst_lose = \<psi> y ` (reject m V A p)" and
+    newA: "new_A = \<psi> y ` (defer m V A p)" and
+    newq: "new_q = limit_profile new_A q"
+    by blast
+  have "fun\<^sub>\<E> m (A', V', q) = result_action \<psi> y (fun\<^sub>\<E> m (A, V, p))"
+    using equivar_m rewrite_equivar_ind_by_act \<open>y \<in> Y\<close> el_X img_X def'
+    by metis
+  hence act: "m V' A' q = 
+    (\<psi> y ` (elect m V A p), \<psi> y ` (reject m V A p), \<psi> y ` (defer m V A p))"
+    by simp
+  hence "elect m V' A' q = fst_win"
+    using def_w
+    by simp
+  moreover have "reject m V' A' q = fst_lose"
+    using def_l act
+    by simp
+  moreover have "defer m V' A' q = new_A"
+    using newA act
+    by simp
+  moreover have "limit_profile (defer m V' A' q) q = limit_profile new_A q"
+    using newA act
+    by simp
+  moreover have 
+    "(m \<triangleright> n) V' A' q = 
+      ((elect m V' A' q) \<union> 
+        (elect n V' (defer m V' A' q) (limit_profile (defer m V' A' q) q)),
+       (reject m V' A' q) \<union> 
+        (reject n V' (defer m V' A' q) (limit_profile (defer m V' A' q) q)),
+       defer n V' (defer m V' A' q) (limit_profile (defer m V' A' q) q))"
+    by (meson sequential_composition.simps)
+  ultimately have "(m \<triangleright> n) V' A' q = 
+    (fst_win \<union> (elect n V' new_A new_q), fst_lose \<union> (reject n V' new_A new_q),
+     defer n V' new_A new_q)"
+    using newq
+    by meson
+  moreover have 
+    "concat_action y (defer m V A p, V, limit_profile (defer m V A p) p) =
+      (\<psi> y ` (defer m V A p), V', limit_profile (\<psi> y ` (defer m V A p)) q)"
+    using def'
+    unfolding concat_action_def Let_def
+    
+    
+    
+  
+    
+    
+    
+   
+  
+    
+    
+     
+
+    
+    
+    
+  
+
+(*
+
+(let new_A = defer m V A p;
+        new_p = limit_profile new_A p in (
+                  (elect m V A p) \<union> (elect n V new_A new_p),
+                  (reject m V A p) \<union> (reject n V new_A new_p),
+                  defer n V new_A new_p))
+
+*)
+
 end

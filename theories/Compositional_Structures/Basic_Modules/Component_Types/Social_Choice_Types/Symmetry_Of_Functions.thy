@@ -60,7 +60,8 @@ datatype ('x, 'y) property =
 
 fun satisfies :: "('x \<Rightarrow> 'y) \<Rightarrow> ('x, 'y) property \<Rightarrow> bool" where
   "satisfies f (Invariance r) = (\<forall> x. \<forall> y. (x, y) \<in> r \<longrightarrow> f x = f y)" |
-  "satisfies f (Equivariance s \<tau>) = (\<forall> (\<phi>, \<psi>) \<in> \<tau>. \<forall> x \<in> s. \<phi> x \<in> s \<longrightarrow> f (\<phi> x) = \<psi> (f x))"
+  "satisfies f (Equivariance s \<tau>) = 
+    (\<forall> (\<phi>, \<psi>) \<in> \<tau>. \<forall> x \<in> s. \<phi> x \<in> s \<longrightarrow> f (\<phi> x) = \<psi> (f x))"
 
 definition equivar_ind_by_act :: "'z set \<Rightarrow> 'x set \<Rightarrow> ('z, 'x) binary_fun
       \<Rightarrow> ('z, 'y) binary_fun \<Rightarrow> ('x,'y) property" where
@@ -513,7 +514,7 @@ text \<open>
   under a complete finite symmetric group.
 \<close>
 
-theorem equivar_generating_system_imp_invar:
+theorem equivar_generators_imp_equivar_group:
   fixes
     f :: "'x \<Rightarrow> 'y" and
     m :: "'z monoid" and

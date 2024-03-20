@@ -41,8 +41,6 @@ subsection \<open>Property\<close>
 theorem condorcet_score_is_condorcet_rating: "condorcet_rating condorcet_score"
 proof (unfold condorcet_rating_def, safe) 
   fix
-    (* Had to choose the type variables according to those inferred in the goal by Isabelle.
-        Using type variables 'a for A and 'v for V leads to the goal not being refined. *)
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
