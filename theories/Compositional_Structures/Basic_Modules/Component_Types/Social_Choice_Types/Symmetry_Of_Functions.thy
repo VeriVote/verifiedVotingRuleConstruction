@@ -556,7 +556,7 @@ proof (unfold is_symmetry.simps action_induced_equivariance_def action_induced_r
     thus ?case
       using incl equivar rewrite_equivariance
       unfolding is_symmetry.simps
-      by meson
+      by metis
   next
     case (inv g)
     hence in_t: "\<forall> x \<in> t. \<phi> (inv \<^bsub>m\<^esub> g) x \<in> t"
@@ -564,8 +564,8 @@ proof (unfold is_symmetry.simps action_induced_equivariance_def action_induced_r
       by metis
     hence "\<forall> x \<in> t. f (\<phi> g (\<phi> (inv \<^bsub>m\<^esub> g) x)) = \<psi> g (f (\<phi> (inv \<^bsub>m\<^esub> g) x))"
       using gen generate.incl group_action.element_image action_\<phi>
-            equivar local.inv
-      by (metis rewrite_equivariance)
+            equivar local.inv rewrite_equivariance
+      by metis
     moreover have "\<forall> x \<in> t. \<phi> g (\<phi> (inv \<^bsub>m\<^esub> g) x) = x"
       using action_\<phi> gen generate.incl group.inv_closed group_action.orbit_sym_aux
             group.inv_inv group_hom.axioms(1) group_action.group_hom local.inv

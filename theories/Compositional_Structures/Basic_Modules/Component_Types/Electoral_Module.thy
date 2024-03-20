@@ -131,8 +131,8 @@ text \<open>
 fun (in result) homogeneity :: "('a, 'v) Election set \<Rightarrow> ('a, 'v, ('r Result)) Electoral_Module
         \<Rightarrow> bool" where
   "homogeneity X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R> X))"
-\<comment> \<open>This does not require any specific behaviour on infinite voter sets ...
-    Might make sense to extend the definition to that case somehow.\<close>
+\<comment> \<open>This does not require any specific behaviour on infinite voter sets \<dots>
+    It might make sense to extend the definition to that case somehow.\<close>
 
 fun homogeneity' :: "('a, 'v::linorder) Election set \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module
         \<Rightarrow> bool" where
@@ -1087,8 +1087,8 @@ lemma rewrite_dli_as_invariance:
     m :: "('a, 'v, 'a Result) Electoral_Module"
   shows
     "defer_lift_invariance m =
-      (\<S>\<C>\<F>_result.electoral_module m \<and> (satisfies (fun\<^sub>\<E> m) (Invariance (dli_rel m))))"
-proof (unfold satisfies.simps, safe)
+      (\<S>\<C>\<F>_result.electoral_module m \<and> (is_symmetry (fun\<^sub>\<E> m) (Invariance (dli_rel m))))"
+proof (unfold is_symmetry.simps, safe)
   assume "defer_lift_invariance m"
   thus "\<S>\<C>\<F>_result.electoral_module m"
     unfolding defer_lift_invariance_def
@@ -1111,17 +1111,18 @@ next
   moreover with rel have "A = A' \<and> V = V'"
     by simp
   ultimately show "fun\<^sub>\<E> m (A, V, p) = fun\<^sub>\<E> m (A', V', q)"
-    using invar
-    unfolding defer_lift_invariance_def fun\<^sub>\<E>.simps
-    by (metis alternatives_\<E>.simps fst_eqD profile_\<E>.simps snd_eqD voters_\<E>.simps)
+    using invar fst_eqD snd_eqD profile_\<E>.simps
+    unfolding defer_lift_invariance_def fun\<^sub>\<E>.simps alternatives_\<E>.simps voters_\<E>.simps
+    by metis
 next
   assume
     "\<S>\<C>\<F>_result.electoral_module m" and
     "\<forall>E E'. (E, E') \<in> dli_rel m \<longrightarrow> fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
   hence "\<S>\<C>\<F>_result.electoral_module m \<and> (\<forall> A V p q.
     ((A, V, p), (A, V, q)) \<in> dli_rel m \<longrightarrow> m V A p = m V A q)"
-    unfolding fun\<^sub>\<E>.simps
-    by (metis alternatives_\<E>.simps fst_conv profile_\<E>.elims snd_conv voters_\<E>.elims)
+    unfolding fun\<^sub>\<E>.simps alternatives_\<E>.simps profile_\<E>.simps voters_\<E>.simps
+    using fst_conv snd_conv
+    by metis
   moreover have
     "\<forall> A V p q a. (a \<in> (defer m V A p) \<and> lifted V A p q a) \<longrightarrow>
       ((A, V, p), (A, V, q)) \<in> dli_rel m"

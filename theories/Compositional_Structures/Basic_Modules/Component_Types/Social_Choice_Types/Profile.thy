@@ -74,14 +74,14 @@ definition finite_elections :: "('a, 'v) Election set" where
 definition valid_elections :: "('a,'v) Election set" where
   "valid_elections = {E. profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)}"
 
-\<comment> \<open>Elections with fixed alternatives,
-    finite voters and a default value for the profile value on non-voters.\<close>
+\<comment> \<open>This function subsumes elections with fixed alternatives, finite voters, and
+    a default value for the profile value on non-voters.\<close>
 fun elections_\<A> :: "'a set \<Rightarrow> ('a, 'v) Election set" where
   "elections_\<A> A = valid_elections \<inter>
     {E. alternatives_\<E> E = A \<and> finite (voters_\<E> E) \<and> (\<forall> v. v \<notin> voters_\<E> E \<longrightarrow> profile_\<E> E v = {})}"
 
-\<comment> \<open>Counts the occurrences of a ballot in an election,
-    i.e., how many voters chose that exact ballot.\<close>
+\<comment> \<open>Here, we count the occurrences of a ballot in an election,
+    i.e., how many voters specifically chose that exact ballot.\<close>
 fun vote_count :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election \<Rightarrow> nat" where
   "vote_count p E = card {v \<in> (voters_\<E> E). (profile_\<E> E) v = p}"
 
@@ -567,7 +567,7 @@ proof -
   then obtain \<phi> where
     index_\<phi>: "\<forall> v \<in> V. \<phi> v < card V \<and> (sorted_list_of_set V!(\<phi> v)) = v"
     by metis
-  \<comment> \<open>\<phi> x = ?c, i.e., \<phi> x \<ge> ?c and \<phi> x \<le> ?c\<close>
+  \<comment> \<open>\<open>\<phi> x = ?c\<close>, i.e., \<open>\<phi> x \<ge> ?c\<close> and \<open>\<phi> x \<le> ?c\<close>\<close>
   let ?i = "\<phi> x"
   have inj_\<phi>: "inj_on \<phi> V"
     using inj_onI index_\<phi>
@@ -671,7 +671,7 @@ lemma to_list_permutes_under_bij:
       in (to_list V p) = permute_list \<phi> (to_list (\<pi> ` V) (\<lambda> x. p (the_inv \<pi> x)))"
 proof (cases "finite V")
   case False
-  \<comment> \<open>If V is infinite, both lists are empty\<close>
+  \<comment> \<open>If \<open>V\<close> is infinite, both lists are empty.\<close>
   hence "to_list V p = []"
     by simp
   moreover have "to_list (\<pi> ` V) (\<lambda> x. p (the_inv \<pi> x)) = []"
@@ -691,7 +691,7 @@ next
     ?img = "\<pi> ` V" and
     ?n = "length (to_list V p)" and
     ?perm = "\<lambda> i. card {v \<in> \<pi> ` V. v < \<pi> ((sorted_list_of_set V)!i)}"
-    \<comment> \<open>Auxiliary statements equating everything with ?n\<close>
+    \<comment> \<open>These are auxiliary statements equating everything with \<open>?n\<close>.\<close>
   have card_eq: "card ?img = card V"
     using assms bij_betw_same_card bij_betw_subset top_greatest
     by metis
@@ -704,7 +704,7 @@ next
     by simp
   show ?thesis
   proof (unfold Let_def permute_list_def, rule nth_equalityI)
-    \<comment> \<open>The lists have equal lengths\<close>
+    \<comment> \<open>The lists have equal lengths.\<close>
     show "length (to_list V p) =
             length
               (map (\<lambda> i. to_list ?img ?q ! card {v \<in> ?img. v < \<pi> (sorted_list_of_set V!i)})
@@ -712,7 +712,7 @@ next
       using eq_length
       by simp
   next
-    \<comment> \<open>The ith entries of the lists coincide\<close>
+    \<comment> \<open>The \<open>i\<close>th entries of the lists coincide.\<close>
     fix i :: "nat"
     assume in_bnds: "i < ?n"
     let ?c = "card {v \<in> ?img. v < \<pi> (sorted_list_of_set V!i)}"
@@ -940,7 +940,7 @@ lemma wins_inf_voters:
   by simp
 
 text \<open>
-  Alternative a wins against b implies that b does not win against a.
+  Having alternative \<open>a\<close> win against \<open>b\<close> implies that \<open>b\<close> does not win against \<open>a\<close>.
 \<close>
 
 lemma wins_antisym:
@@ -949,7 +949,7 @@ lemma wins_antisym:
     a :: "'a" and
     b :: "'a" and
     V :: "'v set"
-  assumes "wins V a p b" \<comment> \<open>Already implies finite V\<close>
+  assumes "wins V a p b" \<comment> \<open>This already implies that \<open>V\<close> is finite.\<close>
   shows "\<not> wins V b p a"
   using assms
   by simp
@@ -1092,7 +1092,6 @@ definition equiv_prof_except_a :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a
   "equiv_prof_except_a V A p p' a \<equiv>
     profile V A p \<and> profile V A p' \<and> a \<in> A \<and>
       (\<forall> v \<in> V. equiv_rel_except_a A (p v) (p' v) a)"
-(* profile or finite_profile or finite A? [previously finite_profile was used] *)
 
 text \<open>
   An alternative gets lifted from one profile to another iff
@@ -1152,9 +1151,10 @@ lemma negl_diff_imp_eq_limit_prof:
     subset: "A \<subseteq> A'" and
     not_in_A: "a \<notin> A"
   shows "\<forall> v \<in> V. (limit_profile A p) v = (limit_profile A q) v"
-  \<comment> \<open>With the current defs of equiv_prof_except_a and limit_prof we can only conclude that
-  the limited profiles coincide on the given voter set because limit_prof may change the 
-  profiles everywhere while equiv_prof_except_a only makes statements about the voter set.\<close>
+  \<comment> \<open>With the current definitions of \<open>equiv_prof_except_a\<close> and \<open>limit_prof\<close>, we can
+      only conclude that the limited profiles coincide on the given voter set, since
+      \<open>limit_prof\<close> may change the profiles everywhere, while \<open>equiv_prof_except_a\<close>
+      only makes statements about the voter set.\<close>
 proof (clarify)
   fix
     v :: 'v

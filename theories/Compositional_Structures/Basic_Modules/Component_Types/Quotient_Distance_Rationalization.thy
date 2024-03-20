@@ -38,9 +38,9 @@ fun simple :: "'x rel \<Rightarrow> 'x set \<Rightarrow> 'x Distance \<Rightarro
   "simple r X d =
     (\<forall> A \<in> X // r. (\<exists> a \<in> A. \<forall> B \<in> X // r. distance_infimum\<^sub>\<Q> d A B = Inf {d a b | b. b \<in> B}))"
 \<comment> \<open>We call a distance simple with respect to a relation if for all relation classes,
-    there is an a in A minimizing the infimum distance between A and all B
-    so that the infimum distance between these sets coincides with the infimum
-    distance over all b in B for fixed a.\<close>
+    there is an \<open>a\<close> in \<open>A\<close> that minimizes the infimum distance between \<open>A\<close> and all \<open>B\<close>
+    such that the infimum distance between these sets coincides with the infimum
+    distance over all \<open>b\<close> in \<open>B\<close> for a fixed \<open>a\<close>.\<close>
 
 fun product' :: "'x rel \<Rightarrow> ('x * 'x) rel" where
   "product' r = {(p\<^sub>1, p\<^sub>2). ((fst p\<^sub>1, fst p\<^sub>2) \<in> r \<and> snd p\<^sub>1 = snd p\<^sub>2)
@@ -414,7 +414,7 @@ proof (unfold simple.simps, safe)
   moreover have equiv_class:
     "\<forall> B. B \<in> Y // action_induced_rel (carrier G) Y \<phi> \<longrightarrow>
       (\<forall> b \<in> B. B = action_induced_rel (carrier G) Y \<phi> `` {b})"
-    using Image_singleton_iff equiv_class_eq_iff equiv_rel quotientI quotient_eq_iff
+    using equiv_class_eq_iff equiv_rel insertI1 quotientI quotient_eq_iff rev_ImageI
     by meson
   ultimately have closed_class:
     "\<forall> B \<in> Y // action_induced_rel (carrier G) Y \<phi>. \<forall> b \<in> B. \<forall> g \<in> carrier G. \<phi> g b \<in> B"
@@ -474,8 +474,8 @@ proof (unfold simple.simps, safe)
     using equiv_on_X equiv_Eps_in
     by blast
   have "\<forall> a \<in> A. A = r `` {a}"
-    using A_quot_X equiv_on_X Image_singleton_iff equiv_class_eq_iff quotientI quotient_eq_iff
-    by meson
+    using A_quot_X Image_singleton_iff equiv_class_eq equiv_on_X quotientE
+    by metis
   hence "\<forall> a a'. a \<in> A \<and> a' \<in> A \<longrightarrow> (a, a') \<in> r"
     by blast
   moreover have "\<forall> B \<in> X // r. \<forall> b \<in> B. (b, b) \<in> r"

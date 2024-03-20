@@ -142,8 +142,8 @@ proof (unfold distance_anonymity_def, safe)
       ?len = "length (to_list V p)" and
       ?sl_V = "sorted_list_of_set V"
   let ?perm = "\<lambda> i. (card ({v \<in> ?rn_V. v < \<pi> (?sl_V!i)}))" and
-      \<comment> \<open>use a total permutation function in order to
-          apply facts like mset_permute_list\<close>
+      \<comment> \<open>Use a total permutation function in order to
+          apply facts such as \<open>mset_permute_list\<close>.\<close>
       ?perm_total = "(\<lambda> i. (if (i < ?len)
                            then card ({v \<in> ?rn_V. v < \<pi> (?sl_V!i)})
                            else i))"
@@ -165,7 +165,7 @@ proof (unfold distance_anonymity_def, safe)
     show ?thesis
     proof (cases "finite V \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')")
       case False
-      \<comment> \<open>case: both distances are infinite\<close>
+      \<comment> \<open>Case: Both distances are infinite.\<close>
       hence inf_dist: "votewise_distance d n (A, V, p) (A', V', p') = \<infinity>"
         by auto
       moreover have "infinite V \<Longrightarrow> infinite ?rn_V"
@@ -185,7 +185,7 @@ proof (unfold distance_anonymity_def, safe)
         by simp
     next
       case True
-      \<comment> \<open>case: both distances are finite\<close>
+      \<comment> \<open>Case: Both distances are finite.\<close>
       have perm_funs_coincide: "\<forall> i < ?len. ?perm i = ?perm_total i"
         by presburger
       (* the lists of V and V' have equal lengths as the sets are equal by assumption *)

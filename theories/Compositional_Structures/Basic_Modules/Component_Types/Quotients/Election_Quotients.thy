@@ -157,8 +157,8 @@ subsection \<open>Anonymity Quotient: Grid\<close>
 fun anonymity\<^sub>\<Q> :: "'a set \<Rightarrow> ('a, 'v) Election set set" where
   "anonymity\<^sub>\<Q> A = quotient (elections_\<A> A) (anonymity\<^sub>\<R> (elections_\<A> A))"
 
-\<comment> \<open>Counts the occurrences of a ballot per election in a set of elections
-    if the occurrences of the ballot per election coincide for all elections in the set.\<close>
+\<comment> \<open>Here, we count the occurrences of a ballot per election in a set of elections for which
+    the occurrences of the ballot per election coincide for all elections in the set.\<close>
 fun vote_count\<^sub>\<Q> :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election set \<Rightarrow> nat" where
   "vote_count\<^sub>\<Q> p = \<pi>\<^sub>\<Q> (vote_count p)"
 
@@ -1300,7 +1300,7 @@ next
   next
     fix x :: "rat^('a Ordered_Preference)"
     assume "x \<in> rat_vector_set (convex hull standard_basis)"
-    \<comment> \<open>Convert rational vector x to real vector x'.\<close>
+    \<comment> \<open>The following converts a rational vector \<open>x\<close> to real vector \<open>x'\<close>.\<close>
     then obtain x' :: "real^('a Ordered_Preference)" where
       conv: "x' \<in> convex hull standard_basis" and
       inv: "\<forall> p. x$p = the_inv real_of_rat (x'$p)" and
@@ -1439,8 +1439,8 @@ next
             (fst (fraction p)) / (snd (fraction p))"
       using rewrite_div pos_prod
       by auto
-    \<comment> \<open>The percentages of voters voting for each linearly ordered profile in
-        (UNIV, V, prof) equal the entries of the given vector.\<close>
+    \<comment> \<open>The following are the percentages of voters voting for each linearly ordered
+        profile in (UNIV, V, prof) that equals the entries of the given vector.\<close>
     ultimately have eq_vec:
       "\<forall> p :: 'a Ordered_Preference. vote_fraction (ord2pref p) (UNIV, V, prof) = x'$p"
       using fract

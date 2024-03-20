@@ -273,7 +273,7 @@ lemma consensus_choice_equivar:
   assumes
     equivar_m: "is_symmetry (f \<circ> fun\<^sub>\<E> m) equivar" and
     equivar_defer: "is_symmetry (f \<circ> fun\<^sub>\<E> defer_module) equivar" and
-    \<comment> \<open>Could be generalized to arbitrary modules instead of defer-module\<close>
+    \<comment> \<open>This could be generalized to arbitrary modules instead of \<open>defer_module\<close>.\<close>
     invar_cons: "is_symmetry c (Invariance (action_induced_rel G X \<phi>))"
   shows "is_symmetry (f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m)))
               (action_induced_equivariance G X \<phi> (set_action \<psi>))"
@@ -561,7 +561,8 @@ qed
 
 lemma strong_unanimity_neutral:
   defines "domain \<equiv> valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
-  \<comment> \<open>We want to show neutrality on a set as general as possible, as it implies subset neutrality.\<close>
+  \<comment> \<open>We want to show neutrality on a set as general as possible,
+      as this implies subset neutrality.\<close>
   shows "\<S>\<C>\<F>_properties.consensus_rule_neutrality domain strong_unanimity"
 proof -
   have coincides: "\<forall> \<pi>. \<forall> E \<in> domain. \<phi>_neutr domain \<pi> E = \<phi>_neutr valid_elections \<pi> E"
