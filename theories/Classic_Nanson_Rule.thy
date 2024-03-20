@@ -28,7 +28,8 @@ fun classic_nanson_rule :: "('a, 'v, 'a Result) Electoral_Module" where
 subsection \<open>Soundness\<close>
 
 theorem classic_nanson_rule_sound: "\<S>\<C>\<F>_result.electoral_module classic_nanson_rule"
-  unfolding classic_nanson_rule.simps
-  by (simp add: loop_comp_sound)
+  using leq_avg_elim_sound loop_comp_sound
+  unfolding classic_nanson_rule.simps Defer_One_Loop_Composition.iter.simps
+  by metis
 
 end

@@ -35,7 +35,7 @@ proof (unfold_locales, safe, force) qed
 
 text \<open>
   Results from social welfare functions (\<open>\<S>\<W>\<F>s\<close>), for the purpose of composability and
-  modularity given as three linear orders over the alternatives. See
+  modularity given as three sets of (potentially tied) linear orders over the alternatives. See
   \<^file>\<open>Social_Welfare_Result.thy\<close> for details.
 \<close>
 global_interpretation \<S>\<W>\<F>_result:

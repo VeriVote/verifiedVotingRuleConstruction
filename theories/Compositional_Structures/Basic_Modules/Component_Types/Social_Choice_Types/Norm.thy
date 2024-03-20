@@ -12,10 +12,12 @@ begin
 
 text \<open>
   A norm on R to n is a mapping \<open>N: R \<mapsto> n\<close> on R that has the following properties:
-  \<^item> positive scalability: \<open>N(a * u) = |a| * N(u)\<close> for all u in R to n and all a in R;
-  \<^item> positive semidefiniteness: \<open>N(u) \<ge> 0\<close> for all u in R to n, and \<open>N(u) = 0\<close> if
-    and only if \<open>u = (0, 0, \<dots>, 0)\<close>;
-  \<^item> triangle inequality: \<open>N(u + v) \<le> N(u) + N(v)\<close> for all u and v in R to n.
+  \<^item> positive scalability:
+    \<open>N(a * u) = |a| * N(u)\<close> for all \<open>u\<close> in \<open>R\<close> to \<open>n\<close> and all \<open>a\<close> in \<open>R\<close>.
+  \<^item> positive semidefiniteness:
+    \<open>N(u) \<ge> 0\<close> for all \<open>u\<close> in \<open>R\<close> to \<open>n\<close>, and \<open>N(u) = 0\<close> if and only if \<open>u = (0, 0, \<dots>, 0)\<close>.
+  \<^item> triangle inequality:
+    \<open>N(u + v) \<le> N(u) + N(v)\<close> for all \<open>u\<close> and \<open>v\<close> in \<open>R\<close> to \<open>n\<close>.
 \<close>
 
 subsection \<open>Definition\<close>
@@ -54,8 +56,8 @@ next
     A' :: "'b set" and
     x :: "nat"
   assume
-    IH: "\<And> A A'. x = card A \<Longrightarrow>
-            bij_betw f A A' \<Longrightarrow> sum g A = (\<Sum> a \<in> A'. g (the_inv_into A f a))" and
+    IH: "\<And> A A'. x = card A \<Longrightarrow> bij_betw f A A'
+            \<Longrightarrow> sum g A = (\<Sum> a \<in> A'. g (the_inv_into A f a))" and
     suc: "Suc x = card A" and
     bij_A_A': "bij_betw f A A'"
   obtain a where
@@ -107,8 +109,8 @@ next
   also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into A f a')) + g a"
     using inv_without_a
     by simp
-  also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}). g (the_inv_into A f a')) +
-                    g (the_inv_into A f (f a))"
+  also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}).
+                    g (the_inv_into A f a')) + g (the_inv_into A f (f a))"
     using a_in_A bij_A_A'
     by (simp add: bij_betw_imp_inj_on the_inv_into_f_f)
   also have "\<dots> = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"

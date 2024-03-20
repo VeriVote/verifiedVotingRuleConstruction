@@ -44,8 +44,8 @@ subsection \<open>Standard Definitions\<close>
 definition standard :: "('a, 'v) Election Distance \<Rightarrow> bool" where
  "standard d \<equiv> \<forall> A A' V V' p p'. (V \<noteq> V' \<or> A \<noteq> A') \<longrightarrow> d (A, V, p) (A', V', p') = \<infinity>"
 
-definition non_voters_irrelevant :: "('a, 'v) Election Distance \<Rightarrow> bool" where
-  "non_voters_irrelevant d \<equiv> \<forall> A A' V V' p q p'.
+definition voters_determine_distance :: "('a, 'v) Election Distance \<Rightarrow> bool" where
+  "voters_determine_distance d \<equiv> \<forall> A A' V V' p q p'.
     (\<forall> v \<in> V. p v = q v) \<longrightarrow> (d (A, V, p) (A', V', p') = d (A, V, q) (A', V', p')
                               \<and> (d (A', V', p') (A, V, p) = d (A', V', p') (A, V, q)))"
 
@@ -464,7 +464,7 @@ lemma (in result) \<R>_sound:
     K :: "('a, 'v, 'r Result) Consensus_Class" and
     d :: "('a, 'v) Election Distance"
   shows "electoral_module (distance_\<R> d K)"
-proof (unfold electoral_module_def, safe)
+proof (unfold electoral_module.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -543,7 +543,7 @@ lemma (in result) standard_distance_imp_equal_score:
     p :: "('a, 'v) Profile" and
     w :: "'r"
   assumes
-    irr_non_V: "non_voters_irrelevant d" and
+    irr_non_V: "voters_determine_distance d" and
     std: "standard d"
   shows "score d K (A, V, p) w = score_std d K (A, V, p) w"
 proof -
@@ -660,7 +660,7 @@ proof -
         by force
       moreover have "\<forall> p'. d (A, V, p) (A, V, p') = d (A, V, p) (A, V, ?finite_prof p')"
         using irr_non_V
-        unfolding non_voters_irrelevant_def
+        unfolding voters_determine_distance_def
         by simp
       ultimately have
         "\<forall> (A', V', p') \<in> {(A, V, p') | p'. finite_profile V A p'}.

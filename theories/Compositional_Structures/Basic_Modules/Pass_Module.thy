@@ -34,7 +34,7 @@ theorem pass_mod_sound[simp]:
     r :: "'a Preference_Relation" and
     n :: "nat"
   shows "\<S>\<C>\<F>_result.electoral_module (pass_module n r)"
-proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
+proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -59,12 +59,12 @@ proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
     by simp
 qed
 
-lemma pass_mod_only_voters:
+lemma voters_determine_pass_mod:
   fixes
     r :: "'a Preference_Relation" and
     n :: "nat"
-  shows "only_voters_vote (pass_module n r)"
-  unfolding only_voters_vote_def pass_module.simps
+  shows "voters_determine_election (pass_module n r)"
+  unfolding voters_determine_election.simps pass_module.simps
   by blast
 
 subsection \<open>Non-Blocking\<close>
@@ -83,7 +83,8 @@ theorem pass_mod_non_blocking[simp]:
   shows "non_blocking (pass_module n r)"
 proof (unfold non_blocking_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (pass_module n r)"
-    by simp
+    using pass_mod_sound
+    by metis
 next
   fix
     A :: "'a set" and
@@ -127,7 +128,7 @@ theorem pass_mod_non_electing[simp]:
   shows "non_electing (pass_module n r)"
   unfolding non_electing_def
   using assms
-  by simp
+  by force
 
 subsection \<open>Properties\<close>
 
@@ -142,7 +143,7 @@ theorem pass_mod_dl_inv[simp]:
   assumes "linear_order r"
   shows "defer_lift_invariance (pass_module n r)"
   unfolding defer_lift_invariance_def
-  using assms
+  using assms pass_mod_sound
   by simp
 
 theorem pass_zero_mod_def_zero[simp]:
@@ -152,7 +153,7 @@ theorem pass_zero_mod_def_zero[simp]:
 proof (unfold defers_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (pass_module 0 r)"
     using pass_mod_sound assms
-    by simp
+    by metis
 next
   fix
     A :: "'a set" and
@@ -296,8 +297,8 @@ theorem pass_two_mod_def_two:
   shows "defers 2 (pass_module 2 r)"
 proof (unfold defers_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (pass_module 2 r)"
-    using assms
-    by simp
+    using assms pass_mod_sound
+    by metis
 next
   fix
     A :: "'a set" and

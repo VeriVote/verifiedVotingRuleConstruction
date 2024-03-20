@@ -101,7 +101,7 @@ theorem plurality_rule_sound[simp]: "\<S>\<C>\<F>_result.electoral_module plural
   by metis
 
 theorem plurality_rule'_sound[simp]: "\<S>\<C>\<F>_result.electoral_module plurality_rule'"
-proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
+proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -120,10 +120,9 @@ proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
     by simp
 qed
 
-lemma plurality_rule_only_voters:
-  "only_voters_vote plurality_rule"
+lemma voters_determine_plurality_rule: "voters_determine_election plurality_rule"
   unfolding plurality_rule.simps
-  using elector_only_voters plurality_only_voters
+  using voters_determine_elector voters_determine_plurality
   by blast
 
 subsection \<open>Electing\<close>
@@ -244,7 +243,8 @@ text \<open>
 theorem plurality_rule_inv_mono[simp]: "invariant_monotonicity plurality_rule"
 proof (unfold invariant_monotonicity_def, intro conjI impI allI)
   show "\<S>\<C>\<F>_result.electoral_module plurality_rule"
-    by simp
+    using plurality_rule_sound
+    by metis
 next
   fix
     A :: "'b set" and

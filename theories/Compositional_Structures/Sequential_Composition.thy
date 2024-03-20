@@ -44,14 +44,14 @@ fun sequential_composition' :: "('a, 'v, 'a Result) Electoral_Module \<Rightarro
         (n_e, n_r, n_d) = n V new_A new_p in
             (m_e \<union> n_e, m_r \<union> n_r, n_d))"
 
-lemma seq_comp_only_voters:
+lemma voters_determine_seq_comp:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     n :: "('a, 'v, 'a Result) Electoral_Module"
   assumes 
-    "only_voters_vote m \<and> only_voters_vote n"
-  shows "only_voters_vote (m \<triangleright> n)"
-proof (unfold only_voters_vote_def, clarify)
+    "voters_determine_election m \<and> voters_determine_election n"
+  shows "voters_determine_election (m \<triangleright> n)"
+proof (unfold voters_determine_election.simps, clarify)
   fix 
     A :: "'a set" and
     V :: "'v set" and
@@ -60,7 +60,7 @@ proof (unfold only_voters_vote_def, clarify)
   assume coincide: "\<forall> v \<in> V. p v = p' v"
   hence eq: "m V A p = m V A p' \<and> n V A p = n V A p'" 
     using assms 
-    unfolding only_voters_vote_def 
+    unfolding voters_determine_election.simps
     by blast
   hence coincide_limit: 
     "\<forall> v \<in> V. limit_profile (defer m V A p) p v = limit_profile (defer m V A p') p' v"
@@ -70,19 +70,19 @@ proof (unfold only_voters_vote_def, clarify)
     "elect m V A p \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p)
       = elect m V A p' \<union> elect n V (defer m V A p') (limit_profile (defer m V A p') p')"
     using assms eq coincide_limit
-    unfolding only_voters_vote_def
+    unfolding voters_determine_election.simps
     by metis
   moreover have 
     "reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p)
       = reject m V A p' \<union> reject n V (defer m V A p') (limit_profile (defer m V A p') p')"
     using assms eq coincide_limit
-    unfolding only_voters_vote_def
+    unfolding voters_determine_election.simps
     by metis
   moreover have 
     "defer n V (defer m V A p) (limit_profile (defer m V A p) p)
       = defer n V (defer m V A p') (limit_profile (defer m V A p') p')"
     using assms eq coincide_limit
-    unfolding only_voters_vote_def
+    unfolding voters_determine_election.simps
     by metis
   ultimately show "(m \<triangleright> n) V A p = (m \<triangleright> n) V A p'"
     unfolding sequential_composition.simps
@@ -113,14 +113,14 @@ proof -
        (a::'a) \<in> defer m' V' A' p') \<longrightarrow>
       a \<in> A'"
     using UnCI result_presv_alts
-    by fastforce
+    by (metis (mono_tags))
   from module_m prof
   have disjoint_m: "disjoint3 (m V A p)"
-    unfolding \<S>\<C>\<F>_result.electoral_module_def well_formed_\<S>\<C>\<F>.simps
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps well_formed_\<S>\<C>\<F>.simps
     by blast
   from module_m module_n def_presv_prof prof
   have disjoint_n: "disjoint3 (n V ?new_A ?new_p)"
-    unfolding \<S>\<C>\<F>_result.electoral_module_def well_formed_\<S>\<C>\<F>.simps
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps well_formed_\<S>\<C>\<F>.simps
     by metis
   have disj_n:
     "elect m V A p \<inter> reject m V A p = {} \<and>
@@ -154,8 +154,8 @@ proof -
           (B \<inter> B' \<noteq> {} \<longrightarrow> f B B' \<in> B \<and> g B B' \<in> B' \<and> f B B' = g B B')"
       by auto
     thus ?thesis
-      using defer_in_A disj_n module_n prof_def_lim prof 
-      by fastforce
+      using defer_in_A disj_n module_n prof_def_lim prof
+      by (metis (no_types, opaque_lifting))
   qed
   have rej_intersect_new_elect_empty: "reject m V A p \<inter> elect n V ?new_A ?new_p = {}"
     using disj_n disjoint_m disjoint_n def_presv_prof prof
@@ -309,7 +309,7 @@ theorem seq_comp_sound[simp]:
     "\<S>\<C>\<F>_result.electoral_module m" and
     "\<S>\<C>\<F>_result.electoral_module n"
   shows "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
-proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
+proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -326,7 +326,7 @@ qed
 
 subsection \<open>Lemmas\<close>
 
-lemma seq_comp_dec_only_def:
+lemma seq_comp_decrease_only_defer:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     n :: "('a, 'v, 'a Result) Electoral_Module" and
@@ -338,7 +338,7 @@ lemma seq_comp_dec_only_def:
     module_n: "\<S>\<C>\<F>_result.electoral_module n" and
     prof: "profile V A p" and
     empty_defer: "defer m V A p = {}"
-  shows "(m \<triangleright> n) V A p =  m V A p"
+  shows "(m \<triangleright> n) V A p = m V A p"
 proof -
   have "\<forall> m' A' V' p'.
       (\<S>\<C>\<F>_result.electoral_module m' \<and> profile V' A' p') \<longrightarrow>
@@ -372,8 +372,9 @@ proof -
             module_n prod.collapse prof_no_alt
       by (metis (no_types))
     thus "snd ((m \<triangleright> n) V A p) = snd (m V A p)"
-      using rej_empty empty_defer module_n prof_no_alt prof
-      by fastforce
+      unfolding sequential_composition.simps
+      using rej_empty empty_defer module_n prof_no_alt prof sndI sup_bot_right
+      by metis
   qed
 qed
 
@@ -560,7 +561,7 @@ proof -
     by metis
   from non_blocking_m
   have "?input_sound \<longrightarrow> well_formed_\<S>\<C>\<F> A (m V A p)"
-    unfolding \<S>\<C>\<F>_result.electoral_module_def non_blocking_def
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps non_blocking_def
     by simp
   hence "?input_sound \<longrightarrow> elect m V A p \<union> defer m V A p = A - reject m V A p"
     using non_blocking_m elec_and_def_not_rej
@@ -586,8 +587,8 @@ proof -
         (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> reject (m \<triangleright> n) V A p \<noteq> A)"
     proof (safe)
       show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
-        using emod_reject_m emod_reject_n
-        by simp
+        using emod_reject_m emod_reject_n seq_comp_sound
+        by metis
     next
       fix
         A :: "'a set" and
@@ -664,7 +665,8 @@ proof (unfold non_electing_def, safe)
     unfolding non_electing_def
     by blast
   thus "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
-    by simp
+    using seq_comp_sound
+    by metis
 next
   fix
     A :: "'a set" and
@@ -769,7 +771,7 @@ lemma def_lift_inv_seq_comp_help:
   assumes
     monotone_m: "defer_lift_invariance m" and
     monotone_n: "defer_lift_invariance n" and
-    only_voters_n: "only_voters_vote n" and
+    voters_determine_n: "voters_determine_election n" and
     def_and_lifted: "a \<in> (defer (m \<triangleright> n) V A p) \<and> lifted V A p q a"
   shows "(m \<triangleright> n) V A p = (m \<triangleright> n) V A q"
 proof -
@@ -850,8 +852,8 @@ proof -
       by blast
     with mono_m
     show ?thesis
-      using leI not_less_zero nth_equalityI only_voters_n 
-      unfolding only_voters_vote_def
+      using leI not_less_zero nth_equalityI voters_determine_n
+      unfolding voters_determine_election.simps
       by presburger
   qed
   from mono_m mono_n
@@ -871,7 +873,7 @@ theorem seq_comp_presv_def_lift_inv[simp]:
   assumes
     "defer_lift_invariance m" and
     "defer_lift_invariance n" and
-    "only_voters_vote n"
+    "voters_determine_election n"
   shows "defer_lift_invariance (m \<triangleright> n)"
 proof (unfold defer_lift_invariance_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
@@ -920,7 +922,8 @@ proof (unfold defers_def, safe)
     unfolding defers_def
     by simp
   ultimately show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
-    by simp
+    using seq_comp_sound
+    by metis
 next
   fix
     A :: "'a set" and
@@ -988,7 +991,7 @@ theorem disj_compat_seq[simp]:
   assumes
     compatible: "disjoint_compatibility m n" and
     module_m': "\<S>\<C>\<F>_result.electoral_module m'" and
-    only_voters: "only_voters_vote m'"
+    voters_determine_m': "voters_determine_election m'"
   shows "disjoint_compatibility (m \<triangleright> m') n"
 proof (unfold disjoint_compatibility_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> m')"
@@ -1060,8 +1063,7 @@ next
       with eq_def
       have "m' V (defer m V S p) (limit_profile (defer m V S p) p) =
               m' V (defer m V S q) (limit_profile (defer m V S q) q)"
-        using only_voters
-        unfolding only_voters_vote_def
+        using voters_determine_m'
         by simp
       moreover have "m V S p = m V S q"
         using rej_A a_in_A lifting_equiv_p_q
@@ -1104,7 +1106,8 @@ proof (unfold condorcet_compatibility_def, safe)
     unfolding non_blocking_def
     by presburger
   ultimately have "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
-    by simp
+    using seq_comp_sound
+    by metis
   thus "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
     by presburger
 next
@@ -1131,7 +1134,8 @@ next
     unfolding non_blocking_def
     by presburger
   ultimately have sound_seq_m_n: "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
-    by simp
+    using seq_comp_sound
+    by metis
   have def_m: "defer m V A p = {a}"
     using cw_a cond_winner_unique dcc_m snd_conv
     unfolding defer_condorcet_consistency_def
@@ -1226,7 +1230,8 @@ next
     unfolding non_blocking_def
     by presburger
   ultimately have sound_seq_m_n: "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
-    by simp
+    using seq_comp_sound
+    by metis
   have "reject m V A p = A - {a}"
     using cw_a dcc_m prod.sel(1) snd_conv result_m
     unfolding defer_condorcet_consistency_def
@@ -1339,9 +1344,9 @@ proof (unfold defer_condorcet_consistency_def, safe)
     unfolding defer_condorcet_consistency_def
     by metis
   thus "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
-    using ne_n
+    using ne_n seq_comp_sound
     unfolding non_electing_def
-    by simp
+    by metis
 next
   fix
     A :: "'a set" and
@@ -1363,9 +1368,9 @@ next
     unfolding defer_condorcet_consistency_def
     by metis
   hence sound_seq_m_n: "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
-    using ne_n
+    using ne_n seq_comp_sound
     unfolding non_electing_def
-    by simp
+    by metis
   have defer_eq_a: "defer (m \<triangleright> n) V A p = {a}"
   proof (safe)
     fix a' :: "'a"
@@ -1472,7 +1477,8 @@ proof (unfold monotonicity_def, safe)
     unfolding electing_def
     by simp
   ultimately show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
-    by simp
+    using seq_comp_sound
+    by metis
 next
   fix
     A :: "'a set" and
@@ -1505,7 +1511,7 @@ theorem def_inv_mono_imp_def_lift_inv[simp]:
     non_electing_n: "non_electing n" and
     defers_one: "defers 1 n" and
     defer_monotone_n: "defer_monotonicity n" and
-    only_voters: "only_voters_vote n"
+    voters_determine_n: "voters_determine_election n"
   shows "defer_lift_invariance (m \<triangleright> n)"
 proof (unfold defer_lift_invariance_def, safe)
   have "\<S>\<C>\<F>_result.electoral_module m"
@@ -1517,7 +1523,8 @@ proof (unfold defer_lift_invariance_def, safe)
     unfolding defers_def
     by metis
   ultimately show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
-    by simp
+    using seq_comp_sound
+    by metis
 next
   fix
     A :: "'a set" and
@@ -1656,8 +1663,8 @@ next
       "(\<forall> v \<in> V. (limit_profile (defer m V A p) p) v = (limit_profile (defer m V A p) q) v)
         \<Longrightarrow> n V (defer m V A p) (limit_profile (defer m V A p) p)
             = n V (defer m V A q) (limit_profile (defer m V A q) q)"
-      using only_voters def_eq
-      unfolding only_voters_vote_def
+      using voters_determine_n def_eq
+      unfolding voters_determine_election.simps
       by presburger
     moreover have
       "lifted V (defer m V A q) (limit_profile (defer m V A p) p)
@@ -1680,7 +1687,7 @@ next
         using def_seq_m_n_q defers_one def_eq defer_seq_m_n_eq_one defers_def lifted
               electoral_mod_m fin_prof_def_m_q finite_profile_p seq_comp_def_card_bounded
               Profile.lifted_def
-        by metis
+        by (metis (no_types, lifting))
       ultimately have "defer (m \<triangleright> n) V A q = {a}"
         using a_non_empty card_1_singletonE insertE
         by metis

@@ -242,7 +242,8 @@ proof (induct arbitrary: acc rule: less_induct)
   have "\<forall> m' n'.
     (\<S>\<C>\<F>_result.electoral_module m' \<and> \<S>\<C>\<F>_result.electoral_module n')
       \<longrightarrow> \<S>\<C>\<F>_result.electoral_module (m' \<triangleright> n')"
-    by auto
+    using seq_comp_sound
+    by metis
   hence "\<S>\<C>\<F>_result.electoral_module (acc \<triangleright> m)"
     using less.prems module_m
     by blast
@@ -254,8 +255,8 @@ proof (induct arbitrary: acc rule: less_induct)
   by metis
   moreover have "well_formed_\<S>\<C>\<F> A (acc V A p)"
     using less.prems profile
-    unfolding \<S>\<C>\<F>_result.electoral_module_def
-    by blast
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps
+    by metis
   ultimately show ?case
     using loop_comp_code_helper
     by (metis (no_types))
@@ -271,7 +272,7 @@ theorem loop_comp_sound:
   shows "\<S>\<C>\<F>_result.electoral_module (m \<circlearrowleft>\<^sub>t)"
   using def_mod_sound loop_composition.simps
         loop_comp_helper_imp_partit assms
-  unfolding \<S>\<C>\<F>_result.electoral_module_def
+  unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by metis
 
 lemma loop_comp_helper_imp_no_def_incr:
@@ -330,7 +331,7 @@ lemma loop_comp_helper_def_lift_inv_helper:
     dli_acc: "defer_lift_invariance acc" and
     card_n_defer: "n = card (defer acc V A p)" and
     defer_finite: "finite (defer acc V A p)" and
-    only_voters_m: "only_voters_vote m"
+    voters_determine_m: "voters_determine_election m"
   shows
     "\<forall> q a. a \<in> (defer (loop_comp_helper acc m t) V A p) \<and> lifted V A p q a \<longrightarrow>
         (loop_comp_helper acc m t) V A p = (loop_comp_helper acc m t) V A q"
@@ -341,7 +342,7 @@ proof (induct n arbitrary: acc rule: less_induct)
     "defer_lift_invariance acc \<longrightarrow>
         (\<forall> q a. a \<in> (defer (acc \<triangleright> m) V A p) \<and> lifted V A p q a \<longrightarrow>
             card (defer (acc \<triangleright> m) V A p) = card (defer (acc \<triangleright> m) V A q))"
-    using monotone_m def_lift_inv_seq_comp_help only_voters_m
+    using monotone_m def_lift_inv_seq_comp_help voters_determine_m
     by metis
   have "defer_lift_invariance acc \<longrightarrow>
           (\<forall> q a. a \<in> (defer acc V A p) \<and> lifted V A p q a \<longrightarrow>
@@ -540,7 +541,7 @@ proof (induct n arbitrary: acc rule: less_induct)
           using a_in_defer_lch
           by presburger
         moreover have l_inv: "defer_lift_invariance (acc \<triangleright> m)"
-          using less.prems monotone_m only_voters_m seq_comp_presv_def_lift_inv[of acc m]
+          using less.prems monotone_m voters_determine_m seq_comp_presv_def_lift_inv[of acc m]
           by blast
         ultimately have "a \<in> defer (acc \<triangleright> m) V A p"
           using prof monotone_m in_mono loop_comp_helper_imp_no_def_incr
@@ -596,7 +597,7 @@ lemma loop_comp_helper_def_lift_inv:
     a :: "'a"
   assumes
     "defer_lift_invariance m" and
-    "only_voters_vote m" and
+    "voters_determine_election m" and
     "defer_lift_invariance acc" and
     "profile V A p" and
     "lifted V A p q a" and
@@ -626,13 +627,13 @@ lemma loop_comp_helper_presv_def_lift_inv:
     acc :: "('a, 'v, 'a Result) Electoral_Module"
   assumes
     "defer_lift_invariance m" and
-    "only_voters_vote m" and
+    "voters_determine_election m" and
     "defer_lift_invariance acc"
   shows "defer_lift_invariance (loop_comp_helper acc m t)"
 proof (unfold defer_lift_invariance_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (loop_comp_helper acc m t)"
     using loop_comp_helper_imp_partit assms 
-    unfolding \<S>\<C>\<F>_result.electoral_module_def
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps
               defer_lift_invariance_def
     by metis
 next
@@ -906,7 +907,7 @@ theorem loop_comp_presv_def_lift_inv[simp]:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition"
-  assumes "defer_lift_invariance m" and "only_voters_vote m"
+  assumes "defer_lift_invariance m" and "voters_determine_election m"
   shows "defer_lift_invariance (m \<circlearrowleft>\<^sub>t)"
 proof (unfold defer_lift_invariance_def, safe)
   have "\<S>\<C>\<F>_result.electoral_module m"
@@ -914,7 +915,8 @@ proof (unfold defer_lift_invariance_def, safe)
     unfolding defer_lift_invariance_def
     by simp
   thus "\<S>\<C>\<F>_result.electoral_module (m \<circlearrowleft>\<^sub>t)"
-    by (simp add: loop_comp_sound)
+    using loop_comp_sound
+    by blast
 next
   fix
     A :: "'a set" and

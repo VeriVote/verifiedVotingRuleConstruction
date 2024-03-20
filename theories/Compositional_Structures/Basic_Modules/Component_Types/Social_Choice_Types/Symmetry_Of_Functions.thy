@@ -22,23 +22,23 @@ fun preimg :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightarrow> 'y \<Rig
 
 text \<open>Relations\<close>
 
-fun restr_rel :: "'x rel \<Rightarrow> 'x set \<Rightarrow> 'x set \<Rightarrow> 'x rel" where
-  "restr_rel r s s' = r \<inter> s \<times> s'"
+fun restricted_rel :: "'x rel \<Rightarrow> 'x set \<Rightarrow> 'x set \<Rightarrow> 'x rel" where
+  "restricted_rel r s s' = r \<inter> s \<times> s'"
 
-fun closed_under_restr_rel :: "'x rel \<Rightarrow> 'x set \<Rightarrow> 'x set \<Rightarrow> bool" where
-  "closed_under_restr_rel r s t = ((restr_rel r t s) `` t \<subseteq> t)"
+fun closed_restricted_rel :: "'x rel \<Rightarrow> 'x set \<Rightarrow> 'x set \<Rightarrow> bool" where
+  "closed_restricted_rel r s t = ((restricted_rel r t s) `` t \<subseteq> t)"
 
-fun rel_induced_by_action :: "'x set \<Rightarrow> 'y set \<Rightarrow> ('x, 'y) binary_fun \<Rightarrow> 'y rel" where
-  "rel_induced_by_action s t \<phi> = {(y, y') \<in> t \<times> t. \<exists> x \<in> s. \<phi> x y = y'}"
+fun action_induced_rel :: "'x set \<Rightarrow> 'y set \<Rightarrow> ('x, 'y) binary_fun \<Rightarrow> 'y rel" where
+  "action_induced_rel s t \<phi> = {(y, y') \<in> t \<times> t. \<exists> x \<in> s. \<phi> x y = y'}"
 
-fun product_rel :: "'x rel \<Rightarrow> ('x * 'x) rel" where
-  "product_rel r = {(p, p'). (fst p, fst p') \<in> r \<and> (snd p, snd p') \<in> r}"
+fun product :: "'x rel \<Rightarrow> ('x * 'x) rel" where
+  "product r = {(p, p'). (fst p, fst p') \<in> r \<and> (snd p, snd p') \<in> r}"
 
-fun equivariance_rel :: "'x set \<Rightarrow> 'y set \<Rightarrow> ('x,'y) binary_fun \<Rightarrow> ('y * 'y) rel" where
-  "equivariance_rel s t \<phi> = {((u, v), (x, y)). (u, v) \<in> t \<times> t \<and> (\<exists> z \<in> s. x = \<phi> z u \<and> y = \<phi> z v)}"
+fun equivariance :: "'x set \<Rightarrow> 'y set \<Rightarrow> ('x,'y) binary_fun \<Rightarrow> ('y * 'y) rel" where
+  "equivariance s t \<phi> = {((u, v), (x, y)). (u, v) \<in> t \<times> t \<and> (\<exists> z \<in> s. x = \<phi> z u \<and> y = \<phi> z v)}"
 
-fun set_closed_under_rel :: "'x set \<Rightarrow> 'x rel \<Rightarrow> bool" where
-  "set_closed_under_rel s r = (\<forall> x y. (x, y) \<in> r \<longrightarrow> x \<in> s \<longrightarrow> y \<in> s)"
+fun set_closed_rel :: "'x set \<Rightarrow> 'x rel \<Rightarrow> bool" where
+  "set_closed_rel s r = (\<forall> x y. (x, y) \<in> r \<longrightarrow> x \<in> s \<longrightarrow> y \<in> s)"
 
 fun singleton_set_system :: "'x set \<Rightarrow> 'x set set" where
   "singleton_set_system s = {{x} | x. x \<in> s}"
@@ -54,17 +54,17 @@ text \<open>
   equivariance denotes consistent changes.
 \<close>
 
-datatype ('x, 'y) property =
+datatype ('x, 'y) symmetry =
   Invariance "'x rel" |
   Equivariance "'x set" "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set"
 
-fun satisfies :: "('x \<Rightarrow> 'y) \<Rightarrow> ('x, 'y) property \<Rightarrow> bool" where
-  "satisfies f (Invariance r) = (\<forall> x. \<forall> y. (x, y) \<in> r \<longrightarrow> f x = f y)" |
-  "satisfies f (Equivariance s \<tau>) = (\<forall> (\<phi>, \<psi>) \<in> \<tau>. \<forall> x \<in> s. \<phi> x \<in> s \<longrightarrow> f (\<phi> x) = \<psi> (f x))"
+fun is_symmetry :: "('x \<Rightarrow> 'y) \<Rightarrow> ('x, 'y) symmetry \<Rightarrow> bool" where
+  "is_symmetry f (Invariance r) = (\<forall> x. \<forall> y. (x, y) \<in> r \<longrightarrow> f x = f y)" |
+  "is_symmetry f (Equivariance s \<tau>) = (\<forall> (\<phi>, \<psi>) \<in> \<tau>. \<forall> x \<in> s. \<phi> x \<in> s \<longrightarrow> f (\<phi> x) = \<psi> (f x))"
 
-definition equivar_ind_by_act :: "'z set \<Rightarrow> 'x set \<Rightarrow> ('z, 'x) binary_fun
-      \<Rightarrow> ('z, 'y) binary_fun \<Rightarrow> ('x,'y) property" where
-  "equivar_ind_by_act s t \<phi> \<psi> = Equivariance t {(\<phi> x, \<psi> x) | x. x \<in> s}"
+definition action_induced_equivariance :: "'z set \<Rightarrow> 'x set \<Rightarrow> ('z, 'x) binary_fun
+      \<Rightarrow> ('z, 'y) binary_fun \<Rightarrow> ('x,'y) symmetry" where
+  "action_induced_equivariance s t \<phi> \<psi> = Equivariance t {(\<phi> x, \<psi> x) | x. x \<in> s}"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -218,9 +218,9 @@ theorem rewrite_invar_as_equivar:
     s :: "'x set" and
     t :: "'z set" and
     \<phi> :: "('z, 'x) binary_fun"
-  shows "satisfies f (Invariance (rel_induced_by_action t s \<phi>)) =
-            satisfies f (equivar_ind_by_act t s \<phi> (\<lambda> g. id))"
-proof (unfold equivar_ind_by_act_def, simp, safe)
+  shows "is_symmetry f (Invariance (action_induced_rel t s \<phi>)) =
+            is_symmetry f (action_induced_equivariance t s \<phi> (\<lambda> g. id))"
+proof (unfold action_induced_equivariance_def, simp, safe)
   fix
     x :: "'x" and
     y :: "'z"
@@ -244,44 +244,44 @@ lemma rewrite_invar_ind_by_act:
     s :: "'z set" and
     t :: "'x set" and
     \<phi> :: "('z, 'x) binary_fun"
-  shows "satisfies f (Invariance (rel_induced_by_action s t \<phi>)) =
+  shows "is_symmetry f (Invariance (action_induced_rel s t \<phi>)) =
           (\<forall> x \<in> s. \<forall> y \<in> t. \<phi> x y \<in> t \<longrightarrow> f y = f (\<phi> x y))"
 proof (safe)
   fix
     y :: "'x" and
     x :: "'z"
   assume
-    "satisfies f (Invariance (rel_induced_by_action s t \<phi>))" and
+    "is_symmetry f (Invariance (action_induced_rel s t \<phi>))" and
     "y \<in> t" and
     "x \<in> s" and
     "\<phi> x y \<in> t"
-  moreover from this have "(y, \<phi> x y) \<in> rel_induced_by_action s t \<phi>"
-    unfolding rel_induced_by_action.simps
+  moreover from this have "(y, \<phi> x y) \<in> action_induced_rel s t \<phi>"
+    unfolding action_induced_rel.simps
     by blast
   ultimately show "f y = f (\<phi> x y)"
     by simp
 next
   assume "\<forall> x \<in> s. \<forall> y \<in> t. \<phi> x y \<in> t \<longrightarrow> f y = f (\<phi> x y)"
   moreover have
-    "\<forall> (x, y) \<in> rel_induced_by_action s t \<phi>. x \<in> t \<and> y \<in> t \<and> (\<exists> z \<in> s. y = \<phi> z x)"
+    "\<forall> (x, y) \<in> action_induced_rel s t \<phi>. x \<in> t \<and> y \<in> t \<and> (\<exists> z \<in> s. y = \<phi> z x)"
     by auto
-  ultimately show "satisfies f (Invariance (rel_induced_by_action s t \<phi>))"
+  ultimately show "is_symmetry f (Invariance (action_induced_rel s t \<phi>))"
     by auto
 qed
 
-lemma rewrite_equivar_ind_by_act:
+lemma rewrite_equivariance:
   fixes
     f :: "'x \<Rightarrow> 'y" and
     s :: "'z set" and
     t :: "'x set" and
     \<phi> :: "('z, 'x) binary_fun" and
     \<psi> :: "('z, 'y) binary_fun"
-  shows "satisfies f (equivar_ind_by_act s t \<phi> \<psi>) =
+  shows "is_symmetry f (action_induced_equivariance s t \<phi> \<psi>) =
           (\<forall> x \<in> s. \<forall> y \<in> t. \<phi> x y \<in> t \<longrightarrow> f (\<phi> x y) = \<psi> x (f y))"
-  unfolding equivar_ind_by_act_def
+  unfolding action_induced_equivariance_def
   by auto
 
-lemma rewrite_group_act_img:
+lemma rewrite_group_action_img:
   fixes
     m :: "'x monoid" and
     s :: "'y set" and
@@ -372,8 +372,8 @@ lemma rel_ind_by_coinciding_action_on_subset_eq_restr:
   assumes
     "u \<subseteq> t" and
     "\<forall> x \<in> s. \<forall> y \<in> u. \<psi> x y = \<phi> x y"
-  shows "rel_induced_by_action s u \<psi> = Restr (rel_induced_by_action s t \<phi>) u"
-proof (unfold rel_induced_by_action.simps)
+  shows "action_induced_rel s u \<psi> = Restr (action_induced_rel s t \<phi>) u"
+proof (unfold action_induced_rel.simps)
   have "{(x, y). (x, y) \<in> u \<times> u \<and> (\<exists> z \<in> s. \<psi> z x = y)}
           = {(x, y). (x, y) \<in> u \<times> u \<and> (\<exists> z \<in> s. \<phi> z x = y)}"
     using assms
@@ -393,7 +393,7 @@ lemma coinciding_actions_ind_equal_rel:
     \<phi> :: "('x, 'y) binary_fun" and
     \<psi> :: "('x, 'y) binary_fun"
   assumes "\<forall> x \<in> s. \<forall> y \<in> t. \<phi> x y = \<psi> x y"
-  shows "rel_induced_by_action s t \<phi> = rel_induced_by_action s t \<psi>"
+  shows "action_induced_rel s t \<phi> = action_induced_rel s t \<psi>"
   unfolding extensional_continuation.simps
   using assms
   by auto
@@ -496,7 +496,7 @@ next
     by simp
   moreover have "\<forall> t. t \<in> Pow s \<longrightarrow> \<phi>_img (x \<otimes> \<^bsub>m\<^esub> y) t = \<phi> x ` \<phi> y ` t"
     unfolding \<phi>_img_def extensional_continuation.simps
-    using rewrite_group_act_img car_x car_y assms PowD
+    using rewrite_group_action_img car_x car_y assms PowD
     by metis
   ultimately have "\<forall> t. \<phi>_img (x \<otimes> \<^bsub>m\<^esub> y) t = (\<phi>_img x \<otimes> \<^bsub>BijGroup (Pow s)\<^esub> \<phi>_img y) t"
     by metis
@@ -523,11 +523,11 @@ theorem invar_generating_system_imp_invar:
     t :: "'x set" and
     \<phi> :: "('z, 'x) binary_fun"
   assumes
-    invar: "satisfies f (Invariance (rel_induced_by_action s t \<phi>))" and
+    invar: "is_symmetry f (Invariance (action_induced_rel s t \<phi>))" and
     action_\<phi>: "group_action m t \<phi>" and
     gen: "carrier m = generate m s"
-  shows "satisfies f (Invariance (rel_induced_by_action (carrier m) t \<phi>))"
-proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
+  shows "is_symmetry f (Invariance (action_induced_rel (carrier m) t \<phi>))"
+proof (unfold is_symmetry.simps action_induced_rel.simps, safe)
   fix
     g :: "'z" and
     x :: "'x"
@@ -550,13 +550,13 @@ proof (unfold satisfies.simps rel_induced_by_action.simps, safe)
       by simp
   next
     case (incl g)
-    hence "\<forall> x \<in> t. (x, \<phi> g x) \<in> rel_induced_by_action s t \<phi>"
+    hence "\<forall> x \<in> t. (x, \<phi> g x) \<in> action_induced_rel s t \<phi>"
       using gen action_\<phi> generate.incl group_action.element_image
-      unfolding rel_induced_by_action.simps
+      unfolding action_induced_rel.simps
       by fastforce
     thus ?case
       using invar
-      unfolding satisfies.simps
+      unfolding is_symmetry.simps
       by blast
   next
     case (inv g)
@@ -605,9 +605,9 @@ lemma invar_parameterized_fun:
     f :: "'x \<Rightarrow> ('x \<Rightarrow> 'y)" and
     r :: "'x rel"
   assumes
-    param_invar: "\<forall> x. satisfies (f x) (Invariance r)" and
-    invar: "satisfies f (Invariance r)"
-  shows "satisfies (\<lambda> x. f x x) (Invariance r)"
+    param_invar: "\<forall> x. is_symmetry (f x) (Invariance r)" and
+    invar: "is_symmetry f (Invariance r)"
+  shows "is_symmetry (\<lambda> x. f x x) (Invariance r)"
   using invar param_invar 
   by auto
 
@@ -617,8 +617,8 @@ lemma invar_under_subset_rel:
     r :: "'x rel"
   assumes
     subset: "r \<subseteq> rel" and
-    invar: "satisfies f (Invariance rel)"
-  shows "satisfies f (Invariance r)"
+    invar: "is_symmetry f (Invariance rel)"
+  shows "is_symmetry f (Invariance r)"
   using assms
   by auto
 
@@ -631,9 +631,10 @@ lemma equivar_ind_by_act_coincide:
     \<phi>' :: "('x, 'y) binary_fun" and
     \<psi> :: "('x, 'z) binary_fun"
   assumes "\<forall> x \<in> s. \<forall> y \<in> t. \<phi> x y = \<phi>' x y"
-  shows "satisfies f (equivar_ind_by_act s t \<phi> \<psi>) = satisfies f (equivar_ind_by_act s t \<phi>' \<psi>)"
+  shows "is_symmetry f (action_induced_equivariance s t \<phi> \<psi>)
+            = is_symmetry f (action_induced_equivariance s t \<phi>' \<psi>)"
   using assms
-  unfolding rewrite_equivar_ind_by_act
+  unfolding rewrite_equivariance
   by simp
 
 lemma equivar_under_subset:
@@ -643,11 +644,11 @@ lemma equivar_under_subset:
     t :: "'x set" and
     \<tau> :: "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set"
   assumes
-    "satisfies f (Equivariance s \<tau>)" and
+    "is_symmetry f (Equivariance s \<tau>)" and
     "t \<subseteq> s"
-  shows "satisfies f (Equivariance t \<tau>)"
+  shows "is_symmetry f (Equivariance t \<tau>)"
   using assms
-  unfolding satisfies.simps
+  unfolding is_symmetry.simps
   by blast
 
 lemma equivar_under_subset':
@@ -657,11 +658,11 @@ lemma equivar_under_subset':
     \<tau> :: "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set" and
     \<upsilon> :: "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set"
   assumes
-    "satisfies f (Equivariance s \<tau>)" and
+    "is_symmetry f (Equivariance s \<tau>)" and
     "\<upsilon> \<subseteq> \<tau>"
-  shows "satisfies f (Equivariance s \<upsilon>)"
+  shows "is_symmetry f (Equivariance s \<upsilon>)"
   using assms
-  unfolding satisfies.simps
+  unfolding is_symmetry.simps
   by blast
 
 theorem group_act_equivar_f_imp_equivar_preimg:
@@ -673,14 +674,14 @@ theorem group_act_equivar_f_imp_equivar_preimg:
     \<phi> :: "('z, 'x) binary_fun" and
     \<psi> :: "('z, 'y) binary_fun" and
     x :: "'z"
-  defines "equivar_prop \<equiv> equivar_ind_by_act (carrier m) \<D>\<^sub>f \<phi> \<psi>"
+  defines "equivar_prop \<equiv> action_induced_equivariance (carrier m) \<D>\<^sub>f \<phi> \<psi>"
   assumes
     action_\<phi>: "group_action m s \<phi>" and
     action_res: "group_action m UNIV \<psi>" and
     dom_in_s: "\<D>\<^sub>f \<subseteq> s" and
     closed_domain: (* Could the closed_domain requirement be weakened? *)
-      "closed_under_restr_rel (rel_induced_by_action (carrier m) s \<phi>) s \<D>\<^sub>f" and
-    equivar_f: "satisfies f equivar_prop" and
+      "closed_restricted_rel (action_induced_rel (carrier m) s \<phi>) s \<D>\<^sub>f" and
+    equivar_f: "is_symmetry f equivar_prop" and
     group_elem_x: "x \<in> carrier m"
   shows "\<forall> y. preimg f \<D>\<^sub>f (\<psi> x y) = (\<phi> x) ` (preimg f \<D>\<^sub>f y)"
 proof (safe)
@@ -706,10 +707,10 @@ proof (safe)
   hence "a \<in> s"
     using dom_in_s action_\<phi> group_elem_inv preimg_el img action_\<phi>.element_image
     by auto
-  hence "(z, a) \<in> (rel_induced_by_action (carrier m) s \<phi>) \<inter> (\<D>\<^sub>f \<times> s)"
+  hence "(z, a) \<in> (action_induced_rel (carrier m) s \<phi>) \<inter> (\<D>\<^sub>f \<times> s)"
     using img preimg_el domain group_elem_inv
     by auto
-  hence "a \<in> ((rel_induced_by_action (carrier m) s \<phi>) \<inter> (\<D>\<^sub>f \<times> s)) `` \<D>\<^sub>f"
+  hence "a \<in> ((action_induced_rel (carrier m) s \<phi>) \<inter> (\<D>\<^sub>f \<times> s)) `` \<D>\<^sub>f"
     using img preimg_el domain group_elem_inv
     by auto
   hence a_in_domain: "a \<in> \<D>\<^sub>f"
@@ -720,7 +721,7 @@ proof (safe)
     by auto
   ultimately have "f a = \<psi> (inv \<^bsub>m\<^esub> x) (f z)"
     using domain equivar_f img
-    unfolding equivar_prop_def equivar_ind_by_act_def
+    unfolding equivar_prop_def action_induced_equivariance_def
     by simp
   also have "f z = \<psi> x y"
     using preimg_el
@@ -750,7 +751,7 @@ next
   hence "\<phi> x z \<in> s"
     using group_elem_x group_action.element_image action_\<phi>
     by metis
-  hence "(z, \<phi> x z) \<in> (rel_induced_by_action (carrier m) s \<phi>) \<inter> (\<D>\<^sub>f \<times> s) \<inter> \<D>\<^sub>f \<times> s"
+  hence "(z, \<phi> x z) \<in> (action_induced_rel (carrier m) s \<phi>) \<inter> (\<D>\<^sub>f \<times> s) \<inter> \<D>\<^sub>f \<times> s"
     using group_elem_x domain
     by auto
   hence "\<phi> x z \<in> \<D>\<^sub>f"
@@ -761,7 +762,7 @@ next
     by blast
   ultimately show "\<phi> x z \<in> preimg f \<D>\<^sub>f (\<psi> x y)"
     using equivar_f domain
-    unfolding equivar_prop_def equivar_ind_by_act_def
+    unfolding equivar_prop_def action_induced_equivariance_def
     by simp
 qed
 
@@ -772,8 +773,8 @@ lemma invar_comp:
     f :: "'x \<Rightarrow> 'y" and
     g :: "'y \<Rightarrow> 'z" and
     r :: "'x rel"
-  assumes "satisfies f (Invariance r)"
-  shows "satisfies (g \<circ> f) (Invariance r)"
+  assumes "is_symmetry f (Invariance r)"
+  shows "is_symmetry (g \<circ> f) (Invariance r)"
   using assms
   by simp
 
@@ -790,9 +791,9 @@ lemma equivar_comp:
       {(\<phi>, \<psi>). \<exists> \<chi> :: 'y \<Rightarrow> 'y. (\<phi>, \<chi>) \<in> \<tau> \<and> (\<chi>, \<psi>) \<in> \<upsilon> \<and> \<chi> ` f ` s \<subseteq> t}"
   assumes
     "f ` s \<subseteq> t" and
-    "satisfies f (Equivariance s \<tau>)" and
-    "satisfies g (Equivariance t \<upsilon>)"
-  shows "satisfies (g \<circ> f) (Equivariance s transitive_acts)"
+    "is_symmetry f (Equivariance s \<tau>)" and
+    "is_symmetry g (Equivariance t \<upsilon>)"
+  shows "is_symmetry (g \<circ> f) (Equivariance s transitive_acts)"
 proof (unfold transitive_acts_def, simp, safe)
   fix
     \<phi> :: "'x \<Rightarrow> 'x" and
@@ -831,9 +832,9 @@ lemma equivar_ind_by_act_comp:
   assumes
     "f ` t \<subseteq> u" and
     "\<forall> x \<in> s. \<chi> x ` f ` t \<subseteq> u" and
-    "satisfies f (equivar_ind_by_act s t \<phi> \<chi>)" and
-    "satisfies g (equivar_ind_by_act s u \<chi> \<psi>)"
-  shows "satisfies (g \<circ> f) (equivar_ind_by_act s t \<phi> \<psi>)"
+    "is_symmetry f (action_induced_equivariance s t \<phi> \<chi>)" and
+    "is_symmetry g (action_induced_equivariance s u \<chi> \<psi>)"
+  shows "is_symmetry (g \<circ> f) (action_induced_equivariance s t \<phi> \<psi>)"
 proof -
   let ?a\<^sub>\<phi> = "{(\<phi> a, \<chi> a) | a. a \<in> s}" and
       ?a\<^sub>\<psi> = "{(\<chi> a, \<psi> a) | a. a \<in> s}"
@@ -844,12 +845,12 @@ proof -
   hence "{(\<phi> a, \<psi> a) | a. a \<in> s} \<subseteq>
           {(\<phi>, \<psi>). \<exists> \<upsilon>. (\<phi>, \<upsilon>) \<in> ?a\<^sub>\<phi> \<and> (\<upsilon>, \<psi>) \<in> ?a\<^sub>\<psi> \<and> \<upsilon> ` f ` t \<subseteq> u}"
     by blast
-  hence "satisfies (g \<circ> f) (Equivariance t {(\<phi> a, \<psi> a) | a. a \<in> s})"
+  hence "is_symmetry (g \<circ> f) (Equivariance t {(\<phi> a, \<psi> a) | a. a \<in> s})"
     using assms equivar_comp[of f t u ?a\<^sub>\<phi> g ?a\<^sub>\<psi>] equivar_under_subset'
-    unfolding equivar_ind_by_act_def
+    unfolding action_induced_equivariance_def
     by (metis (no_types, lifting))
   thus ?thesis
-    unfolding equivar_ind_by_act_def
+    unfolding action_induced_equivariance_def
     by blast
 qed
 
@@ -862,18 +863,18 @@ lemma equivar_set_minus:
     \<phi> :: "('z, 'x) binary_fun" and
     \<psi> :: "('z, 'y) binary_fun"
   assumes
-    f_equivar: "satisfies f (equivar_ind_by_act s t \<phi> (set_action \<psi>))" and
-    g_equivar: "satisfies g (equivar_ind_by_act s t \<phi> (set_action \<psi>))" and
+    f_equivar: "is_symmetry f (action_induced_equivariance s t \<phi> (set_action \<psi>))" and
+    g_equivar: "is_symmetry g (action_induced_equivariance s t \<phi> (set_action \<psi>))" and
     bij_a: "\<forall> a \<in> s. bij (\<psi> a)"
-  shows "satisfies (\<lambda> b. f b - g b) (equivar_ind_by_act s t \<phi> (set_action \<psi>))"
+  shows "is_symmetry (\<lambda> b. f b - g b) (action_induced_equivariance s t \<phi> (set_action \<psi>))"
 proof -
   have "\<forall> a \<in> s. \<forall> x \<in> t. \<phi> a x \<in> t \<longrightarrow> f (\<phi> a x) = \<psi> a ` (f x)"
     using f_equivar
-    unfolding rewrite_equivar_ind_by_act
+    unfolding rewrite_equivariance
     by simp
   moreover have "\<forall> a \<in> s. \<forall> x \<in> t. \<phi> a x \<in> t \<longrightarrow> g (\<phi> a x) = \<psi> a ` (g x)"
     using g_equivar
-    unfolding rewrite_equivar_ind_by_act
+    unfolding rewrite_equivariance
     by simp
   ultimately have
     "\<forall> a \<in> s. \<forall> b \<in> t. \<phi> a b \<in> t \<longrightarrow> f (\<phi> a b) - g (\<phi> a b) = \<psi> a ` (f b) - \<psi> a ` (g b)"
@@ -884,7 +885,7 @@ proof -
     by blast
   ultimately show ?thesis
     unfolding set_action.simps
-    using rewrite_equivar_ind_by_act
+    using rewrite_equivariance
     by fastforce
 qed
 
@@ -893,9 +894,9 @@ lemma equivar_union_under_img_act:
     f :: "'x \<Rightarrow> 'y" and
     s :: "'z set" and
     \<phi> :: "('z, 'x) binary_fun"
-  shows "satisfies \<Union> (equivar_ind_by_act s UNIV
+  shows "is_symmetry \<Union> (action_induced_equivariance s UNIV
               (set_action (set_action \<phi>)) (set_action \<phi>))"
-proof (unfold equivar_ind_by_act_def, clarsimp, safe)
+proof (unfold action_induced_equivariance_def, clarsimp, safe)
   fix
     x :: "'z" and
     ts :: "'x set set" and

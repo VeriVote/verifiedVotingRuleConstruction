@@ -43,7 +43,7 @@ theorem par_comp_sound[simp]:
     "\<S>\<C>\<F>_result.electoral_module n" and
     "aggregator a"
   shows "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>a n)"
-proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
+proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and

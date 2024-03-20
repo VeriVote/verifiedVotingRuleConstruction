@@ -37,8 +37,8 @@ theorem copeland_sound: "\<S>\<C>\<F>_result.electoral_module copeland"
 
 subsection \<open>Only participating voters impact the result\<close>
 
-lemma copeland_score_only_voters_count: "only_voters_count copeland_score"
-proof (unfold copeland_score.simps only_voters_count_def, safe)
+lemma voters_determine_copeland_score: "voters_determine_evaluation copeland_score"
+proof (unfold copeland_score.simps voters_determine_evaluation.simps, safe)
   fix 
     A :: "'b set" and
     V :: "'a set" and
@@ -58,10 +58,10 @@ proof (unfold copeland_score.simps only_voters_count_def, safe)
     by presburger
 qed
 
-theorem copeland_only_voters_vote: "only_voters_vote copeland"
+theorem voters_determine_copeland: "voters_determine_election copeland"
   unfolding copeland.simps
-  using max_elim_only_voters only_voters_vote_def 
-        copeland_score_only_voters_count
+  using voters_determine_max_elim voters_determine_election.simps
+        voters_determine_copeland_score
   by blast
 
 subsection \<open>Lemmas\<close>
@@ -252,23 +252,25 @@ proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
   ultimately show
     "enat (card {y \<in> A. wins V l p y} - card {y \<in> A. wins V y p l}) <
       enat (card {y \<in> A. wins V w p y} - card {y \<in> A. wins V y p w})"
-    using enat_ord_simps
-    by simp
+    using enat_ord_simps diff_zero
+    by (metis (no_types, lifting))
 qed
 
 theorem copeland_is_dcc: "defer_condorcet_consistency copeland"
-proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module_def, safe)
+proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile"
   assume "profile V A p"
-  hence "well_formed_\<S>\<C>\<F> A (max_eliminator copeland_score V A p)"
+  moreover from this have "well_formed_\<S>\<C>\<F> A (max_eliminator copeland_score V A p)"
     using max_elim_sound
-    unfolding \<S>\<C>\<F>_result.electoral_module_def
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps
     by metis
-  thus "well_formed_\<S>\<C>\<F> A (copeland V A p)"
-    by auto
+  ultimately show "well_formed_\<S>\<C>\<F> A (copeland V A p)"
+    using copeland_sound
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps
+    by metis
 next
   fix
     A :: "'b set" and 
@@ -283,7 +285,8 @@ next
     unfolding defer_condorcet_consistency_def
     by (metis (no_types))
   moreover have "copeland V A p = max_eliminator copeland_score V A p"
-    by simp
+    unfolding copeland.simps
+    by safe
   ultimately show
     "copeland V A p = ({}, A - defer copeland V A p, {d \<in> A. condorcet_winner V A p d})"
     by metis

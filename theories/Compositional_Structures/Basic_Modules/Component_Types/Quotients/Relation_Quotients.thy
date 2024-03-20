@@ -179,8 +179,8 @@ lemma rel_ind_by_group_act_equiv:
     s :: "'y set" and
     \<phi> :: "('x, 'y) binary_fun"
   assumes "group_action m s \<phi>"
-  shows "equiv s (rel_induced_by_action (carrier m) s \<phi>)"
-proof (unfold equiv_def refl_on_def sym_def Relation.trans_def rel_induced_by_action.simps,
+  shows "equiv s (action_induced_rel (carrier m) s \<phi>)"
+proof (unfold equiv_def refl_on_def sym_def Relation.trans_def action_induced_rel.simps,
         clarsimp, safe)
   fix y :: "'y"
   assume "y \<in> s"

@@ -27,7 +27,7 @@ fun defer_module :: "('a, 'v, 'a Result) Electoral_Module" where
 subsection \<open>Soundness\<close>
 
 theorem def_mod_sound[simp]: "\<S>\<C>\<F>_result.electoral_module defer_module"
-  unfolding \<S>\<C>\<F>_result.electoral_module_def
+  unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by simp
 
 subsection \<open>Properties\<close>

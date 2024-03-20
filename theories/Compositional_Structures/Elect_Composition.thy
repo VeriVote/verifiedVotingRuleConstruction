@@ -43,15 +43,17 @@ theorem elector_sound[simp]:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   assumes "\<S>\<C>\<F>_result.electoral_module m"
   shows "\<S>\<C>\<F>_result.electoral_module (elector m)"
-  using assms
-  by simp
+  using assms elect_mod_sound seq_comp_sound
+  unfolding elector.simps
+  by metis
 
-lemma elector_only_voters: 
+lemma voters_determine_elector:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
-  assumes "only_voters_vote m"
-  shows "only_voters_vote (elector m)"
-  using assms
-  by (simp add: elect_mod_only_voters seq_comp_only_voters)
+  assumes "voters_determine_election m"
+  shows "voters_determine_election (elector m)"
+  using assms elect_mod_only_voters voters_determine_seq_comp
+  unfolding elector.simps
+  by metis
 
 subsection \<open>Electing\<close>
 
@@ -231,7 +233,7 @@ next
       by blast
     thus "x \<in> elect m V A p"
       using assms x_not_in_defer fin_A fin_V cond_winner_unique
-            defer_condorcet_consistency_def insertCI prod.sel(2) c_win_x
+            defer_condorcet_consistency_def insertCI snd_conv c_win_x
       by (metis (no_types, lifting))
   qed
   ultimately have

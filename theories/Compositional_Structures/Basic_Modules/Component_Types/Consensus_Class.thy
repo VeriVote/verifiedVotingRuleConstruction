@@ -200,7 +200,7 @@ lemma cons_domain_finite:
   fixes C :: "('a, 'v, 'r Result) Consensus_Class"
   shows
     finite: "elections_\<K> C \<subseteq> finite_elections" and
-    finite_voters: "elections_\<K> C \<subseteq> finite_voter_elections"
+    finite_voters: "elections_\<K> C \<subseteq> finite_elections_\<V>"
 proof -
   have "\<forall> E \<in> elections_\<K> C. fun\<^sub>\<E> profile E \<and> finite (alternatives_\<E> E) \<and> finite (voters_\<E> E)"
     unfolding \<K>\<^sub>\<E>.simps
@@ -208,8 +208,8 @@ proof -
   thus "elections_\<K> C \<subseteq> finite_elections"
     unfolding finite_elections_def fun\<^sub>\<E>.simps
     by blast
-  thus "elections_\<K> C \<subseteq> finite_voter_elections"
-    unfolding finite_elections_def finite_voter_elections_def
+  thus "elections_\<K> C \<subseteq> finite_elections_\<V>"
+    unfolding finite_elections_def finite_elections_\<V>_def
     by blast
 qed
 
@@ -246,17 +246,17 @@ definition consensus_rule_anonymity :: "('a, 'v, 'r) Consensus_Class \<Rightarro
 fun consensus_rule_anonymity' :: "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'r Result) Consensus_Class
           \<Rightarrow> bool" where
   "consensus_rule_anonymity' X C =
-    satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (Invariance (anonymity\<^sub>\<R> X))"
+    is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (Invariance (anonymity\<^sub>\<R> X))"
 
 fun (in result_properties) consensus_rule_neutrality :: "('a, 'v) Election set
           \<Rightarrow> ('a, 'v, 'b Result) Consensus_Class \<Rightarrow> bool" where
-  "consensus_rule_neutrality X C = satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
-    (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) X (\<phi>_neutr X) (set_action \<psi>_neutr))"
+  "consensus_rule_neutrality X C = is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
+    (action_induced_equivariance (carrier neutrality\<^sub>\<G>) X (\<phi>_neutr X) (set_action \<psi>_neutr))"
 
 fun consensus_rule_reversal_symmetry :: "('a, 'v) Election set
         \<Rightarrow> ('a, 'v, 'a rel Result) Consensus_Class \<Rightarrow> bool" where
-  "consensus_rule_reversal_symmetry X C = satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
-    (equivar_ind_by_act (carrier reversal\<^sub>\<G>) X (\<phi>_rev X) (set_action \<psi>_rev))"
+  "consensus_rule_reversal_symmetry X C = is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
+    (action_induced_equivariance (carrier reversal\<^sub>\<G>) X (\<phi>_rev X) (set_action \<psi>_rev))"
 
 subsection \<open>Inference Rules\<close>
 
@@ -269,15 +269,15 @@ lemma consensus_choice_equivar:
     \<phi> :: "('x, ('a, 'v) Election) binary_fun" and
     \<psi> :: "('x, 'a) binary_fun" and
     f :: "'a Result \<Rightarrow> 'a set"
-  defines "equivar \<equiv> equivar_ind_by_act G X \<phi> (set_action \<psi>)"
+  defines "equivar \<equiv> action_induced_equivariance G X \<phi> (set_action \<psi>)"
   assumes
-    equivar_m: "satisfies (f \<circ> fun\<^sub>\<E> m) equivar" and
-    equivar_defer: "satisfies (f \<circ> fun\<^sub>\<E> defer_module) equivar" and
+    equivar_m: "is_symmetry (f \<circ> fun\<^sub>\<E> m) equivar" and
+    equivar_defer: "is_symmetry (f \<circ> fun\<^sub>\<E> defer_module) equivar" and
     \<comment> \<open>Could be generalized to arbitrary modules instead of defer-module\<close>
-    invar_cons: "satisfies c (Invariance (rel_induced_by_action G X \<phi>))"
-  shows "satisfies (f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m)))
-              (equivar_ind_by_act G X \<phi> (set_action \<psi>))"
-proof (simp only: rewrite_equivar_ind_by_act, standard, standard, standard)
+    invar_cons: "is_symmetry c (Invariance (action_induced_rel G X \<phi>))"
+  shows "is_symmetry (f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m)))
+              (action_induced_equivariance G X \<phi> (set_action \<psi>))"
+proof (simp only: rewrite_equivariance, standard, standard, standard)
   fix
     E :: "('a, 'v) Election" and
     g :: "'x"
@@ -296,7 +296,7 @@ proof (simp only: rewrite_equivar_ind_by_act, standard, standard, standard)
       by simp
     also have "(f \<circ> fun\<^sub>\<E> m) (\<phi> g E) =
       set_action \<psi> g ((f \<circ> fun\<^sub>\<E> m) E)"
-      using equivar_m E_in_X \<phi>_g_E_in_X g_in_G rewrite_equivar_ind_by_act
+      using equivar_m E_in_X \<phi>_g_E_in_X g_in_G rewrite_equivariance
       unfolding equivar_def
       by (metis (mono_tags, lifting))
     also have "(f \<circ> fun\<^sub>\<E> m) E =
@@ -315,7 +315,7 @@ proof (simp only: rewrite_equivar_ind_by_act, standard, standard, standard)
       by simp
     also have "(f \<circ> fun\<^sub>\<E> defer_module) (\<phi> g E) =
       set_action \<psi> g ((f \<circ> fun\<^sub>\<E> defer_module) E)"
-      using equivar_defer E_in_X g_in_G \<phi>_g_E_in_X rewrite_equivar_ind_by_act
+      using equivar_defer E_in_X g_in_G \<phi>_g_E_in_X rewrite_equivariance
       unfolding equivar_def
       by (metis (mono_tags, lifting))
     also have "(f \<circ> fun\<^sub>\<E> defer_module) E =
@@ -451,21 +451,21 @@ qed
 
 subsubsection \<open>Neutrality\<close>
 
-lemma defer_winners_equivar:
+lemma defer_winners_equivariant:
   fixes
     G :: "'x set" and
     X :: "('a, 'v) Election set" and
     \<phi> :: "('x, ('a, 'v) Election) binary_fun" and
     \<psi> :: "('x, 'a) binary_fun"
-  shows "satisfies (elect_r \<circ> fun\<^sub>\<E> defer_module) 
-                (equivar_ind_by_act G X \<phi> (set_action \<psi>))"
-  using rewrite_equivar_ind_by_act
+  shows "is_symmetry (elect_r \<circ> fun\<^sub>\<E> defer_module)
+                (action_induced_equivariance G X \<phi> (set_action \<psi>))"
+  using rewrite_equivariance
   by fastforce
 
-lemma elect_first_winners_neutral: "satisfies (elect_r \<circ> fun\<^sub>\<E> elect_first_module)
-                (equivar_ind_by_act (carrier neutrality\<^sub>\<G>)
+lemma elect_first_winners_neutral: "is_symmetry (elect_r \<circ> fun\<^sub>\<E> elect_first_module)
+                (action_induced_equivariance (carrier neutrality\<^sub>\<G>)
                   valid_elections (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<c>))"
-proof (simp only: rewrite_equivar_ind_by_act, clarify)
+proof (simp only: rewrite_equivariance, clarify)
   fix
     A :: "'a set" and
     V :: "'v::wellorder set" and
@@ -571,22 +571,22 @@ proof -
     using strong_unanimity\<^sub>\<C>_neutral invar_under_subset_rel
     unfolding domain_def
     by simp
-  hence "satisfies strong_unanimity\<^sub>\<C>
-     (Invariance (rel_induced_by_action (carrier neutrality\<^sub>\<G>) domain (\<phi>_neutr valid_elections)))"
+  hence "is_symmetry strong_unanimity\<^sub>\<C>
+     (Invariance (action_induced_rel (carrier neutrality\<^sub>\<G>) domain (\<phi>_neutr valid_elections)))"
     unfolding consensus_neutrality.simps neutrality\<^sub>\<R>.simps
     using coincides coinciding_actions_ind_equal_rel
     by metis
-  moreover have "satisfies (elect_r \<circ> fun\<^sub>\<E> elect_first_module)
-                (equivar_ind_by_act (carrier neutrality\<^sub>\<G>)
+  moreover have "is_symmetry (elect_r \<circ> fun\<^sub>\<E> elect_first_module)
+                (action_induced_equivariance (carrier neutrality\<^sub>\<G>)
                   domain (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<c>))"
     using elect_first_winners_neutral
-    unfolding domain_def equivar_ind_by_act_def
+    unfolding domain_def action_induced_equivariance_def
     using equivar_under_subset
     by blast
-  ultimately have "satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity))
-      (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) domain
+  ultimately have "is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity))
+      (action_induced_equivariance (carrier neutrality\<^sub>\<G>) domain
                           (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<c>))"
-    using defer_winners_equivar[of
+    using defer_winners_equivariant[of
             "carrier neutrality\<^sub>\<G>" domain "\<phi>_neutr valid_elections" "\<psi>_neutr\<^sub>\<c>"]
           consensus_choice_equivar[of
             "elect_r" "elect_first_module" "carrier neutrality\<^sub>\<G>" domain
@@ -613,8 +613,8 @@ proof -
     using extensional_continuation_subset
     by (metis (no_types, lifting))
   ultimately have
-    "satisfies (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity))
-     (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) (elections_\<K> strong_unanimity)
+    "is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity))
+     (action_induced_equivariance (carrier neutrality\<^sub>\<G>) (elections_\<K> strong_unanimity)
        (\<phi>_neutr (valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>)) (set_action \<psi>_neutr\<^sub>\<c>))"
     using strong_unanimity_neutral
           equivar_under_subset[of
@@ -622,7 +622,7 @@ proof -
             "valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
             "{(\<phi>_neutr (valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>) g, set_action \<psi>_neutr\<^sub>\<c> g) | g.
                 g \<in> carrier neutrality\<^sub>\<G>}" "elections_\<K> strong_unanimity"]
-    unfolding equivar_ind_by_act_def \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
+    unfolding action_induced_equivariance_def \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
     by blast
   thus ?thesis
     unfolding \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
@@ -635,10 +635,10 @@ proof -
     by (metis (no_types))
 qed
 
-lemma strong_unanimity_closed_under_neutrality: "closed_under_restr_rel
+lemma strong_unanimity_closed_under_neutrality: "closed_restricted_rel
           (neutrality\<^sub>\<R> valid_elections) valid_elections (elections_\<K> strong_unanimity)"
-proof (unfold closed_under_restr_rel.simps restr_rel.simps neutrality\<^sub>\<R>.simps
-              rel_induced_by_action.simps elections_\<K>.simps, safe)
+proof (unfold closed_restricted_rel.simps restricted_rel.simps neutrality\<^sub>\<R>.simps
+              action_induced_rel.simps elections_\<K>.simps, safe)
   fix
     A :: "'a set" and
     V :: "'b set" and
@@ -672,7 +672,7 @@ proof (unfold closed_under_restr_rel.simps restr_rel.simps neutrality\<^sub>\<R>
   let ?domain = "valid_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
   have "((A, V, p), (A', V', p')) \<in> neutrality\<^sub>\<R> valid_elections"
     using bij img fin valid'
-    unfolding neutrality\<^sub>\<R>.simps rel_induced_by_action.simps
+    unfolding neutrality\<^sub>\<R>.simps action_induced_rel.simps
               finite_elections_def valid_elections_def
     by blast
   moreover have unanimous: "(A, V, p) \<in> ?domain"
@@ -687,7 +687,7 @@ proof (unfold closed_under_restr_rel.simps restr_rel.simps neutrality\<^sub>\<R>
         (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (\<phi>_neutr ?domain \<pi> (A, V, p)) =
           set_action \<psi>_neutr\<^sub>\<c> \<pi> ((elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (A, V, p))"
     using strong_unanimity_neutral unanimous
-          rewrite_equivar_ind_by_act[of
+          rewrite_equivariance[of
             "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)"
             "carrier neutrality\<^sub>\<G>" ?domain
             "\<phi>_neutr ?domain" "set_action \<psi>_neutr\<^sub>\<c>"]

@@ -45,21 +45,22 @@ theorem max_par_comp_sound:
      "\<S>\<C>\<F>_result.electoral_module m" and
      "\<S>\<C>\<F>_result.electoral_module n"
   shows "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
-  using assms
-  by simp
+  using assms max_agg_sound par_comp_sound
+  unfolding maximum_parallel_composition.simps
+  by metis
 
-lemma max_par_comp_only_voters:
+lemma voters_determine_max_par_comp:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     n :: "('a, 'v, 'a Result) Electoral_Module"
   assumes
-     "only_voters_vote m" and
-     "only_voters_vote n"
-  shows "only_voters_vote (m \<parallel>\<^sub>\<up> n)"
+     "voters_determine_election m" and
+     "voters_determine_election n"
+  shows "voters_determine_election (m \<parallel>\<^sub>\<up> n)"
   using max_aggregator.simps assms
   unfolding Let_def maximum_parallel_composition.simps 
             parallel_composition.simps 
-            only_voters_vote_def
+            voters_determine_election.simps
   by presburger
  
 subsection \<open>Lemmas\<close>
@@ -99,8 +100,8 @@ proof (cases)
     unfolding mod_contains_result_def
     by simp
   moreover have module_mn: "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
-    using module_m module_n
-    by simp
+    using module_m module_n max_par_comp_sound
+    by metis
   moreover have "a \<notin> defer (m \<parallel>\<^sub>\<up> n) V A p"
     using module_mn IntI a_elect empty_iff prof_p result_disj
     by (metis (no_types))
@@ -128,11 +129,11 @@ next
         by blast
       have wf_n: "well_formed_\<S>\<C>\<F> A (n V A p)"
         using prof_p module_n
-        unfolding \<S>\<C>\<F>_result.electoral_module_def
+        unfolding \<S>\<C>\<F>_result.electoral_module.simps
         by blast
       have wf_m: "well_formed_\<S>\<C>\<F> A (m V A p)"
         using prof_p module_m
-        unfolding \<S>\<C>\<F>_result.electoral_module_def
+        unfolding \<S>\<C>\<F>_result.electoral_module.simps
         by blast
       have e_mod_par: "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
         using par_emod module_m module_n
@@ -165,9 +166,9 @@ next
       hence "a \<notin> elect m V A p \<union> elect n V A p"
         using max_pq
         by simp
-      hence b_not_elect_mn: "a \<notin> elect m V A p \<and> a \<notin> elect n V A p"
+      hence a_not_elect_mn: "a \<notin> elect m V A p \<and> a \<notin> elect n V A p"
         by blast
-      have b_not_mpar_rej: "a \<notin> reject (m \<parallel>\<^sub>max_aggregator n) V A p"
+      have a_not_mpar_rej: "a \<notin> reject (m \<parallel>\<^sub>\<up> n) V A p"
         using result_disj_max a_in_def
         by fastforce
       have mod_cont_res_fg:
@@ -211,21 +212,26 @@ next
                   \<and> (b \<in> defer m' V' A' p' \<longrightarrow> b \<in> defer n' V' A' p'))"
         unfolding mod_contains_result_def
         by simp
+      hence "a \<notin> defer n V A p"
+        using a_not_mpar_rej a_in_A e_mod_par module_n not_a_elect
+              not_mod_cont_mn prof_p
+        by blast
       hence "a \<in> reject n V A p"
-        using e_mod_disj_n e_mod_par prof_p a_in_A module_n not_mod_cont_mn
-              a_not_elect b_not_elect_mn b_not_mpar_rej
-        by fastforce
+        using a_in_A a_not_elect_mn module_n not_rej_imp_elec_or_defer prof_p
+        by metis
       hence "a \<notin> reject m V A p"
         using well_f_max max_agg_res result_m result_n set_intersect
-              wf_m wf_n b_not_mpar_rej
+              wf_m wf_n a_not_mpar_rej
+        unfolding maximum_parallel_composition.simps
         by (metis (no_types))
       hence "a \<notin> defer (m \<parallel>\<^sub>\<up> n) V A p \<or> a \<in> defer m V A p"
-          using e_mod_disj prof_p a_in_A module_m b_not_elect_mn
+          using e_mod_disj prof_p a_in_A module_m a_not_elect_mn
           by blast
       thus "mod_contains_result (m \<parallel>\<^sub>\<up> n) m V A p a"
-        using b_not_mpar_rej mod_cont_res_fg e_mod_par prof_p a_in_A
+        using a_not_mpar_rej mod_cont_res_fg e_mod_par prof_p a_in_A
               module_m a_not_elect
-        by fastforce
+        unfolding maximum_parallel_composition.simps
+        by metis
     qed
   next
     assume not_a_defer: "a \<notin> defer (m \<parallel>\<^sub>\<up> n) V A p"
@@ -329,8 +335,8 @@ lemma max_agg_rej_fst_imp_seq_contained:
   using assms
 proof (unfold mod_contains_result_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
-    using module_m module_n
-    by simp
+    using module_m module_n max_par_comp_sound
+    by metis
 next
   show "a \<in> A"
     using f_prof module_n rejected reject_in_alts
@@ -449,8 +455,8 @@ lemma max_agg_rej_snd_imp_seq_contained:
   using assms
 proof (unfold mod_contains_result_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
-    using module_m module_n
-    by simp
+    using module_m module_n max_par_comp_sound
+    by metis
 next
   show "a \<in> A"
     using f_prof in_mono module_m reject_in_alts rejected
@@ -477,7 +483,7 @@ next
     using disjoint_iff_not_equal max_agg_eq_result max_agg_rej_iff_both_reject
           f_prof mod_contains_result_comm mod_contains_result_def
           module_m module_n rejected result_disj
-      by metis
+    by (metis (no_types, opaque_lifting))
 qed
 
 lemma max_agg_rej_snd_equiv_seq_contained:
@@ -621,7 +627,8 @@ proof (unfold defer_lift_invariance_def, safe)
     unfolding defer_lift_invariance_def
     by simp
   ultimately show "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
-    by simp
+    using max_par_comp_sound
+    by metis
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -941,7 +948,8 @@ proof (unfold eliminates_def, safe)
     unfolding rejects_def
     by simp
   ultimately show "\<S>\<C>\<F>_result.electoral_module (m \<parallel>\<^sub>\<up> n)"
-    by simp
+    using max_par_comp_sound
+    by metis
 next
   fix
     A :: "'a set" and
@@ -972,7 +980,7 @@ next
   proof -
     have "well_formed_\<S>\<C>\<F> A (elect m V A p, reject m V A p, defer m V A p)"
       using prof module
-      unfolding \<S>\<C>\<F>_result.electoral_module_def
+      unfolding \<S>\<C>\<F>_result.electoral_module.simps
       by simp
     hence "card A =
         card (elect m V A p) + card (reject m V A p) + card (defer m V A p)"

@@ -37,7 +37,7 @@ theorem drop_mod_sound[simp]:
     r :: "'a Preference_Relation" and
     n :: "nat"
   shows "\<S>\<C>\<F>_result.electoral_module (drop_module n r)"
-proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
+proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -62,12 +62,12 @@ proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
     by simp
 qed
 
-lemma drop_mod_only_voters:
+lemma voters_determine_drop_mod:
   fixes
     r :: "'a Preference_Relation" and
     n :: "nat"
-  shows "only_voters_vote (drop_module n r)"
-  unfolding only_voters_vote_def
+  shows "voters_determine_election (drop_module n r)"
+  unfolding voters_determine_election.simps
   by simp
 
 subsection \<open>Non-Electing\<close>
@@ -82,7 +82,7 @@ theorem drop_mod_non_electing[simp]:
     n :: "nat"
   shows "non_electing (drop_module n r)"
   unfolding non_electing_def
-  by simp
+  by auto
 
 subsection \<open>Properties\<close>
 
@@ -96,6 +96,6 @@ theorem drop_mod_def_lift_inv[simp]:
     n :: "nat"
   shows "defer_lift_invariance (drop_module n r)"
   unfolding defer_lift_invariance_def
-  by simp
+  by force
 
 end

@@ -31,15 +31,12 @@ subsection \<open>Definition\<close>
 text \<open>
   A profile contains one ballot for each voter.
   An election consists of a set of participating voters,
-  a set of eligible alternatives and a corresponding profile.
+  a set of eligible alternatives, and a corresponding profile.
 \<close>
 
 type_synonym ('a, 'v) Profile = "'v \<Rightarrow> ('a Preference_Relation)"
 
 type_synonym ('a, 'v) Election = "'a set \<times> 'v set \<times> ('a, 'v) Profile"
-
-fun election_equality :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Election \<Rightarrow> bool" where
-  "election_equality (A, V, p) (A', V', p') = (A = A' \<and> V = V' \<and> (\<forall> v \<in> V. p v = p' v))"
 
 fun alternatives_\<E> :: "('a, 'v) Election \<Rightarrow> 'a set" where
   "alternatives_\<E> E = fst E"
@@ -49,6 +46,9 @@ fun voters_\<E> :: "('a, 'v) Election \<Rightarrow> 'v set" where
 
 fun profile_\<E> :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Profile" where
   "profile_\<E> E = snd (snd E)"
+
+fun election_equality :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Election \<Rightarrow> bool" where
+  "election_equality (A, V, p) (A', V', p') = (A = A' \<and> V = V' \<and> (\<forall> v \<in> V. p v = p' v))"
 
 text \<open>
   A profile on a set of alternatives A and a voter set V consists of ballots
@@ -65,20 +65,19 @@ abbreviation finite_profile :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, '
 abbreviation finite_election :: "('a,'v) Election \<Rightarrow> bool" where
   "finite_election E \<equiv> finite_profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)"
 
-definition finite_voter_elections :: "('a, 'v) Election set" where
-  "finite_voter_elections = {E :: ('a, 'v) Election. finite (voters_\<E> E)}"
+definition finite_elections_\<V> :: "('a, 'v) Election set" where
+  "finite_elections_\<V> = {E :: ('a, 'v) Election. finite (voters_\<E> E)}"
 
 definition finite_elections :: "('a, 'v) Election set" where
-  "finite_elections =
-    {E :: ('a, 'v) Election. finite_profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)}"
+  "finite_elections = {E :: ('a, 'v) Election. finite_election E}"
 
 definition valid_elections :: "('a,'v) Election set" where
   "valid_elections = {E. profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)}"
 
 \<comment> \<open>Elections with fixed alternatives,
     finite voters and a default value for the profile value on non-voters.\<close>
-fun fixed_alt_elections :: "'a set \<Rightarrow> ('a, 'v) Election set" where
-  "fixed_alt_elections A = valid_elections \<inter>
+fun elections_\<A> :: "'a set \<Rightarrow> ('a, 'v) Election set" where
+  "elections_\<A> A = valid_elections \<inter>
     {E. alternatives_\<E> E = A \<and> finite (voters_\<E> E) \<and> (\<forall> v. v \<notin> voters_\<E> E \<longrightarrow> profile_\<E> E v = {})}"
 
 \<comment> \<open>Counts the occurrences of a ballot in an election,
@@ -433,7 +432,7 @@ next
     by fastforce
 qed
 
-subsection \<open>List Representation for Ordered Voter Types\<close>
+subsection \<open>List Representation for Ordered Voters\<close>
 
 text \<open>
   A profile on a voter set that has a natural order can be viewed as a list of ballots.

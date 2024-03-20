@@ -27,8 +27,8 @@ theorem drop_zero_mod_rej_zero[simp]:
   shows "rejects 0 (drop_module 0 r)"
 proof (unfold rejects_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (drop_module 0 r)"
-    using assms
-    by simp
+    using assms drop_mod_sound
+    by metis
 next
   fix
     A :: "'a set" and
@@ -70,7 +70,8 @@ theorem drop_two_mod_rej_n[simp]:
   shows "rejects n (drop_module n r)"
 proof (unfold rejects_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (drop_module n r)"
-    by simp
+    using drop_mod_sound
+    by metis
 next
   fix
     A :: "'a set" and
@@ -187,11 +188,11 @@ theorem drop_pass_disj_compat[simp]:
   shows "disjoint_compatibility (drop_module n r) (pass_module n r)"
 proof (unfold disjoint_compatibility_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (drop_module n r)"
-    using assms
+    using assms drop_mod_sound
     by simp
 next
   show "\<S>\<C>\<F>_result.electoral_module (pass_module n r)"
-    using assms
+    using assms pass_mod_sound
     by simp
 next
   fix
@@ -219,15 +220,15 @@ next
     have "?A \<subseteq> A"
       by auto
     moreover have "\<forall> a \<in> ?A. indep_of_alt (drop_module n r) V A a"
-      using assms
-      unfolding indep_of_alt_def
-      by simp
+      using assms drop_mod_sound
+      unfolding drop_module.simps indep_of_alt_def
+      by (metis (mono_tags, lifting))
     moreover have "\<forall> a \<in> ?A. \<forall> p. profile V A p \<longrightarrow> a \<in> reject (drop_module n r) V A p"
       by auto
     moreover have "\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) V A a"
-      using assms
-      unfolding indep_of_alt_def
-      by simp
+      using assms pass_mod_sound
+      unfolding pass_module.simps indep_of_alt_def
+      by metis
     moreover have "\<forall> a \<in> A - ?A. \<forall> p. profile V A p \<longrightarrow> a \<in> reject (pass_module n r) V A p"
       by auto
     ultimately show "?A \<subseteq> A \<and>

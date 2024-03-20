@@ -38,10 +38,9 @@ text \<open>
   it is invariant under profile changes that only impact non-voters.
 \<close>
 
-definition only_voters_count :: "('a, 'v) Evaluation_Function \<Rightarrow> bool" where
-  "only_voters_count f \<equiv> 
-    \<forall> A V p p'. (\<forall> v \<in> V. p v = p' v) \<longrightarrow> 
-      (\<forall> a \<in> A. f V a A p = f V a A p')"
+fun voters_determine_evaluation :: "('a, 'v) Evaluation_Function \<Rightarrow> bool" where
+  "voters_determine_evaluation f =
+    (\<forall> A V p p'. (\<forall> v \<in> V. p v = p' v) \<longrightarrow> (\<forall> a \<in> A. f V a A p = f V a A p'))"
 
 subsection \<open>Theorems\<close>
 

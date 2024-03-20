@@ -27,8 +27,8 @@ locale result_properties = result +
   assumes
     act_neutr: "group_action neutrality\<^sub>\<G> UNIV \<psi>_neutr" and
     well_formed_res_neutr:
-      "satisfies (\<lambda> \<E> :: ('a, 'v) Election. limit_set (alternatives_\<E> \<E>) UNIV)
-                (equivar_ind_by_act (carrier neutrality\<^sub>\<G>)
+      "is_symmetry (\<lambda> \<E> :: ('a, 'v) Election. limit_set (alternatives_\<E> \<E>) UNIV)
+                (action_induced_equivariance (carrier neutrality\<^sub>\<G>)
                     valid_elections (\<phi>_neutr valid_elections) (set_action \<psi>_neutr))"
 
 sublocale result_properties \<subseteq> result

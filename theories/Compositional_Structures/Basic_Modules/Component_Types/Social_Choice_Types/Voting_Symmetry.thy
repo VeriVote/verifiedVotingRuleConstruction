@@ -14,8 +14,8 @@ begin
 
 subsection \<open>Definitions\<close>
 
-fun (in result) results_closed_under_rel :: "('a, 'v) Election rel \<Rightarrow> bool" where
-  "results_closed_under_rel r =
+fun (in result) closed_election_results :: "('a, 'v) Election rel \<Rightarrow> bool" where
+  "closed_election_results r =
     (\<forall> (e, e') \<in> r. limit_set (alternatives_\<E> e) UNIV = limit_set (alternatives_\<E> e') UNIV)"
 
 fun result_action :: "('x, 'r) binary_fun \<Rightarrow> ('x, 'r Result) binary_fun" where
@@ -31,7 +31,7 @@ fun \<phi>_anon :: "('a, 'v) Election set \<Rightarrow> ('v \<Rightarrow> 'v) \<
   "\<phi>_anon \<E> \<pi> = extensional_continuation (rename \<pi>) \<E>"
 
 fun anonymity\<^sub>\<R> :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election rel" where
-  "anonymity\<^sub>\<R> \<E> = rel_induced_by_action (carrier anonymity\<^sub>\<G>) \<E> (\<phi>_anon \<E>)"
+  "anonymity\<^sub>\<R> \<E> = action_induced_rel (carrier anonymity\<^sub>\<G>) \<E> (\<phi>_anon \<E>)"
 
 subsubsection \<open>Neutrality\<close>
 
@@ -48,7 +48,7 @@ fun \<phi>_neutr :: "('a, 'v) Election set \<Rightarrow> ('a \<Rightarrow> 'a, (
   "\<phi>_neutr \<E> \<pi> = extensional_continuation (alternatives_rename \<pi>) \<E>"
 
 fun neutrality\<^sub>\<R> :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election rel" where
-  "neutrality\<^sub>\<R> \<E> = rel_induced_by_action (carrier neutrality\<^sub>\<G>) \<E> (\<phi>_neutr \<E>)"
+  "neutrality\<^sub>\<R> \<E> = action_induced_rel (carrier neutrality\<^sub>\<G>) \<E> (\<phi>_neutr \<E>)"
 
 fun \<psi>_neutr\<^sub>\<c> :: "('a \<Rightarrow> 'a, 'a) binary_fun" where
   "\<psi>_neutr\<^sub>\<c> \<pi> r = \<pi> r"
@@ -93,7 +93,7 @@ fun \<psi>_rev :: "('a rel \<Rightarrow> 'a rel, 'a rel) binary_fun" where
   "\<psi>_rev \<phi> r = \<phi> r"
 
 fun reversal\<^sub>\<R> :: "('a, 'v) Election set \<Rightarrow>  ('a, 'v) Election rel" where
-  "reversal\<^sub>\<R> \<E> = rel_induced_by_action (carrier reversal\<^sub>\<G>) \<E> (\<phi>_rev \<E>)"
+  "reversal\<^sub>\<R> \<E> = action_induced_rel (carrier reversal\<^sub>\<G>) \<E> (\<phi>_rev \<E>)"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -588,7 +588,7 @@ lemma anon_rel_vote_count:
 proof -
   have "E \<in> \<E>"
     using assms
-    unfolding anonymity\<^sub>\<R>.simps rel_induced_by_action.simps
+    unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
     by safe
   with assms
   obtain \<pi> :: "'v \<Rightarrow> 'v" where
@@ -788,7 +788,7 @@ proof -
     by metis
   thus ?thesis
     unfolding extensional_continuation.simps anonymity\<^sub>\<R>.simps
-              rel_induced_by_action.simps \<phi>_anon.simps anonymity\<^sub>\<G>_def
+              action_induced_rel.simps \<phi>_anon.simps anonymity\<^sub>\<G>_def
     using eq bijection_\<pi>\<^sub>g case_prodI rewrite_carrier
     by auto
 qed
@@ -920,7 +920,7 @@ proof (unfold group_action_def group_hom_def anonymity\<^sub>\<G>_def group_hom_
 qed
 
 lemma (in result) well_formed_res_anon:
-  "satisfies (\<lambda> E. limit_set (alternatives_\<E> E) UNIV) (Invariance (anonymity\<^sub>\<R> valid_elections))"
+  "is_symmetry (\<lambda> E. limit_set (alternatives_\<E> E) UNIV) (Invariance (anonymity\<^sub>\<R> valid_elections))"
 proof (unfold anonymity\<^sub>\<R>.simps, clarsimp) qed
 
 subsection \<open>Neutrality Lemmas\<close>
@@ -1378,16 +1378,16 @@ proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def g
 qed
 
 lemma wf_result_neutrality_\<S>\<C>\<F>:
-  "satisfies (\<lambda> \<E>. limit_set_\<S>\<C>\<F> (alternatives_\<E> \<E>) UNIV)
-            (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) valid_elections
+  "is_symmetry (\<lambda> \<E>. limit_set_\<S>\<C>\<F> (alternatives_\<E> \<E>) UNIV)
+            (action_induced_equivariance (carrier neutrality\<^sub>\<G>) valid_elections
                                 (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<c>))"
-proof (unfold rewrite_equivar_ind_by_act, safe, auto) qed
+proof (unfold rewrite_equivariance, safe, auto) qed
 
 lemma wf_result_neutrality_\<S>\<W>\<F>:
-  "satisfies (\<lambda> \<E>. limit_set_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)
-            (equivar_ind_by_act (carrier neutrality\<^sub>\<G>) valid_elections
+  "is_symmetry (\<lambda> \<E>. limit_set_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)
+            (action_induced_equivariance (carrier neutrality\<^sub>\<G>) valid_elections
                                 (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<w>))"
-proof (unfold rewrite_equivar_ind_by_act voters_\<E>.simps profile_\<E>.simps set_action.simps, safe)
+proof (unfold rewrite_equivariance voters_\<E>.simps profile_\<E>.simps set_action.simps, safe)
   show lim_el_\<pi>:
     "\<And> \<pi> A V p r. \<pi> \<in> carrier neutrality\<^sub>\<G> \<Longrightarrow> (A, V, p) \<in> valid_elections \<Longrightarrow>
         \<phi>_neutr valid_elections \<pi> (A, V, p) \<in> valid_elections \<Longrightarrow>
@@ -1509,26 +1509,26 @@ subsection \<open>Homogeneity Lemmas\<close>
 
 lemma refl_homogeneity\<^sub>\<R>:
   fixes \<E> :: "('a, 'v) Election set"
-  assumes "\<E> \<subseteq> finite_voter_elections"
+  assumes "\<E> \<subseteq> finite_elections_\<V>"
   shows "refl_on \<E> (homogeneity\<^sub>\<R> \<E>)"
   using assms
-  unfolding refl_on_def finite_voter_elections_def
+  unfolding refl_on_def finite_elections_\<V>_def
   by auto
 
 lemma (in result) well_formed_res_homogeneity:
-  "satisfies (\<lambda> \<E>. limit_set (alternatives_\<E> \<E>) UNIV) (Invariance (homogeneity\<^sub>\<R> UNIV))"
+  "is_symmetry (\<lambda> \<E>. limit_set (alternatives_\<E> \<E>) UNIV) (Invariance (homogeneity\<^sub>\<R> UNIV))"
   by simp
 
 lemma refl_homogeneity\<^sub>\<R>':
   fixes \<E> :: "('a, 'v::linorder) Election set"
-  assumes "\<E> \<subseteq> finite_voter_elections"
+  assumes "\<E> \<subseteq> finite_elections_\<V>"
   shows "refl_on \<E> (homogeneity\<^sub>\<R>' \<E>)"
   using assms
-  unfolding homogeneity\<^sub>\<R>'.simps refl_on_def finite_voter_elections_def
+  unfolding homogeneity\<^sub>\<R>'.simps refl_on_def finite_elections_\<V>_def
   by auto
 
 lemma (in result) well_formed_res_homogeneity':
-  "satisfies (\<lambda> \<E>. limit_set (alternatives_\<E> \<E>) UNIV) (Invariance (homogeneity\<^sub>\<R>' UNIV))"
+  "is_symmetry (\<lambda> \<E>. limit_set (alternatives_\<E> \<E>) UNIV) (Invariance (homogeneity\<^sub>\<R>' UNIV))"
   by simp
 
 subsection \<open>Reversal Symmetry Lemmas\<close>
@@ -1697,10 +1697,10 @@ proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def \<psi>
 qed
 
 lemma \<phi>_\<psi>_rev_well_formed:
-  shows "satisfies (\<lambda> \<E>. limit_set_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)
-               (equivar_ind_by_act (carrier reversal\<^sub>\<G>) valid_elections
+  shows "is_symmetry (\<lambda> \<E>. limit_set_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)
+               (action_induced_equivariance (carrier reversal\<^sub>\<G>) valid_elections
                                     (\<phi>_rev valid_elections) (set_action \<psi>_rev))"
-proof (unfold rewrite_equivar_ind_by_act, clarify)
+proof (unfold rewrite_equivariance, clarify)
   fix
     \<pi> :: "'a rel \<Rightarrow> 'a rel" and
     A :: "'a set" and

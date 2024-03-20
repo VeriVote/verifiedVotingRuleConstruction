@@ -61,7 +61,7 @@ proof (unfold condorcet_rating_def, safe)
 qed
 
 theorem condorcet_is_dcc: "defer_condorcet_consistency condorcet"
-proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module_def, safe)
+proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
@@ -70,7 +70,7 @@ proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_modu
     "profile V A p"
   hence "well_formed_\<S>\<C>\<F> A (max_eliminator condorcet_score V A p)"
     using max_elim_sound
-    unfolding \<S>\<C>\<F>_result.electoral_module_def
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps
     by metis
   thus "well_formed_\<S>\<C>\<F> A (condorcet V A p)"
     by simp

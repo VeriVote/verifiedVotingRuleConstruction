@@ -116,8 +116,7 @@ lemma uneq_ereal:
 
 subsection \<open>Swap Distance\<close>
 
-fun neq_ord :: "'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow>
-                  'a \<Rightarrow> 'a \<Rightarrow> bool" where
+fun neq_ord :: "'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" where
   "neq_ord r s a b = ((a \<preceq>\<^sub>r b \<and> b \<preceq>\<^sub>s a) \<or> (b \<preceq>\<^sub>r a \<and> a \<preceq>\<^sub>s b))"
 
 fun pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow>
@@ -200,11 +199,11 @@ text \<open>
 
 subsubsection \<open>Definitions\<close>
 
-fun totally_invariant_dist :: "'x Distance \<Rightarrow> 'x rel \<Rightarrow> bool" where
-  "totally_invariant_dist d rel = satisfies (tup d) (Invariance (product_rel rel))"
+fun total_invariance\<^sub>\<D> :: "'x Distance \<Rightarrow> 'x rel \<Rightarrow> bool" where
+  "total_invariance\<^sub>\<D> d rel = is_symmetry (tup d) (Invariance (product rel))"
 
-fun invariant_dist :: "'y Distance \<Rightarrow> 'x set \<Rightarrow> 'y set \<Rightarrow> ('x, 'y) binary_fun \<Rightarrow> bool" where
-  "invariant_dist d X Y \<phi> = satisfies (tup d) (Invariance (equivariance_rel X Y \<phi>))"
+fun invariance\<^sub>\<D> :: "'y Distance \<Rightarrow> 'x set \<Rightarrow> 'y set \<Rightarrow> ('x, 'y) binary_fun \<Rightarrow> bool" where
+  "invariance\<^sub>\<D> d X Y \<phi> = is_symmetry (tup d) (Invariance (equivariance X Y \<phi>))"
 
 definition distance_anonymity :: "('a, 'v) Election Distance \<Rightarrow> bool" where
   "distance_anonymity d \<equiv>
@@ -214,30 +213,30 @@ definition distance_anonymity :: "('a, 'v) Election Distance \<Rightarrow> bool"
           (d (rename \<pi> (A, V, p))) (rename \<pi> (A', V', p')))"
 
 fun distance_anonymity' :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
-  "distance_anonymity' X d = invariant_dist d (carrier anonymity\<^sub>\<G>) X (\<phi>_anon X)"
+  "distance_anonymity' X d = invariance\<^sub>\<D> d (carrier anonymity\<^sub>\<G>) X (\<phi>_anon X)"
 
 fun distance_neutrality :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
-  "distance_neutrality X d = invariant_dist d (carrier neutrality\<^sub>\<G>) X (\<phi>_neutr X)"
+  "distance_neutrality X d = invariance\<^sub>\<D> d (carrier neutrality\<^sub>\<G>) X (\<phi>_neutr X)"
 
 fun distance_reversal_symmetry :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance
         \<Rightarrow> bool" where
-  "distance_reversal_symmetry X d = invariant_dist d (carrier reversal\<^sub>\<G>) X (\<phi>_rev X)"
+  "distance_reversal_symmetry X d = invariance\<^sub>\<D> d (carrier reversal\<^sub>\<G>) X (\<phi>_rev X)"
 
 definition distance_homogeneity' :: "('a, 'v::linorder) Election set
         \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
-  "distance_homogeneity' X d = totally_invariant_dist d (homogeneity\<^sub>\<R>' X)"
+  "distance_homogeneity' X d = total_invariance\<^sub>\<D> d (homogeneity\<^sub>\<R>' X)"
 
 definition distance_homogeneity :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance
         \<Rightarrow> bool" where
-  "distance_homogeneity X d = totally_invariant_dist d (homogeneity\<^sub>\<R> X)"
+  "distance_homogeneity X d = total_invariance\<^sub>\<D> d (homogeneity\<^sub>\<R> X)"
 
 subsubsection \<open>Auxiliary Lemmas\<close>
 
-lemma rewrite_totally_invariant_dist:
+lemma rewrite_total_invariance\<^sub>\<D>:
   fixes
     d :: "'x Distance" and
     r :: "'x rel"
-  shows "totally_invariant_dist d r = (\<forall> (x, y) \<in> r. \<forall> (a, b) \<in> r. d a x = d b y)"
+  shows "total_invariance\<^sub>\<D> d r = (\<forall> (x, y) \<in> r. \<forall> (a, b) \<in> r. d a x = d b y)"
 proof (safe)
   fix
     a :: "'x" and
@@ -245,20 +244,20 @@ proof (safe)
     x :: "'x" and
     y :: "'x"
   assume
-    inv: "totally_invariant_dist d r" and
+    inv: "total_invariance\<^sub>\<D> d r" and
     "(a, b) \<in> r" and
     "(x, y) \<in> r"
-  hence rel: "((a, x), (b, y)) \<in> product_rel r"
+  hence rel: "((a, x), (b, y)) \<in> product r"
     by simp
   hence "tup d (a, x) = tup d (b, y)"
     using inv
-    unfolding totally_invariant_dist.simps satisfies.simps
+    unfolding total_invariance\<^sub>\<D>.simps is_symmetry.simps
     by simp
   thus "d a x = d b y"
     by simp
 next
-  show "\<forall> (x, y) \<in> r. \<forall> (a, b) \<in> r. d a x = d b y \<Longrightarrow> totally_invariant_dist d r"
-  proof (unfold totally_invariant_dist.simps satisfies.simps product_rel.simps, safe)
+  show "\<forall> (x, y) \<in> r. \<forall> (a, b) \<in> r. d a x = d b y \<Longrightarrow> total_invariance\<^sub>\<D> d r"
+  proof (unfold total_invariance\<^sub>\<D>.simps is_symmetry.simps product.simps, safe)
     fix
       a :: "'x" and
       b :: "'x" and
@@ -275,13 +274,13 @@ next
   qed
 qed
 
-lemma rewrite_invariant_dist:
+lemma rewrite_invariance\<^sub>\<D>:
   fixes
     d :: "'y Distance" and
     X :: "'x set" and
     Y :: "'y set" and
     \<phi> :: "('x, 'y) binary_fun"
-  shows "invariant_dist d X Y \<phi> = (\<forall> x \<in> X. \<forall> y \<in> Y. \<forall> z \<in> Y. d y z = d (\<phi> x y) (\<phi> x z))"
+  shows "invariance\<^sub>\<D> d X Y \<phi> = (\<forall> x \<in> X. \<forall> y \<in> Y. \<forall> z \<in> Y. d y z = d (\<phi> x y) (\<phi> x z))"
 proof (safe)
   fix
     x :: "'x" and
@@ -291,12 +290,12 @@ proof (safe)
     "x \<in> X" and
     "y \<in> Y" and
     "z \<in> Y" and
-    "invariant_dist d X Y \<phi>"
+    "invariance\<^sub>\<D> d X Y \<phi>"
   thus "d y z = d (\<phi> x y) (\<phi> x z)"
     by fastforce
 next
-  show "\<forall> x \<in> X. \<forall> y \<in> Y. \<forall> z \<in> Y. d y z = d (\<phi> x y) (\<phi> x z) \<Longrightarrow> invariant_dist d X Y \<phi>"
-  proof (unfold invariant_dist.simps satisfies.simps equivariance_rel.simps, safe)
+  show "\<forall> x \<in> X. \<forall> y \<in> Y. \<forall> z \<in> Y. d y z = d (\<phi> x y) (\<phi> x z) \<Longrightarrow> invariance\<^sub>\<D> d X Y \<phi>"
+  proof (unfold invariance\<^sub>\<D>.simps is_symmetry.simps equivariance.simps, safe)
     fix
       x :: "'x" and
       a :: "'y" and
@@ -323,7 +322,7 @@ lemma invar_dist_image:
     y :: "'y" and
     g :: "'x"
   assumes
-    invar_d: "invariant_dist d (carrier G) Y \<phi>" and 
+    invar_d: "invariance\<^sub>\<D> d (carrier G) Y \<phi>" and
     Y'_in_Y: "Y' \<subseteq> Y" and
     action_\<phi>: "group_action G Y \<phi>" and
     g_carrier: "g \<in> carrier G" and
@@ -332,13 +331,13 @@ lemma invar_dist_image:
 proof (safe)
   fix y' :: "'y"
   assume y'_in_Y': "y' \<in> Y'"
-  hence "((y, y'), ((\<phi> g y), (\<phi> g y'))) \<in> equivariance_rel (carrier G) Y \<phi>"
+  hence "((y, y'), ((\<phi> g y), (\<phi> g y'))) \<in> equivariance (carrier G) Y \<phi>"
     using Y'_in_Y y_in_Y g_carrier
-    unfolding equivariance_rel.simps
+    unfolding equivariance.simps
     by blast
   hence eq_dist: "tup d ((\<phi> g y), (\<phi> g y')) = tup d (y, y')"
     using invar_d
-    unfolding invariant_dist.simps
+    unfolding invariance\<^sub>\<D>.simps
     by fastforce
   thus "d (\<phi> g y) (\<phi> g y') \<in> d y ` Y'"
     using y'_in_Y'
@@ -351,9 +350,9 @@ proof (safe)
     by (simp add: rev_image_eqI)
 qed
 
-lemma swap_neutral: "invariant_dist swap (carrier neutrality\<^sub>\<G>)
+lemma swap_neutral: "invariance\<^sub>\<D> swap (carrier neutrality\<^sub>\<G>)
                         UNIV (\<lambda> \<pi> (A, q). (\<pi> ` A, rel_rename \<pi> q))"
-proof (simp only: rewrite_invariant_dist, safe)
+proof (simp only: rewrite_invariance\<^sub>\<D>, safe)
   fix
     \<pi> :: "'a \<Rightarrow> 'a" and
     A :: "'a set" and

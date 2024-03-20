@@ -81,7 +81,7 @@ definition consensus_anonymity :: "('a, 'v) Consensus \<Rightarrow> bool" where
             \<longrightarrow> c (A, V, p) \<longrightarrow> c (A', V', q)))"
 
 fun consensus_neutrality :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Consensus \<Rightarrow> bool" where
-  "consensus_neutrality X c = satisfies c (Invariance (neutrality\<^sub>\<R> X))"
+  "consensus_neutrality X c = is_symmetry c (Invariance (neutrality\<^sub>\<R> X))"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -122,16 +122,16 @@ theorem cons_conjunction_invariant:
     \<CC> :: "('a, 'v) Consensus set" and
     rel :: "('a, 'v) Election rel"
   defines "C \<equiv> (\<lambda> E. (\<forall> C' \<in> \<CC>. C' E))"
-  assumes "\<And> C'. C' \<in> \<CC> \<Longrightarrow> satisfies C' (Invariance rel)"
-  shows "satisfies C (Invariance rel)"
-proof (unfold satisfies.simps, standard, standard, standard)
+  assumes "\<And> C'. C' \<in> \<CC> \<Longrightarrow> is_symmetry C' (Invariance rel)"
+  shows "is_symmetry C (Invariance rel)"
+proof (unfold is_symmetry.simps, standard, standard, standard)
   fix
     E :: "('a,'v) Election" and
     E' :: "('a,'v) Election"
   assume "(E,E') \<in> rel"
   hence "\<forall> C' \<in> \<CC>. C' E = C' E'"
     using assms
-    unfolding satisfies.simps
+    unfolding is_symmetry.simps
     by blast
   thus "C E = C E'"
     unfolding C_def

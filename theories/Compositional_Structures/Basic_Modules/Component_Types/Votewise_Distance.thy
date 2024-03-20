@@ -312,10 +312,10 @@ lemma neutral_dist_imp_neutral_votewise_dist:
     d :: "'a Vote Distance" and
     n :: "Norm"
   defines "vote_action \<equiv> (\<lambda> \<pi> (A, q). (\<pi> ` A, rel_rename \<pi> q))"
-  assumes invar: "invariant_dist d (carrier neutrality\<^sub>\<G>) UNIV vote_action"
+  assumes invar: "invariance\<^sub>\<D> d (carrier neutrality\<^sub>\<G>) UNIV vote_action"
   shows "distance_neutrality valid_elections (votewise_distance d n)"
 proof (unfold distance_neutrality.simps,
-        simp only: rewrite_invariant_dist,
+        simp only: rewrite_invariance\<^sub>\<D>,
         safe)
   fix
     A :: "'a set" and
@@ -360,7 +360,7 @@ proof (unfold distance_neutrality.simps,
       by blast
     also have "(\<lambda> q q'. d (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q'))
           = (\<lambda> q q'. d (A, q) (A', q'))"
-      using rewrite_invariant_dist[of d "carrier neutrality\<^sub>\<G>" UNIV vote_action]
+      using rewrite_invariance\<^sub>\<D>[of d "carrier neutrality\<^sub>\<G>" UNIV vote_action]
             invar carrier UNIV_I case_prod_conv
       unfolding vote_action_def
       by (metis (no_types, lifting))

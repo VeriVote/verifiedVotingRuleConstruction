@@ -613,8 +613,8 @@ proof -
           by simp
         have lin_ord_subset_A:
           "\<forall> B' B'' r''.
-            linear_order_on (B''::'a set) r'' \<and> B' \<subseteq> B'' \<longrightarrow>
-                linear_order_on B' (limit B' r'')"
+            linear_order_on (B''::'a set) r'' \<and> B' \<subseteq> B''
+              \<longrightarrow> linear_order_on B' (limit B' r'')"
           using limit_presv_lin_ord
           by metis
         have "{a'. (b, a') \<in> limit B r'} = {b}"
@@ -630,12 +630,13 @@ proof -
         have
           "\<forall> A'' r''.
             total_on A'' r'' =
-              (\<forall> a'. (a'::'a) \<notin> A'' \<or>
-                (\<forall> a''. a'' \<notin> A'' \<or> a' = a'' \<or> (a', a'') \<in> r'' \<or> (a'', a') \<in> r''))"
+              (\<forall> a'. (a'::'a) \<notin> A''
+                  \<or> (\<forall> a''. a'' \<notin> A'' \<or> a' = a'' \<or> (a', a'') \<in> r'' \<or> (a'', a') \<in> r''))"
           unfolding total_on_def
           by metis
-        hence "\<forall> a' a''. a' \<in> B \<longrightarrow> a'' \<in> B \<longrightarrow>
-                a' = a'' \<or> (a', a'') \<in> limit B r' \<or> (a'', a') \<in> limit B r'"
+        hence
+          "\<forall> a' a''. a' \<in> B \<longrightarrow> a'' \<in> B
+              \<longrightarrow> a' = a'' \<or> (a', a'') \<in> limit B r' \<or> (a'', a') \<in> limit B r'"
           using limit_B
           by simp
         hence "\<forall> a' \<in> B. b \<in> above r' a'"
@@ -1124,21 +1125,21 @@ proof -
         by metis
       moreover have
         "\<forall> A'' r''. connex A'' r'' =
-          (limited A'' r'' \<and>
-            (\<forall> b b'. (b::'a) \<in> A'' \<longrightarrow> b' \<in> A'' \<longrightarrow> (b \<preceq>\<^sub>r'' b' \<or> b' \<preceq>\<^sub>r'' b)))"
+          (limited A'' r''
+            \<and> (\<forall> b b'. (b::'a) \<in> A'' \<longrightarrow> b' \<in> A'' \<longrightarrow> (b \<preceq>\<^sub>r'' b' \<or> b' \<preceq>\<^sub>r'' b)))"
         unfolding connex_def
         by (simp add: Ball_def_raw)
       hence limit_rel_r:
-        "limited A (limit A r) \<and>
-          (\<forall> b b'. b \<in> A \<and> b' \<in> A \<longrightarrow> (b, b') \<in> limit A r \<or> (b', b) \<in> limit A r)"
+        "limited A (limit A r)
+          \<and> (\<forall> b b'. b \<in> A \<and> b' \<in> A \<longrightarrow> (b, b') \<in> limit A r \<or> (b', b) \<in> limit A r)"
         using connex
         by simp
       have limit_imp_rel: "\<forall> b b' A'' r''. (b::'a, b') \<in> limit A'' r'' \<longrightarrow> b \<preceq>\<^sub>r'' b'"
         using limit_rel_presv_prefs
         by metis
       have limit_rel_s:
-        "limited A (limit A r') \<and>
-          (\<forall> b b'. b \<in> A \<and> b' \<in> A \<longrightarrow> (b, b') \<in> limit A r' \<or> (b', b) \<in> limit A r')"
+        "limited A (limit A r')
+          \<and> (\<forall> b b'. b \<in> A \<and> b' \<in> A \<longrightarrow> (b, b') \<in> limit A r' \<or> (b', b) \<in> limit A r')"
         using connex
         unfolding connex_def
         by simp

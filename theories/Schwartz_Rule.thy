@@ -27,7 +27,8 @@ fun schwartz_rule :: "('a, 'v, 'a Result) Electoral_Module" where
 subsection \<open>Soundness\<close>
 
 theorem schwartz_rule_sound: "\<S>\<C>\<F>_result.electoral_module schwartz_rule"
-  unfolding schwartz_rule.simps
-  by (simp add: loop_comp_sound)
+  using less_avg_elim_sound loop_comp_sound
+  unfolding schwartz_rule.simps Defer_One_Loop_Composition.iter.simps
+  by metis
 
 end

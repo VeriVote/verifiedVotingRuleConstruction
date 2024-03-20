@@ -51,16 +51,16 @@ proof -
     by simp
   from unity disjoint
   show ?thesis
-    unfolding \<S>\<C>\<F>_result.electoral_module_def
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps
     by simp
 qed
 
-lemma rev_comp_only_voters:
+lemma voters_determine_rev_comp:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
-  assumes "only_voters_vote m"
-  shows "only_voters_vote (revision_composition m)"
+  assumes "voters_determine_election m"
+  shows "voters_determine_election (revision_composition m)"
   using assms 
-  unfolding only_voters_vote_def revision_composition.simps
+  unfolding voters_determine_election.simps revision_composition.simps
   by presburger
 
 subsection \<open>Composition Rules\<close>
@@ -73,9 +73,9 @@ theorem rev_comp_non_electing[simp]:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   assumes "\<S>\<C>\<F>_result.electoral_module m"
   shows "non_electing (m\<down>)"
-  using assms
-  unfolding non_electing_def
-  by simp
+  using assms fstI rev_comp_sound revision_composition.simps
+  using non_electing_def
+  by metis
 
 text \<open>
   Revising an electing electoral module results in a
@@ -86,7 +86,7 @@ theorem rev_comp_non_blocking[simp]:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   assumes "electing m"
   shows "non_blocking (m\<down>)"
-proof (unfold non_blocking_def, safe, simp_all)
+proof (unfold non_blocking_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (m\<down>)"
     using assms rev_comp_sound
     unfolding electing_def
@@ -100,16 +100,15 @@ next
   assume
     fin_A: "finite A" and
     prof_A: "profile V A p" and
-    no_elect: "A - elect m V A p = A" and
+    reject_A: "reject (m\<down>) V A p = A" and
     x_in_A: "x \<in> A"
-  from no_elect have non_elect:
-    "non_electing m"
-    using assms prof_A x_in_A fin_A empty_iff
-          Diff_disjoint Int_absorb2 elect_in_alts
-    unfolding electing_def
+  hence "non_electing m"
+    using assms empty_iff Diff_disjoint Int_absorb2
+          elect_in_alts prod.collapse prod.inject
+    unfolding electing_def revision_composition.simps
     by (metis (no_types, lifting))
-  show False
-    using non_elect assms empty_iff fin_A prof_A x_in_A
+  thus "x \<in> {}"
+    using assms fin_A prof_A x_in_A
     unfolding electing_def non_electing_def
     by (metis (no_types, lifting))
 qed
@@ -127,7 +126,7 @@ proof (unfold defer_invariant_monotonicity_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (m\<down>)"
     using assms rev_comp_sound
     unfolding invariant_monotonicity_def
-    by simp
+    by metis
 next
   show "non_electing (m\<down>)"
     using assms rev_comp_non_electing
@@ -225,18 +224,18 @@ next
     rev_p_defer_a: "a \<in> defer (m\<down>) V A p" and
     a_lifted: "lifted V A p q a" and
     rev_q_not_defer_a: "a \<notin> defer (m\<down>) V A q"
-  from assms
+  moreover from assms
   have lifted_inv:
     "\<forall> A V p q a. a \<in> elect m V A p \<and> lifted V A p q a \<longrightarrow>
       elect m V A q = elect m V A p \<or> elect m V A q = {a}"
     unfolding invariant_monotonicity_def
     by (metis (no_types))
-  have p_defer_rev_eq_elect: "defer (m\<down>) V A p = elect m V A p"
+  moreover have p_defer_rev_eq_elect: "defer (m\<down>) V A p = elect m V A p"
     by simp
-  have q_defer_rev_eq_elect: "defer (m\<down>) V A q = elect m V A q"
+  moreover have "defer (m\<down>) V A q = elect m V A q"
     by simp
-  thus "x' \<in> defer (m\<down>) V A q"
-    using p_defer_rev_eq_elect lifted_inv a_lifted rev_p_defer_a rev_q_not_defer_a
+  ultimately show "x' \<in> defer (m\<down>) V A q"
+    using rev_p_defer_a rev_q_not_defer_a
     by blast
 qed
 

@@ -85,7 +85,7 @@ lemma elim_mod_sound[simp]:
     t :: "Threshold_Value" and
     r :: "Threshold_Relation"
   shows "\<S>\<C>\<F>_result.electoral_module (elimination_module e t r)"
-  unfolding \<S>\<C>\<F>_result.electoral_module_def
+  unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
 lemma less_elim_sound[simp]:
@@ -93,7 +93,7 @@ lemma less_elim_sound[simp]:
     e :: "('a, 'v) Evaluation_Function" and
     t :: "Threshold_Value"
   shows "\<S>\<C>\<F>_result.electoral_module (less_eliminator e t)"
-  unfolding \<S>\<C>\<F>_result.electoral_module_def
+  unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
 lemma leq_elim_sound[simp]:
@@ -101,43 +101,43 @@ lemma leq_elim_sound[simp]:
     e :: "('a, 'v) Evaluation_Function" and
     t :: "Threshold_Value"
   shows "\<S>\<C>\<F>_result.electoral_module (leq_eliminator e t)"
-  unfolding \<S>\<C>\<F>_result.electoral_module_def
+  unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
 lemma max_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "\<S>\<C>\<F>_result.electoral_module (max_eliminator e)"
-  unfolding \<S>\<C>\<F>_result.electoral_module_def
+  unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
 lemma min_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "\<S>\<C>\<F>_result.electoral_module (min_eliminator e)"
-  unfolding \<S>\<C>\<F>_result.electoral_module_def
+  unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
 lemma less_avg_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "\<S>\<C>\<F>_result.electoral_module (less_average_eliminator e)"
-  unfolding \<S>\<C>\<F>_result.electoral_module_def
+  unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
 lemma leq_avg_elim_sound[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "\<S>\<C>\<F>_result.electoral_module (leq_average_eliminator e)"
-  unfolding \<S>\<C>\<F>_result.electoral_module_def
+  unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
 subsection \<open>Only participating voters impact the result\<close>
 
-lemma elim_mod_only_voters[simp]:
+lemma voters_determine_elim_mod[simp]:
   fixes
     e :: "('a, 'v) Evaluation_Function" and
     t :: "Threshold_Value" and
     r :: "Threshold_Relation"
-  assumes "only_voters_count e"
-  shows "only_voters_vote (elimination_module e t r)"
-proof (unfold only_voters_vote_def elimination_module.simps, safe)
+  assumes "voters_determine_evaluation e"
+  shows "voters_determine_election (elimination_module e t r)"
+proof (unfold voters_determine_election.simps elimination_module.simps, safe)
   fix 
     A :: "'a set" and
     V :: "'v set" and
@@ -146,7 +146,7 @@ proof (unfold only_voters_vote_def elimination_module.simps, safe)
   assume "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> a \<in> A. (e V a A p) = (e V a A p')"
     using assms
-    unfolding only_voters_count_def
+    unfolding voters_determine_election.simps
     by simp
   hence "{a \<in> A. r (e V a A p) t} = {a \<in> A. r (e V a A p') t}"
     by metis
@@ -154,37 +154,39 @@ proof (unfold only_voters_vote_def elimination_module.simps, safe)
     unfolding elimination_set.simps
     by presburger
   thus "(if elimination_set e t r V A p \<noteq> A
-        then ({}, elimination_set e t r V A p, A - elimination_set e t r V A p) else ({}, {}, A)) =
+        then ({}, elimination_set e t r V A p, A - elimination_set e t r V A p)
+        else ({}, {}, A)) =
      (if elimination_set e t r V A p' \<noteq> A
-        then ({}, elimination_set e t r V A p', A - elimination_set e t r V A p') else ({}, {}, A))"
+        then ({}, elimination_set e t r V A p', A - elimination_set e t r V A p')
+        else ({}, {}, A))"
     by presburger
 qed
 
-lemma less_elim_only_voters[simp]:
+lemma voters_determine_less_elim[simp]:
   fixes
     e :: "('a, 'v) Evaluation_Function" and
     t :: "Threshold_Value"
-  assumes "only_voters_count e"
-  shows "only_voters_vote (less_eliminator e t)"
-  unfolding less_eliminator.simps
-  using only_voters_vote_def elim_mod_only_voters assms
-  by simp
+  assumes "voters_determine_evaluation e"
+  shows "voters_determine_election (less_eliminator e t)"
+  using assms voters_determine_elim_mod
+  unfolding less_eliminator.simps voters_determine_election.simps
+  by (metis (full_types))
 
-lemma leq_elim_only_voters[simp]:
+lemma voters_determine_leq_elim[simp]:
   fixes
     e :: "('a, 'v) Evaluation_Function" and
     t :: "Threshold_Value"
-  assumes "only_voters_count e"
-  shows "only_voters_vote (leq_eliminator e t)"
-  unfolding leq_eliminator.simps
-  using only_voters_vote_def elim_mod_only_voters assms
-  by simp 
+  assumes "voters_determine_evaluation e"
+  shows "voters_determine_election (leq_eliminator e t)"
+  using assms voters_determine_elim_mod
+  unfolding leq_eliminator.simps voters_determine_election.simps
+  by (metis (full_types))
 
-lemma max_elim_only_voters[simp]:
+lemma voters_determine_max_elim[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  assumes "only_voters_count e"
-  shows "only_voters_vote (max_eliminator e)"
-proof (unfold max_eliminator.simps only_voters_vote_def, safe)
+  assumes "voters_determine_evaluation e"
+  shows "voters_determine_election (max_eliminator e)"
+proof (unfold max_eliminator.simps voters_determine_election.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -193,22 +195,22 @@ proof (unfold max_eliminator.simps only_voters_vote_def, safe)
   assume coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms 
-    unfolding only_voters_count_def
+    unfolding voters_determine_evaluation.simps
     by simp
   hence "Max {e V x A p | x. x \<in> A} = Max {e V x A p' | x. x \<in> A}"
     by metis
   thus "less_eliminator e (Max {e V x A p | x. x \<in> A}) V A p =
        less_eliminator e (Max {e V x A p' | x. x \<in> A}) V A p'"
-    using coinciding assms less_elim_only_voters
-    unfolding only_voters_vote_def 
+    using coinciding assms voters_determine_less_elim
+    unfolding voters_determine_election.simps
     by (metis (no_types, lifting))
 qed
-  
-lemma min_elim_only_voters[simp]:
+
+lemma voters_determine_min_elim[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  assumes "only_voters_count e"
-  shows "only_voters_vote (min_eliminator e)"
-proof (unfold min_eliminator.simps only_voters_vote_def, safe)
+  assumes "voters_determine_evaluation e"
+  shows "voters_determine_election (min_eliminator e)"
+proof (unfold min_eliminator.simps voters_determine_election.simps, safe)
   fix 
     A :: "'a set" and
     V :: "'v set" and
@@ -218,22 +220,22 @@ proof (unfold min_eliminator.simps only_voters_vote_def, safe)
     coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms 
-    unfolding only_voters_count_def
+    unfolding voters_determine_election.simps
     by simp
   hence "Min {e V x A p | x. x \<in> A} = Min {e V x A p' | x. x \<in> A}"
     by metis
   thus "leq_eliminator e (Min {e V x A p | x. x \<in> A}) V A p =
        leq_eliminator e (Min {e V x A p' | x. x \<in> A}) V A p'"
-    using coinciding assms leq_elim_only_voters
-    unfolding only_voters_vote_def 
+    using coinciding assms voters_determine_leq_elim
+    unfolding voters_determine_election.simps
     by (metis (no_types, lifting))
 qed
 
-lemma less_avg_only_voters[simp]:
+lemma voters_determine_less_avg_elim[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  assumes "only_voters_count e"
-  shows "only_voters_vote (less_average_eliminator e)"
-proof (unfold less_average_eliminator.simps only_voters_vote_def, safe)
+  assumes "voters_determine_evaluation e"
+  shows "voters_determine_election (less_average_eliminator e)"
+proof (unfold less_average_eliminator.simps voters_determine_election.simps, safe)
   fix 
     A :: "'a set" and
     V :: "'v set" and
@@ -242,24 +244,24 @@ proof (unfold less_average_eliminator.simps only_voters_vote_def, safe)
   assume coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms 
-    unfolding only_voters_count_def
+    unfolding voters_determine_election.simps
     by simp
   hence "average e V A p = average e V A p'"
     unfolding average.simps
     by auto
   thus "less_eliminator e (average e V A p) V A p =
        less_eliminator e (average e V A p') V A p'"
-    using coinciding assms less_elim_only_voters
-    unfolding only_voters_vote_def 
+    using coinciding assms voters_determine_less_elim
+    unfolding voters_determine_election.simps
     by (metis (no_types, lifting))
 qed
 
-lemma leq_avg_only_voters[simp]:
+lemma voters_determine_leq_avg_elim[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
-  assumes "only_voters_count e"
-  shows "only_voters_vote (leq_average_eliminator e)"
-proof (unfold leq_average_eliminator.simps only_voters_vote_def, safe)
-  fix 
+  assumes "voters_determine_evaluation e"
+  shows "voters_determine_election (leq_average_eliminator e)"
+proof (unfold leq_average_eliminator.simps voters_determine_election.simps, safe)
+  fix
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
@@ -267,15 +269,15 @@ proof (unfold leq_average_eliminator.simps only_voters_vote_def, safe)
   assume coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms 
-    unfolding only_voters_count_def
+    unfolding voters_determine_election.simps
     by simp
   hence "average e V A p = average e V A p'"
     unfolding average.simps
     by auto
   thus "leq_eliminator e (average e V A p) V A p =
        leq_eliminator e (average e V A p') V A p'"
-    using coinciding assms leq_elim_only_voters
-    unfolding only_voters_vote_def 
+    using coinciding assms voters_determine_leq_elim
+    unfolding voters_determine_election.simps
     by (metis (no_types, lifting))
 qed
 
@@ -312,28 +314,28 @@ lemma max_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (max_eliminator e)"
   unfolding non_blocking_def
-  using \<S>\<C>\<F>_result.electoral_module_def
+  using \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
 lemma min_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (min_eliminator e)"
   unfolding non_blocking_def
-  using \<S>\<C>\<F>_result.electoral_module_def
+  using \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
 lemma less_avg_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (less_average_eliminator e)"
   unfolding non_blocking_def
-  using \<S>\<C>\<F>_result.electoral_module_def
+  using \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
 lemma leq_avg_elim_non_blocking:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_blocking (leq_average_eliminator e)"
   unfolding non_blocking_def
-  using \<S>\<C>\<F>_result.electoral_module_def
+  using \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
 subsection \<open>Non-Electing\<close>
@@ -345,7 +347,7 @@ lemma elim_mod_non_electing:
     r :: "Threshold_Relation"
   shows "non_electing (elimination_module e t r)"
   unfolding non_electing_def
-  by simp
+  by force
 
 lemma less_elim_non_electing:
   fixes
@@ -354,7 +356,7 @@ lemma less_elim_non_electing:
   shows "non_electing (less_eliminator e t)"
   using elim_mod_non_electing less_elim_sound
   unfolding non_electing_def
-  by simp
+  by force
 
 lemma leq_elim_non_electing:
   fixes
@@ -362,19 +364,19 @@ lemma leq_elim_non_electing:
     t :: "Threshold_Value"
   shows "non_electing (leq_eliminator e t)"
   unfolding non_electing_def
-  by simp
+  by force
 
 lemma max_elim_non_electing:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_electing (max_eliminator e)"
   unfolding non_electing_def
-  by simp
+  by force
 
 lemma min_elim_non_electing:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_electing (min_eliminator e)"
   unfolding non_electing_def
-  by simp
+  by force
 
 lemma less_avg_elim_non_electing:
   fixes e :: "('a, 'v) Evaluation_Function"
@@ -386,7 +388,7 @@ lemma leq_avg_elim_non_electing:
   fixes e :: "('a, 'v) Evaluation_Function"
   shows "non_electing (leq_average_eliminator e)"
   unfolding non_electing_def
-  by simp
+  by force
 
 subsection \<open>Inference Rules\<close>
 
@@ -401,7 +403,7 @@ theorem cr_eval_imp_ccomp_max_elim[simp]:
   shows "condorcet_compatibility (max_eliminator e)"
 proof (unfold condorcet_compatibility_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (max_eliminator e)"
-    by simp
+    by force
 next
   fix
     A :: "'a set" and
@@ -455,7 +457,11 @@ theorem cr_eval_imp_dcc_max_elim[simp]:
   fixes e :: "('a, 'v) Evaluation_Function"
   assumes "condorcet_rating e"
   shows "defer_condorcet_consistency (max_eliminator e)"
-proof (unfold defer_condorcet_consistency_def, safe, simp)
+proof (unfold defer_condorcet_consistency_def, safe)
+  show "\<S>\<C>\<F>_result.electoral_module (max_eliminator e)"
+    using max_elim_sound
+    by metis
+next
   fix
     A :: "'a set" and
     V :: "'v set" and

@@ -29,8 +29,8 @@ lemma votewise_non_voters_irrelevant:
   fixes
     d :: "'a Vote Distance" and
     N :: "Norm"
-  shows "non_voters_irrelevant (votewise_distance d N)"
-proof (unfold non_voters_irrelevant_def, clarify)
+  shows "voters_determine_distance (votewise_distance d N)"
+proof (unfold voters_determine_distance_def, clarify)
   fix
     A :: "'a set" and
     V :: "'v::linorder set" and

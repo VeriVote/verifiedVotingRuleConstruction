@@ -178,7 +178,7 @@ theorem plurality_sound[simp]: "\<S>\<C>\<F>_result.electoral_module plurality"
   by metis
 
 theorem plurality'_sound[simp]: "\<S>\<C>\<F>_result.electoral_module plurality'"
-proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
+proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
@@ -197,8 +197,8 @@ proof (unfold \<S>\<C>\<F>_result.electoral_module_def, safe)
     by simp
 qed
 
-lemma plurality_score_only_voters: "only_voters_count plurality_score"
-proof (unfold plurality_score.simps only_voters_count_def, safe)
+lemma voters_determine_plurality_score: "voters_determine_evaluation plurality_score"
+proof (unfold plurality_score.simps voters_determine_evaluation.simps, safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
@@ -217,9 +217,9 @@ proof (unfold plurality_score.simps only_voters_count_def, safe)
     by presburger
 qed
 
-lemma plurality_only_voters: "only_voters_vote plurality"
+lemma voters_determine_plurality: "voters_determine_election plurality"
   unfolding plurality.simps
-  using max_elim_only_voters plurality_score_only_voters
+  using voters_determine_max_elim voters_determine_plurality_score
   by blast
 
 subsection \<open>Non-Blocking\<close>
@@ -246,6 +246,7 @@ theorem plurality_non_electing[simp]: "non_electing plurality"
 
 theorem plurality'_non_electing[simp]: "non_electing plurality'"
   unfolding non_electing_def
+  using plurality'_sound
   by simp
 
 subsection \<open>Property\<close>
@@ -450,7 +451,8 @@ text \<open>
 theorem plurality_mod_def_inv_mono[simp]: "defer_invariant_monotonicity plurality"
 proof (unfold defer_invariant_monotonicity_def, intro conjI impI allI)
   show "\<S>\<C>\<F>_result.electoral_module plurality"
-    by simp
+    using plurality_sound
+    by metis
 next
   show "non_electing plurality"
     by simp

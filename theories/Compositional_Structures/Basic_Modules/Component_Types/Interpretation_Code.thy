@@ -18,8 +18,8 @@ text \<open>
 lemma electoral_module_\<S>\<C>\<F>_code_lemma:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   shows "\<S>\<C>\<F>_result.electoral_module m = (\<forall> A V p. profile V A p \<longrightarrow> well_formed_\<S>\<C>\<F> A (m V A p))"
-  unfolding \<S>\<C>\<F>_result.electoral_module_def
-  by simp
+  unfolding \<S>\<C>\<F>_result.electoral_module.simps
+  by safe
 
 lemma \<R>\<^sub>\<W>_\<S>\<C>\<F>_code_lemma:
   fixes

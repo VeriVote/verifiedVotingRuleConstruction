@@ -191,7 +191,7 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
 qed
 
 theorem minimax_is_dcc: "defer_condorcet_consistency minimax"
-proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module_def, safe)
+proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
