@@ -131,7 +131,7 @@ text \<open>
 fun (in result) homogeneity :: "('a, 'v) Election set \<Rightarrow> ('a, 'v, ('r Result)) Electoral_Module
         \<Rightarrow> bool" where
   "homogeneity X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R> X))"
-\<comment> \<open>This does not require any specific behaviour on infinite voter sets \<dots>
+\<comment> \<open>This does not require any specific behaviour on infinite voter sets \<open>\<dots>\<close>
     It might make sense to extend the definition to that case somehow.\<close>
 
 fun homogeneity' :: "('a, 'v::linorder) Election set \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module
