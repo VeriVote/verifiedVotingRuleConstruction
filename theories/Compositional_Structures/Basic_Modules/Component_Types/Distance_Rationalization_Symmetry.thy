@@ -189,7 +189,7 @@ lemma closest_dist_invar_under_refl_rel_and_tot_invar_dist:
     r_refl: "refl_on domain\<^sub>f (Restr rel domain\<^sub>f)" and
     tot_invar_d: "total_invariance\<^sub>\<D> d rel"
   shows "is_symmetry (closest_preimg_distance f domain\<^sub>f d) (Invariance rel)"
-proof (simp, safe, standard)
+proof (unfold is_symmetry.simps, intro allI impI ext)
   fix
     a :: "'x" and
     b :: "'x" and

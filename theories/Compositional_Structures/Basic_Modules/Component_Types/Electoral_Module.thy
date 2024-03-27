@@ -144,7 +144,7 @@ lemma (in result) hom_imp_anon:
     "homogeneity X m" and
     "\<forall> E \<in> X. finite (voters_\<E> E)"
   shows "anonymity' X m"
-proof (unfold anonymity'.simps is_symmetry.simps, standard, standard, standard)
+proof (unfold anonymity'.simps is_symmetry.simps, intro allI impI)
   fix
     E :: "('a, 'v) Election" and
     E' :: "('a, 'v) Election"

@@ -36,8 +36,34 @@ lemma plurality_revision_equiv:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   shows "plurality' V A p = (plurality_rule'\<down>) V A p"
+proof (unfold plurality_rule'.simps plurality'.simps revision_composition.simps win_count.simps,
+       clarsimp, standard, safe)
+(*
 proof (unfold plurality_rule'.simps plurality'.simps revision_composition.simps,
         standard, clarsimp, standard, safe)
+ 1. \<And>x xa.
+       finite V \<Longrightarrow>
+       x \<in> A \<Longrightarrow>
+       xa \<in> A \<Longrightarrow>
+       card {v \<in> V. above (p v) x = {x}} < card {v \<in> V. above (p v) xa = {xa}} \<Longrightarrow>
+       x \<in> A \<Longrightarrow>
+       \<forall>xa\<in>A. card {v \<in> V. above (p v) xa = {xa}} \<le> card {v \<in> V. above (p v) x = {x}} \<Longrightarrow>
+       \<not> False \<Longrightarrow> finite V \<Longrightarrow> False
+ 2. \<And>x xa.
+       finite V \<Longrightarrow>
+       x \<in> A \<Longrightarrow>
+       xa \<in> A \<Longrightarrow>
+       card {v \<in> V. above (p v) x = {x}} < card {v \<in> V. above (p v) xa = {xa}} \<Longrightarrow>
+       x \<in> A \<Longrightarrow>
+       \<forall>xa\<in>A. card {v \<in> V. above (p v) xa = {xa}} \<le> card {v \<in> V. above (p v) x = {x}} \<Longrightarrow> x \<in> A \<Longrightarrow> False
+ 3. \<And>x xa.
+       x \<in> A \<Longrightarrow>
+       finite V \<Longrightarrow>
+       finite V \<Longrightarrow>
+       xa \<in> A \<Longrightarrow>
+       \<not> card {v \<in> V. above (p v) xa = {xa}} \<le> card {v \<in> V. above (p v) x = {x}} \<Longrightarrow>
+       \<exists>xa\<in>A. card {v \<in> V. above (p v) x = {x}} < card {v \<in> V. above (p v) xa = {xa}}
+*)
   fix
     a :: "'a" and
     b :: "'a"

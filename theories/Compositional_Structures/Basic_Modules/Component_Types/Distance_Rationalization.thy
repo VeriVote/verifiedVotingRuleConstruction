@@ -165,7 +165,11 @@ lemma listset_finiteness:
   assumes "\<forall> i::nat. i < length l \<longrightarrow> finite (l!i)"
   shows "finite (listset l)"
   using assms
-proof (induct l, simp)
+proof (induct l)
+  case Nil
+  show "finite (listset [])"
+    by simp
+next
   case (Cons a l)
   fix
     a :: "'a set" and
@@ -195,7 +199,7 @@ lemma ls_entries_empty_imp_ls_set_empty:
     "\<forall> i ::nat. i < length l \<longrightarrow> l!i = {}"
   shows "listset l = {}"
   using assms
-proof (induct l, simp)
+proof (induct l, clarsimp)
   case (Cons a l)
   fix
     a :: "'a set" and
@@ -215,7 +219,7 @@ qed
 lemma all_ls_elems_same_len:
   fixes l :: "'a set list"
   shows "\<forall> l'::('a list). l' \<in> listset l \<longrightarrow> length l' = length l"
-proof (induct l, simp)
+proof (induct l, clarsimp)
   case (Cons a l)
   fix
     a :: "'a set" and
@@ -232,7 +236,7 @@ qed
 lemma all_ls_elems_in_ls_set:
   fixes l :: "'a set list"
   shows "\<forall> l' i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i"
-proof (induct l, simp, safe)
+proof (induct l, clarsimp, safe)
   case (Cons a l)
   fix
     a :: "'a set" and
@@ -372,7 +376,7 @@ proof (cases "finite A \<and> finite V \<and> A \<noteq> {}", clarsimp)
   show "{\<pi>. \<pi> ` V \<subseteq> pl_\<alpha> ` permutations_of_set A} = {p'. profile V A p'}"
   proof
     show "{\<pi>. \<pi> ` V \<subseteq> pl_\<alpha> ` permutations_of_set A} \<subseteq> {p'. profile V A p'}"
-    proof (rule, clarify)
+    proof (standard, clarify)
       fix p' :: "'v \<Rightarrow> 'a Preference_Relation"
       assume
         subset: "p' ` V \<subseteq> pl_\<alpha> ` permutations_of_set A"
@@ -387,7 +391,7 @@ proof (cases "finite A \<and> finite V \<and> A \<noteq> {}", clarsimp)
     qed
   next
     show "{p'. profile V A p'} \<subseteq> {\<pi>. \<pi> ` V \<subseteq> pl_\<alpha> ` permutations_of_set A}"
-    proof (rule, clarify)
+    proof (standard, clarify)
       fix
         p' :: "('a, 'v) Profile" and
         v :: "'v"

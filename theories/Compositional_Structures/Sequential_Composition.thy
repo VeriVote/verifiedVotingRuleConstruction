@@ -277,7 +277,7 @@ proof -
     by metis
 qed
 
-lemma seq_comp_alt_eq[code]: "sequential_composition = sequential_composition'"
+lemma seq_comp_alt_eq[fundef_cong, code]: "sequential_composition = sequential_composition'"
 proof (unfold sequential_composition'.simps sequential_composition.simps)
   have "\<forall> m n V A E.
       (case m V A E of (e, r, d) \<Rightarrow>

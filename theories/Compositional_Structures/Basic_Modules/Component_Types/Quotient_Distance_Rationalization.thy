@@ -782,7 +782,7 @@ proof -
   moreover have "\<forall> y'.
       \<Union> (preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) y' // r) \<subseteq>
       preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) y'"
-  proof (standard, standard)
+  proof (intro allI subsetI)
     fix
       Y' :: "'r set" and
       E :: "('a, 'v) Election"

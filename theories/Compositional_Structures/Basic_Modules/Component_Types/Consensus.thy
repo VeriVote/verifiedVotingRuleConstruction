@@ -124,7 +124,7 @@ theorem cons_conjunction_invariant:
   defines "C \<equiv> (\<lambda> E. (\<forall> C' \<in> \<CC>. C' E))"
   assumes "\<And> C'. C' \<in> \<CC> \<Longrightarrow> is_symmetry C' (Invariance rel)"
   shows "is_symmetry C (Invariance rel)"
-proof (unfold is_symmetry.simps, standard, standard, standard)
+proof (unfold is_symmetry.simps, intro allI impI)
   fix
     E :: "('a,'v) Election" and
     E' :: "('a,'v) Election"

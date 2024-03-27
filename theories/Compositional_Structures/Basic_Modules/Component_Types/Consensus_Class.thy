@@ -277,7 +277,7 @@ lemma consensus_choice_equivar:
     invar_cons: "is_symmetry c (Invariance (action_induced_rel G X \<phi>))"
   shows "is_symmetry (f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m)))
               (action_induced_equivariance G X \<phi> (set_action \<psi>))"
-proof (simp only: rewrite_equivariance, standard, standard, standard)
+proof (unfold rewrite_equivariance, intro ballI impI)
   fix
     E :: "('a, 'v) Election" and
     g :: "'x"
@@ -384,7 +384,7 @@ proof (unfold consensus_rule_anonymity_def Let_def, safe)
     using beta'_anon bij prof_p renamed
           cons_anon_invariant prof_q
     unfolding consensus_anonymity_def
-    by auto
+    by blast
   have "m V A p = m V' A' q"
     using alpha_Ap alpha_A_perm_p beta'_x_Ap beta'_x_A_perm_p
           conditions_univ prof_p prof_q rename.simps prod.inject renamed
@@ -704,7 +704,7 @@ proof (unfold closed_restricted_rel.simps restricted_rel.simps neutrality\<^sub>
       set_action \<psi>_neutr\<^sub>\<c> \<pi>
         ((elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (A, V, p))"
     using bij img' unanimous' rewrite
-    by fastforce
+    by metis
   also have "(elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (A, V, p) = {a}"
     using cons
     unfolding \<K>\<^sub>\<E>.simps

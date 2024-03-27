@@ -203,7 +203,7 @@ theorem anonymity\<^sub>\<Q>_isomorphism:
   assumes "infinite (UNIV::('v set))"
   shows "bij_betw (anonymity_class::('a::finite, 'v) Election set \<Rightarrow> nat^('a Ordered_Preference))
               (anonymity\<^sub>\<Q> (UNIV::'a set)) (UNIV::(nat^('a Ordered_Preference)) set)"
-proof (unfold bij_betw_def inj_on_def, standard, standard, standard, standard)
+proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
   fix
     X :: "('a, 'v) Election set" and
     Y :: "('a, 'v) Election set"
@@ -625,7 +625,7 @@ qed
 
 lemma standard_simplex_rewrite: "convex hull standard_basis
         = {v::(real^'b). (\<forall> i. v$i \<ge> 0) \<and> sum (($) v) UNIV = 1}"
-proof (unfold convex_def hull_def, standard)
+proof (unfold convex_def hull_def, intro equalityI)
   let ?simplex = "{v:: (real^'b). (\<forall> i. v$i \<ge> 0) \<and> sum (($) v) UNIV = 1}"
   have fin_dim: "finite (UNIV::'b set)"
     by simp
@@ -688,7 +688,7 @@ next
   show "{v. (\<forall> i. 0 \<le> v $ i) \<and> sum (($) v) UNIV = 1} \<subseteq>
       \<Inter> {t. (\<forall> x \<in> t. \<forall> y \<in> t. \<forall> u \<ge> 0. \<forall> v \<ge> 0. u + v = 1 \<longrightarrow> u *\<^sub>R x + v *\<^sub>R y \<in> t)
               \<and> (standard_basis::((real^'b) set)) \<subseteq> t}"
-  proof
+  proof (intro subsetI)
     fix
       x :: "real^'b" and
       X :: "(real^'b) set"
@@ -945,7 +945,7 @@ theorem anonymity_homogeneity\<^sub>\<Q>_isomorphism:
     "bij_betw (anonymity_homogeneity_class::('a::finite, 'v) Election set \<Rightarrow>
         rat^('a Ordered_Preference)) (anonymity_homogeneity\<^sub>\<Q> (UNIV::'a set))
           (vote_simplex :: (rat^('a Ordered_Preference)) set)"
-proof (unfold bij_betw_def inj_on_def, standard, standard, standard, standard)
+proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
   fix
     X :: "('a, 'v) Election set" and
     Y :: "('a, 'v) Election set"

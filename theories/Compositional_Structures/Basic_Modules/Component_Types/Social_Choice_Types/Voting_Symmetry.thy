@@ -1381,7 +1381,30 @@ lemma wf_result_neutrality_\<S>\<C>\<F>:
   "is_symmetry (\<lambda> \<E>. limit_set_\<S>\<C>\<F> (alternatives_\<E> \<E>) UNIV)
             (action_induced_equivariance (carrier neutrality\<^sub>\<G>) valid_elections
                                 (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<c>))"
-proof (unfold rewrite_equivariance, safe, auto) qed
+proof (unfold rewrite_equivariance, safe)
+  fix
+    \<pi> :: "'a \<Rightarrow> 'a" and
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "'v \<Rightarrow> ('a \<times> 'a) set" and
+    r :: "'a"
+  assume
+    carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
+    prof: "(A, V, p) \<in> valid_elections" and
+    neutr_valid_el: "\<phi>_neutr valid_elections \<pi> (A, V, p) \<in> valid_elections"
+  {
+    assume "r \<in> limit_set_\<S>\<C>\<F> (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
+    thus "r \<in> set_action \<psi>_neutr\<^sub>\<c> \<pi> (limit_set_\<S>\<C>\<F> (alternatives_\<E> (A, V, p)) UNIV)"
+      using carrier_\<pi> prof neutr_valid_el
+      by auto
+  }
+  {
+    assume "r \<in> set_action \<psi>_neutr\<^sub>\<c> \<pi> (limit_set_\<S>\<C>\<F> (alternatives_\<E> (A, V, p)) UNIV)"
+    thus "r \<in> limit_set_\<S>\<C>\<F> (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
+      using carrier_\<pi> prof neutr_valid_el
+      by simp
+  }
+qed
 
 lemma wf_result_neutrality_\<S>\<W>\<F>:
   "is_symmetry (\<lambda> \<E>. limit_set_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)

@@ -65,16 +65,14 @@ subsection \<open>Auxiliary Lemmas\<close>
 
 fun arg_min_set :: "('b \<Rightarrow> 'a :: ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
   "arg_min_set f A = Collect (is_arg_min f (\<lambda> a. a \<in> A))"
-(* fun arg_min_set' :: "('b \<Rightarrow> 'a::ord) \<Rightarrow> 'b set \<Rightarrow> 'b set" where
-   "arg_min_set_' f A = Set.filter (is_arg_min f (\<lambda> a. a \<in> A)) A" *)
 
 lemma arg_min_subset:
   fixes
     B :: "'b set" and
     f :: "'b \<Rightarrow> 'a :: ord"
   shows "arg_min_set f B \<subseteq> B"
-proof (auto, unfold is_arg_min_def, simp)
-qed
+  unfolding arg_min_set.simps is_arg_min_def
+  by safe
 
 lemma sum_monotone:
   fixes
@@ -84,7 +82,25 @@ lemma sum_monotone:
   assumes "\<forall> a \<in> A. f a \<le> g a"
   shows "(\<Sum> a \<in> A. f a) \<le> (\<Sum> a \<in> A. g a)"
   using assms
-  by (induction A rule: infinite_finite_induct, simp_all)
+proof (induction A rule: infinite_finite_induct)
+  case (infinite A)
+  fix A :: "'a set"
+  show ?case
+    using infinite
+    by simp
+next
+  case empty
+  show ?case
+    by simp
+next
+  case (insert x F)
+  fix
+    x :: "'a" and
+    F :: "'a set"
+  show ?case
+    using insert
+    by simp
+qed
 
 lemma distrib:
   fixes
@@ -377,7 +393,7 @@ proof (simp only: rewrite_invariance\<^sub>\<D>, safe)
     hence "swap (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q') = card ?swap_set'"
       by simp
     moreover have "bij_betw ?f ?swap_set ?swap_set'"
-    proof (unfold bij_betw_def inj_on_def, standard, standard, standard, standard)
+    proof (unfold bij_betw_def inj_on_def, intro conjI impI ballI)
       fix
         x :: "'a \<times> 'a" and
         y :: "'a \<times> 'a"
@@ -385,11 +401,15 @@ proof (simp only: rewrite_invariance\<^sub>\<D>, safe)
         "x \<in> ?swap_set" and
         "y \<in> ?swap_set" and
         "?f x = ?f y"
-      hence "\<pi> (fst x) = \<pi> (fst y) \<and> \<pi> (snd x) = \<pi> (snd y)"
+      hence
+        "\<pi> (fst x) = \<pi> (fst y)" and
+        "\<pi> (snd x) = \<pi> (snd y)"
         by auto
-      hence "fst x = fst y \<and> snd x = snd y"
+      hence
+        "fst x = fst y" and
+        "snd x = snd y"
         using bij bij_pointE
-        by metis
+        by (metis, metis)
       thus "x = y"
         using prod.expand
         by metis

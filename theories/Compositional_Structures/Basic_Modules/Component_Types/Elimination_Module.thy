@@ -55,7 +55,6 @@ fun max_eliminator ::
   "('a, 'v) Evaluation_Function \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "max_eliminator e V A p =
     less_eliminator e (Max {e V x A p | x. x \<in> A}) V A p"
-find_theorems "max_eliminator"
 
 fun leq_eliminator :: 
   "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow>

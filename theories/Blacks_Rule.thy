@@ -20,7 +20,7 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-declare seq_comp_alt_eq[simp]
+(** declare seq_comp_alt_eq[simp] **)
 
 fun black :: "('a, 'v, 'a Result) Electoral_Module" where
   "black A p = (condorcet \<triangleright> borda) A p"
@@ -28,7 +28,7 @@ fun black :: "('a, 'v, 'a Result) Electoral_Module" where
 fun blacks_rule :: "('a, 'v, 'a Result) Electoral_Module" where
   "blacks_rule A p = elector black A p"
 
-declare seq_comp_alt_eq[simp del]
+(** declare seq_comp_alt_eq[simp del] **)
 
 subsection \<open>Soundness\<close>
 
