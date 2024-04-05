@@ -107,7 +107,7 @@ lemma n_app_rewrite:
     n :: "nat" and
     x :: "'x"
   shows "(f \<circ> n_app n f) x = (n_app n f \<circ> f) x"
-proof (clarsimp, induction n f arbitrary: x rule: n_app.induct)
+proof (unfold comp_def, induction n f arbitrary: x rule: n_app.induct)
   case (1 f)
   fix
     f :: "'x \<Rightarrow> 'x" and
@@ -141,15 +141,18 @@ lemma n_app_leaves_set:
     "n_app n f x \<in> B - A" and
     "\<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A \<inter> B"
 proof -
-  assume existence_witness:
-    "\<And> n. 0 < n \<Longrightarrow> n_app n f x \<in> B - A \<Longrightarrow> \<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A \<inter> B \<Longrightarrow> ?thesis"
-  have ex_A: "\<exists> n > 0. n_app n f x \<in> B - A \<and> (\<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A)"
-  proof (rule ccontr, clarsimp)
+  have n_app_f_x_in_A: "n_app 0 f x \<in> A"
+    using x_el
+    by simp
+  moreover have ex_A: "\<exists> n > 0. n_app n f x \<in> B - A \<and> (\<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A)"
+  proof (rule ccontr,
+         unfold Diff_iff conj_assoc not_ex de_Morgan_conj not_gr_zero
+                simp_thms not_all not_imp disj_not1 imp_disj2)
     assume nex:
       "\<forall> n. n_app n f x \<in> B \<longrightarrow> n = 0 \<or> n_app n f x \<in> A \<or> (\<exists> m > 0. m < n \<and> n_app m f x \<notin> A)"
     hence "\<forall> n > 0. n_app n f x \<in> B \<longrightarrow> n_app n f x \<in> A \<or> (\<exists> m > 0. m < n \<and> n_app m f x \<notin> A)"
       by blast
-    moreover have "(\<forall> n > 0. n_app n f x \<in> B \<longrightarrow> n_app n f x \<in> A) \<longrightarrow> False"
+    moreover have "\<not>(\<forall> n > 0. n_app n f x \<in> B \<longrightarrow> n_app n f x \<in> A)"
     proof (safe)
       assume in_A: "\<forall> n > 0. n_app n f x \<in> B \<longrightarrow> n_app n f x \<in> A"
       hence "\<forall> n > 0. n_app n f x \<in> A \<longrightarrow> n_app (Suc n) f x \<in> A"
@@ -261,9 +264,6 @@ proof -
       unfolding bij_betw_def
       by blast
   qed
-  moreover have n_app_f_x_in_A: "n_app 0 f x \<in> A"
-    using x_el
-    by simp
   ultimately have
     "\<forall> n. (\<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A) \<longrightarrow> (\<forall> m > 0. m < n \<longrightarrow> n_app (m - 1) f x \<in> A)"
     using bot_nat_0.not_eq_extremum less_imp_diff_less
@@ -281,7 +281,7 @@ proof -
     using IntI nless_le ex_A
     by metis
   thus ?thesis
-    using existence_witness
+    using that
     by blast
 qed
 
@@ -921,7 +921,8 @@ qed
 
 lemma (in result) well_formed_res_anon:
   "is_symmetry (\<lambda> E. limit_set (alternatives_\<E> E) UNIV) (Invariance (anonymity\<^sub>\<R> valid_elections))"
-proof (unfold anonymity\<^sub>\<R>.simps, clarsimp) qed
+  unfolding anonymity\<^sub>\<R>.simps
+  by clarsimp
 
 subsection \<open>Neutrality Lemmas\<close>
 
@@ -933,7 +934,7 @@ lemma rel_rename_helper:
     b :: "'a"
   assumes "bij \<pi>"
   shows "(\<pi> a, \<pi> b) \<in> {(\<pi> x, \<pi> y) | x y. (x, y) \<in> r} \<longleftrightarrow> (a, b) \<in> {(x, y) | x y. (x, y) \<in> r}"
-proof (safe, simp)
+proof (safe)
   fix
     x :: "'a" and
     y :: "'a"
@@ -941,7 +942,7 @@ proof (safe, simp)
     "(x, y) \<in> r" and
     "\<pi> a = \<pi> x" and
     "\<pi> b = \<pi> y"
-  thus "(a, b) \<in> r"
+  thus "\<exists>x y. (a, b) = (x, y) \<and> (x, y) \<in> r"
     using assms bij_is_inj the_inv_f_f
     by metis
 next
@@ -1157,10 +1158,8 @@ proof (unfold bij_betw_def, safe, intro inj_onI, clarsimp)
     p :: "('a, 'v) Profile" and
     p' :: "('a, 'v) Profile"
   assume
-    "(A, V, p) \<in> valid_elections" and
-    "(A', V, p') \<in> valid_elections" and
     \<pi>_eq_img_A_A': "\<pi> ` A = \<pi> ` A'" and
-    "rel_rename \<pi> \<circ> p = rel_rename \<pi> \<circ> p'"
+    rel_rename_eq: "rel_rename \<pi> \<circ> p = rel_rename \<pi> \<circ> p'"
   hence
     "(the_inv (rel_rename \<pi>)) \<circ> rel_rename \<pi> \<circ> p = (the_inv (rel_rename \<pi>)) \<circ> rel_rename \<pi> \<circ> p'"
     using fun.map_comp

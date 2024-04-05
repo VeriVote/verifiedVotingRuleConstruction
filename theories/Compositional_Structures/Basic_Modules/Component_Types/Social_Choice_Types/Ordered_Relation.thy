@@ -50,7 +50,7 @@ qed
 typedef 'a Ordered_Preference =
   "{p :: 'a::finite Preference_Relation. linear_order_on (UNIV::'a set) p}"
   morphisms ord2pref pref2ord
-proof (simp)
+proof (unfold mem_Collect_eq)
   have "finite (UNIV::'a set)"
     by simp
   then obtain p :: "'a Preference_Relation" where

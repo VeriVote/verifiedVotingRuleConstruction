@@ -39,138 +39,20 @@ text \<open>
 
 theorem smc_sound:
   fixes x :: "'a Preference_Relation"
-  assumes "linear_order x"
   shows "\<S>\<C>\<F>_result.electoral_module (smc x)"
-proof (unfold \<S>\<C>\<F>_result.electoral_module.simps well_formed_\<S>\<C>\<F>.simps, clarsimp, safe)
+proof (unfold \<S>\<C>\<F>_result.electoral_module.simps well_formed_\<S>\<C>\<F>.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    x' :: "'a"
-  let ?a = "max_aggregator"
-  let ?t = "defer_equal_condition"
-  let ?smc =
-    "pass_module 2 x \<triangleright>
-       ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
-         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
-  assume
-    "profile V A p" and
-    "x' \<in> reject (?smc) V A p" and
-    "x' \<in> elect (?smc) V A p"
-  thus "x' \<in> {}"
-    using IntI drop_mod_sound emptyE loop_comp_sound max_agg_sound assms
-          par_comp_sound pass_mod_sound plurality_rule_sound rev_comp_sound
-          result_disj seq_comp_sound
-    by metis
-next
-  fix
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    x' :: "'a"
-  let ?a = "max_aggregator"
-  let ?t = "defer_equal_condition"
-  let ?smc =
-    "pass_module 2 x \<triangleright>
-       ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
-         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
-  assume
-    "profile V A p" and
-    "x' \<in> reject (?smc) V A p" and
-    "x' \<in> defer (?smc) V A p"
-  thus "x' \<in> {}"
-    using IntI assms result_disj emptyE drop_mod_sound loop_comp_sound
-          max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
-          rev_comp_sound seq_comp_sound
-    by metis
-next
-  fix
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    x' :: "'a"
-  let ?a = "max_aggregator"
-  let ?t = "defer_equal_condition"
-  let ?smc =
-    "pass_module 2 x \<triangleright>
-       ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
-         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
-  assume
-    prof: "profile V A p" and
-    elect_x': "x' \<in> elect (?smc) V A p"
-  have "\<S>\<C>\<F>_result.electoral_module ?smc"
-    using loop_comp_sound drop_mod_sound max_agg_sound par_comp_sound
-          pass_mod_sound plurality_rule_sound rev_comp_sound seq_comp_sound
-    by metis
-  thus "x' \<in> A"
-    using prof elect_x' elect_in_alts
-    by blast
-next
-  fix
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    x' :: "'a"
-  let ?a = "max_aggregator"
-  let ?t = "defer_equal_condition"
-  let ?smc =
-    "pass_module 2 x \<triangleright>
-       ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
-         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
-  assume
-    prof: "profile V A p" and
-    defer_x': "x' \<in> defer (?smc) V A p"
-  have "\<S>\<C>\<F>_result.electoral_module ?smc"
-    using loop_comp_sound drop_mod_sound max_agg_sound par_comp_sound
-          pass_mod_sound plurality_rule_sound rev_comp_sound seq_comp_sound
-    by metis
-  thus "x' \<in> A"
-    using prof defer_x' defer_in_alts
-    by blast
-next
-  fix
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    x' :: "'a"
-  let ?a = "max_aggregator"
-  let ?t = "defer_equal_condition"
-  let ?smc =
-    "pass_module 2 x \<triangleright>
-       ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
-         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
-  assume
-    prof: "profile V A p" and
-    reject_x': "x' \<in> reject (?smc) V A p"
-  have "\<S>\<C>\<F>_result.electoral_module ?smc"
-    using loop_comp_sound drop_mod_sound max_agg_sound par_comp_sound
-          pass_mod_sound plurality_rule_sound rev_comp_sound seq_comp_sound
-    by metis
-  thus "x' \<in> A"
-    using prof reject_x' reject_in_alts
-    by blast
-next
-  fix
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    x' :: "'a"
-  let ?a = "max_aggregator"
-  let ?t = "defer_equal_condition"
-  let ?smc =
-    "pass_module 2 x \<triangleright>
-       ((plurality_rule\<down>) \<triangleright> pass_module (Suc 0) x) \<parallel>\<^sub>?a
-         drop_module 2 x \<circlearrowleft>\<^sub>?t (Suc 0)"
-  assume
-    "profile V A p" and
-    "x' \<in> A" and
-    "x' \<notin> defer (?smc) V A p" and
-    "x' \<notin> reject (?smc) V A p"
-  thus "x' \<in> elect (?smc) V A p"
-    using assms electoral_mod_defer_elem drop_mod_sound loop_comp_sound
-          max_agg_sound par_comp_sound pass_mod_sound plurality_rule_sound
-          rev_comp_sound seq_comp_sound
-    by metis
+    p :: "('a, 'v) Profile"
+  assume "profile V A p"
+  thus
+    "disjoint3 (smc x V A p)" and
+    "set_equals_partition A (smc x V A p)"
+    unfolding iter.simps smc.simps elector.simps
+    using drop_mod_sound elect_mod_sound loop_comp_sound max_par_comp_sound pass_mod_sound
+          plurality_rule_sound rev_comp_sound seq_comp_sound
+    by (metis (no_types) seq_comp_presv_disj, metis (no_types) seq_comp_presv_alts)
 qed
 
 subsection \<open>Electing\<close>

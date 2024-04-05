@@ -1393,7 +1393,7 @@ lemma condorcet_consistency'':
            (\<S>\<C>\<F>_result.electoral_module m \<and>
               (\<forall> A V p a.
                 condorcet_winner V A p a \<longrightarrow> m V A p = ({a}, A - {a}, {})))"
-proof (simp only: condorcet_consistency', safe)
+proof (unfold condorcet_consistency', safe)
   fix
     A :: "'a set" and
     V :: "'v set" and

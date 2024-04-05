@@ -340,7 +340,7 @@ proof -
     using Inf_mono
     by (metis (no_types, lifting))
   moreover have "\<not> (Inf {Inf {d a b | b. b \<in> B} | a. a \<in> A} < Inf {d a b | a b. a \<in> A \<and> b \<in> B})"
-  proof (rule ccontr, simp)
+  proof (rule ccontr, safe)
     assume "Inf {Inf {d a b | b. b \<in> B} | a. a \<in> A} < Inf {d a b | a b. a \<in> A \<and> b \<in> B}"
     then obtain \<alpha> :: "ereal" where
       inf: "\<alpha> \<in> {Inf {d a b | b. b \<in> B} | a. a \<in> A}" and

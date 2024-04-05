@@ -60,7 +60,8 @@ qed
 subsection \<open>Soundness\<close>
 
 theorem max_agg_sound[simp]: "aggregator max_aggregator"
-proof (unfold aggregator_def, simp, safe)
+proof (unfold aggregator_def max_aggregator.simps well_formed_\<S>\<C>\<F>.simps disjoint3.simps
+              set_equals_partition.simps, safe)
   fix
     A :: "'a set" and
     e :: "'a set" and

@@ -161,7 +161,7 @@ lemma the_inv_comp:
     "bij_betw g s t" and
     "x \<in> u"
   shows "the_inv_into s (f \<circ> g) x = ((the_inv_into s g) \<circ> (the_inv_into t f)) x"
-proof (clarsimp)
+proof (unfold comp_def)
   have el_Y: "the_inv_into t f x \<in> t"
     using assms bij_betw_apply bij_betw_the_inv_into
     by metis
@@ -182,8 +182,11 @@ proof (clarsimp)
     using assms bij_betw_apply bij_betw_imp_inj_on bij_betw_the_inv_into bij_betw_trans
           the_inv_into_f_eq
     by (metis (no_types, lifting))
-  finally show "the_inv_into s (f \<circ> g) x = the_inv_into s g (the_inv_into t f x)"
-    by blast
+  also have "the_inv_into s (f \<circ> g) x = the_inv_into s (\<lambda>x. f (g x)) x"
+    using o_apply
+    by metis
+  finally show "the_inv_into s (\<lambda>x. f (g x)) x = the_inv_into s g (the_inv_into t f x)"
+    by presburger
 qed
 
 lemma preimg_comp:
@@ -220,7 +223,7 @@ theorem rewrite_invar_as_equivar:
     \<phi> :: "('z, 'x) binary_fun"
   shows "is_symmetry f (Invariance (action_induced_rel t s \<phi>)) =
             is_symmetry f (action_induced_equivariance t s \<phi> (\<lambda> g. id))"
-proof (unfold action_induced_equivariance_def, simp, safe)
+proof (unfold action_induced_equivariance_def is_symmetry.simps action_induced_rel.simps, safe)
   fix
     x :: "'x" and
     y :: "'z"
@@ -229,13 +232,13 @@ proof (unfold action_induced_equivariance_def, simp, safe)
     "y \<in> t" and
     "\<phi> y x \<in> s"
   thus
-    "(\<forall> x' y'. x' \<in> s \<and> y' \<in> s \<and> (\<exists> z \<in> t. \<phi> z x' = y') \<longrightarrow> f x' = f y')
-        \<Longrightarrow> (f (\<phi> y x) = id (f x))" and
-    "(\<forall> x' y'. (\<exists> z. x' = \<phi> z \<and> y' = id \<and> z \<in> t) \<longrightarrow>
-        (\<forall> z \<in> s. x' z \<in> s \<longrightarrow> f (x' z) = y' (f z)))
-        \<Longrightarrow> (f x = f (\<phi> y x))"
+    "\<forall>x' y'. (x', y') \<in> {(y, y''). (y, y'') \<in> s \<times> s \<and> (\<exists> z \<in> t. \<phi> z y = y'')}
+        \<longrightarrow> f x' = f y' \<Longrightarrow> f (\<phi> y x) = id (f x)" and
+    "\<forall> (\<phi>', \<psi>') \<in> {(\<phi> x, id) | x. x \<in> t}.
+      \<forall> x' \<in> s. \<phi>' x' \<in> s \<longrightarrow> f (\<phi>' x') = \<psi>' (f x') \<Longrightarrow> f x = f (\<phi> y x)"
     unfolding id_def
-    by (metis, metis)
+    using SigmaI case_prodI mem_Collect_eq
+    by (metis (mono_tags, lifting), fastforce)
 qed
 
 lemma rewrite_invar_ind_by_act:
@@ -802,7 +805,7 @@ lemma equivar_comp:
     "is_symmetry f (Equivariance s \<tau>)" and
     "is_symmetry g (Equivariance t \<upsilon>)"
   shows "is_symmetry (g \<circ> f) (Equivariance s transitive_acts)"
-proof (unfold transitive_acts_def, simp, safe)
+proof (unfold transitive_acts_def is_symmetry.simps comp_def, safe)
   fix
     \<phi> :: "'x \<Rightarrow> 'x" and
     \<chi> :: "'y \<Rightarrow> 'y" and
@@ -904,7 +907,7 @@ lemma equivar_union_under_img_act:
     \<phi> :: "('z, 'x) binary_fun"
   shows "is_symmetry \<Union> (action_induced_equivariance s UNIV
               (set_action (set_action \<phi>)) (set_action \<phi>))"
-proof (unfold action_induced_equivariance_def, clarsimp, safe)
+proof (unfold action_induced_equivariance_def is_symmetry.simps set_action.simps, safe)
   fix
     x :: "'z" and
     ts :: "'x set set" and

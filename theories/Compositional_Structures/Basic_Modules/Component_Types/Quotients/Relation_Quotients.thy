@@ -180,8 +180,7 @@ lemma rel_ind_by_group_act_equiv:
     \<phi> :: "('x, 'y) binary_fun"
   assumes "group_action m s \<phi>"
   shows "equiv s (action_induced_rel (carrier m) s \<phi>)"
-proof (unfold equiv_def refl_on_def sym_def Relation.trans_def action_induced_rel.simps,
-        clarsimp, safe)
+proof (unfold equiv_def refl_on_def sym_def Relation.trans_def action_induced_rel.simps, safe)
   fix y :: "'y"
   assume "y \<in> s"
   hence "\<phi> \<one> \<^bsub>m\<^esub> y = y"

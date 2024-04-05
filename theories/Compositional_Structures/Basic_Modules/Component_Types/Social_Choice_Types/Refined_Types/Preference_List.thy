@@ -35,7 +35,11 @@ lemma is_arg_min_equal:
     x :: "'a"
   assumes "\<forall> x \<in> S. f x = g x"
   shows "is_arg_min f (\<lambda> s. s \<in> S) x = is_arg_min g (\<lambda> s. s \<in> S) x"
-proof (unfold is_arg_min_def, cases "x \<notin> S", clarsimp)
+proof (unfold is_arg_min_def, cases "x \<notin> S")
+  case True
+  thus "(x \<in> S \<and> (\<nexists>y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists>y. y \<in> S \<and> g y < g x))"
+    by safe
+next
   case x_in_S: False
   thus "(x \<in> S \<and> (\<nexists> y. y \<in> S \<and> f y < f x)) = (x \<in> S \<and> (\<nexists> y. y \<in> S \<and> g y < g x))"
   proof (cases "\<exists> y. (\<lambda> s. s \<in> S) y \<and> f y < f x")
@@ -113,7 +117,11 @@ lemma listset_finiteness:
   assumes "\<forall> i::nat. i < length l \<longrightarrow> finite (l!i)"
   shows "finite (listset l)"
   using assms
-proof (induct l, simp)
+proof (induct l)
+  case Nil
+  show "finite (listset [])"
+    by simp
+next
   case (Cons a l)
   fix
     a :: "'a set" and
@@ -139,16 +147,25 @@ qed
 lemma all_ls_elems_same_len:
   fixes l :: "'a set list"
   shows "\<forall> l'::('a list). l' \<in> listset l \<longrightarrow> length l' = length l"
-proof (induct l, simp)
+proof (induct l, safe)
+  case Nil
+  fix l :: "'a list"
+  assume "l \<in> listset []"
+  thus "length l = length []"
+    by simp
+next
   case (Cons a l)
   fix
     a :: "'a set" and
-    l :: "'a set list"
-  assume "\<forall> l'. l' \<in> listset l \<longrightarrow> length l' = length l"
+    l :: "'a set list" and
+    m :: "'a list"
+  assume
+    "\<forall> l'. l' \<in> listset l \<longrightarrow> length l' = length l" and
+    "m \<in> listset (a#l)"
   moreover have
     "\<forall> a' l'::('a set list). listset (a'#l') = {b#m | b m. b \<in> a' \<and> m \<in> listset l'}"
     by (simp add: set_Cons_def)
-  ultimately show "\<forall> l'. l' \<in> listset (a#l) \<longrightarrow> length l' = length (a#l)"
+  ultimately show "length m = length (a#l)"
     using local.Cons
     by force
 qed
@@ -156,7 +173,18 @@ qed
 lemma all_ls_elems_in_ls_set:
   fixes l :: "'a set list"
   shows "\<forall> l' i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i"
-proof (induct l, simp, safe)
+proof (induct l, safe)
+  case Nil
+  fix
+    l' :: "'a list" and
+    i :: "nat"
+  assume
+    "l' \<in> listset []" and
+    "i < length l'"
+  thus "l'!i \<in> []!i"
+    using Nil
+    by simp
+next
   case (Cons a l)
   fix
     a :: "'a set" and
@@ -184,7 +212,13 @@ qed
 lemma all_ls_in_ls_set:
   fixes l :: "'a set list"
   shows "\<forall> l'. length l' = length l \<and> (\<forall> i < length l'. l'!i \<in> l!i) \<longrightarrow> l' \<in> listset l"
-proof (induction l, safe, simp)
+proof (induction l, safe)
+  case Nil
+  fix l' :: "'a list"
+  assume "length l' = length []"
+  thus "l' \<in> listset []"
+    by simp
+next
   case (Cons a l)
   fix
     l :: "'a set list" and
@@ -409,7 +443,7 @@ proof -
   hence "?inv ` {0 ..< card A} = A"
     unfolding bij_betw_def
     by metis
-  hence "set ?l = A"
+  hence set_eq_A: "set ?l = A"
     by simp
   moreover have dist_l: "distinct ?l"
     using bij_inv
@@ -456,7 +490,7 @@ proof -
   moreover have "pl_\<alpha> ?l = r"
   proof
     show "r \<subseteq> pl_\<alpha> ?l"
-    proof (unfold pl_\<alpha>_def, auto)
+    proof (unfold pl_\<alpha>_def is_less_preferred_than_l.simps, safe)
       fix
         a :: "'a" and
         b :: "'a"
@@ -465,8 +499,8 @@ proof -
         using lin_order
         unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
         by auto
-      thus "a \<in> ?inv ` {0 ..< card A}"
-        using bij_inv bij_betw_def
+      thus "a \<in> set ?l"
+        using bij_inv set_eq_A
         by metis
     next
       fix
@@ -477,8 +511,8 @@ proof -
         using lin_order
         unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
         by auto
-      thus "b \<in> ?inv ` {0 ..< card A}"
-        using bij_inv bij_betw_def
+      thus "b \<in> set ?l"
+        using bij_inv set_eq_A
         by metis
     next
       fix
@@ -502,57 +536,63 @@ proof -
     qed
   next
     show "pl_\<alpha> ?l \<subseteq> r"
-    proof (unfold pl_\<alpha>_def, auto)
+    proof (unfold pl_\<alpha>_def is_less_preferred_than_l.simps, safe)
       fix
-        a :: "nat" and
-        b :: "nat"
+        a :: "'a" and
+        b :: "'a"
       assume
-        in_bnds_a: "a < card A" and
-        in_bnds_b: "b < card A" and
-        index_rel: "index ?l (?inv b) \<le> index ?l (?inv a)"
-      have el_a: "?inv a \<in> A"
-        using bij_inv in_bnds_a atLeast0LessThan
+        in_bnds_a: "a \<in> set ?l" and
+        in_bnds_b: "b \<in> set ?l" and
+        index_rel: "index ?l b \<le> index ?l a"
+      have el_a: "?inv (index ?l a) \<in> A"
+        using bij_inv in_bnds_a atLeast0LessThan set_eq_A bij_inv
+              cancel_comm_monoid_add_class.diff_cancel diff_Suc_eq_diff_pred
+              diff_less in_bounds index_eq lessThan_iff less_imp_diff_less
+              zero_less_Suc inj dist_l image_eqI image_eqI length_upt
         unfolding bij_betw_def
-        by auto
-      moreover have el_b: "?inv b \<in> A"
-        using bij_inv in_bnds_b atLeast0LessThan
+        by (metis (no_types, lifting))
+      moreover have el_b: "?inv (index ?l b) \<in> A"
+        using bij_inv in_bnds_b atLeast0LessThan set_eq_A bij_inv
+              cancel_comm_monoid_add_class.diff_cancel diff_Suc_eq_diff_pred
+              diff_less in_bounds index_eq lessThan_iff less_imp_diff_less
+              zero_less_Suc inj dist_l image_eqI image_eqI length_upt
         unfolding bij_betw_def
-        by auto
-      ultimately have leq_diff: "card A - 1 - (?\<phi> (?inv b)) \<le> card A - 1 - (?\<phi> (?inv a))"
-        using index_rel index_eq
+        by (metis (no_types, lifting))
+      ultimately have leq_diff: "card A - 1 - (?\<phi> b) \<le> card A - 1 - (?\<phi> a)"
+        using index_rel index_eq in_bnds_a in_bnds_b set_eq_A
         by metis
       have "\<forall> a < card A. ?\<phi> (?inv a) < card A"
         using fin bij_inv bij
         unfolding bij_betw_def
         by fastforce
-      hence "?\<phi> (?inv b) \<le> card A - 1 \<and> ?\<phi> (?inv a) \<le> card A - 1"
+      hence "?\<phi> b \<le> card A - 1 \<and> ?\<phi> a \<le> card A - 1"
         using in_bnds_a in_bnds_b fin
         by fastforce
-      hence "?\<phi> (?inv b) \<ge> ?\<phi> (?inv a)"
+      hence "?\<phi> b \<ge> ?\<phi> a"
         using fin leq_diff le_diff_iff'
         by blast
-      hence cases: "?\<phi> (?inv a) < ?\<phi> (?inv b) \<or> ?\<phi> (?inv a) = ?\<phi> (?inv b)"
+      hence cases: "?\<phi> a < ?\<phi> b \<or> ?\<phi> a = ?\<phi> b"
         by auto
       have "\<forall> a b. a \<in> A \<and> b \<in> A \<and> ?\<phi> a < ?\<phi> b \<longrightarrow> a \<in> underS r b"
         using mon total_underS antisym IntD1 order_less_not_sym
         by metis
-      hence "?\<phi> (?inv a) < ?\<phi> (?inv b) \<longrightarrow> ?inv a \<in> underS r (?inv b)"
-        using el_a el_b
+      hence "?\<phi> a < ?\<phi> b \<longrightarrow> a \<in> underS r b"
+        using el_a el_b in_bnds_a in_bnds_b set_eq_A
         by blast
-      hence cases_less: "?\<phi> (?inv a) < ?\<phi> (?inv b) \<longrightarrow> (?inv a, ?inv b) \<in> r"
+      hence cases_less: "?\<phi> a < ?\<phi> b \<longrightarrow> (a, b) \<in> r"
         unfolding underS_def
         by simp
       have "\<forall> a b. a \<in> A \<and> b \<in> A \<and> ?\<phi> a = ?\<phi> b \<longrightarrow> a = b"
         using mon total_underS antisym order_less_not_sym
         by metis
-      hence "?\<phi> (?inv a) = ?\<phi> (?inv b) \<longrightarrow> ?inv a = ?inv b"
-        using el_a el_b
+      hence "?\<phi> a = ?\<phi> b \<longrightarrow> a = b"
+        using el_a el_b in_bnds_a in_bnds_b set_eq_A
         by simp
-      hence cases_eq: "?\<phi> (?inv a) = ?\<phi> (?inv b) \<longrightarrow> (?inv a, ?inv b) \<in> r"
-        using lin_order el_a el_b
+      hence cases_eq: "?\<phi> a = ?\<phi> b \<longrightarrow> (a, b) \<in> r"
+        using lin_order el_a el_b in_bnds_a in_bnds_b set_eq_A
         unfolding linear_order_on_def partial_order_on_def preorder_on_def refl_on_def
         by auto
-      show "(?inv a, ?inv b) \<in> r"
+      show "(a, b) \<in> r"
         using cases cases_less cases_eq
         by auto
     qed
@@ -716,27 +756,31 @@ next
     wf_a_l: "well_formed_l (a#l)"
   show "pl_\<alpha> (limit_l A (a#l)) = limit A (pl_\<alpha> (a#l))"
     using wf_imp_limit wf_a_l
-  proof (clarsimp, safe)
+  proof (unfold limit_l.simps limit.simps, intro equalityI, safe)
     fix
       b :: "'a" and
       c :: "'a"
-    assume b_less_c: "(b, c) \<in> pl_\<alpha> (a#(filter (\<lambda> a. a \<in> A) l))"
+    assume
+      b_less_c: "(b, c) \<in> pl_\<alpha> (filter (\<lambda> a. a \<in> A) (a#l))"
     have limit_preference_list_assoc: "pl_\<alpha> (limit_l A l) = limit A (pl_\<alpha> l)"
       using wf_a_l wf_imp_limit
       by simp
     thus "(b, c) \<in> pl_\<alpha> (a#l)"
     proof (unfold pl_\<alpha>_def is_less_preferred_than_l.simps, safe)
       show "b \<in> set (a#l)"
-        using b_less_c
+        using b_less_c case_prodD filter_set mem_Collect_eq member_filter
+              is_less_preferred_than_l.simps
         unfolding pl_\<alpha>_def
-        by fastforce
+        by metis
     next
       show "c \<in> set (a#l)"
-        using b_less_c
+        using b_less_c case_prodD filter_set mem_Collect_eq member_filter
+              is_less_preferred_than_l.simps
         unfolding pl_\<alpha>_def
-        by fastforce
+        by metis
     next
-      have "\<forall> a' l' a''. (a'::'a) \<lesssim>\<^sub>l' a'' =
+      have idx_set_eq:
+        "\<forall> a' l' a''. (a'::'a) \<lesssim>\<^sub>l' a'' =
             (a' \<in> set l' \<and> a'' \<in> set l' \<and> index l' a'' \<le> index l' a')"
         using is_less_preferred_than_l.simps
         by blast
@@ -761,10 +805,10 @@ next
           index (limit_l A l) c \<le> index (limit_l A l) b \<longrightarrow>
             b \<in> set l \<and> c \<in> set l \<and> index l c \<le> index l b"
         by auto
-      have "b \<lesssim>\<^sub>(a#(filter (\<lambda> a. a \<in> A) l)) c"
+      have "b \<lesssim>\<^sub>(filter (\<lambda> a. a \<in> A) (a#l)) c"
         using b_less_c case_prodD mem_Collect_eq
         unfolding pl_\<alpha>_def
-        by metis
+        by (metis (no_types))
       moreover obtain
         f :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> 'a" and
         g :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> 'a list" and
@@ -775,21 +819,124 @@ next
               h e s d \<in> set (g e s d)"
         by fastforce
       ultimately have
-        "b = f c (a#(filter (\<lambda> a. a \<in> A) l)) b \<and>
-          a#(filter (\<lambda> a. a \<in> A) l) = g c (a#(filter (\<lambda> a. a \<in> A) l)) b \<and>
-          c = h c (a#(filter (\<lambda> a. a \<in> A) l)) b \<and>
-          f c (a#(filter (\<lambda> a. a \<in> A) l)) b \<in> set (g c (a#(filter (\<lambda> a. a \<in> A) l)) b) \<and>
-          h c (a#(filter (\<lambda> a. a \<in> A) l)) b \<in> set (g c (a#(filter (\<lambda> a. a \<in> A) l)) b) \<and>
-          index (g c (a#(filter (\<lambda> a. a \<in> A) l)) b)
-              (h c (a#(filter (\<lambda> a. a \<in> A) l)) b) \<le>
-            index (g c (a#(filter (\<lambda> a. a \<in> A) l)) b)
-              (f c (a#(filter (\<lambda> a. a \<in> A) l)) b)"
+        "b = f c (filter (\<lambda> a. a \<in> A) (a#l)) b \<and>
+          filter (\<lambda> a. a \<in> A) (a#l) = g c (filter (\<lambda> a. a \<in> A) (a#l)) b \<and>
+          c = h c (filter (\<lambda> a. a \<in> A) (a#l)) b \<and>
+          f c (filter (\<lambda> a. a \<in> A) (a#l)) b \<in> set (g c (filter (\<lambda> a. a \<in> A) (a#l)) b) \<and>
+          h c (filter (\<lambda> a. a \<in> A) (a#l)) b \<in> set (g c (filter (\<lambda> a. a \<in> A) (a#l)) b) \<and>
+          index (g c (filter (\<lambda> a. a \<in> A) (a#l)) b)
+              (h c (filter (\<lambda> a. a \<in> A) (a#l)) b) \<le>
+            index (g c (filter (\<lambda> a. a \<in> A) (a#l)) b)
+              (f c (filter (\<lambda> a. a \<in> A) (a#l)) b)"
         by blast
       moreover have "filter (\<lambda> a. a \<in> A) l = limit_l A l"
         by simp
+      moreover have "index (limit_l A l) c
+            \<noteq> index (g c (filter (\<lambda> a. a \<in> A) (a#l)) b)
+                    (h c (filter (\<lambda> a. a \<in> A) (a # l)) b)
+              \<or> index (limit_l A l) b
+                \<noteq> index (g c (filter (\<lambda> a. a \<in> A) (a#l)) b)
+                      (f c (filter (\<lambda> a. a \<in> A) (a#l)) b)
+              \<or> index (limit_l A l) c \<le> index (limit_l A l) b
+              \<or> \<not> index (g c (filter (\<lambda> a. a \<in> A) (a # l)) b)
+                      (h c (filter (\<lambda> a. a \<in> A) (a#l)) b)
+                  \<le> index (g c (filter (\<lambda> a. a \<in> A) (a#l)) b)
+                      (f c (filter (\<lambda> a. a \<in> A) (a#l)) b)"
+        by presburger
       ultimately have "a \<noteq> c \<longrightarrow> index (a#l) c \<le> index (a#l) b"
-        using idx_imp
-        by force
+      proof (unfold filter.simps is_less_preferred_than_l.elims, safe)
+        assume
+          filter_eq_limit:
+          "filter (\<lambda> a. a \<in> A) l = limit_l A l" and
+          b_eq:
+          "b = f c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b" and
+          a_eq_g_filter:
+          "(if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l)
+            = g c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b" and
+          c_eq:
+          "c = h c (if a \<in> A then a # filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b" and
+          f_elem_set_g_filter:
+          "f c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b
+            \<in> set (g c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)" and
+          h_elem_set_g_filter:
+          "h c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b
+            \<in> set (g c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)" and
+          idx_h_leq_f:
+          "index (g c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)
+              (h c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)
+            \<le> index (g c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)
+                (f c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)" and
+          a_neq_c: "a \<noteq> c"
+        {
+          moreover assume
+            "index (limit_l A l) c
+              \<noteq> index (g c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)
+                (h c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)"
+          ultimately have "index (a#l) c \<le> index (a#l) b"
+            using add_le_cancel_right idx_imp index_Cons le_zero_eq nth_index set_ConsD
+            by metis
+          thus
+            "index (a#l) c \<le> index (a#l) b" and
+            "index (a#l) c \<le> index (a#l) b" and
+            "index (a#l) c \<le> index (a#l) b"
+            by (clarify, clarify, clarify)
+        }
+        {
+          assume
+            "index (limit_l A l) b
+              \<noteq> index (g c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)
+                  (f c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)"
+          thus "index (a#l) c \<le> index (a#l) b"
+            using filter_eq_limit b_eq a_eq_g_filter c_eq f_elem_set_g_filter
+                  h_elem_set_g_filter idx_h_leq_f a_neq_c add_le_cancel_right
+                  idx_imp index_Cons le_zero_eq nth_index set_ConsD
+            by metis
+        }
+        {
+          assume
+            "index (limit_l A l) c
+              \<noteq> index (g c (filter (\<lambda> a. a \<in> A) (a#l)) b) (h c (filter (\<lambda> a. a \<in> A) (a#l)) b)"
+          thus "index (a#l) c \<le> index (a#l) b"
+            using filter_eq_limit b_eq a_eq_g_filter c_eq f_elem_set_g_filter
+                  h_elem_set_g_filter idx_h_leq_f a_neq_c add_le_cancel_right
+                  idx_imp index_Cons le_zero_eq nth_index set_ConsD
+            unfolding filter.simps
+            by metis
+        }
+        {
+          assume
+            "index (limit_l A l) b
+              \<noteq> index (g c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)
+                (f c (if a \<in> A then a#filter (\<lambda> a. a \<in> A) l else filter (\<lambda> a. a \<in> A) l) b)"
+          hence "index (a#l) c \<le> index (a#l) b"
+            using filter_eq_limit b_eq a_eq_g_filter c_eq f_elem_set_g_filter
+                  h_elem_set_g_filter idx_h_leq_f a_neq_c add_le_cancel_right
+                  idx_imp index_Cons le_zero_eq nth_index set_ConsD
+            by metis
+          thus
+            "index (a#l) c \<le> index (a#l) b" and
+            "index (a#l) c \<le> index (a#l) b"
+            by (clarify, clarify)
+        }
+        {
+          moreover assume
+            "index (limit_l A l) b
+              \<noteq> index (g c (filter (\<lambda> a. a \<in> A) (a#l)) b) (f c (filter (\<lambda> a. a \<in> A) (a#l)) b)"
+          ultimately show "index (a#l) c \<le> index (a#l) b"
+            using idx_imp
+            unfolding filter.simps
+            by metis
+        }
+        {
+          assume "index (limit_l A l) c \<le> index (limit_l A l) b"
+          thus "index (a#l) c \<le> index (a#l) b"
+            using filter_eq_limit b_eq a_eq_g_filter c_eq f_elem_set_g_filter
+                  h_elem_set_g_filter idx_h_leq_f a_neq_c add_le_cancel_right
+                  idx_imp index_Cons le_zero_eq nth_index set_ConsD wf_a_l
+            unfolding distinct.simps
+            by metis
+        }
+      qed
       thus "index (a#l) c \<le> index (a#l) b"
         by force
     qed
@@ -797,23 +944,21 @@ next
     fix
       b :: "'a" and
       c :: "'a"
-    assume
-       "a \<in> A" and
-      "(b, c) \<in> pl_\<alpha> (a#(filter (\<lambda> a. a \<in> A) l))"
-    thus "c \<in> A"
-      unfolding pl_\<alpha>_def
-      by fastforce
+    assume "(b, c) \<in> pl_\<alpha> (filter (\<lambda> a. a \<in> A) (a#l))"
+    thus "b \<in> A"
+      unfolding pl_\<alpha>_def is_less_preferred_than_l.simps
+      using case_prodD mem_Collect_eq set_filter
+      by (metis (no_types, lifting))
   next
     fix
       b :: "'a" and
       c :: "'a"
-    assume
-      "a \<in> A" and
-      "(b, c) \<in> pl_\<alpha> (a#(filter (\<lambda> a. a \<in> A) l))"
-    thus "b \<in> A"
+    assume "(b, c) \<in> pl_\<alpha> (filter (\<lambda> a. a \<in> A) (a#l))"
+    thus "c \<in> A"
       unfolding pl_\<alpha>_def
-      using case_prodD insert_iff mem_Collect_eq set_filter inter_set_filter IntE
-      by auto
+      using case_prodD filter_set is_less_preferred_than_l.simps
+            mem_Collect_eq member_filter
+      by metis
   next
     fix
       b :: "'a" and
@@ -822,99 +967,37 @@ next
       b_less_c: "(b, c) \<in> pl_\<alpha> (a#l)" and
       b_in_A: "b \<in> A" and
       c_in_A: "c \<in> A"
-    show "(b, c) \<in> pl_\<alpha> (a#(filter (\<lambda> a. a \<in> A) l))"
+    show "(b, c) \<in> pl_\<alpha> (filter (\<lambda> a. a \<in> A) (a#l))"
     proof (unfold pl_\<alpha>_def is_less_preferred_than.simps, safe)
-      show "b \<lesssim>\<^sub>(a#(filter (\<lambda> a. a \<in> A) l)) c"
+      show "b \<lesssim>\<^sub>(filter (\<lambda> a. a \<in> A) (a#l)) c"
       proof (unfold is_less_preferred_than_l.simps, safe)
-        show "b \<in> set (a#(filter (\<lambda> a. a \<in> A) l))"
-        using b_less_c b_in_A
-        unfolding pl_\<alpha>_def
-        by fastforce
-      next
-        show "c \<in> set (a#(filter (\<lambda> a. a \<in> A) l))"
-        using b_less_c c_in_A
-        unfolding pl_\<alpha>_def
-        by fastforce
-    next
-      have "(b, c) \<in> pl_\<alpha> (a#l)"
-        by (simp add: b_less_c)
-      hence "b \<lesssim>\<^sub>(a#l) c"
-        using case_prodD mem_Collect_eq
-        unfolding pl_\<alpha>_def
-        by metis
-      moreover have
-        "pl_\<alpha> (filter (\<lambda> a. a \<in> A) l) = {(a, b). (a, b) \<in> pl_\<alpha> l \<and> a \<in> A \<and> b \<in> A}"
-        using wf_a_l wf_imp_limit
-        by simp
-      ultimately show
-        "index (a#(filter (\<lambda> a. a \<in> A) l)) c \<le> index (a#(filter (\<lambda> a. a \<in> A) l)) b"
-        unfolding pl_\<alpha>_def
-        using add_leE add_le_cancel_right case_prodI c_in_A b_in_A index_Cons set_ConsD
-              in_rel_Collect_case_prod_eq linorder_le_cases mem_Collect_eq not_one_le_zero
-        by fastforce
-    qed
-  qed
-  next
-    fix
-      b :: "'a" and
-      c :: "'a"
-    assume
-      a_not_in_A: "a \<notin> A" and
-      b_less_c: "(b, c) \<in> pl_\<alpha> l"
-    show "(b, c) \<in> pl_\<alpha> (a#l)"
-    proof (unfold pl_\<alpha>_def is_less_preferred_than_l.simps, safe)
-      show "b \<in> set (a#l)"
-        using b_less_c
-        unfolding pl_\<alpha>_def
-        by fastforce
-    next
-      show "c \<in> set (a#l)"
-        using b_less_c
-        unfolding pl_\<alpha>_def
-        by fastforce
-    next
-      show "index (a#l) c \<le> index (a#l) b"
-      proof (unfold index_def, simp, safe)
-        assume "a = b"
-        thus False
-          using a_not_in_A b_less_c case_prod_conv is_less_preferred_than_l.elims
-                mem_Collect_eq set_filter wf_a_l
+        show "b \<in> set (filter (\<lambda> a. a \<in> A) (a#l))"
+          using b_less_c b_in_A
           unfolding pl_\<alpha>_def
+          by fastforce
+      next
+        show "c \<in> set (filter (\<lambda> a. a \<in> A) (a#l))"
+          using b_less_c c_in_A
+          unfolding pl_\<alpha>_def
+          by fastforce
+      next
+        have "(b, c) \<in> pl_\<alpha> (a#l)"
+          by (simp add: b_less_c)
+        hence "b \<lesssim>\<^sub>(a#l) c"
+          using case_prodD mem_Collect_eq
+          unfolding pl_\<alpha>_def
+          by metis
+        moreover have
+          "pl_\<alpha> (filter (\<lambda> a. a \<in> A) l) = {(a, b). (a, b) \<in> pl_\<alpha> l \<and> a \<in> A \<and> b \<in> A}"
+          using wf_a_l wf_imp_limit
           by simp
-      next
-        show "find_index (\<lambda> x. x = c) l \<le> find_index (\<lambda> x. x = b) l"
-          using b_less_c case_prodD mem_Collect_eq
+        ultimately show
+          "index (filter (\<lambda> a. a \<in> A) (a#l)) c \<le> index (filter (\<lambda> a. a \<in> A) (a#l)) b"
           unfolding pl_\<alpha>_def
-          by (simp add: index_def)
+          using add_leE add_le_cancel_right case_prodI c_in_A b_in_A index_Cons set_ConsD
+                in_rel_Collect_case_prod_eq linorder_le_cases mem_Collect_eq not_one_le_zero
+          by fastforce
       qed
-    qed
-  next
-    fix
-      b :: "'a" and
-      c :: "'a"
-    assume
-      a_not_in_l: "a \<notin> set l" and
-      a_not_in_A: "a \<notin> A" and
-      b_in_A: "b \<in> A" and
-      c_in_A: "c \<in> A" and
-      b_less_c: "(b, c) \<in> pl_\<alpha> (a#l)"
-    thus "(b, c) \<in> pl_\<alpha> l"
-    proof (unfold pl_\<alpha>_def is_less_preferred_than_l.simps, safe)
-      assume "b \<in> set (a#l)"
-      thus "b \<in> set l"
-        using a_not_in_A b_in_A
-        by fastforce
-    next
-      assume "c \<in> set (a#l)"
-      thus "c \<in> set l"
-        using a_not_in_A c_in_A
-        by fastforce
-    next
-      assume "index (a#l) c \<le> index (a#l) b"
-      thus "index l c \<le> index l b"
-        using a_not_in_l a_not_in_A c_in_A add_le_cancel_right
-              index_Cons index_le_size size_index_conv
-        by (metis (no_types, lifting))
     qed
   qed
 qed
@@ -1054,8 +1137,8 @@ theorem rank_equiv:
     a :: "'a"
   assumes "well_formed_l l"
   shows "rank_l l a = rank (pl_\<alpha> l) a"
-proof (simp, safe)
-  assume "a \<in> set l"
+proof (unfold rank_l.simps rank.simps, cases "a \<in> set l")
+  case True
   moreover have "above (pl_\<alpha> l) a = set (above_l l a)"
     unfolding above_equiv
     by simp
@@ -1071,15 +1154,16 @@ proof (simp, safe)
     unfolding above_l_def
     using Suc_le_eq
     by (simp add: in_set_member)
-  ultimately show "Suc (index l a) = card (above (pl_\<alpha> l) a)"
+  ultimately show "(if a \<in> set l then index l a + 1 else 0) = card (above (pl_\<alpha> l) a)"
     by simp
 next
-  assume "a \<notin> set l"
+  case False
   hence "above (pl_\<alpha> l) a = {}"
     unfolding above_def
     using less_preferred_l_rel_equiv
     by fastforce
-  thus "card (above (pl_\<alpha> l) a) = 0"
+  thus "(if a \<in> set l then index l a + 1 else 0) = card (above (pl_\<alpha> l) a)"
+    using False
     by fastforce
 qed
 
@@ -1106,7 +1190,18 @@ lemma pos_in_list_yields_rank:
     "l!(n - 1) = a"
   shows "rank_l l a = n"
   using assms
-proof (induction l arbitrary: n, simp_all) qed
+proof (induction l arbitrary: n)
+  case Nil
+  thus ?case
+    by simp
+next
+  fix
+    l :: "'a Preference_List" and
+    a :: "'a"
+  case (Cons a l)
+  thus ?case
+    by simp
+qed
 
 lemma ranked_alt_not_at_pos_before:
   fixes
@@ -1127,7 +1222,11 @@ lemma pos_in_list_yields_pos:
   assumes "a \<in> set l"
   shows "l!(rank_l l a - 1) = a"
   using assms
-proof (induction l, simp)
+proof (induction l)
+  case Nil
+  thus ?case
+    by simp
+next
   fix
     l :: "'a Preference_List" and
     b :: "'a"

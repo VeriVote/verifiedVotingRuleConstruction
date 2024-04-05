@@ -72,102 +72,165 @@ next
   have "?no_max \<Longrightarrow> {win_count V p x | x. x \<in> A} \<noteq> {}"
     using non_empty_A
     by blast
-  moreover have "finite {win_count V p x | x. x \<in> A}"
+  moreover have finite_winners: "finite {win_count V p x | x. x \<in> A}"
     using fin_A
     by simp
   ultimately have exists_max: "?no_max \<Longrightarrow> False"
     using Max_in
     by fastforce
   have rej_eq:
-    "snd (max_eliminator (\<lambda> V b A p. win_count V p b) V A p) =
-      snd ({},
-            {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x},
-            {a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a})"
-  proof (simp del: win_count.simps, safe)
+    "reject_r (max_eliminator (\<lambda> V b A p. win_count V p b) V A p) =
+      {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x}"
+  proof (unfold max_eliminator.simps less_eliminator.simps elimination_module.simps
+                elimination_set.simps, safe)
+    fix a :: "'a"
+    assume
+      "a \<in> reject_r
+              (if {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}} \<noteq> A
+               then ({}, {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}},
+                     A - {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}})
+               else ({}, {}, A))"
+    moreover have "A \<noteq> {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}}"
+      using exists_max
+      by metis
+    ultimately have "a \<in> {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}}"
+      by force
+    thus "a \<in> A"
+      by fastforce
+  next
+    fix a :: "'a"
+    assume
+      reject_a:
+      "a \<in> reject_r
+              (if {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}} \<noteq> A
+               then ({}, {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}},
+                     A - {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}})
+               else ({}, {}, A))"
+    hence elect_nonempty:
+      "{b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}} \<noteq> A"
+      by fastforce
+    obtain f :: "enat \<Rightarrow> bool" where
+      all_winners_possible: "\<forall> x. f x = (\<exists> y. x = win_count V p y \<and> y \<in> A)"
+      by fastforce
+    hence "finite (Collect f)"
+      using finite_winners
+      by presburger
+    hence max_winner_possible: "f (Max (Collect f))"
+      using all_winners_possible Max_in elect_nonempty
+      by blast
+    obtain g :: "'a \<Rightarrow> bool" where
+      all_losers_possible: "\<forall> x. g x = (x \<in> A \<and> win_count V p x < Max (Collect f))"
+      by moura
+    hence "a \<in> {a \<in> A. win_count V p a < Max {win_count V p a | a. a \<in> A}} \<longrightarrow> a \<in> Collect g"
+      using all_winners_possible
+      by presburger
+    hence
+      "a \<in> {a \<in> A. win_count V p a < Max {win_count V p a | a. a \<in> A}}
+          \<longrightarrow> (\<exists> x \<in> A. win_count V p a < win_count V p x)"
+      using max_winner_possible all_losers_possible all_winners_possible mem_Collect_eq
+      by (metis (no_types))
+    thus "\<exists> x \<in> A. win_count V p a < win_count V p x"
+      using reject_a elect_nonempty
+      by simp
+  next
     fix
       a :: "'a" and
       b :: "'a"
     assume
       "b \<in> A" and
-      "win_count V p a < Max {win_count V p a' | a'. a' \<in> A}" and
-      "\<not> win_count V p b < Max {win_count V p a' | a'. a' \<in> A}"
-    thus "\<exists> b \<in> A. win_count V p a < win_count V p b"
-      using dual_order.strict_trans1 not_le_imp_less
+      "win_count V p a < win_count V p b"
+    moreover from this have "\<exists> a. win_count V p b = win_count V p a \<and> a \<in> A"
       by blast
+    ultimately have "win_count V p a < Max {win_count V p a |a. a \<in> A}"
+      using finite_winners Max_gr_iff
+      by fastforce
+    moreover assume "a \<in> A"
+    ultimately have "{a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} \<noteq> A
+            \<longrightarrow> a \<in> {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}}"
+      by force
+    moreover have "{a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} = A \<longrightarrow> a \<in> {}"
+      using exists_max
+      by metis
+    ultimately show
+      "a \<in> reject_r
+             (if {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} \<noteq> A
+              then ({}, {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}},
+                    A - {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}})
+              else ({}, {}, A))"
+      by simp
+  qed
+  have
+    "defer_r (max_eliminator (\<lambda> V b A p. win_count V p b) V A p) =
+      {a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a}"
+  proof (unfold max_eliminator.simps less_eliminator.simps elimination_module.simps
+                elimination_set.simps, safe)
+    fix a :: "'a"
+    assume
+      "a \<in> defer_r
+              (if {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}} \<noteq> A
+               then ({}, {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}},
+                     A - {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}})
+               else ({}, {}, A))"
+    moreover have "A \<noteq> {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}}"
+      using exists_max
+      by metis
+    ultimately have "a \<in> A - {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}}"
+      by force
+    thus "a \<in> A"
+      by fastforce
   next
     fix
       a :: "'a" and
       b :: "'a"
+    assume "b \<in> A"
+    hence "win_count V p b \<in> {win_count V p x | x. x \<in> A}"
+      by blast
+    hence "win_count V p b \<le> Max {win_count V p x | x. x \<in> A}"
+      using fin_A
+      by simp
+    moreover assume
+        "a \<in> defer_r
+              (if {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}} \<noteq> A
+               then ({}, {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}},
+                     A - {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}})
+               else ({}, {}, A))"
+    moreover have "{a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} \<noteq> A"
+      using exists_max
+      by metis
+    ultimately have "\<not> win_count V p a < win_count V p b"
+      using dual_order.strict_trans1
+      by force
+    thus "win_count V p b \<le> win_count V p a"
+      using linorder_le_less_linear
+      by metis
+  next
+    fix a :: "'a"
     assume
       a_in_A: "a \<in> A" and
-      b_in_A: "b \<in> A" and
-      wc_a_lt_wc_b: "win_count V p a < win_count V p b"
-    moreover have "\<forall> t. t b \<le> Max {n. \<exists> a'. (n::enat) = t a' \<and> a' \<in> A}"
-    proof (safe)
-      fix 
-        t :: "'a \<Rightarrow> enat"
-      have "t b \<in> {t a' |a'. a' \<in> A}"
-        using b_in_A
-        by auto
-      thus "t b \<le> Max {t a' |a'. a' \<in> A}"
-        using enat_leq_enat_set_max fin_A
-        by auto
-    qed
-    ultimately show "win_count V p a < Max {win_count V p a' | a'. a' \<in> A}"
-      using dual_order.strict_trans1
-      by blast
-  next
-    fix
-      a :: "'a" and
-      b :: "'a"
-    assume 
-      a_in_A: "a \<in> A" and
-      b_in_A: "b \<in> A" and
-      wc_a_max: "\<not> win_count V p a < Max {win_count V p x | x. x \<in> A}"
-    have "win_count V p b \<in> {win_count V p x | x. x \<in> A}"
-      using b_in_A
-      by auto
-    hence "win_count V p b \<le> Max {win_count V p x | x. x \<in> A}"
-      using b_in_A fin_A enat_leq_enat_set_max
-      by auto
-    thus "win_count V p b \<le> win_count V p a"
-      using wc_a_max dual_order.strict_trans1 linorder_le_less_linear
-      by simp
-  next
-    fix
-      a :: "'a" and
-      b :: "'a"
-    assume 
-      a_in_A: "a \<in> A" and
-      b_in_A: "b \<in> A" and
-      wc_a_max: "\<forall> x \<in> A. win_count V p x \<le> win_count V p a" and
-      wc_a_not_max: "win_count V p a < Max {win_count V p x | x. x \<in> A}"
-    have "win_count V p b \<le> win_count V p a"
-      using b_in_A wc_a_max
-      by auto
-    thus "win_count V p b < Max {win_count V p x | x. x \<in> A}"
-      using wc_a_not_max
-      by simp
-  next
-    assume ?no_max
-    thus False
-      using exists_max
-      by simp
-  next
-    fix
-      a :: "'a" and
-      b :: "'a"
-    assume ?no_max
-    thus "win_count V p a \<le> win_count V p b"
-      using exists_max
-      by simp
+      win_count_lt_b: "\<forall> b \<in> A. win_count V p b \<le> win_count V p a"
+    then obtain f :: "enat \<Rightarrow> 'a" where
+      "\<forall> x. a \<in> A \<and> f x \<in> A
+          \<and> (\<not> (\<forall> b. x = win_count V p b \<longrightarrow> b \<notin> A) \<longrightarrow> win_count V p (f x) = x)"
+      by moura
+    moreover from this have
+      "f (Max {win_count V p x | x. x \<in> A}) \<in> A
+        \<longrightarrow> Max {win_count V p x | x. x \<in> A} \<le> win_count V p a"
+      using Max_in finite_winners win_count_lt_b
+      by fastforce
+    ultimately show
+      "a \<in> defer_r
+             (if {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} \<noteq> A
+              then ({}, {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}},
+                    A - {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}})
+              else ({}, {}, A))"
+      by force
   qed
   thus "snd (max_eliminator (\<lambda> V b A p. win_count V p b) V A p) =
     snd ({},
          {a \<in> A. \<exists> b \<in> A. win_count V p a < win_count V p b},
          {a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a})"
-    using rej_eq snd_conv
-    by metis
+    using snd_conv rej_eq prod.exhaust_sel
+    by (metis (no_types, lifting))
 qed
 
 subsection \<open>Soundness\<close>
@@ -318,34 +381,32 @@ proof -
     hence above_pq: "\<forall> i \<in> V. (above (p i) a = {a}) = (above (q i) a = {a})"
       by blast
     moreover have
-      "\<forall> b \<in> A - {a}.
-        \<forall> i \<in> V.
+      "\<forall> b \<in> A - {a}. \<forall> i \<in> V.
           (above (p i) b = {b} \<longrightarrow> (above (q i) b = {b} \<or> above (q i) a = {a}))"
       using lifted_winner
       by auto
     moreover have
-      "\<forall> b \<in> A - {a}.
-        \<forall> i \<in> V. (above (p i) b = {b} \<longrightarrow> above (p i) a \<noteq> {a})"
-    proof (rule ccontr, simp, safe, simp)
+      "\<forall> b \<in> A - {a}. \<forall> i \<in> V. (above (p i) b = {b} \<longrightarrow> above (p i) a \<noteq> {a})"
+    proof (intro ballI impI, safe)
       fix
         b :: "'a" and
         i :: "'v"
       assume
-        b_in_A: "b \<in> A" and
-        i_is_voter: "i \<in> V" and
+        "b \<in> A" and
+        "i \<in> V"
+      moreover from this have A_not_empty: "A \<noteq> {}"
+        by blast
+      ultimately have "linear_order_on A (p i)"
+        using lift_a
+        unfolding lifted_def profile_def
+        by metis
+      moreover assume
+        b_neq_a: "b \<noteq> a" and
         abv_b: "above (p i) b = {b}" and
         abv_a: "above (p i) a = {a}"
-      moreover from b_in_A
-      have "A \<noteq> {}"
-        by auto
-      moreover from i_is_voter
-      have "linear_order_on A (p i)"
-        using lift_a
-        unfolding Profile.lifted_def profile_def
-        by simp
-      ultimately show "b = a"
-        using fin_A above_one_eq
-        by metis
+      ultimately show False
+        using above_one_eq A_not_empty fin_A
+        by (metis (no_types))
     qed
     ultimately have above_PtoQ:
       "\<forall> b \<in> A - {a}. \<forall> i \<in> V. (above (p i) b = {b} \<longrightarrow> above (q i) b = {b})"

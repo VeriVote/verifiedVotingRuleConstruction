@@ -314,9 +314,7 @@ lemma neutral_dist_imp_neutral_votewise_dist:
   defines "vote_action \<equiv> (\<lambda> \<pi> (A, q). (\<pi> ` A, rel_rename \<pi> q))"
   assumes invar: "invariance\<^sub>\<D> d (carrier neutrality\<^sub>\<G>) UNIV vote_action"
   shows "distance_neutrality valid_elections (votewise_distance d n)"
-proof (unfold distance_neutrality.simps,
-        simp only: rewrite_invariance\<^sub>\<D>,
-        safe)
+proof (unfold distance_neutrality.simps rewrite_invariance\<^sub>\<D>, safe)
   fix
     A :: "'a set" and
     A' :: "'a set" and

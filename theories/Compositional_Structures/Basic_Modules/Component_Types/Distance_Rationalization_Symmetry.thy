@@ -100,8 +100,8 @@ theorem group_act_invar_dist_and_equivar_f_imp_equivar_minimizer:
     invar_d: "invariance\<^sub>\<D> d (carrier G) X \<phi>" and
     equivar_f: "is_symmetry f (action_induced_equivariance (carrier G) domain\<^sub>f \<phi> \<psi>)"
   shows "is_symmetry (\<lambda> x. minimizer f domain\<^sub>f d (valid_img x) x) equivar_prop_set_valued"
-proof (unfold action_induced_equivariance_def equivar_prop_set_valued_def,
-        simp del: arg_min_set.simps, clarify)
+proof (unfold action_induced_equivariance_def equivar_prop_set_valued_def is_symmetry.simps
+              set_action.simps minimizer.simps, clarify)
   fix
     x :: "'x" and
     g :: "'z"

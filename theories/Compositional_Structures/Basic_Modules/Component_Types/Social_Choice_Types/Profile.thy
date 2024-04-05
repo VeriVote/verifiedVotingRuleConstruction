@@ -350,30 +350,28 @@ proof -
   ultimately show "rename \<pi> (rename (the_inv \<pi>) (A, V, p)) = (A, V, p)"
     by (simp add: rewriteR_comp_comp)
 qed
-    
+
 lemma rename_inj:
   fixes \<pi> :: "'v \<Rightarrow> 'v"
   assumes "bij \<pi>"
   shows "inj (rename \<pi>)"
-proof (unfold inj_def, clarsimp)
+proof (unfold inj_def split_paired_All rename.simps prod.inject,
+       intro allI impI, elim conjE)
   fix
+    A :: "'a set" and
+    A' :: "'a set" and
     V :: "'v set" and
     V' :: "'v set" and
     p :: "('a, 'v) Profile" and
     p' :: "('a, 'v) Profile"
   assume
-    eq_V: "\<pi> ` V = \<pi> ` V'" and
-    "p \<circ> the_inv \<pi> = p' \<circ> the_inv \<pi>"
-  hence "p \<circ> the_inv \<pi> \<circ> \<pi> = p' \<circ> the_inv \<pi> \<circ> \<pi>"
-    by simp
-  hence "p = p'"
+    "A = A'" and
+    "p \<circ> the_inv \<pi> = p' \<circ> the_inv \<pi>" and
+    "\<pi> ` V = \<pi> ` V'"
+  thus "A = A' \<and> V = V' \<and> p = p'"
     using assms bij_betw_the_inv_into bij_is_surj surj_fun_eq
+          bij_betw_imp_inj_on inj_image_eq_iff
     by metis
-  moreover have "V = V'"
-    using assms eq_V
-    by (simp add: bij_betw_imp_inj_on inj_image_eq_iff)
-  ultimately show "V = V' \<and> p = p'"
-    by blast
 qed
 
 lemma rename_surj:
@@ -788,18 +786,10 @@ lemma pref_count_voter_set_card:
     p :: "('a, 'v) Profile" and
     a :: "'a" and
     b :: "'a"
-  assumes fin_V: "finite V"
+  assumes "finite V"
   shows "prefer_count V p a b \<le> card V"
-proof (simp)
-  have "{v \<in> V. (b, a) \<in> p v} \<subseteq> V"
-    by simp
-  hence "card {v \<in> V. (b, a) \<in> p v} \<le> card V"
-    using fin_V Finite_Set.card_mono
-    by metis
-  thus "(finite V \<longrightarrow> card {v \<in> V. (b, a) \<in> p v} \<le> card V) \<and> finite V"
-    using fin_V
-    by simp
-qed
+  using assms
+  by (simp add: card_mono)
 
 lemma set_compr:
   fixes

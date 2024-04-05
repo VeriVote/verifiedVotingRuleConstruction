@@ -36,74 +36,49 @@ lemma plurality_revision_equiv:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   shows "plurality' V A p = (plurality_rule'\<down>) V A p"
-proof (unfold plurality_rule'.simps plurality'.simps revision_composition.simps win_count.simps,
-       clarsimp, standard, safe)
-(*
-proof (unfold plurality_rule'.simps plurality'.simps revision_composition.simps,
-        standard, clarsimp, standard, safe)
- 1. \<And>x xa.
-       finite V \<Longrightarrow>
-       x \<in> A \<Longrightarrow>
-       xa \<in> A \<Longrightarrow>
-       card {v \<in> V. above (p v) x = {x}} < card {v \<in> V. above (p v) xa = {xa}} \<Longrightarrow>
-       x \<in> A \<Longrightarrow>
-       \<forall>xa\<in>A. card {v \<in> V. above (p v) xa = {xa}} \<le> card {v \<in> V. above (p v) x = {x}} \<Longrightarrow>
-       \<not> False \<Longrightarrow> finite V \<Longrightarrow> False
- 2. \<And>x xa.
-       finite V \<Longrightarrow>
-       x \<in> A \<Longrightarrow>
-       xa \<in> A \<Longrightarrow>
-       card {v \<in> V. above (p v) x = {x}} < card {v \<in> V. above (p v) xa = {xa}} \<Longrightarrow>
-       x \<in> A \<Longrightarrow>
-       \<forall>xa\<in>A. card {v \<in> V. above (p v) xa = {xa}} \<le> card {v \<in> V. above (p v) x = {x}} \<Longrightarrow> x \<in> A \<Longrightarrow> False
- 3. \<And>x xa.
-       x \<in> A \<Longrightarrow>
-       finite V \<Longrightarrow>
-       finite V \<Longrightarrow>
-       xa \<in> A \<Longrightarrow>
-       \<not> card {v \<in> V. above (p v) xa = {xa}} \<le> card {v \<in> V. above (p v) x = {x}} \<Longrightarrow>
-       \<exists>xa\<in>A. card {v \<in> V. above (p v) x = {x}} < card {v \<in> V. above (p v) xa = {xa}}
-*)
+proof (unfold plurality'.simps revision_composition.simps, safe)
   fix
     a :: "'a" and
     b :: "'a"
   assume
-    "finite V" and
     "b \<in> A" and
-    "card {i. i \<in> V \<and> above (p i) a = {a}}
-      < card {i. i \<in> V \<and> above (p i) b = {b}}" and
-    "\<forall> a' \<in> A. card {i. i \<in> V \<and> above (p i) a' = {a'}}
-              \<le> card {i. i \<in> V \<and> above (p i) a = {a}}"
+    "win_count V p a < win_count V p b" and
+    "a \<in> elect plurality_rule' V A p"
   thus False
-    using leD
-    by blast
+    by fastforce
+next
+  fix a :: "'a"
+  assume "a \<notin> elect plurality_rule' V A p"
+  moreover from this
+  have "a \<notin> A \<or> (\<exists> x. x \<in> A \<and> \<not> win_count V p x \<le> win_count V p a)"
+    by force
+  moreover assume "a \<in> A"
+  ultimately show "\<exists> x \<in> A. win_count V p a < win_count V p x"
+    using linorder_le_less_linear
+    by metis
 next
   fix
     a :: "'a" and
     b :: "'a"
   assume
-    "finite V" and
-    "b \<in> A" and
-    "\<not> card {i. i \<in> V \<and> above (p i) b = {b}}
-      \<le> card {i. i \<in> V \<and> above (p i) a = {a}}"
-  thus "\<exists> x \<in> A.
-          card {i. i \<in> V \<and> above (p i) a = {a}}
-          < card {i. i \<in> V \<and> above (p i) x = {x}}"
-    using linorder_not_less
-    by blast
-next
-  fix
-    a :: "'a" and
-    b :: "'a"
-  assume
-    "finite V" and
-    "b \<in> A" and
     "a \<in> A" and
-    "card {v \<in> V. above (p v) a = {a}} < card {v \<in> V. above (p v) b = {b}}" and
-    "\<forall> c \<in> A. card {v \<in> V. above (p v) c = {c}}
-                \<le> card {v \<in> V. above (p v) a = {a}}"
-  thus False
-    by auto
+    "\<forall> x \<in> A. win_count V p x \<le> win_count V p a"
+  thus "a \<in> elect plurality_rule' V A p"
+    by simp
+next
+  fix a :: "'a"
+  assume "a \<in> elect plurality_rule' V A p"
+  thus "a \<in> A"
+    by simp
+next
+  fix
+    a :: "'a"and
+    b :: "'a"
+  assume
+    "a \<in> elect plurality_rule' V A p" and
+    "b \<in> A"
+  thus "win_count V p b \<le> win_count V p a"
+    by simp
 qed
 
 lemma plurality_elim_equiv:

@@ -259,7 +259,7 @@ lemma limit_presv_connex:
     connex: "connex B r" and
     subset: "A \<subseteq> B"
   shows "connex A (limit A r)"
-proof (unfold connex_def limited_def, simp, safe)
+proof (unfold connex_def limited_def limit.simps is_less_preferred_than.simps, safe)
   let ?s = "{(a, b). (a, b) \<in> r \<and> a \<in> A \<and> b \<in> A}"
   fix
     a :: "'a" and
@@ -954,7 +954,7 @@ lemma lifted_mono:
     lifted: "lifted A r r' a" and
     a'_pref_a: "a' \<preceq>\<^sub>r a"
   shows "a' \<preceq>\<^sub>r' a"
-proof (simp)
+proof (unfold is_less_preferred_than.simps)
   have a'_pref_a_rel: "(a', a) \<in> r"
     using a'_pref_a
     by simp
@@ -1052,7 +1052,7 @@ lemma lifted_above_mono:
     lifted_a: "lifted A r r' a" and
     a'_in_A_sub_a: "a' \<in> A - {a}"
   shows "above r a' \<subseteq> above r' a' \<union> {a}"
-proof (safe, simp)
+proof (safe)
   fix b :: "'a"
   assume
     b_in_above_r: "b \<in> above r a'" and

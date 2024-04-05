@@ -465,7 +465,7 @@ lemma defer_winners_equivariant:
 lemma elect_first_winners_neutral: "is_symmetry (elect_r \<circ> fun\<^sub>\<E> elect_first_module)
                 (action_induced_equivariance (carrier neutrality\<^sub>\<G>)
                   valid_elections (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<c>))"
-proof (simp only: rewrite_equivariance, clarify)
+proof (unfold rewrite_equivariance, clarify)
   fix
     A :: "'a set" and
     V :: "'v::wellorder set" and

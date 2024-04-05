@@ -199,11 +199,16 @@ lemma ls_entries_empty_imp_ls_set_empty:
     "\<forall> i ::nat. i < length l \<longrightarrow> l!i = {}"
   shows "listset l = {}"
   using assms
-proof (induct l, clarsimp)
+proof (induct l)
+  case Nil
+  thus "listset [] = {}"
+    by simp
+next
   case (Cons a l)
   fix
     a :: "'a set" and
-    l :: "'a set list"
+    l :: "'a set list" and
+    l' :: "'a list"
   assume all_elems_empty: "\<forall> i::nat < length (a#l). (a#l)!i = {}"
   hence "a = {}"
     by auto
@@ -219,16 +224,25 @@ qed
 lemma all_ls_elems_same_len:
   fixes l :: "'a set list"
   shows "\<forall> l'::('a list). l' \<in> listset l \<longrightarrow> length l' = length l"
-proof (induct l, clarsimp)
+proof (induct l, safe)
+  case Nil
+  fix l :: "'a list"
+  assume "l \<in> listset []"
+  thus "length l = length []"
+    by simp
+next
   case (Cons a l)
   fix
     a :: "'a set" and
-    l :: "'a set list"
-  assume "\<forall> l'. l' \<in> listset l \<longrightarrow> length l' = length l"
+    l :: "'a set list" and
+    l' :: "'a list"
+  assume
+    "\<forall> l'. l' \<in> listset l \<longrightarrow> length l' = length l" and
+    "l' \<in> listset (a#l)"
   moreover have
     "\<forall> a' l'::('a set list). listset (a'#l') = {b#m | b m. b \<in> a' \<and> m \<in> listset l'}"
     by (simp add: set_Cons_def)
-  ultimately show "\<forall> l'. l' \<in> listset (a#l) \<longrightarrow> length l' = length (a#l)"
+  ultimately show "length l' = length (a#l)"
     using local.Cons
     by fastforce
 qed
@@ -236,7 +250,17 @@ qed
 lemma all_ls_elems_in_ls_set:
   fixes l :: "'a set list"
   shows "\<forall> l' i::nat. l' \<in> listset l \<and> i < length l' \<longrightarrow> l'!i \<in> l!i"
-proof (induct l, clarsimp, safe)
+proof (induct l, safe)
+  case Nil
+  fix
+    l' :: "'a list" and
+    i :: "nat"
+  assume
+    "l' \<in> listset []" and
+    "i < length l'"
+  thus "l'!i \<in> []!i"
+    by simp
+next
   case (Cons a l)
   fix
     a :: "'a set" and
@@ -368,45 +392,48 @@ lemma profile_permutation_set:
     V :: "'v set"
   shows "all_profiles V A =
           {p' :: ('a, 'v) Profile. finite_profile V A p'}"
-proof (cases "finite A \<and> finite V \<and> A \<noteq> {}", clarsimp)
-  assume
+proof (cases "finite A \<and> finite V \<and> A \<noteq> {}")
+  case True
+  assume "finite A \<and> finite V \<and> A \<noteq> {}"
+  hence
     fin_A: "finite A" and
     fin_V: "finite V" and
     non_empty: "A \<noteq> {}"
-  show "{\<pi>. \<pi> ` V \<subseteq> pl_\<alpha> ` permutations_of_set A} = {p'. profile V A p'}"
+    by safe
+  show "all_profiles V A = {p'. finite_profile V A p'}"
   proof
-    show "{\<pi>. \<pi> ` V \<subseteq> pl_\<alpha> ` permutations_of_set A} \<subseteq> {p'. profile V A p'}"
+    show "all_profiles V A \<subseteq> {p'. finite_profile V A p'}"
     proof (standard, clarify)
       fix p' :: "'v \<Rightarrow> 'a Preference_Relation"
-      assume
-        subset: "p' ` V \<subseteq> pl_\<alpha> ` permutations_of_set A"
+      assume subset: "p' \<in> all_profiles V A"
       hence "\<forall> v \<in> V. p' v \<in> pl_\<alpha> ` permutations_of_set A"
-        by blast
+        using fin_A fin_V
+        by auto
       hence "\<forall> v \<in> V. linear_order_on A (p' v)"
         using fin_A pl_\<alpha>_lin_order non_empty
         by metis
-      thus "profile V A p'"
+      thus "finite_profile V A p'"
         unfolding profile_def
-        by simp
+        using fin_A fin_V
+        by blast
     qed
   next
-    show "{p'. profile V A p'} \<subseteq> {\<pi>. \<pi> ` V \<subseteq> pl_\<alpha> ` permutations_of_set A}"
+    show "{p'. finite_profile V A p'} \<subseteq> all_profiles V A"
     proof (standard, clarify)
-      fix
-        p' :: "('a, 'v) Profile" and
-        v :: "'v"
-      assume
-        prof: "profile V A p'" and
-        el: "v \<in> V"
-      hence "linear_order_on A (p' v)"
+      fix p' :: "('a, 'v) Profile"
+      assume prof: "profile V A p'"
+      have "p' \<in> {p. p ` V \<subseteq> (pl_\<alpha> ` permutations_of_set A)}"
+        using fin_A lin_order_pl_\<alpha> prof
         unfolding profile_def
-        by simp
-      thus "(p' v) \<in> pl_\<alpha> ` permutations_of_set A"
-        using fin_A lin_order_pl_\<alpha>
-        by simp
+        by blast
+      thus "p' \<in> all_profiles V A"
+        using fin_A fin_V
+        unfolding all_profiles.simps
+        by metis
     qed
   qed
 next
+  case False
   assume not_fin_empty: "\<not> (finite A \<and> finite V \<and> A \<noteq> {})"
   have "finite A \<and> finite V \<and> A = {} \<Longrightarrow> permutations_of_set A = {[]}"
     unfolding permutations_of_set_def

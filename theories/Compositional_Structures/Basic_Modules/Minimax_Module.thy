@@ -48,66 +48,23 @@ lemma non_cond_winner_minimax_score:
     l_in_A: "l \<in> A" and
     l_neq_w: "l \<noteq> w"
   shows "minimax_score V l A p \<le> prefer_count V p l w"
-proof (simp, clarify)
-  assume fin_V: "finite V"
+proof (unfold minimax_score.simps, intro Min_le)
+  have "finite V"
+    using winner
+    by simp
+  moreover have "\<forall> E n. infinite E \<longrightarrow> (\<exists> e. \<not> e \<le> enat n \<and> e \<in> E)"
+    using finite_enat_bounded
+    by blast
+  ultimately show "finite {prefer_count V p l y | y. y \<in> A - {l}}"
+    using pref_count_voter_set_card
+    by fastforce
+next
   have "w \<in> A" 
     using winner 
     by simp
-  hence el: "card {v \<in> V. (w, l) \<in> p v} \<in> {(card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l}"
+  thus "prefer_count V p l w \<in> {prefer_count V p l y | y. y \<in> A - {l}}"
     using l_neq_w
-    by auto
-  moreover have fin: "finite {(card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l}"
-  proof -
-    have "\<forall> y \<in> A. card {v \<in> V. (y, l) \<in> p v} \<le> card V"
-      using fin_V
-      by (simp add: card_mono)
-    hence "\<forall> y \<in> A. card {v \<in> V. (y, l) \<in> p v} \<in> {.. card V}"
-      unfolding less_Suc_eq_le
-      by simp
-    hence "{(card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l} \<subseteq> {0..card V}"
-      by auto
-    thus ?thesis
-      by (simp add: finite_subset)
-  qed
-  ultimately have "Min {(card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l}
-          \<le> card {v \<in> V. (w, l) \<in> p v}"
-    using Min_le 
     by blast
-  hence enat_leq: "enat (Min {(card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l})
-                    \<le> enat (card {v \<in> V. (w, l) \<in> p v})"
-    using enat_ord_simps
-    by simp
-  have "\<forall> S::(nat set). finite S \<longrightarrow> (\<forall> m. (\<forall> x \<in> S. m \<le> x) \<longrightarrow> (\<forall> x \<in> S. enat m \<le> enat x))"
-    using enat_ord_simps
-    by simp
-  hence "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow> (\<forall> x. x \<in> S \<longrightarrow> enat (Min S) \<le> enat x)"
-    by simp
-  hence "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow>
-          (\<forall> x. x \<in> {enat x | x. x \<in> S} \<longrightarrow> enat (Min S) \<le> x)"
-    by auto
-  moreover have "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow> enat (Min S) \<in> {enat x | x. x \<in> S}"
-    by simp
-  moreover have "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow> finite {enat x | x. x \<in> S}
-                                                        \<and> {enat x | x. x \<in> S} \<noteq> {}"
-    by simp
-  ultimately have "\<forall> S::(nat set). finite S \<and> S \<noteq> {} \<longrightarrow> 
-                    enat (Min S) = Min {enat x | x. x \<in> S}"
-    using Min_eqI
-    by (metis (no_types, lifting))
-  moreover have "{(card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l} \<noteq> {}"
-    using el
-    by auto
-  moreover have "{enat x | x. x \<in> {(card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l}}
-                    = {enat (card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l}"
-    by auto
-  ultimately have "enat (Min {(card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l}) =
-                    Min {enat (card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l}"
-    using fin
-    by presburger
-  thus "Min {enat (card {v \<in> V. (y, l) \<in> p v}) | y. y \<in> A \<and> y \<noteq> l}
-          \<le> enat (card {v \<in> V. (w, l) \<in> p v})"
-    using enat_leq
-    by simp
 qed
 
 subsection \<open>Property\<close>

@@ -368,7 +368,7 @@ qed
 
 lemma swap_neutral: "invariance\<^sub>\<D> swap (carrier neutrality\<^sub>\<G>)
                         UNIV (\<lambda> \<pi> (A, q). (\<pi> ` A, rel_rename \<pi> q))"
-proof (simp only: rewrite_invariance\<^sub>\<D>, safe)
+proof (unfold rewrite_invariance\<^sub>\<D>, safe)
   fix
     \<pi> :: "'a \<Rightarrow> 'a" and
     A :: "'a set" and

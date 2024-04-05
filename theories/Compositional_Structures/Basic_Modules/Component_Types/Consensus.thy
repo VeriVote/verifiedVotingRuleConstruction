@@ -328,44 +328,72 @@ lemma eq_vote_cons_anonymous: "consensus_anonymity equal_vote\<^sub>\<C>"
 subsubsection \<open>Neutrality\<close>
 
 lemma nonempty_set\<^sub>\<C>_neutral: "consensus_neutrality valid_elections nonempty_set\<^sub>\<C>"
-proof (simp, unfold valid_elections_def, safe) qed
+  unfolding valid_elections_def
+  by auto
 
 lemma nonempty_profile\<^sub>\<C>_neutral: "consensus_neutrality valid_elections nonempty_profile\<^sub>\<C>"
-proof (simp, unfold valid_elections_def, safe) qed
+  unfolding valid_elections_def
+  by auto
 
 lemma equal_vote\<^sub>\<C>_neutral: "consensus_neutrality valid_elections equal_vote\<^sub>\<C>"
-proof (simp, unfold valid_elections_def, clarsimp, safe)
+proof (unfold valid_elections_def consensus_neutrality.simps is_symmetry.simps,
+       intro allI impI,
+       unfold split_paired_all neutrality\<^sub>\<R>.simps action_induced_rel.simps
+       voters_\<E>.simps alternatives_\<E>.simps profile_\<E>.simps \<phi>_neutr.simps
+       extensional_continuation.simps equal_vote\<^sub>\<C>.simps equal_vote\<^sub>\<C>'.simps
+       alternatives_rename.simps case_prod_unfold mem_Collect_eq fst_conv
+       snd_conv mem_Sigma_iff conj_assoc If_def simp_thms, safe)
   fix
     A :: "'a set" and
+    A' :: "'a set" and
     V :: "'v set" and
+    V' :: "'v set" and
     p :: "('a, 'v) Profile" and
+    p' :: "('a, 'v) Profile" and
     \<pi> :: "'a \<Rightarrow> 'a" and
     r :: "'a rel"
-  show "\<forall> v \<in> V. p v = r \<Longrightarrow> \<exists> r. \<forall> v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r"
+  assume
+    "profile V A p" and
+    "(THE z.
+        (profile V A p \<longrightarrow> z = (\<pi> ` A, V, rel_rename \<pi> \<circ> p))
+        \<and> (\<not> profile V A p \<longrightarrow> z = undefined)) = (A', V', p')"
+  hence
+    equal_voters: "V' = V" and
+    perm_profile: "p' = (\<lambda> x. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p x})"
+    unfolding comp_def
+    by (simp, simp)
+  have "(\<forall> v \<in> V. p v = r) \<longrightarrow> (\<exists> r'. \<forall> v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r')"
     by simp
-  assume bij: "\<pi> \<in> carrier neutrality\<^sub>\<G>"
+  {
+    moreover assume "\<forall> v' \<in> V. p v' = r"
+    ultimately show "\<exists> r. \<forall> v \<in> V'. p' v = r"
+      using equal_voters perm_profile
+      by metis
+  }
+  assume "\<pi> \<in> carrier neutrality\<^sub>\<G>"
   hence "bij \<pi>"
-    unfolding neutrality\<^sub>\<G>_def
     using rewrite_carrier
+    unfolding neutrality\<^sub>\<G>_def
     by blast
   hence "\<forall> a. the_inv \<pi> (\<pi> a) = a"
     using bij_is_inj the_inv_f_f
     by metis
   moreover have
-    "\<forall> v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r \<Longrightarrow>
-      \<forall> v \<in> V. {(the_inv \<pi> (\<pi> a), the_inv \<pi> (\<pi> b)) | a b. (a, b) \<in> p v} =
-               {(the_inv \<pi> a, the_inv \<pi> b) | a b. (a, b) \<in> r}"
+    "(\<forall> v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r) \<longrightarrow>
+      (\<forall> v \<in> V. {(the_inv \<pi> (\<pi> a), the_inv \<pi> (\<pi> b)) | a b. (a, b) \<in> p v} =
+               {(the_inv \<pi> a, the_inv \<pi> b) | a b. (a, b) \<in> r})"
     by fastforce
   ultimately have
-    "\<forall> v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r \<Longrightarrow>
-      \<forall> v \<in> V. {(a, b) | a b. (a, b) \<in> p v} =
-              {(the_inv \<pi> a, the_inv \<pi> b) | a b. (a, b) \<in> r}"
+    "(\<forall> v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r) \<longrightarrow>
+      (\<forall> v \<in> V. {(a, b) | a b. (a, b) \<in> p v} =
+              {(the_inv \<pi> a, the_inv \<pi> b) | a b. (a, b) \<in> r})"
     by auto
-  hence "\<forall> v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r \<Longrightarrow>
-          \<forall> v \<in> V. p v = {(the_inv \<pi> a, the_inv \<pi> b) | a b. (a, b) \<in> r}"
+  hence "(\<forall> v' \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v'} = r) \<longrightarrow> (\<exists> r'. \<forall> v' \<in> V. p v' = r')"
     by simp
-  thus "\<forall> v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r \<Longrightarrow> \<exists> r. \<forall> v \<in> V. p v = r"
-    by simp
+  moreover assume "\<forall> v' \<in> V'. p' v' = r"
+  ultimately show "\<exists> r'. \<forall> v' \<in> V. p v' = r'"
+    using equal_voters perm_profile
+    by metis
 qed
 
 lemma strong_unanimity\<^sub>\<C>_neutral: 

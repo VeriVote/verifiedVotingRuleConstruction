@@ -26,7 +26,18 @@ text \<open>
 \<close>
 global_interpretation \<S>\<C>\<F>_result:
   result "well_formed_\<S>\<C>\<F>" "limit_set_\<S>\<C>\<F>"
-proof (unfold_locales, simp) qed
+proof (unfold_locales, safe)
+  fix
+    A :: "'a set" and
+    e :: "'a set" and
+    r :: "'a set" and
+    d :: "'a set"
+  assume
+    "set_equals_partition (limit_set_\<S>\<C>\<F> A UNIV) (e, r, d)" and
+    "disjoint3 (e, r, d)"
+  thus "well_formed_\<S>\<C>\<F> A (e, r, d)"
+    by simp
+qed
 
 text \<open>
   Results from committee functions, for the purpose of composability and
@@ -34,7 +45,16 @@ text \<open>
 \<close>
 global_interpretation committee_result:
   result "\<lambda> A r. set_equals_partition (Pow A) r \<and> disjoint3 r" "\<lambda> A rs. {r \<inter> A | r. r \<in> rs}"
-proof (unfold_locales, safe, force) qed
+proof (unfold_locales, safe)
+  fix
+    A :: "'b set" and
+    e :: "'b set set" and
+    r :: "'b set set" and
+    d :: "'b set set"
+  assume "set_equals_partition {r \<inter> A |r. r \<in> UNIV} (e, r, d)"
+  thus "set_equals_partition (Pow A) (e, r, d)"
+    by force
+qed
 
 text \<open>
   Results from social welfare functions (\<open>\<S>\<W>\<F>s\<close>), for the purpose of composability and
