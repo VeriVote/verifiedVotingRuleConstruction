@@ -1074,23 +1074,46 @@ next
     by blast
 qed
 
+lemma rename_subset:
+  fixes
+    r :: "'a rel" and
+    s :: "'a rel" and
+    a :: "'a" and
+    b :: "'a" and
+    \<pi> :: "'a \<Rightarrow> 'a"
+  assumes
+    bij_\<pi>: "bij \<pi>"and
+    "rel_rename \<pi> r = rel_rename \<pi> s" and
+    "(a, b) \<in> r"
+  shows "(a, b) \<in> s"
+proof -
+  have "(\<pi> a, \<pi> b) \<in> {(\<pi> a, \<pi> b) | a b. (a, b) \<in> s}"
+    using assms
+    unfolding rel_rename.simps
+    by blast
+  hence "\<exists> c d. (c, d) \<in> s \<and> \<pi> c = \<pi> a \<and> \<pi> d = \<pi> b"
+    by fastforce
+  moreover have "\<forall> c d. \<pi> c = \<pi> d \<longrightarrow> c = d"
+    using bij_\<pi> bij_pointE
+    by metis
+  ultimately show "(a, b) \<in> s"
+    by blast
+qed
+
 lemma rel_rename_bij:
   fixes \<pi> :: "'a \<Rightarrow> 'a"
   assumes bij_\<pi>: "bij \<pi>"
   shows "bij (rel_rename \<pi>)"
 proof (unfold bij_def inj_def surj_def, safe)
-  show subset:
-    "\<And> r s a b. rel_rename \<pi> r = rel_rename \<pi> s \<Longrightarrow> (a, b) \<in> r \<Longrightarrow> (a, b) \<in> s"
-  proof -
-    fix
-      r :: "'a rel" and
-      s :: "'a rel" and
-      a :: "'a" and
-      b :: "'a"
-    assume
-      "rel_rename \<pi> r = rel_rename \<pi> s" and
-      "(a, b) \<in> r"
-    hence "(\<pi> a, \<pi> b) \<in> {(\<pi> a, \<pi> b) | a b. (a, b) \<in> s}"
+  fix
+    r :: "'a rel" and
+    s :: "'a rel" and
+    a :: "'a" and
+    b :: "'a"
+  assume rename: "rel_rename \<pi> r = rel_rename \<pi> s"
+  {
+    moreover assume "(a, b) \<in> r"
+    ultimately have "(\<pi> a, \<pi> b) \<in> {(\<pi> a, \<pi> b) | a b. (a, b) \<in> s}"
       unfolding rel_rename.simps
       by blast
     hence "\<exists> c d. (c, d) \<in> s \<and> \<pi> c = \<pi> a \<and> \<pi> d = \<pi> b"
@@ -1098,20 +1121,13 @@ proof (unfold bij_def inj_def surj_def, safe)
     moreover have "\<forall> c d. \<pi> c = \<pi> d \<longrightarrow> c = d"
       using bij_\<pi> bij_pointE
       by metis
-    ultimately show "(a, b) \<in> s"
+    ultimately show subset: "(a, b) \<in> s"
       by blast
-  qed
-  fix
-    r :: "'a rel" and
-    s :: "'a rel" and
-    a :: "'a" and
-    b :: "'a"
-  assume
-    "rel_rename \<pi> r = rel_rename \<pi> s" and
-    "(a, b) \<in> s"
-  thus "(a, b) \<in> r"
-    using subset
-    by presburger
+  }
+  moreover assume "(a, b) \<in> s"
+  ultimately show "(a, b) \<in> r"
+    using rename rename_subset bij_\<pi>
+    by (metis (no_types))
 next
   fix r :: "'a rel"
   have "rel_rename \<pi> {((the_inv \<pi>) a, (the_inv \<pi>) b) | a b. (a, b) \<in> r} =
@@ -1146,20 +1162,61 @@ proof
     by blast
 qed
 
+lemma valid_elects_closed:
+  fixes
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    A' :: "'a set" and
+    V' :: "'v set" and
+    p' :: "('a, 'v) Profile" and
+    \<pi> :: "'a \<Rightarrow> 'a"
+  assumes
+    bij_\<pi>: "bij \<pi>" and
+    valid_elects: "(A, V, p) \<in> valid_elections" and
+    renamed: "(A', V', p') = alternatives_rename \<pi> (A, V, p)"
+  shows "(A', V', p') \<in> valid_elections"
+proof -
+  have "A' = \<pi> ` A"
+    using renamed
+    by simp
+  moreover have "V = V'"
+    using renamed
+    by simp
+  moreover from this have "\<forall> v \<in> V'. linear_order_on A (p v)"
+    using valid_elects
+    unfolding valid_elections_def profile_def
+    by simp
+  moreover have "\<forall> v \<in> V'. p' v = rel_rename \<pi> (p v)"
+    using renamed
+    by simp
+  ultimately have "\<forall> v \<in> V'. linear_order_on A' (p' v)"
+    unfolding linear_order_on_def partial_order_on_def preorder_on_def
+    using bij_\<pi> rel_rename_sound bij_is_inj
+    by metis
+  thus "(A', V', p') \<in> valid_elections"
+    unfolding valid_elections_def profile_def
+    by simp
+qed
+
 lemma alternatives_rename_bij:
   fixes \<pi> :: "('a \<Rightarrow> 'a)"
   assumes bij_\<pi>: "bij \<pi>"
   shows "bij_betw (alternatives_rename \<pi>) valid_elections valid_elections"
-proof (unfold bij_betw_def, safe, intro inj_onI, clarsimp)
+proof (unfold bij_betw_def, safe, intro inj_onI, clarify)
   fix
     A :: "'a set" and
     A' :: "'a set" and
     V :: "'v set" and
+    V' :: "'v set" and
     p :: "('a, 'v) Profile" and
     p' :: "('a, 'v) Profile"
   assume
+    renamed: "alternatives_rename \<pi> (A, V, p) = alternatives_rename \<pi> (A', V', p')"
+  hence
     \<pi>_eq_img_A_A': "\<pi> ` A = \<pi> ` A'" and
     rel_rename_eq: "rel_rename \<pi> \<circ> p = rel_rename \<pi> \<circ> p'"
+    by (simp, simp)
   hence
     "(the_inv (rel_rename \<pi>)) \<circ> rel_rename \<pi> \<circ> p = (the_inv (rel_rename \<pi>)) \<circ> rel_rename \<pi> \<circ> p'"
     using fun.map_comp
@@ -1170,51 +1227,48 @@ proof (unfold bij_betw_def, safe, intro inj_onI, clarsimp)
     by (metis (no_types, opaque_lifting))
   finally have "p = p'"
     by simp
-  thus "A = A' \<and> p = p'"
+  hence "A = A' \<and> p = p'"
     using bij_\<pi> \<pi>_eq_img_A_A' bij_betw_imp_inj_on inj_image_eq_iff
     by metis
+  thus "A = A' \<and> (V, p) = (V', p')"
+    using renamed
+    by simp
+next
+  fix
+    A :: "'a set" and
+    A' :: "'a set" and
+    V :: "'v set" and
+    V' :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    p' :: "('a, 'v) Profile"
+  assume
+      valid_elects: "(A, V, p) \<in> valid_elections" and
+      renamed: "(A', V', p') = alternatives_rename \<pi> (A, V, p)"
+  hence rewr: "V = V' \<and> A' = \<pi> ` A"
+    by simp
+  hence "\<forall> v \<in> V'. linear_order_on A (p v)"
+    using valid_elects
+    unfolding valid_elections_def profile_def
+    by simp
+  moreover have "\<forall> v \<in> V'. p' v = rel_rename \<pi> (p v)"
+    using renamed
+    by simp
+  ultimately have "\<forall> v \<in> V'. linear_order_on A' (p' v)"
+    unfolding linear_order_on_def partial_order_on_def preorder_on_def
+    using rewr rel_rename_sound bij_is_inj assms
+    by metis
+  thus "(A', V', p') \<in> valid_elections"
+    unfolding valid_elections_def profile_def
+    by simp
 next
   fix
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assume valid_elects: "(A, V, p) \<in> valid_elections"
-  have valid_elects_closed:
-    "\<And> A' V' p' \<pi>.
-      bij \<pi> \<Longrightarrow> (A', V', p') = alternatives_rename \<pi> (A, V, p) \<Longrightarrow>
-        (A', V', p') \<in> valid_elections"
-  proof -
-    fix
-      A' :: "'a set" and
-      V' :: "'v set" and
-      p' :: "('a, 'v) Profile" and
-      \<pi> :: "'a \<Rightarrow> 'a"
-    assume renamed: "(A', V', p') = alternatives_rename \<pi> (A, V, p)"
-    hence rewr: "V = V' \<and> A' = \<pi> ` A"
-      by simp
-    hence "\<forall> v \<in> V'. linear_order_on A (p v)"
-      using valid_elects
-      unfolding valid_elections_def profile_def
-      by simp
-    moreover have "\<forall> v \<in> V'. p' v = rel_rename \<pi> (p v)"
-      using renamed
-      by simp
-    moreover assume bij_\<pi>: "bij \<pi>"
-    ultimately have "\<forall> v \<in> V'. linear_order_on A' (p' v)"
-      unfolding linear_order_on_def partial_order_on_def preorder_on_def
-      using rewr rel_rename_sound bij_is_inj
-      by metis
-    thus "(A', V', p') \<in> valid_elections"
-      unfolding valid_elections_def profile_def
-      by simp
-  qed
-  thus "\<And> A' V' p'.
-          (A', V', p') = alternatives_rename \<pi> (A, V, p) \<Longrightarrow>
-            (A, V, p) \<in> valid_elections \<Longrightarrow> (A', V', p') \<in> valid_elections"
-    using bij_\<pi> valid_elects
-    by blast
-  have "alternatives_rename (the_inv \<pi>) (A, V, p)
-          = ((the_inv \<pi>) ` A, V, rel_rename (the_inv \<pi>) \<circ> p)"
+  have rename_inv:
+    "alternatives_rename (the_inv \<pi>) (A, V, p)
+      = ((the_inv \<pi>) ` A, V, rel_rename (the_inv \<pi>) \<circ> p)"
     by simp
   also have
     "alternatives_rename \<pi> ((the_inv \<pi>) ` A, V, rel_rename (the_inv \<pi>) \<circ> p) =
@@ -1230,8 +1284,8 @@ next
     unfolding rel_rename.simps
     by auto
   moreover have "alternatives_rename (the_inv \<pi>) (A, V, p) \<in> valid_elections"
-    using valid_elects_closed bij_\<pi>
-    by (simp add: bij_betw_the_inv_into valid_elects)
+    using rename_inv valid_elects valid_elects_closed bij_\<pi> bij_betw_the_inv_into
+    by (metis (no_types))
   ultimately show "(A, V, p) \<in> alternatives_rename \<pi> ` valid_elections"
     using image_eqI
     by metis
