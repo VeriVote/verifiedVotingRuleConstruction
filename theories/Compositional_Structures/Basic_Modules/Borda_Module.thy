@@ -22,19 +22,18 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun borda_score :: "'a Evaluation_Function" where
-  "borda_score x A p = (\<Sum> y \<in> A. (prefer_count p x y))"
+fun borda_score :: "('a, 'v) Evaluation_Function" where
+  "borda_score V x A p = (\<Sum> y \<in> A. (prefer_count V p x y))"
 
-fun borda :: "'a Electoral_Module" where
-  "borda A p = max_eliminator borda_score A p"
+fun borda :: "('a, 'v, 'a Result) Electoral_Module" where
+  "borda V A p = max_eliminator borda_score V A p"
 
 subsection \<open>Soundness\<close>
 
-theorem borda_sound: "electoral_module borda"
+theorem borda_sound: "\<S>\<C>\<F>_result.electoral_module borda"
   unfolding borda.simps
   using max_elim_sound
   by metis
-
 
 subsection \<open>Non-Blocking\<close>
 

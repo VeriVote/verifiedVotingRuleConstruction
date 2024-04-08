@@ -22,15 +22,16 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun elector :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module" where
+fun elector :: "('a, 'v, 'a Result) Electoral_Module
+                  \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "elector m = (m \<triangleright> elect_module)"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
 lemma elector_seqcomp_assoc:
   fixes
-    a :: "'a Electoral_Module" and
-    b :: "'a Electoral_Module"
+    a :: "('a, 'v, 'a Result) Electoral_Module" and
+    b :: "('a, 'v, 'a Result) Electoral_Module"
   shows "(a \<triangleright> (elector b)) = (elector (a \<triangleright> b))"
   unfolding elector.simps elect_module.simps sequential_composition.simps
   using boolean_algebra_cancel.sup2 fst_eqD snd_eqD sup_commute
@@ -39,43 +40,94 @@ lemma elector_seqcomp_assoc:
 subsection \<open>Soundness\<close>
 
 theorem elector_sound[simp]:
-  fixes m :: "'a Electoral_Module"
-  assumes "electoral_module m"
-  shows "electoral_module (elector m)"
-  using assms
-  by simp
+  fixes m :: "('a, 'v, 'a Result) Electoral_Module"
+  assumes "\<S>\<C>\<F>_result.electoral_module m"
+  shows "\<S>\<C>\<F>_result.electoral_module (elector m)"
+  using assms elect_mod_sound seq_comp_sound
+  unfolding elector.simps
+  by metis
+
+lemma voters_determine_elector:
+  fixes m :: "('a, 'v, 'a Result) Electoral_Module"
+  assumes "voters_determine_election m"
+  shows "voters_determine_election (elector m)"
+  using assms elect_mod_only_voters voters_determine_seq_comp
+  unfolding elector.simps
+  by metis
 
 subsection \<open>Electing\<close>
 
 theorem elector_electing[simp]:
-  fixes m :: "'a Electoral_Module"
+  fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   assumes
-    module_m: "electoral_module m" and
+    module_m: "\<S>\<C>\<F>_result.electoral_module m" and
     non_block_m: "non_blocking m"
   shows "electing (elector m)"
 proof -
-  obtain
-    A :: "'a Electoral_Module \<Rightarrow> 'a set" and
-    p :: "'a Electoral_Module \<Rightarrow> 'a Profile" where
-    "\<forall> m'.
-      (\<not> electing m' \<and> electoral_module m' \<longrightarrow> elect m' (A m') (p m') = {})
-      \<and> (electing m'
-          \<longrightarrow> (\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> elect m' A p \<noteq> {}))"
-    using electing_def
+  have "\<forall> m'.
+        (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
+          (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p')
+            \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and>
+          (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m'
+            \<or> (\<exists> A V p. (A \<noteq> {} \<and> finite A \<and> profile V A p \<and> elect m' V A p = {})))"
+    unfolding electing_def
+    by blast
+  hence "\<forall> m'.
+        (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
+          (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p')
+            \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and>
+        (\<exists> A V p. (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m' \<or> A \<noteq> {}
+          \<and> finite A \<and> profile V A p \<and> elect m' V A p = {}))"
+    by simp
+  then obtain
+    A :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a set" and
+    V :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set" and
+    p :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v) Profile" where
+    electing_mod:
+     "\<forall> m'::('a, 'v, 'a Result) Electoral_Module.
+      (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
+        (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p')
+          \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and>
+        (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m'
+        \<or> A m' \<noteq> {} \<and> finite (A m') \<and> profile (V m') (A m') (p m')
+                    \<and> elect m' (V m') (A m') (p m') = {})"
     by metis
-  moreover have "electoral_module (elector m)"
-    by (simp add: module_m)
+  moreover have non_block:
+    "non_blocking (elect_module::'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a Result)"
+    by (simp add: electing_imp_non_blocking)
+  moreover obtain
+    e :: "'a Result \<Rightarrow> 'a set" and
+    r :: "'a Result \<Rightarrow> 'a set" and
+    d :: "'a Result \<Rightarrow> 'a set" where
+    result: "\<forall> s. (e s, r s, d s) = s"
+    using disjoint3.cases
+    by (metis (no_types))
   moreover from this
-  have "\<not> electing (elector m)
-        \<longrightarrow> elect (elector m) (A (elector m)) (p (elector m)) \<noteq> {}"
-    using Un_empty_left boolean_algebra.disj_zero_right fst_conv non_block_m
-          result_presv_alts seq_comp_def_then_elect_elec_set sup_bot.eq_neutr_iff
-    unfolding elect_module.simps elector.simps electing_def non_blocking_def
-    by (metis (no_types, lifting))
+  have "\<forall> s. (elect_r s, r s, d s) = s"
+    by simp
+  moreover from this
+  have
+    "profile (V (elector m)) (A (elector m)) (p (elector m)) \<and> finite (A (elector m))
+      \<longrightarrow> d (elector m (V (elector m)) (A (elector m)) (p (elector m))) = {}"
+    by simp
+  moreover have "\<S>\<C>\<F>_result.electoral_module (elector m)"
+    using elector_sound module_m
+    by simp
+  moreover from electing_mod result
+  have "finite (A (elector m)) \<and>
+          profile (V (elector m)) (A (elector m)) (p (elector m)) \<and>
+          elect (elector m) (V (elector m)) (A (elector m)) (p (elector m)) = {} \<and>
+          d (elector m (V (elector m)) (A (elector m)) (p (elector m))) = {} \<and>
+          reject (elector m) (V (elector m)) (A (elector m)) (p (elector m)) =
+            r (elector m (V (elector m)) (A (elector m)) (p (elector m))) \<longrightarrow>
+              electing (elector m)"
+    using Diff_empty elector.simps non_block_m snd_conv non_blocking_def reject_not_elec_or_def
+          non_block seq_comp_presv_non_blocking
+    by (metis (mono_tags, opaque_lifting))
   ultimately show ?thesis
     using non_block_m
     unfolding elector.simps
-    by metis
+    by auto
 qed
 
 subsection \<open>Composition Rule\<close>
@@ -85,52 +137,57 @@ text \<open>
 \<close>
 
 lemma dcc_imp_cc_elector:
-  fixes m :: "'a Electoral_Module"
+  fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   assumes "defer_condorcet_consistency m"
   shows "condorcet_consistency (elector m)"
 proof (unfold defer_condorcet_consistency_def condorcet_consistency_def, safe)
-  show "electoral_module (elector m)"
+  show "\<S>\<C>\<F>_result.electoral_module (elector m)"
     using assms elector_sound
     unfolding defer_condorcet_consistency_def
     by metis
 next
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     w :: "'a"
-  assume c_win: "condorcet_winner A p w"
+  assume c_win: "condorcet_winner V A p w"
   have fin_A: "finite A"
     using condorcet_winner.simps c_win
     by metis
-  have prof_A: "profile A p"
+  have fin_V: "finite V"
+    using condorcet_winner.simps c_win
+    by metis
+  have prof_A: "profile V A p"
     using c_win
     by simp
   have max_card_w: "\<forall> y \<in> A - {w}.
-          card {i. i < length p \<and> (w, y) \<in> (p!i)} <
-            card {i. i < length p \<and> (y, w) \<in> (p!i)}"
-    using c_win
+          card {i \<in> V. (w, y) \<in> (p i)}
+            < card {i \<in> V. (y, w) \<in> (p i)}"
+    using c_win fin_V
     by simp
-  have rej_is_complement: "reject m A p = A - (elect m A p \<union> defer m A p)"
-    using double_diff sup_bot.left_neutral Un_upper2 assms fin_A prof_A
+  have rej_is_complement:
+    "reject m V A p = A - (elect m V A p \<union> defer m V A p)"
+    using double_diff sup_bot.left_neutral Un_upper2 assms fin_A prof_A fin_V
           defer_condorcet_consistency_def elec_and_def_not_rej reject_in_alts
     by (metis (no_types, opaque_lifting))
-  have subset_in_win_set: "elect m A p \<union> defer m A p \<subseteq>
+  have subset_in_win_set: "elect m V A p \<union> defer m V A p \<subseteq>
       {e \<in> A. e \<in> A \<and> (\<forall> x \<in> A - {e}.
-        card {i. i < length p \<and> (e, x) \<in> p!i} < card {i. i < length p \<and> (x, e) \<in> p!i})}"
+        card {i \<in> V. (e, x) \<in> p i} < card {i \<in> V. (x, e) \<in> p i})}"
   proof (safe_step)
     fix x :: "'a"
-    assume x_in_elect_or_defer: "x \<in> elect m A p \<union> defer m A p"
+    assume x_in_elect_or_defer: "x \<in> elect m V A p \<union> defer m V A p"
     hence x_eq_w: "x = w"
-      using Diff_empty Diff_iff assms cond_winner_unique c_win fin_A insert_iff
-            prod.sel sup_bot.left_neutral
+      using Diff_empty Diff_iff assms cond_winner_unique c_win fin_A fin_V insert_iff
+            snd_conv prod.sel(1) sup_bot.left_neutral
       unfolding defer_condorcet_consistency_def
       by (metis (mono_tags, lifting))
-    have "\<forall> x. x \<in> elect m A p \<longrightarrow> x \<in> A"
-      using fin_A prof_A assms elect_in_alts in_mono
+    have "\<And> x. x \<in> elect m V A p \<Longrightarrow> x \<in> A"
+      using fin_A prof_A fin_V assms elect_in_alts in_mono
       unfolding defer_condorcet_consistency_def
       by metis
-    moreover have "\<forall> x. x \<in> defer m A p \<longrightarrow> x \<in> A"
-      using fin_A prof_A assms defer_in_alts in_mono
+    moreover have "\<And> x. x \<in> defer m V A p \<Longrightarrow> x \<in> A"
+      using fin_A prof_A fin_V assms defer_in_alts in_mono
       unfolding defer_condorcet_consistency_def
       by metis
     ultimately have "x \<in> A"
@@ -138,54 +195,57 @@ next
       by auto
     thus "x \<in> {e \<in> A. e \<in> A \<and>
             (\<forall> x \<in> A - {e}.
-              card {i. i < length p \<and> (e, x) \<in> p!i} <
-                card {i. i < length p \<and> (x, e) \<in> p!i})}"
+              card {i \<in> V. (e, x) \<in> p i}
+                < card {i \<in> V. (x, e) \<in> p i})}"
       using x_eq_w max_card_w
       by auto
   qed
   moreover have
     "{e \<in> A. e \<in> A \<and>
         (\<forall> x \<in> A - {e}.
-            card {i. i < length p \<and> (e, x) \<in> p!i} <
-              card {i. i < length p \<and> (x, e) \<in> p!i})}
-          \<subseteq> elect m A p \<union> defer m A p"
+            card {i \<in> V. (e, x) \<in> p i} <
+              card {i \<in> V. (x, e) \<in> p i})}
+          \<subseteq> elect m V A p \<union> defer m V A p"
   proof (safe)
     fix x :: "'a"
     assume
-      x_not_in_defer: "x \<notin> defer m A p" and
+      x_not_in_defer: "x \<notin> defer m V A p" and
       "x \<in> A" and
       "\<forall> x' \<in> A - {x}.
-        card {i. i < length p \<and> (x, x') \<in> p!i} <
-          card {i. i < length p \<and> (x', x) \<in> p!i}"
-    hence c_win_x: "condorcet_winner A p x"
-      using fin_A prof_A
+        card {i \<in> V. (x, x') \<in> p i}
+          < card {i \<in> V. (x', x) \<in> p i}"
+    hence c_win_x: "condorcet_winner V A p x"
+      using fin_A prof_A fin_V
       by simp
-    have "(electoral_module m \<and> \<not> defer_condorcet_consistency m \<longrightarrow>
-          (\<exists> A rs a. condorcet_winner A rs a \<and>
-            m A rs \<noteq> ({}, A - defer m A rs, {a \<in> A. condorcet_winner A rs a}))) \<and>
-        (defer_condorcet_consistency m \<longrightarrow>
-          (\<forall> A rs a. finite A \<longrightarrow> condorcet_winner A rs a \<longrightarrow>
-            m A rs = ({}, A - defer m A rs, {a \<in> A. condorcet_winner A rs a})))"
+    have "(\<S>\<C>\<F>_result.electoral_module m \<and> \<not> defer_condorcet_consistency m \<longrightarrow>
+          (\<exists> A V rs a. condorcet_winner V A rs a \<and>
+            m V A rs \<noteq> ({}, A - defer m V A rs,
+            {a \<in> A. condorcet_winner V A rs a})))
+        \<and> (defer_condorcet_consistency m \<longrightarrow>
+          (\<forall> A V rs a. finite A \<longrightarrow> finite V \<longrightarrow> condorcet_winner V A rs a \<longrightarrow>
+            m V A rs =
+      ({}, A - defer m V A rs, {a \<in> A. condorcet_winner V A rs a})))"
       unfolding defer_condorcet_consistency_def
       by blast
-    hence "m A p = ({}, A - defer m A p, {a \<in> A. condorcet_winner A p a})"
-      using c_win_x assms fin_A
+    hence
+      "m V A p = ({}, A - defer m V A p, {a \<in> A. condorcet_winner V A p a})"
+      using c_win_x assms fin_A fin_V
       by blast
-    thus "x \<in> elect m A p"
-      using assms x_not_in_defer fin_A cond_winner_unique defer_condorcet_consistency_def
-            insertCI snd_conv c_win_x
+    thus "x \<in> elect m V A p"
+      using assms x_not_in_defer fin_A fin_V cond_winner_unique
+            defer_condorcet_consistency_def insertCI snd_conv c_win_x
       by (metis (no_types, lifting))
   qed
   ultimately have
-    "elect m A p \<union> defer m A p =
+    "elect m V A p \<union> defer m V A p =
       {e \<in> A. e \<in> A \<and>
         (\<forall> x \<in> A - {e}.
-          card {i. i < length p \<and> (e, x) \<in> p!i} <
-            card {i. i < length p \<and> (x, e) \<in> p!i})}"
+          card {i \<in> V. (e, x) \<in> p i} <
+            card {i \<in> V. (x, e) \<in> p i})}"
     by blast
-  thus "elector m A p =
-          ({e \<in> A. condorcet_winner A p e}, A - elect (elector m) A p, {})"
-    using fin_A prof_A rej_is_complement
+  thus "elector m V A p =
+          ({e \<in> A. condorcet_winner V A p e}, A - elect (elector m) V A p, {})"
+    using fin_A prof_A fin_V rej_is_complement
     by simp
 qed
 

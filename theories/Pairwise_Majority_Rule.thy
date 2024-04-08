@@ -19,30 +19,30 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun pairwise_majority_rule :: "'a Electoral_Module" where
-  "pairwise_majority_rule A p = elector condorcet A p"
+fun pairwise_majority_rule :: "('a, 'v, 'a Result) Electoral_Module" where
+  "pairwise_majority_rule V A p = elector condorcet V A p"
 
-fun condorcet' :: "'a Electoral_Module" where
-"condorcet' A p =
-  ((min_eliminator condorcet_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
+fun condorcet' :: "('a, 'v, 'a Result) Electoral_Module" where
+  "condorcet' V A p = ((min_eliminator condorcet_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) V A p"
 
-fun pairwise_majority_rule' :: "'a Electoral_Module" where
-"pairwise_majority_rule' A p = iterelect condorcet' A p"
+fun pairwise_majority_rule' :: "('a, 'v, 'a Result) Electoral_Module" where
+  "pairwise_majority_rule' V A p = iter_elect condorcet' V A p"
 
 subsection \<open>Soundness\<close>
 
-theorem pairwise_majority_rule_sound: "electoral_module pairwise_majority_rule"
+theorem pairwise_majority_rule_sound: "\<S>\<C>\<F>_result.electoral_module pairwise_majority_rule"
   unfolding pairwise_majority_rule.simps
   using condorcet_sound elector_sound
   by metis
 
-theorem condorcet'_rule_sound: "electoral_module condorcet'"
-  unfolding condorcet'.simps
-  by (simp add: loop_comp_sound)
+theorem condorcet'_rule_sound: "\<S>\<C>\<F>_result.electoral_module condorcet'"
+  using Defer_One_Loop_Composition.iter.elims loop_comp_sound min_elim_sound
+  unfolding condorcet'.simps loop_comp_sound
+  by metis
 
-theorem pairwise_majority_rule'_sound: "electoral_module pairwise_majority_rule'"
+theorem pairwise_majority_rule'_sound: "\<S>\<C>\<F>_result.electoral_module pairwise_majority_rule'"
   unfolding pairwise_majority_rule'.simps
-  using condorcet'_rule_sound elector_sound iter.simps iterelect.simps loop_comp_sound
+  using condorcet'_rule_sound elector_sound iter.simps iter_elect.simps loop_comp_sound
   by metis
 
 subsection \<open>Condorcet Consistency Property\<close>

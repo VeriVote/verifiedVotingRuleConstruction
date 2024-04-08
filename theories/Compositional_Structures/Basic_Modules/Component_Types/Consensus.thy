@@ -6,177 +6,279 @@
 section \<open>Consensus\<close>
 
 theory Consensus
-  imports "HOL-Combinatorics.List_Permutation"
-          "Social_Choice_Types/Profile"
+  imports "Social_Choice_Types/Voting_Symmetry"
 begin
 
 text \<open>
-  An election consisting of a set of alternatives and a list of preferential votes (a profile)
+  An election consisting of a set of alternatives and preferential votes for each voter (a profile)
   is a consensus if it has an undisputed winner reflecting a certain concept of fairness in the
   society.
 \<close>
 
 subsection \<open>Definition\<close>
 
-type_synonym 'a Consensus = "'a Election \<Rightarrow> bool"
+type_synonym ('a, 'v) Consensus = "('a, 'v) Election \<Rightarrow> bool"
 
 subsection \<open>Consensus Conditions\<close>
 
 text \<open>
-  Nonempty set.
+  Nonempty alternative set.
 \<close>
 
-fun nonempty_set\<^sub>\<C> :: "'a Consensus" where
-  "nonempty_set\<^sub>\<C> (A, p) = (A \<noteq> {})"
+fun nonempty_set\<^sub>\<C> :: "('a, 'v) Consensus" where
+  "nonempty_set\<^sub>\<C> (A, V, p) = (A \<noteq> {})"
 
 text \<open>
-  Nonempty profile.
+  Nonempty profile, i.e., nonempty voter set.
+  Note that this is also true if p v = {} for all voters v in V.
 \<close>
 
-fun nonempty_profile\<^sub>\<C> :: "'a Consensus" where
-  "nonempty_profile\<^sub>\<C> (A, p) = (p \<noteq> [])"
+fun nonempty_profile\<^sub>\<C> :: "('a, 'v) Consensus" where
+  "nonempty_profile\<^sub>\<C> (A, V, p) = (V \<noteq> {})"
 
 text \<open>
   Equal top ranked alternatives.
 \<close>
 
-fun equal_top\<^sub>\<C>' :: "'a \<Rightarrow> 'a Consensus" where
-  "equal_top\<^sub>\<C>' a (A, p) = (a \<in> A \<and> (\<forall> i < length p. above (p!i) a = {a}))"
+fun equal_top\<^sub>\<C>' :: "'a \<Rightarrow> ('a, 'v) Consensus" where
+  "equal_top\<^sub>\<C>' a (A, V, p) = (a \<in> A \<and> (\<forall> v \<in> V. above (p v) a = {a}))"
 
-fun equal_top\<^sub>\<C> :: "'a Consensus" where
+fun equal_top\<^sub>\<C> :: "('a, 'v) Consensus" where
   "equal_top\<^sub>\<C> c = (\<exists> a. equal_top\<^sub>\<C>' a c)"
 
 text \<open>
   Equal votes.
 \<close>
 
-fun equal_vote\<^sub>\<C>' :: "'a Preference_Relation \<Rightarrow> 'a Consensus" where
-  "equal_vote\<^sub>\<C>' r (A, p) = (\<forall> i < length p. (p!i) = r)"
+fun equal_vote\<^sub>\<C>' :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Consensus" where
+  "equal_vote\<^sub>\<C>' r (A, V, p) = (\<forall> v \<in> V. (p v) = r)"
 
-fun equal_vote\<^sub>\<C> :: "'a Consensus" where
+fun equal_vote\<^sub>\<C> :: "('a, 'v) Consensus" where
   "equal_vote\<^sub>\<C> c = (\<exists> r. equal_vote\<^sub>\<C>' r c)"
 
 text \<open>
   Unanimity condition.
 \<close>
 
-fun unanimity\<^sub>\<C> :: "'a Consensus" where
+fun unanimity\<^sub>\<C> :: "('a, 'v) Consensus" where
   "unanimity\<^sub>\<C> c = (nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C> c)"
 
 text \<open>
   Strong unanimity condition.
 \<close>
 
-fun strong_unanimity\<^sub>\<C> :: "'a Consensus" where
+fun strong_unanimity\<^sub>\<C> :: "('a, 'v) Consensus" where
   "strong_unanimity\<^sub>\<C> c = (nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C> c)"
-
 
 subsection \<open>Properties\<close>
 
-definition consensus_anonymity :: "'a Consensus \<Rightarrow> bool" where
+definition consensus_anonymity :: "('a, 'v) Consensus \<Rightarrow> bool" where
   "consensus_anonymity c \<equiv>
-    \<forall> A p q. profile A p \<and> profile A q \<and> p <~~> q \<longrightarrow> c (A, p) \<longrightarrow> c (A, q)"
+    (\<forall> A V p \<pi>::('v \<Rightarrow> 'v).
+        bij \<pi> \<longrightarrow>
+          (let (A', V', q) = (rename \<pi> (A, V, p)) in
+            profile V A p \<longrightarrow> profile V' A' q
+            \<longrightarrow> c (A, V, p) \<longrightarrow> c (A', V', q)))"
+
+fun consensus_neutrality :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Consensus \<Rightarrow> bool" where
+  "consensus_neutrality X c = is_symmetry c (Invariance (neutrality\<^sub>\<R> X))"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
+lemma cons_anon_conj:
+  fixes
+    c1 :: "('a, 'v) Consensus" and
+    c2 :: "('a, 'v) Consensus"
+  assumes
+    anon1: "consensus_anonymity c1" and
+    anon2: "consensus_anonymity c2"
+  shows "consensus_anonymity (\<lambda> e. c1 e \<and> c2 e)"
+proof (unfold consensus_anonymity_def Let_def, clarify)
+  fix
+    A :: "'a set" and
+    A' :: "'a set" and
+    V :: "'v set" and
+    V' :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    q :: "('a, 'v) Profile" and
+    \<pi> :: "'v \<Rightarrow> 'v"
+  assume
+    bij: "bij \<pi>" and
+    prof: "profile V A p" and
+    renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
+    c1: "c1 (A, V, p)" and
+    c2: "c2 (A, V, p)"
+  hence "profile V' A' q"
+    using rename_sound renamed bij fst_conv rename.simps
+    by metis
+  thus "c1 (A', V', q) \<and> c2 (A', V', q)"
+    using bij renamed c1 c2 assms prof
+    unfolding consensus_anonymity_def
+    by auto
+qed
+
+theorem cons_conjunction_invariant:
+  fixes
+    \<CC> :: "('a, 'v) Consensus set" and
+    rel :: "('a, 'v) Election rel"
+  defines "C \<equiv> (\<lambda> E. (\<forall> C' \<in> \<CC>. C' E))"
+  assumes "\<And> C'. C' \<in> \<CC> \<Longrightarrow> is_symmetry C' (Invariance rel)"
+  shows "is_symmetry C (Invariance rel)"
+proof (unfold is_symmetry.simps, intro allI impI)
+  fix
+    E :: "('a,'v) Election" and
+    E' :: "('a,'v) Election"
+  assume "(E,E') \<in> rel"
+  hence "\<forall> C' \<in> \<CC>. C' E = C' E'"
+    using assms
+    unfolding is_symmetry.simps
+    by blast
+  thus "C E = C E'"
+    unfolding C_def
+    by blast
+qed
+
+lemma cons_anon_invariant:
+  fixes
+    c :: "('a, 'v) Consensus" and
+    A :: "'a set" and
+    A' :: "'a set" and
+    V :: "'v set" and
+    V' :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    q :: "('a, 'v) Profile" and
+    \<pi> :: "'v \<Rightarrow> 'v"
+  assumes
+    anon: "consensus_anonymity c" and
+    bij: "bij \<pi>" and
+    prof_p: "profile V A p" and
+    renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
+    cond_c: "c (A, V, p)"
+  shows "c (A', V', q)"
+proof -
+  have "profile V' A' q"
+    using rename_sound bij renamed prof_p
+    by fastforce
+  thus ?thesis
+    using anon cond_c renamed rename_finite bij prof_p
+    unfolding consensus_anonymity_def Let_def
+    by auto
+qed
+
 lemma ex_anon_cons_imp_cons_anonymous:
   fixes
-    b :: "'a Consensus" and
-    b':: "'b \<Rightarrow> 'a Consensus"
+    b :: "('a, 'v) Consensus" and
+    b':: "'b \<Rightarrow> ('a, 'v) Consensus"
   assumes
     general_cond_b: "b = (\<lambda> E. \<exists> x. b' x E)" and
     all_cond_anon: "\<forall> x. consensus_anonymity (b' x)"
   shows "consensus_anonymity b"
-proof (unfold consensus_anonymity_def, safe)
+proof (unfold consensus_anonymity_def Let_def, safe)
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
-    q :: "'a Profile"
+    A' :: "'a set" and
+    V :: "'v set" and
+    V' :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    q :: "('a, 'v) Profile" and
+    \<pi> :: "'v \<Rightarrow> 'v"
   assume
-    cond_b: "b (A, p)" and
-    prof_p: "profile A p" and
-    prof_q: "profile A q" and
-    perm: "p <~~> q"
-  have "\<exists> x. b' x (A, p)"
+    bij: "bij \<pi>" and
+    cond_b: "b (A, V, p)" and
+    prof_p: "profile V A p" and
+    renamed: "rename \<pi> (A, V, p) = (A', V', q)"
+  have "\<exists> x. b' x (A, V, p)"
     using cond_b general_cond_b
     by simp
-  then obtain x :: 'b where
-    "b' x (A, p)"
+  then obtain x :: "'b" where
+    "b' x (A, V, p)"
     by blast
-  hence "b' x (A, q)"
-    using all_cond_anon perm prof_p prof_q
+  moreover have "consensus_anonymity (b' x)"
+    using all_cond_anon
+    by simp
+  moreover have "profile V' A' q"
+    using prof_p renamed bij rename_sound
+    by fastforce
+  ultimately have "b' x (A', V', q)"
+    using all_cond_anon bij prof_p renamed
     unfolding consensus_anonymity_def
-    by blast
-  hence "\<exists> x. b' x (A, q)"
+    by auto
+  hence "\<exists> x. b' x (A', V', q)"
     by metis
-  thus "b (A, q)"
+  thus "b (A', V', q)"
     using general_cond_b
     by simp
 qed
 
 subsection \<open>Theorems\<close>
 
+subsubsection \<open>Anonymity\<close>
+
 lemma nonempty_set_cons_anonymous: "consensus_anonymity nonempty_set\<^sub>\<C>"
   unfolding consensus_anonymity_def
   by simp
 
 lemma nonempty_profile_cons_anonymous: "consensus_anonymity nonempty_profile\<^sub>\<C>"
-proof (unfold consensus_anonymity_def, clarify)
+proof (unfold consensus_anonymity_def Let_def, clarify)
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
-    q :: "'a Profile"
+    A' :: "'a set" and
+    V :: "'v set" and
+    V' :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    q :: "('a, 'v) Profile" and
+    \<pi> :: "'v \<Rightarrow> 'v"
   assume
-    perm: "p <~~> q" and
-    not_empty_p: "nonempty_profile\<^sub>\<C> (A, p)"
-  have "length q = length p"
-    using perm perm_length
-    by force
-  thus "nonempty_profile\<^sub>\<C> (A, q)"
-    using not_empty_p length_0_conv
+    bij: "bij \<pi>" and
+    prof_p: "profile V A p" and
+    renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
+    not_empty_p: "nonempty_profile\<^sub>\<C> (A, V, p)"
+  have "card V = card V'"
+    using renamed bij rename.simps Pair_inject
+          bij_betw_same_card bij_betw_subset top_greatest
+    by (metis (mono_tags, lifting))
+  thus "nonempty_profile\<^sub>\<C> (A', V', q)"
+    using not_empty_p length_0_conv renamed
     unfolding nonempty_profile\<^sub>\<C>.simps
-    by metis
+    by auto
 qed
 
 lemma equal_top_cons'_anonymous:
   fixes a :: "'a"
   shows "consensus_anonymity (equal_top\<^sub>\<C>' a)"
-proof (unfold consensus_anonymity_def, clarify)
+proof (unfold consensus_anonymity_def Let_def, clarify)
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
-    q :: "'a Profile"
+    A' :: "'a set" and
+    V :: "'v set" and
+    V' :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    q :: "('a, 'v) Profile" and
+    \<pi> :: "'v \<Rightarrow> 'v"
   assume
-    perm: "p <~~> q" and
-    top_cons_a: "equal_top\<^sub>\<C>' a (A, p)"
-  from perm obtain \<pi> where
-    perm\<^sub>\<pi>: "\<pi> permutes {..< length p}" and
-    list_pq\<^sub>\<pi>: "permute_list \<pi> p = q"
-    using mset_eq_permutation
-    by metis
-  have l: "length p = length q"
-    using perm perm_length
-    by force
-  hence "\<forall> i < length q. \<pi> i < length p"
-    using perm\<^sub>\<pi> permutes_in_image
-    by fastforce
-  moreover have "\<forall> i < length q. q!i = p!(\<pi> i)"
-    using list_pq\<^sub>\<pi>
-    unfolding permute_list_def
+    bij: "bij \<pi>" and
+    prof_p: "profile V A p" and
+    renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
+    top_cons_a: "equal_top\<^sub>\<C>' a (A, V, p)"
+  have "\<forall> v' \<in> V'. q v' = p ((the_inv \<pi>) v')"
+    using renamed
     by auto
-  moreover have winner: "\<forall> i < length p. above (p!i) a = {a}"
+  moreover have "\<forall> v' \<in> V'. (the_inv \<pi>) v' \<in> V"
+    using bij renamed rename.simps bij_is_inj
+          f_the_inv_into_f_bij_betw inj_image_mem_iff
+    by fastforce
+  moreover have winner: "\<forall> v \<in> V. above (p v) a = {a}"
     using top_cons_a
     by simp
-  ultimately have "\<forall> i < length p. above (q!i) a = {a}"
-    using l
-    by metis
+  ultimately have "\<forall> v' \<in> V'. above (q v') a = {a}"
+    by simp
   moreover have "a \<in> A"
     using top_cons_a
     by simp
-  ultimately show "equal_top\<^sub>\<C>' a (A, q)"
-    using l
+  ultimately show "equal_top\<^sub>\<C>' a (A', V', q)"
+    using renamed
     unfolding equal_top\<^sub>\<C>'.simps
-    by metis
+    by simp
 qed
 
 lemma eq_top_cons_anon: "consensus_anonymity equal_top\<^sub>\<C>"
@@ -187,37 +289,33 @@ lemma eq_top_cons_anon: "consensus_anonymity equal_top\<^sub>\<C>"
 lemma eq_vote_cons'_anonymous:
   fixes r :: "'a Preference_Relation"
   shows "consensus_anonymity (equal_vote\<^sub>\<C>' r)"
-proof (unfold consensus_anonymity_def, clarify)
+proof (unfold consensus_anonymity_def Let_def, clarify)
   fix
     A :: "'a set" and
-    p :: "'a Profile" and
-    q :: "'a Profile"
+    A' :: "'a set" and
+    V :: "'v set" and
+    V' :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    q :: "('a, 'v) Profile" and
+    \<pi> :: "'v \<Rightarrow> 'v"
   assume
-    perm: "p <~~> q" and
-    equal_votes_pref: "equal_vote\<^sub>\<C>' r (A, p)"
-  from perm obtain \<pi> where
-    perm\<^sub>\<pi>: "\<pi> permutes {..< length p}" and
-    list_pq\<^sub>\<pi>: "permute_list \<pi> p = q"
-    using mset_eq_permutation
-    by metis
-  have l: "length p = length q"
-    using perm perm_length
-    by force
-  hence "\<forall> i < length q. \<pi> i < length p"
-    using perm\<^sub>\<pi> permutes_in_image
-    by fastforce
-  moreover have "\<forall> i < length q. q!i = p!(\<pi> i)"
-    using list_pq\<^sub>\<pi>
-    unfolding permute_list_def
+    bij: "bij \<pi>" and
+    prof_p: "profile V A p" and
+    renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
+    eq_vote: "equal_vote\<^sub>\<C>' r (A, V, p)"
+  have "\<forall> v' \<in> V'. q v' = p ((the_inv \<pi>) v')"
+    using renamed
     by auto
-  moreover have winner: "\<forall> i < length p. p!i = r"
-    using equal_votes_pref
+  moreover have "\<forall> v' \<in> V'. (the_inv \<pi>) v' \<in> V"
+    using bij renamed rename.simps bij_is_inj
+          f_the_inv_into_f_bij_betw inj_image_mem_iff
+    by fastforce
+  moreover have winner: "\<forall> v \<in> V. p v = r"
+    using eq_vote
     by simp
-  ultimately have "\<forall> i < length p. q!i = r"
-    using l
-    by metis
-  thus "equal_vote\<^sub>\<C>' r (A, q)"
-    using l
+  ultimately have "\<forall> v' \<in> V'. q v' = r"
+    by simp
+  thus "equal_vote\<^sub>\<C>' r (A', V', q)"
     unfolding equal_vote\<^sub>\<C>'.simps
     by metis
 qed
@@ -226,5 +324,88 @@ lemma eq_vote_cons_anonymous: "consensus_anonymity equal_vote\<^sub>\<C>"
   unfolding equal_vote\<^sub>\<C>.simps
   using eq_vote_cons'_anonymous ex_anon_cons_imp_cons_anonymous
   by blast
+
+subsubsection \<open>Neutrality\<close>
+
+lemma nonempty_set\<^sub>\<C>_neutral: "consensus_neutrality valid_elections nonempty_set\<^sub>\<C>"
+  unfolding valid_elections_def
+  by auto
+
+lemma nonempty_profile\<^sub>\<C>_neutral: "consensus_neutrality valid_elections nonempty_profile\<^sub>\<C>"
+  unfolding valid_elections_def
+  by auto
+
+lemma equal_vote\<^sub>\<C>_neutral: "consensus_neutrality valid_elections equal_vote\<^sub>\<C>"
+proof (unfold valid_elections_def consensus_neutrality.simps is_symmetry.simps,
+       intro allI impI,
+       unfold split_paired_all neutrality\<^sub>\<R>.simps action_induced_rel.simps
+       voters_\<E>.simps alternatives_\<E>.simps profile_\<E>.simps \<phi>_neutr.simps
+       extensional_continuation.simps equal_vote\<^sub>\<C>.simps equal_vote\<^sub>\<C>'.simps
+       alternatives_rename.simps case_prod_unfold mem_Collect_eq fst_conv
+       snd_conv mem_Sigma_iff conj_assoc If_def simp_thms, safe)
+  fix
+    A :: "'a set" and
+    A' :: "'a set" and
+    V :: "'v set" and
+    V' :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    p' :: "('a, 'v) Profile" and
+    \<pi> :: "'a \<Rightarrow> 'a" and
+    r :: "'a rel"
+  assume
+    "profile V A p" and
+    "(THE z.
+        (profile V A p \<longrightarrow> z = (\<pi> ` A, V, rel_rename \<pi> \<circ> p))
+        \<and> (\<not> profile V A p \<longrightarrow> z = undefined)) = (A', V', p')"
+  hence
+    equal_voters: "V' = V" and
+    perm_profile: "p' = (\<lambda> x. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p x})"
+    unfolding comp_def
+    by (simp, simp)
+  have
+    "(\<forall> v \<in> V. p v = r)
+      \<longrightarrow> (\<exists> r'. \<forall> v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r')"
+    by simp
+  {
+    moreover assume "\<forall> v' \<in> V. p v' = r"
+    ultimately show "\<exists> r. \<forall> v \<in> V'. p' v = r"
+      using equal_voters perm_profile
+      by metis
+  }
+  assume "\<pi> \<in> carrier neutrality\<^sub>\<G>"
+  hence "bij \<pi>"
+    using rewrite_carrier
+    unfolding neutrality\<^sub>\<G>_def
+    by blast
+  hence "\<forall> a. the_inv \<pi> (\<pi> a) = a"
+    using bij_is_inj the_inv_f_f
+    by metis
+  moreover have
+    "(\<forall> v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r) \<longrightarrow>
+      (\<forall> v \<in> V. {(the_inv \<pi> (\<pi> a), the_inv \<pi> (\<pi> b)) | a b. (a, b) \<in> p v} =
+               {(the_inv \<pi> a, the_inv \<pi> b) | a b. (a, b) \<in> r})"
+    by fastforce
+  ultimately have
+    "(\<forall> v \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v} = r) \<longrightarrow>
+      (\<forall> v \<in> V. {(a, b) | a b. (a, b) \<in> p v} =
+              {(the_inv \<pi> a, the_inv \<pi> b) | a b. (a, b) \<in> r})"
+    by auto
+  hence
+    "(\<forall> v' \<in> V. {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p v'} = r)
+      \<longrightarrow> (\<exists> r'. \<forall> v' \<in> V. p v' = r')"
+    by simp
+  moreover assume "\<forall> v' \<in> V'. p' v' = r"
+  ultimately show "\<exists> r'. \<forall> v' \<in> V. p v' = r'"
+    using equal_voters perm_profile
+    by metis
+qed
+
+lemma strong_unanimity\<^sub>\<C>_neutral:
+  "consensus_neutrality valid_elections strong_unanimity\<^sub>\<C>"
+  using nonempty_set\<^sub>\<C>_neutral equal_vote\<^sub>\<C>_neutral nonempty_profile\<^sub>\<C>_neutral
+        cons_conjunction_invariant[of
+          "{nonempty_set\<^sub>\<C>, nonempty_profile\<^sub>\<C>, equal_vote\<^sub>\<C>}" "neutrality\<^sub>\<R> valid_elections"]
+  unfolding strong_unanimity\<^sub>\<C>.simps
+  by fastforce
 
 end

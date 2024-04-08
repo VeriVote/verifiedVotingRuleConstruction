@@ -1,0 +1,68 @@
+┌7. Voting_Rules
+|   | 11. Kemeny_Rule
+|   | 10. Sequential_Majority_Comparison
+|   | 09. Schwartz_Rule
+|   | 08. Classic_Nanson_Rule
+|   | 07. Nanson_Baldwin_Rule
+|   | 06. Blacks_Rule
+|   | 05. Minimax_Rule
+|   | 04. Copeland_Rule
+|   | 03. Pairwise_Majority_Rule
+|   | 02. Borda_Rule
+|   | 01. Plurality_Rule
+│   └───6. Compositional_Structures
+|       | 08. Defer_One_Loop_Composition
+|       | 07. Elect_Composition
+|       | 06. Maximum_Parallel_Composition
+|       | 05. Loop_Composition
+|       | 04. Parallel_Composition
+|       | 03. Sequential_Composition
+|       | 02. Revision_Composition
+|       | 01. Drop_And_Pass_Compatibility
+│       └───5. Basic_Modules
+│           │ 10. Elect_First_Module
+│           │ 09. Minimax_Module
+│           │ 08. Copeland_Module
+│           │ 07. Condorcet_Module
+│           │ 06. Borda_Module
+│           │ 05. Plurality_Module
+│           │ 04. Elect_Module
+│           │ 03. Pass_Module
+│           │ 02. Drop_Module
+│           │ 01. Defer_Module
+│           └───4. Component_Types
+|               | 17. Interpretation_Code
+|               | 16. Quotient_Distance_Rationalization
+|               | 15. Distance_Rationalization_Symmetry
+|               | 14. Votewise_Distance_Rationalization
+|               | 13. Distance_Rationalization
+|               | 12. Consensus_Class
+|               | 11. Elimination_Module
+|               | 10. Quotient_Module
+|               | 09. Electoral_Module
+|               | 08. Evaluation_Function
+|               | 07. Defer_Equal_Condition
+|               | 06. Termination_Condition
+|               | 05. Maximum_Aggregator
+|               | 04. Aggregator
+|               | 03. Consensus
+|               | 02. Votewise_Distance
+|               | 01. Distance
+│               └───1. Social_Choice_Types
+|                   | 3.02. Election_Quotients (*Quotient_Rules*)
+|                   | 3.01. Relation_Quotients (*Quotient_Rules*)
+|                   | 2.02. Profile_List (*Refined_Types*)
+|                   | 2.01. Preference_List (*Refined_Types*)
+|                   |   12. Quotient_Type_Election
+|                   |   11. Ordered_Relation
+|                   |   10. Voting_Symmetry
+|                   |   09. Property_Interpretations
+│                   │   08. Result_Interpretations
+|                   |   07. Social_Welfare_Result
+|                   |   06. Social_Choice_Result
+│                   │   05. Profile
+│                   │   04. Result
+|                   |   03. Symmetry_Of_Functions
+|                   |   02. Norm
+│                   │   01. Preference_Relation
+└───────────────────└────────────────────────────────────────────

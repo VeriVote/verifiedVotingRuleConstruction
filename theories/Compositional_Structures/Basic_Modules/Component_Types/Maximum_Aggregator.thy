@@ -38,16 +38,16 @@ lemma max_agg_rej_set:
     r' :: "'a set" and
     a :: "'a"
   assumes
-    wf_first_mod: "well_formed A (e, r, d)" and
-    wf_second_mod: "well_formed A (e', r', d')"
+    wf_first_mod: "well_formed_\<S>\<C>\<F> A (e, r, d)" and
+    wf_second_mod: "well_formed_\<S>\<C>\<F> A (e', r', d')"
   shows "reject_r (max_aggregator A (e, r, d) (e', r', d')) = r \<inter> r'"
 proof -
   have "A - (e \<union> d) = r"
-    using wf_first_mod
-    by (simp add: result_imp_rej)
+    using wf_first_mod result_imp_rej
+    by metis
   moreover have "A - (e' \<union> d') = r'"
-    using wf_second_mod
-    by (simp add: result_imp_rej)
+    using wf_second_mod result_imp_rej
+    by metis
   ultimately have "A - (e \<union> e' \<union> d \<union> d') = r \<inter> r'"
     by blast
   moreover have "{l \<in> A. l \<notin> e \<union> e' \<union> d \<union> d'} = A - (e \<union> e' \<union> d \<union> d')"
@@ -60,7 +60,8 @@ qed
 subsection \<open>Soundness\<close>
 
 theorem max_agg_sound[simp]: "aggregator max_aggregator"
-proof (unfold aggregator_def, simp, safe)
+proof (unfold aggregator_def max_aggregator.simps well_formed_\<S>\<C>\<F>.simps disjoint3.simps
+              set_equals_partition.simps, safe)
   fix
     A :: "'a set" and
     e :: "'a set" and
@@ -137,7 +138,7 @@ next
     r' :: "'a set" and
     a :: "'a"
   assume
-    wf_result: "well_formed A (e', r', d')" and
+    wf_result: "well_formed_\<S>\<C>\<F> A (e', r', d')" and
     reject_a: "a \<in> reject_r (max_aggregator A (e, r, d) (e', r', d'))" and
     a_not_in_r': "a \<notin> r'"
   have "a \<in> r \<union> r'"

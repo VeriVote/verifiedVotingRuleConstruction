@@ -20,6 +20,6 @@ text \<open>
 subsection \<open>Definition\<close>
 
 fun defer_equal_condition :: "nat \<Rightarrow> 'a Termination_Condition" where
-  "defer_equal_condition n result = (let (e, r, d) = result in card d = n)"
+    "defer_equal_condition n (e, r, d) = (card d = n)"
 
 end

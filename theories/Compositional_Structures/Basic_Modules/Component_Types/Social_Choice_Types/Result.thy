@@ -22,16 +22,9 @@ text \<open>
   alternatives.
 \<close>
 
-subsection \<open>Definition\<close>
-
-text \<open>
-  A result contains three sets of alternatives:
-  elected, rejected, and deferred alternatives.
-\<close>
-
-type_synonym 'a Result = "'a set * 'a set * 'a set"
-
 subsection \<open>Auxiliary Functions\<close>
+
+type_synonym 'r Result = "'r set * 'r set * 'r set"
 
 text \<open>
   A partition of a set A are pairwise disjoint sets that "set equals
@@ -39,175 +32,47 @@ text \<open>
   in a three-tuple.
 \<close>
 
-fun disjoint3 :: "'a Result \<Rightarrow> bool" where
+fun disjoint3 :: "'r Result \<Rightarrow> bool" where
   "disjoint3 (e, r, d) =
     ((e \<inter> r = {}) \<and>
       (e \<inter> d = {}) \<and>
       (r \<inter> d = {}))"
 
-fun set_equals_partition :: "'a set \<Rightarrow>'a Result \<Rightarrow> bool" where
-  "set_equals_partition A (e, r, d) = (e \<union> r \<union> d = A)"
+fun set_equals_partition :: "'r set \<Rightarrow>'r Result \<Rightarrow> bool" where
+  "set_equals_partition X (e, r, d) = (e \<union> r \<union> d = X)"
 
-fun well_formed :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
-  "well_formed A result = (disjoint3 result \<and> set_equals_partition A result)"
+subsection \<open>Definition\<close>
+
+text \<open>
+  A result generally is related to the alternative set A (of type 'a).
+  A result should be well-formed on the alternatives.
+  Also it should be possible to limit a well-formed result to a subset of the alternatives.
+
+  Specific result types like social choice results (sets of alternatives) can be realized
+  via sublocales of the result locale.
+\<close>
+
+locale result =
+  fixes
+    well_formed :: "'a set \<Rightarrow> ('r Result) \<Rightarrow> bool" and
+    limit_set :: "'a set \<Rightarrow> 'r set \<Rightarrow> 'r set"
+  assumes "\<And> (A::('a set)) (r::('r Result)).
+    (set_equals_partition (limit_set A UNIV) r \<and> disjoint3 r) \<Longrightarrow> well_formed A r"
 
 text \<open>
   These three functions return the elect, reject, or defer set of a result.
 \<close>
 
-abbreviation elect_r :: "'a Result \<Rightarrow> 'a set" where
+fun (in result) limit_res :: "'a set \<Rightarrow> 'r Result \<Rightarrow> 'r Result" where
+  "limit_res A (e, r, d) = (limit_set A e, limit_set A r, limit_set A d)"
+
+abbreviation elect_r :: "'r Result \<Rightarrow> 'r set" where
   "elect_r r \<equiv> fst r"
 
-abbreviation reject_r :: "'a Result \<Rightarrow> 'a set" where
+abbreviation reject_r :: "'r Result \<Rightarrow> 'r set" where
   "reject_r r \<equiv> fst (snd r)"
 
-abbreviation defer_r :: "'a Result \<Rightarrow> 'a set" where
+abbreviation defer_r :: "'r Result \<Rightarrow> 'r set" where
   "defer_r r \<equiv> snd (snd r)"
-
-subsection \<open>Auxiliary Lemmas\<close>
-
-lemma result_imp_rej:
-  fixes
-    A :: "'a set" and
-    e :: "'a set" and
-    r :: "'a set" and
-    d :: "'a set"
-  assumes "well_formed A (e, r, d)"
-  shows "A - (e \<union> d) = r"
-proof (safe)
-  fix a :: "'a"
-  assume
-    "a \<in> A" and
-    "a \<notin> r" and
-    "a \<notin> d"
-  moreover have
-    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
-    using assms
-    by simp
-  ultimately show "a \<in> e"
-    by auto
-next
-  fix a :: "'a"
-  assume "a \<in> r"
-  moreover have
-    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
-    using assms
-    by simp
-  ultimately show "a \<in> A"
-    by auto
-next
-  fix a :: "'a"
-  assume
-    "a \<in> r" and
-    "a \<in> e"
-  moreover have
-    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
-    using assms
-    by simp
-  ultimately show False
-    by auto
-next
-  fix a :: "'a"
-  assume
-    "a \<in> r" and
-    "a \<in> d"
-  moreover have
-    "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {}) \<and> (e \<union> r \<union> d = A)"
-    using assms
-    by simp
-  ultimately show False
-    by auto
-qed
-
-lemma result_count:
-  fixes
-    A :: "'a set" and
-    e :: "'a set" and
-    r :: "'a set" and
-    d :: "'a set"
-  assumes
-    wf_result: "well_formed A (e, r, d)" and
-    fin_A: "finite A"
-  shows "card A = card e + card r + card d"
-proof -
-  have "e \<union> r \<union> d = A"
-    using wf_result
-    by simp
-  moreover have "(e \<inter> r = {}) \<and> (e \<inter> d = {}) \<and> (r \<inter> d = {})"
-    using wf_result
-    by simp
-  ultimately show ?thesis
-    using fin_A Int_Un_distrib2 finite_Un card_Un_disjoint sup_bot.right_neutral
-    by metis
-qed
-
-lemma defer_subset:
-  fixes
-    A :: "'a set" and
-    r :: "'a Result"
-  assumes "well_formed A r"
-  shows "defer_r r \<subseteq> A"
-proof (safe)
-  fix a :: "'a"
-  assume "a \<in> defer_r r"
-  moreover obtain
-    f :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
-    g :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
-    "A = f r A \<and> r = g r A \<and> disjoint3 (g r A) \<and> set_equals_partition (f r A) (g r A)"
-    using assms
-    by simp
-  moreover have
-    "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
-    by simp
-  ultimately show "a \<in> A"
-    using UnCI snd_conv
-    by metis
-qed
-
-lemma elect_subset:
-  fixes
-    A :: "'a set" and
-    r :: "'a Result"
-  assumes "well_formed A r"
-  shows "elect_r r \<subseteq> A"
-proof (safe)
-  fix a :: "'a"
-  assume "a \<in> elect_r r"
-  moreover obtain
-    f :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
-    g :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
-    "A = f r A \<and> r = g r A \<and> disjoint3 (g r A) \<and> set_equals_partition (f r A) (g r A)"
-    using assms
-    by simp
-  moreover have
-    "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
-    by simp
-  ultimately show "a \<in> A"
-    using UnCI assms fst_conv
-    by metis
-qed
-
-lemma reject_subset:
-  fixes
-    A :: "'a set" and
-    r :: "'a Result"
-  assumes "well_formed A r"
-  shows "reject_r r \<subseteq> A"
-proof (safe)
-  fix a :: "'a"
-  assume "a \<in> reject_r r"
-  moreover obtain
-    f :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a set" and
-    g :: "'a Result \<Rightarrow> 'a set \<Rightarrow> 'a Result" where
-    "A = f r A \<and> r = g r A \<and> disjoint3 (g r A) \<and> set_equals_partition (f r A) (g r A)"
-    using assms
-    by simp
-  moreover have
-    "\<forall> p. \<exists> E R D. set_equals_partition A p \<longrightarrow> (E, R, D) = p \<and> E \<union> R \<union> D = A"
-    by simp
-  ultimately show "a \<in> A"
-    using UnCI assms prod.sel disjoint3.cases
-    by metis
-qed
 
 end

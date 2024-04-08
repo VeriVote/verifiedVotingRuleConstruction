@@ -21,13 +21,13 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun defer_module :: "'a Electoral_Module" where
-  "defer_module A p = ({}, {}, A)"
+fun defer_module :: "('a, 'v, 'a Result) Electoral_Module" where
+  "defer_module V A p = ({}, {}, A)"
 
 subsection \<open>Soundness\<close>
 
-theorem def_mod_sound[simp]: "electoral_module defer_module"
-  unfolding electoral_module_def
+theorem def_mod_sound[simp]: "\<S>\<C>\<F>_result.electoral_module defer_module"
+  unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by simp
 
 subsection \<open>Properties\<close>

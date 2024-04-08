@@ -22,17 +22,18 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun iter :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module" where
+fun iter :: "('a, 'v, 'a Result) Electoral_Module
+                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "iter m =
     (let t = defer_equal_condition 1 in
       (m \<circlearrowleft>\<^sub>t))"
 
-abbreviation defer_one_loop ::
-  "'a Electoral_Module \<Rightarrow> 'a Electoral_Module"
-    ("_\<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d" 50) where
+abbreviation defer_one_loop :: "('a, 'v, 'a Result) Electoral_Module
+            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" ("_\<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d" 50) where
   "m \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d \<equiv> iter m"
 
-fun iterelect :: "'a Electoral_Module \<Rightarrow> 'a Electoral_Module" where
-  "iterelect m = elector (m \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d)"
+fun iter_elect :: "('a, 'v, 'a Result) Electoral_Module
+                    \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+  "iter_elect m = elector (m \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d)"
 
 end

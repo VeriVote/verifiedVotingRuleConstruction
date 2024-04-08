@@ -21,16 +21,16 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun condorcet_score :: "'a Evaluation_Function" where
-  "condorcet_score x A p =
-    (if (condorcet_winner A p x) then 1 else 0)"
+fun condorcet_score :: "('a, 'v) Evaluation_Function" where
+  "condorcet_score V x A p =
+    (if (condorcet_winner V A p x) then 1 else 0)"
 
-fun condorcet :: "'a Electoral_Module" where
-  "condorcet A p = (max_eliminator condorcet_score) A p"
+fun condorcet :: "('a, 'v, 'a Result) Electoral_Module" where
+  "condorcet V A p = (max_eliminator condorcet_score) V A p"
 
 subsection \<open>Soundness\<close>
 
-theorem condorcet_sound: "electoral_module condorcet"
+theorem condorcet_sound: "\<S>\<C>\<F>_result.electoral_module condorcet"
   unfolding condorcet.simps
   using max_elim_sound
   by metis
@@ -41,53 +41,58 @@ subsection \<open>Property\<close>
 theorem condorcet_score_is_condorcet_rating: "condorcet_rating condorcet_score"
 proof (unfold condorcet_rating_def, safe)
   fix
-    A :: "'a set" and
-    p :: "'a Profile" and
-    w :: "'a" and
-    l :: "'a"
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile" and
+    w :: "'b" and
+    l :: "'b"
   assume
-    c_win: "condorcet_winner A p w" and
+    c_win: "condorcet_winner V A p w" and
     l_neq_w: "l \<noteq> w"
-  hence "\<not> condorcet_winner A p l"
-    using cond_winner_unique_eq
-    by (metis (no_types))
-  thus "condorcet_score l A p < condorcet_score w A p"
-    using c_win
-    by simp
+  have "\<not> condorcet_winner V A p l"
+    using cond_winner_unique_eq c_win l_neq_w
+    by metis
+  thus "condorcet_score V l A p < condorcet_score V w A p"
+    using c_win zero_less_one
+    unfolding condorcet_score.simps
+    by (metis (full_types))
 qed
 
 theorem condorcet_is_dcc: "defer_condorcet_consistency condorcet"
-proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
+proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
-    A :: "'a set" and
-    p :: "'a Profile"
-  assume "profile A p"
-  hence "well_formed A (max_eliminator condorcet_score A p)"
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile"
+  assume
+    "profile V A p"
+  hence "well_formed_\<S>\<C>\<F> A (max_eliminator condorcet_score V A p)"
     using max_elim_sound
-    unfolding electoral_module_def
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps
     by metis
-  thus "well_formed A (condorcet A p)"
+  thus "well_formed_\<S>\<C>\<F> A (condorcet V A p)"
     by simp
 next
   fix
-    A :: "'a set" and
-    p :: "'a Profile" and
-    a :: "'a"
-  assume c_win_w: "condorcet_winner A p a"
-  have "defer_condorcet_consistency (max_eliminator condorcet_score)"
-    using cr_eval_imp_dcc_max_elim
-    by (simp add: condorcet_score_is_condorcet_rating)
-  hence "max_eliminator condorcet_score A p =
-          ({},
-          A - defer (max_eliminator condorcet_score) A p,
-          {b \<in> A. condorcet_winner A p b})"
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile" and
+    a :: "'b"
+  assume
+    c_win_w: "condorcet_winner V A p a"
+  let ?m = "(max_eliminator condorcet_score)::(('b, 'a, 'b Result) Electoral_Module)"
+  have "defer_condorcet_consistency ?m"
+    using cr_eval_imp_dcc_max_elim condorcet_score_is_condorcet_rating
+    by metis
+  hence "?m V A p =
+          ({}, A - defer ?m V A p, {b \<in> A. condorcet_winner V A p b})"
     using c_win_w
     unfolding defer_condorcet_consistency_def
     by (metis (no_types))
-  thus "condorcet A p =
+  thus "condorcet V A p =
           ({},
-          A - defer condorcet A p,
-          {d \<in> A. condorcet_winner A p d})"
+          A - defer condorcet V A p,
+          {d \<in> A. condorcet_winner V A p d})"
     by simp
 qed
 

@@ -4,6 +4,9 @@
  *  isabelle build -b -P "output" -D `pwd`
  *    # compile sessions in the ROOT file to prebuilt images
  *
+ *  isabelle build -o quick_and_dirty -b -P "output" -D `pwd`
+ *    # compile albeit "sorry"s
+ *
  *  isabelle jedit -d `pwd` -l Verified_Voting_Rule_Construction
  *    # use an image for interactive mode; probably similar for servermode.
  *
@@ -15,17 +18,22 @@ chapter browser_info
 session Verified_Voting_Rule_Construction = HOL +
   description
     \<open>Verified Construction of Fair Voting Rules\<close>
-  options [browser_info, timeout = 300, document = pdf, document_output = "output"]
+  options [timeout = 300, browser_info, document = pdf, document_output = "output", document_variants="document:outline=/proof,/ML"]
 
   sessions
+    "HOL-Library"
+    "HOL-Analysis"
     "HOL-Combinatorics"
+    "HOL-Algebra"
     "List-Index"
+    "Collections"
 
   directories
     "Compositional_Structures"
     "Compositional_Structures/Basic_Modules"
     "Compositional_Structures/Basic_Modules/Component_Types"
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types"
+    "Compositional_Structures/Basic_Modules/Component_Types/Quotients"
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Refined_Types"
 
   theories
@@ -34,14 +42,27 @@ session Verified_Voting_Rule_Construction = HOL +
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Norm"
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Result"
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Profile"
+    "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Result_Interpretations"
+    "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Social_Choice_Result"
+    "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Social_Welfare_Result"
+    "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Symmetry_Of_Functions"
+    "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Property_Interpretations"
+    "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Voting_Symmetry"
   (* "Refined Data Types" *)
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Refined_Types/Preference_List"
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Refined_Types/Profile_List"
+  (* "Alternative Types" *)
+    "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Ordered_Relation"
+    "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Quotient_Type_Election"
+  (* "Quotient Rules" *)
+    "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Relation_Quotients"
+    "Compositional_Structures/Basic_Modules/Component_Types/Quotients/Election_Quotients"
   (* "Component Types" *)
     "Compositional_Structures/Basic_Modules/Component_Types/Distance"
     "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance"
     "Compositional_Structures/Basic_Modules/Component_Types/Consensus"
     "Compositional_Structures/Basic_Modules/Component_Types/Electoral_Module"
+    "Compositional_Structures/Basic_Modules/Component_Types/Quotient_Module"
     "Compositional_Structures/Basic_Modules/Component_Types/Evaluation_Function"
     "Compositional_Structures/Basic_Modules/Component_Types/Elimination_Module"
     "Compositional_Structures/Basic_Modules/Component_Types/Aggregator"
@@ -51,6 +72,9 @@ session Verified_Voting_Rule_Construction = HOL +
     "Compositional_Structures/Basic_Modules/Component_Types/Consensus_Class"
     "Compositional_Structures/Basic_Modules/Component_Types/Distance_Rationalization"
     "Compositional_Structures/Basic_Modules/Component_Types/Votewise_Distance_Rationalization"
+    "Compositional_Structures/Basic_Modules/Component_Types/Distance_Rationalization_Symmetry"
+    "Compositional_Structures/Basic_Modules/Component_Types/Quotient_Distance_Rationalization"
+    "Compositional_Structures/Basic_Modules/Component_Types/Interpretation_Code"
   (* "Basic Modules" *)
     "Compositional_Structures/Basic_Modules/Defer_Module"
     "Compositional_Structures/Basic_Modules/Drop_Module"

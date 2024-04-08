@@ -9,6 +9,7 @@ section \<open>Drop Module\<close>
 
 theory Drop_Module
   imports "Component_Types/Electoral_Module"
+          "Component_Types/Social_Choice_Types/Result"
 begin
 
 text \<open>
@@ -23,8 +24,9 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a Electoral_Module" where
-  "drop_module n r A p =
+fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation
+                      \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+  "drop_module n r V A p =
     ({},
     {a \<in> A. rank (limit A r) a \<le> n},
     {a \<in> A. rank (limit A r) a > n})"
@@ -34,19 +36,21 @@ subsection \<open>Soundness\<close>
 theorem drop_mod_sound[simp]:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
-  shows "electoral_module (drop_module n r)"
-proof (unfold electoral_module_def, safe)
+    n :: "nat"
+  shows "\<S>\<C>\<F>_result.electoral_module (drop_module n r)"
+proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
     A :: "'a set" and
-    p :: "'a Profile"
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
+  assume "profile V A p"
   let ?mod = "drop_module n r"
   have "\<forall> a \<in> A. a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<or>
                   a \<in> {x \<in> A. rank (limit A r) x > n}"
     by auto
   hence "{a \<in> A. rank (limit A r) a \<le> n} \<union> {a \<in> A. rank (limit A r) a > n} = A"
     by blast
-  hence set_partition: "set_equals_partition A (drop_module n r A p)"
+  hence set_partition: "set_equals_partition A (drop_module n r V A p)"
     by simp
   have "\<forall> a \<in> A.
           \<not> (a \<in> {x \<in> A. rank (limit A r) x \<le> n} \<and>
@@ -54,10 +58,18 @@ proof (unfold electoral_module_def, safe)
     by simp
   hence "{a \<in> A. rank (limit A r) a \<le> n} \<inter> {a \<in> A. rank (limit A r) a > n} = {}"
     by blast
-  thus "well_formed A (?mod A p)"
+  thus "well_formed_\<S>\<C>\<F> A (?mod V A p)"
     using set_partition
     by simp
 qed
+
+lemma voters_determine_drop_mod:
+  fixes
+    r :: "'a Preference_Relation" and
+    n :: "nat"
+  shows "voters_determine_election (drop_module n r)"
+  unfolding voters_determine_election.simps
+  by simp
 
 subsection \<open>Non-Electing\<close>
 
@@ -68,10 +80,10 @@ text \<open>
 theorem drop_mod_non_electing[simp]:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   shows "non_electing (drop_module n r)"
   unfolding non_electing_def
-  by simp
+  by auto
 
 subsection \<open>Properties\<close>
 
@@ -82,9 +94,9 @@ text \<open>
 theorem drop_mod_def_lift_inv[simp]:
   fixes
     r :: "'a Preference_Relation" and
-    n :: nat
+    n :: "nat"
   shows "defer_lift_invariance (drop_module n r)"
   unfolding defer_lift_invariance_def
-  by simp
+  by force
 
 end

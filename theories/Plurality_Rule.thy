@@ -21,115 +21,150 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun plurality_rule :: "'a Electoral_Module" where
-  "plurality_rule A p = elector plurality A p"
+fun plurality_rule :: "('a, 'v, 'a Result) Electoral_Module" where
+  "plurality_rule V A p = elector plurality V A p"
 
-fun plurality_rule' :: "'a Electoral_Module" where
-  "plurality_rule' A p =
-    ({a \<in> A. \<forall> x \<in> A. win_count p x \<le> win_count p a},
-     {a \<in> A. \<exists> x \<in> A. win_count p x > win_count p a},
+fun plurality_rule' :: "('a, 'v, 'a Result) Electoral_Module" where
+  "plurality_rule' V A p =
+    ({a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a},
+     {a \<in> A. \<exists> x \<in> A. win_count V p x > win_count V p a},
      {})"
 
 lemma plurality_revision_equiv:
   fixes
     A :: "'a set" and
-    p :: "'a Profile"
-  shows "plurality' A p = (plurality_rule'\<down>) A p"
-proof (unfold plurality_rule'.simps plurality'.simps revision_composition.simps,
-        standard, clarsimp, standard, safe)
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
+  shows "plurality' V A p = (plurality_rule'\<down>) V A p"
+proof (unfold plurality'.simps revision_composition.simps, safe)
   fix
     a :: "'a" and
     b :: "'a"
   assume
     "b \<in> A" and
-    "card {i. i < length p \<and> above (p!i) a = {a}} <
-      card {i. i < length p \<and> above (p!i) b = {b}}" and
-    "\<forall> a' \<in> A. card {i. i < length p \<and> above (p!i) a' = {a'}} \<le>
-      card {i. i < length p \<and> above (p!i) a = {a}}"
+    "win_count V p a < win_count V p b" and
+    "a \<in> elect plurality_rule' V A p"
   thus False
-    using leD
-    by blast
+    by fastforce
+next
+  fix a :: "'a"
+  assume "a \<notin> elect plurality_rule' V A p"
+  moreover from this
+  have "a \<notin> A \<or> (\<exists> x. x \<in> A \<and> \<not> win_count V p x \<le> win_count V p a)"
+    by force
+  moreover assume "a \<in> A"
+  ultimately show "\<exists> x \<in> A. win_count V p a < win_count V p x"
+    using linorder_le_less_linear
+    by metis
 next
   fix
     a :: "'a" and
     b :: "'a"
   assume
-    "b \<in> A" and
-    "\<not> card {i. i < length p \<and> above (p!i) b = {b}} \<le>
-      card {i. i < length p \<and> above (p!i) a = {a}}"
-  thus "\<exists> x \<in> A.
-          card {i. i < length p \<and> above (p!i) a = {a}}
-          < card {i. i < length p \<and> above (p!i) x = {x}}"
-    using linorder_not_less
-    by blast
+    "a \<in> A" and
+    "\<forall> x \<in> A. win_count V p x \<le> win_count V p a"
+  thus "a \<in> elect plurality_rule' V A p"
+    by simp
+next
+  fix a :: "'a"
+  assume "a \<in> elect plurality_rule' V A p"
+  thus "a \<in> A"
+    by simp
+next
+  fix
+    a :: "'a"and
+    b :: "'a"
+  assume
+    "a \<in> elect plurality_rule' V A p" and
+    "b \<in> A"
+  thus "win_count V p b \<le> win_count V p a"
+    by simp
 qed
 
 lemma plurality_elim_equiv:
   fixes
     A :: "'a set" and
-    p :: "'a Profile"
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
   assumes
     "A \<noteq> {}" and
-    "finite_profile A p"
-  shows "plurality A p = (plurality_rule'\<down>) A p"
+    "finite A" and
+    "profile V A p"
+  shows "plurality V A p = (plurality_rule'\<down>) V A p"
   using assms plurality_mod_elim_equiv plurality_revision_equiv
   by (metis (full_types))
 
 subsection \<open>Soundness\<close>
 
-theorem plurality_rule_sound[simp]: "electoral_module plurality_rule"
+theorem plurality_rule_sound[simp]: "\<S>\<C>\<F>_result.electoral_module plurality_rule"
   unfolding plurality_rule.simps
   using elector_sound plurality_sound
   by metis
 
-theorem plurality_rule'_sound[simp]: "electoral_module plurality_rule'"
-proof (unfold electoral_module_def, safe)
+theorem plurality_rule'_sound[simp]: "\<S>\<C>\<F>_result.electoral_module plurality_rule'"
+proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
   fix
     A :: "'a set" and
-    p :: "'a Profile"
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
   have "disjoint3 (
-      {a \<in> A. \<forall> a' \<in> A. win_count p a' \<le> win_count p a},
-      {a \<in> A. \<exists> a' \<in> A. win_count p a < win_count p a'},
+      {a \<in> A. \<forall> a' \<in> A. win_count V p a' \<le> win_count V p a},
+      {a \<in> A. \<exists> a' \<in> A. win_count V p a < win_count V p a'},
       {})"
     by auto
   moreover have
-    "{a \<in> A. \<forall> x \<in> A. win_count p x \<le> win_count p a} \<union>
-      {a \<in> A. \<exists> x \<in> A. win_count p a < win_count p x} = A"
+    "{a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a} \<union>
+      {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x} = A"
     using not_le_imp_less
     by auto
-  ultimately show "well_formed A (plurality_rule' A p)"
+  ultimately show "well_formed_\<S>\<C>\<F> A (plurality_rule' V A p)"
     by simp
 qed
+
+lemma voters_determine_plurality_rule: "voters_determine_election plurality_rule"
+  unfolding plurality_rule.simps
+  using voters_determine_elector voters_determine_plurality
+  by blast
 
 subsection \<open>Electing\<close>
 
 lemma plurality_rule_elect_non_empty:
   fixes
     A :: "'a set" and
-    p :: "'a Profile"
+    V :: "'v set" and
+    p :: "('a, 'v) Profile"
   assumes
     A_non_empty: "A \<noteq> {}" and
-    fin_prof_A: "finite_profile A p"
-  shows "elect plurality_rule A p \<noteq> {}"
+    prof_A: "profile V A p" and
+    fin_A: "finite A"
+  shows "elect plurality_rule V A p \<noteq> {}"
 proof
-  assume plurality_elect_none: "elect plurality_rule A p = {}"
+  assume plurality_elect_none: "elect plurality_rule V A p = {}"
   obtain max where
-    max: "max = Max (win_count p ` A)"
+    max: "max = Max (win_count V p ` A)"
     by simp
   then obtain a where
-    max_a: "win_count p a = max \<and> a \<in> A"
-    using Max_in A_non_empty fin_prof_A empty_is_image finite_imageI imageE
+    max_a: "win_count V p a = max \<and> a \<in> A"
+    using Max_in A_non_empty fin_A prof_A empty_is_image finite_imageI imageE
     by (metis (no_types, lifting))
-  hence "\<forall> a' \<in> A. win_count p a' \<le> win_count p a"
-    using fin_prof_A max
+  hence "\<forall> a' \<in> A. win_count V p a' \<le> win_count V p a"
+    using fin_A prof_A max
     by simp
   moreover have "a \<in> A"
     using max_a
     by simp
-  ultimately have "a \<in> {a' \<in> A. \<forall> c \<in> A. win_count p c \<le> win_count p a'}"
+  ultimately have "a \<in> {a' \<in> A. \<forall> c \<in> A. win_count V p c \<le> win_count V p a'}"
     by blast
-  hence "a \<in> elect plurality_rule A p"
-    by auto
+  hence "a \<in> elect plurality_rule' V A p"
+    by simp
+  moreover have "elect plurality_rule' V A p = defer plurality V A p"
+    using plurality_elim_equiv fin_A prof_A A_non_empty snd_conv
+    unfolding revision_composition.simps
+    by metis
+  ultimately have "a \<in> defer plurality V A p"
+    by blast
+  hence "a \<in> elect plurality_rule V A p"
+    by simp
   thus False
     using plurality_elect_none all_not_in_conv
     by metis
@@ -141,20 +176,22 @@ text \<open>
 
 theorem plurality_rule_electing[simp]: "electing plurality_rule"
 proof (unfold electing_def, safe)
-  show "electoral_module plurality_rule"
+  show "\<S>\<C>\<F>_result.electoral_module plurality_rule"
     using plurality_rule_sound
     by simp
 next
   fix
-    A :: "'a set" and
-    p :: "'a Profile" and
-    a :: "'a"
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile" and
+    a :: "'b"
   assume
     fin_A: "finite A" and
-    prof_p: "profile A p" and
-    elect_none: "elect plurality_rule A p = {}" and
+    prof_p: "profile V A p" and
+    elect_none: "elect plurality_rule V A p = {}" and
     a_in_A: "a \<in> A"
-  have "\<forall> A p. A \<noteq> {} \<and> finite_profile A p \<longrightarrow> elect plurality_rule A p \<noteq> {}"
+  have "\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p
+          \<longrightarrow> elect plurality_rule V A p \<noteq> {}"
     using plurality_rule_elect_non_empty
     by (metis (no_types))
   hence empty_A: "A = {}"
@@ -170,30 +207,32 @@ subsection \<open>Property\<close>
 lemma plurality_rule_inv_mono_eq:
   fixes
     A :: "'a set" and
-    p :: "'a Profile" and
-    q :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    q :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
-    elect_a: "a \<in> elect plurality_rule A p" and
-    lift_a: "lifted A p q a"
-  shows "elect plurality_rule A q = elect plurality_rule A p \<or>
-          elect plurality_rule A q = {a}"
+    elect_a: "a \<in> elect plurality_rule V A p" and
+    lift_a: "lifted V A p q a"
+  shows "elect plurality_rule V A q = elect plurality_rule V A p
+          \<or> elect plurality_rule V A q = {a}"
 proof -
-  have "a \<in> elect (elector plurality) A p"
+  have "a \<in> elect (elector plurality) V A p"
     using elect_a
     by simp
-  moreover have eq_p: "elect (elector plurality) A p = defer plurality A p"
+  moreover have eq_p: "elect (elector plurality) V A p = defer plurality V A p"
     by simp
-  ultimately have "a \<in> defer plurality A p"
+  ultimately have "a \<in> defer plurality V A p"
     by blast
-  hence "defer plurality A q = defer plurality A p \<or> defer plurality A q = {a}"
+  hence "defer plurality V A q = defer plurality V A p
+          \<or> defer plurality V A q = {a}"
     using lift_a plurality_def_inv_mono_alts
     by metis
-  moreover have "elect (elector plurality) A q = defer plurality A q"
+  moreover have "elect (elector plurality) V A q = defer plurality V A q"
     by simp
   ultimately show
-    "elect plurality_rule A q = elect plurality_rule A p \<or>
-      elect plurality_rule A q = {a}"
+    "elect plurality_rule V A q = elect plurality_rule V A p
+      \<or> elect plurality_rule V A q = {a}"
     using eq_p
     by simp
 qed
@@ -204,17 +243,19 @@ text \<open>
 
 theorem plurality_rule_inv_mono[simp]: "invariant_monotonicity plurality_rule"
 proof (unfold invariant_monotonicity_def, intro conjI impI allI)
-  show "electoral_module plurality_rule"
-    by simp
+  show "\<S>\<C>\<F>_result.electoral_module plurality_rule"
+    using plurality_rule_sound
+    by metis
 next
   fix
-    A :: "'a set" and
-    p :: "'a Profile" and
-    q :: "'a Profile" and
-    a :: "'a"
-  assume "a \<in> elect plurality_rule A p \<and> Profile.lifted A p q a"
-  thus "elect plurality_rule A q = elect plurality_rule A p \<or>
-          elect plurality_rule A q = {a}"
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile" and
+    q :: "('b, 'a) Profile" and
+    a :: "'b"
+  assume "a \<in> elect plurality_rule V A p \<and> Profile.lifted V A p q a"
+  thus "elect plurality_rule V A q = elect plurality_rule V A p
+          \<or> elect plurality_rule V A q = {a}"
     using plurality_rule_inv_mono_eq
     by metis
 qed

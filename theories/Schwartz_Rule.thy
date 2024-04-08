@@ -20,14 +20,15 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun schwartz_rule :: "'a Electoral_Module" where
-  "schwartz_rule A p =
-    ((less_average_eliminator borda_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) A p"
+fun schwartz_rule :: "('a, 'v, 'a Result) Electoral_Module" where
+  "schwartz_rule V A p =
+    ((less_average_eliminator borda_score) \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d) V A p"
 
 subsection \<open>Soundness\<close>
 
-theorem schwartz_rule_sound: "electoral_module schwartz_rule"
-  unfolding schwartz_rule.simps
-  by (simp add: loop_comp_sound)
+theorem schwartz_rule_sound: "\<S>\<C>\<F>_result.electoral_module schwartz_rule"
+  using less_avg_elim_sound loop_comp_sound
+  unfolding schwartz_rule.simps Defer_One_Loop_Composition.iter.simps
+  by metis
 
 end

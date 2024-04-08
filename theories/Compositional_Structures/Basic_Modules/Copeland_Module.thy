@@ -21,19 +21,49 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun copeland_score :: "'a Evaluation_Function" where
-  "copeland_score x A p =
-    card {y \<in> A . wins x p y} - card {y \<in> A . wins y p x}"
+fun copeland_score :: "('a, 'v) Evaluation_Function" where
+  "copeland_score V x A p =
+    card {y \<in> A . wins V x p y} - card {y \<in> A . wins V y p x}"
 
-fun copeland :: "'a Electoral_Module" where
-  "copeland A p = max_eliminator copeland_score A p"
+fun copeland :: "('a, 'v, 'a Result) Electoral_Module" where
+  "copeland V A p = max_eliminator copeland_score V A p"
 
 subsection \<open>Soundness\<close>
 
-theorem copeland_sound: "electoral_module copeland"
+theorem copeland_sound: "\<S>\<C>\<F>_result.electoral_module copeland"
   unfolding copeland.simps
   using max_elim_sound
   by metis
+
+subsection \<open>Only Voters Determine Election Result\<close>
+
+lemma voters_determine_copeland_score: "voters_determine_evaluation copeland_score"
+proof (unfold copeland_score.simps voters_determine_evaluation.simps, safe)
+  fix
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile" and
+    p' :: "('b, 'a) Profile" and
+    a :: "'b"
+  assume
+    "\<forall> v \<in> V. p v = p' v" and
+    "a \<in> A"
+  hence "\<forall> x y. {v \<in> V. (x, y) \<in> p v} = {v \<in> V. (x, y) \<in> p' v}"
+    by blast
+  hence "\<forall> x y.
+    card {y \<in> A. wins V x p y} = card {y \<in> A. wins V x p' y}
+    \<and> card {x \<in> A. wins V x p y} = card {x \<in> A. wins V x p' y}"
+    by simp
+  thus "card {y \<in> A. wins V a p y} - card {y \<in> A. wins V y p a} =
+       card {y \<in> A. wins V a p' y} - card {y \<in> A. wins V y p' a}"
+    by presburger
+qed
+
+theorem voters_determine_copeland: "voters_determine_election copeland"
+  unfolding copeland.simps
+  using voters_determine_max_elim voters_determine_election.simps
+        voters_determine_copeland_score
+  by blast
 
 subsection \<open>Lemmas\<close>
 
@@ -45,18 +75,19 @@ text \<open>
 lemma cond_winner_imp_win_count:
   fixes
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     w :: "'a"
-  assumes "condorcet_winner A p w"
-  shows "card {a \<in> A. wins w p a} = card A - 1"
+  assumes "condorcet_winner V A p w"
+  shows "card {a \<in> A. wins V w p a} = card A - 1"
 proof -
-  have "\<forall> a \<in> A - {w}. wins w p a"
+  have "\<forall> a \<in> A - {w}. wins V w p a"
     using assms
-    by simp
-  hence "{a \<in> A - {w}. wins w p a} = A - {w}"
+    by auto
+  hence "{a \<in> A - {w}. wins V w p a} = A - {w}"
     by blast
   hence winner_wins_against_all_others:
-    "card {a \<in> A - {w}. wins w p a} = card (A - {w})"
+    "card {a \<in> A - {w}. wins V w p a} = card (A - {w})"
     by simp
   have "w \<in> A"
     using assms
@@ -64,30 +95,31 @@ proof -
   hence "card (A - {w}) = card A - 1"
     using card_Diff_singleton assms
     by metis
-  hence winner_amount_one: "card {a \<in> A - {w}. wins w p a} = card (A) - 1"
+  hence winner_amount_one: "card {a \<in> A - {w}. wins V w p a} = card (A) - 1"
     using winner_wins_against_all_others
     by linarith
-  have win_for_winner_not_reflexive: "\<forall> a \<in> {w}. \<not> wins a p a"
+  have win_for_winner_not_reflexive: "\<forall> a \<in> {w}. \<not> wins V a p a"
     by (simp add: wins_irreflex)
-  hence "{a \<in> {w}. wins w p a} = {}"
+  hence "{a \<in> {w}. wins V w p a} = {}"
     by blast
-  hence winner_amount_zero: "card {a \<in> {w}. wins w p a} = 0"
+  hence winner_amount_zero: "card {a \<in> {w}. wins V w p a} = 0"
     by simp
   have union:
-    "{a \<in> A - {w}. wins w p a} \<union> {x \<in> {w}. wins w p x} = {a \<in> A. wins w p a}"
+    "{a \<in> A - {w}. wins V w p a} \<union> {x \<in> {w}. wins V w p x} =
+        {a \<in> A. wins V w p a}"
     using win_for_winner_not_reflexive
     by blast
-  have finite_defeated: "finite {a \<in> A - {w}. wins w p a}"
+  have finite_defeated: "finite {a \<in> A - {w}. wins V w p a}"
     using assms
     by simp
-  have "finite {a \<in> {w}. wins w p a}"
+  have "finite {a \<in> {w}. wins V w p a}"
     by simp
-  hence "card ({a \<in> A - {w}. wins w p a} \<union> {a \<in> {w}. wins w p a}) =
-          card {a \<in> A - {w}. wins w p a} + card {a \<in> {w}. wins w p a}"
+  hence "card ({a \<in> A - {w}. wins V w p a} \<union> {a \<in> {w}. wins V w p a}) =
+          card {a \<in> A - {w}. wins V w p a} + card {a \<in> {w}. wins V w p a}"
     using finite_defeated card_Un_disjoint
     by blast
-  hence "card {a \<in> A. wins w p a} =
-          card {a \<in> A - {w}. wins w p a} + card {a \<in> {w}. wins w p a}"
+  hence "card {a \<in> A. wins V w p a} =
+          card {a \<in> A - {w}. wins V w p a} + card {a \<in> {w}. wins V w p a}"
     using union
     by simp
   thus ?thesis
@@ -103,10 +135,11 @@ text \<open>
 lemma cond_winner_imp_loss_count:
   fixes
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     w :: "'a"
-  assumes "condorcet_winner A p w"
-  shows "card {a \<in> A. wins a p w} = 0"
+  assumes "condorcet_winner V A p w"
+  shows "card {a \<in> A. wins V a p w} = 0"
   using Collect_empty_eq card_eq_0_iff insert_Diff insert_iff wins_antisym assms
   unfolding condorcet_winner.simps
   by (metis (no_types, lifting))
@@ -118,19 +151,21 @@ text \<open>
 lemma cond_winner_imp_copeland_score:
   fixes
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     w :: "'a"
-  assumes "condorcet_winner A p w"
-  shows "copeland_score w A p = card A - 1"
+  assumes "condorcet_winner V A p w"
+  shows "copeland_score V w A p = card A - 1"
 proof (unfold copeland_score.simps)
-  have "card {a \<in> A. wins w p a} = card A - 1"
+  have "card {a \<in> A. wins V w p a} = card A - 1"
     using cond_winner_imp_win_count assms
-    by simp
-  moreover have "card {a \<in> A. wins a p w} = 0"
+    by metis
+  moreover have "card {a \<in> A. wins V a p w} = 0"
     using cond_winner_imp_loss_count assms
     by (metis (no_types))
   ultimately show
-    "card {a \<in> A. wins w p a} - card {a \<in> A. wins a p w} = card A - 1"
+    "enat (card {a \<in> A. wins V w p a}
+      - card {a \<in> A. wins V a p w}) = enat (card A - 1)"
     by simp
 qed
 
@@ -142,38 +177,39 @@ text \<open>
 lemma non_cond_winner_imp_win_count:
   fixes
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     w :: "'a" and
     l :: "'a"
   assumes
-    winner: "condorcet_winner A p w" and
+    winner: "condorcet_winner V A p w" and
     loser: "l \<noteq> w" and
     l_in_A: "l \<in> A"
-  shows "card {a \<in> A . wins l p a} \<le> card A - 2"
+  shows "card {a \<in> A . wins V l p a} \<le> card A - 2"
 proof -
-  have "wins w p l"
+  have "wins V w p l"
     using assms
-    by simp
-  hence "\<not> wins l p w"
+    by auto
+  hence "\<not> wins V l p w"
     using wins_antisym
     by simp
-  moreover have "\<not> wins l p l"
+  moreover have "\<not> wins V l p l"
     using wins_irreflex
     by simp
   ultimately have wins_of_loser_eq_without_winner:
-    "{y \<in> A . wins l p y} = {y \<in> A - {l, w} . wins l p y}"
+    "{y \<in> A . wins V l p y} = {y \<in> A - {l, w} . wins V l p y}"
     by blast
   have "\<forall> M f. finite M \<longrightarrow> card {x \<in> M . f x} \<le> card M"
     by (simp add: card_mono)
   moreover have "finite (A - {l, w})"
     using finite_Diff winner
     by simp
-  ultimately have "card {y \<in> A - {l, w} . wins l p y} \<le> card (A - {l, w})"
+  ultimately have "card {y \<in> A - {l, w} . wins V l p y} \<le> card (A - {l, w})"
     using winner
     by (metis (full_types))
   thus ?thesis
     using assms wins_of_loser_eq_without_winner
-    by (simp add: card_Diff_subset)
+    by simp
 qed
 
 subsection \<open>Property\<close>
@@ -185,22 +221,20 @@ text \<open>
 theorem copeland_score_is_cr: "condorcet_rating copeland_score"
 proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
   fix
-    A :: "'a set" and
-    p :: "'a Profile" and
-    w :: "'a" and
-    l :: "'a"
+    A :: "'b set" and
+    V :: "'v set" and
+    p :: "('b, 'v) Profile" and
+    w :: "'b" and
+    l :: "'b"
   assume
-    winner: "condorcet_winner A p w" and
+    winner: "condorcet_winner V A p w" and
     l_in_A: "l \<in> A" and
     l_neq_w: "l \<noteq> w"
-  hence "card {y \<in> A. wins l p y} \<le> card A - 2"
+  hence "card {y \<in> A. wins V l p y} \<le> card A - 2"
     using non_cond_winner_imp_win_count
     by (metis (mono_tags, lifting))
-  hence "card {y \<in> A. wins l p y} - card {y \<in> A. wins y p l} \<le> card A - 2"
+  hence "card {y \<in> A. wins V l p y} - card {y \<in> A. wins V y p l} \<le> card A - 2"
     using diff_le_self order.trans
-    by blast
-  moreover have "finite A"
-    using winner
     by simp
   moreover have "card A - 2 < card A - 1"
     using card_0_eq diff_less_mono2 empty_iff l_in_A l_neq_w neq0_conv less_one
@@ -209,48 +243,62 @@ proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
     unfolding condorcet_winner.simps
     by metis
   ultimately have
-    "card {y \<in> A. wins l p y} - card {y \<in> A. wins y p l} < card A - 1"
+    "card {y \<in> A. wins V l p y} - card {y \<in> A. wins V y p l} < card A - 1"
     using order_le_less_trans
-    by blast
-  moreover have "card {a \<in> A. wins a p w} = 0"
+    by fastforce
+  moreover have "card {a \<in> A. wins V a p w} = 0"
     using cond_winner_imp_loss_count winner
-    by (metis (no_types))
-  moreover have "card A - 1 = card {a \<in> A. wins w p a}"
+    by metis
+  moreover have "card A - 1 = card {a \<in> A. wins V w p a}"
     using cond_winner_imp_win_count winner
     by (metis (full_types))
   ultimately show
-    "card {y \<in> A. wins l p y} - card {y \<in> A. wins y p l} <
-      card {y \<in> A. wins w p y} - card {y \<in> A. wins y p w}"
-    by linarith
+    "enat (card {y \<in> A. wins V l p y} - card {y \<in> A. wins V y p l}) <
+      enat (card {y \<in> A. wins V w p y} - card {y \<in> A. wins V y p w})"
+    using enat_ord_simps diff_zero
+    by (metis (no_types, lifting))
 qed
 
 theorem copeland_is_dcc: "defer_condorcet_consistency copeland"
-proof (unfold defer_condorcet_consistency_def electoral_module_def, safe)
+proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module.simps,
+        safe)
   fix
-    A :: "'a set" and
-    p :: "'a Profile"
-  assume "profile A p"
-  hence "well_formed A (max_eliminator copeland_score A p)"
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile"
+  assume "profile V A p"
+  moreover from this
+  have "well_formed_\<S>\<C>\<F> A (max_eliminator copeland_score V A p)"
     using max_elim_sound
-    unfolding electoral_module_def
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps
     by metis
-  thus "well_formed A (copeland A p)"
-    by simp
+  ultimately show "well_formed_\<S>\<C>\<F> A (copeland V A p)"
+    using copeland_sound
+    unfolding \<S>\<C>\<F>_result.electoral_module.simps
+    by metis
 next
   fix
-    A :: "'a set" and
-    p :: "'a Profile" and
-    w :: "'a"
-  assume "condorcet_winner A p w"
+    A :: "'b set" and
+    V :: "'v set" and
+    p :: "('b, 'v) Profile" and
+    w :: "'b"
+  assume "condorcet_winner V A p w"
   moreover have "defer_condorcet_consistency (max_eliminator copeland_score)"
     by (simp add: copeland_score_is_cr)
-  moreover have "\<forall> A p. copeland A p = max_eliminator copeland_score A p"
-    by simp
-  ultimately show
-    "copeland A p = ({}, A - defer copeland A p, {d \<in> A. condorcet_winner A p d})"
-    using Collect_cong
+  ultimately have
+    "max_eliminator copeland_score V A p =
+      ({},
+        A - defer (max_eliminator copeland_score) V A p,
+        {d \<in> A. condorcet_winner V A p d})"
     unfolding defer_condorcet_consistency_def
-    by (metis (no_types, lifting))
+    by (metis (no_types))
+  moreover have "copeland V A p = max_eliminator copeland_score V A p"
+    unfolding copeland.simps
+    by safe
+  ultimately show
+    "copeland V A p =
+      ({}, A - defer copeland V A p, {d \<in> A. condorcet_winner V A p d})"
+    by metis
 qed
 
 end

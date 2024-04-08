@@ -18,19 +18,29 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-type_synonym 'a Evaluation_Function = "'a \<Rightarrow> 'a set \<Rightarrow> 'a Profile \<Rightarrow> nat"
+type_synonym ('a, 'v) Evaluation_Function =
+  "'v set \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> enat"
 
 subsection \<open>Property\<close>
 
 text \<open>
-  An Evaluation function is Condorcet-rating iff the following holds:
+  An Evaluation function is a Condorcet-rating iff the following holds:
   If a Condorcet Winner w exists, w and only w has the highest value.
 \<close>
 
-definition condorcet_rating :: "'a Evaluation_Function \<Rightarrow> bool" where
+definition condorcet_rating :: "('a, 'v) Evaluation_Function \<Rightarrow> bool" where
   "condorcet_rating f \<equiv>
-    \<forall> A p w . condorcet_winner A p w \<longrightarrow>
-      (\<forall> l \<in> A . l \<noteq> w \<longrightarrow> f l A p < f w A p)"
+    \<forall> A V p w . condorcet_winner V A p w \<longrightarrow>
+      (\<forall> l \<in> A . l \<noteq> w \<longrightarrow> f V l A p < f V w A p)"
+
+text \<open>
+  An Evaluation function is dependent only on the participating voters iff
+  it is invariant under profile changes that only impact non-voters.
+\<close>
+
+fun voters_determine_evaluation :: "('a, 'v) Evaluation_Function \<Rightarrow> bool" where
+  "voters_determine_evaluation f =
+    (\<forall> A V p p'. (\<forall> v \<in> V. p v = p' v) \<longrightarrow> (\<forall> a \<in> A. f V a A p = f V a A p'))"
 
 subsection \<open>Theorems\<close>
 
@@ -41,40 +51,39 @@ text \<open>
 
 theorem cond_winner_imp_max_eval_val:
   fixes
-    e :: "'a Evaluation_Function" and
+    e :: "('a, 'v) Evaluation_Function" and
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
     rating: "condorcet_rating e" and
-    f_prof: "finite_profile A p" and
-    winner: "condorcet_winner A p a"
-  shows "e a A p = Max {e b A p | b. b \<in> A}"
+    f_prof: "finite_profile V A p" and
+    winner: "condorcet_winner V A p a"
+  shows "e V a A p = Max {e V b A p | b. b \<in> A}"
 proof -
-  let ?set = "{e b A p | b. b \<in> A}" and
-      ?eMax = "Max {e b A p | b. b \<in> A}" and
-      ?eW = "e a A p"
+  let ?set = "{e V b A p | b. b \<in> A}" and
+      ?eMax = "Max {e V b A p | b. b \<in> A}" and
+      ?eW = "e V a A p"
   have "?eW \<in> ?set"
-    using CollectI condorcet_winner.simps winner
+    using CollectI winner
+    unfolding condorcet_winner.simps
     by (metis (mono_tags, lifting))
   moreover have "\<forall> e \<in> ?set. e \<le> ?eW"
   proof (safe)
     fix b :: "'a"
     assume "b \<in> A"
-    moreover have "\<forall> n n'. (n::nat) = n' \<longrightarrow> n \<le> n'"
-      by simp
-    ultimately show "e b A p \<le> e a A p"
-      using less_imp_le rating winner
+    thus "e V b A p \<le> e V a A p"
+      using less_imp_le rating winner order_refl
       unfolding condorcet_rating_def
-      by (metis (no_types))
+      by metis
   qed
-  ultimately have "?eW \<in> ?set \<and> (\<forall> e \<in> ?set. e \<le> ?eW)"
-    by blast
   moreover have "finite ?set"
     using f_prof
     by simp
   moreover have "?set \<noteq> {}"
-    using condorcet_winner.simps winner
+    using winner
+    unfolding condorcet_winner.simps
     by fastforce
   ultimately show ?thesis
     using Max_eq_iff
@@ -90,24 +99,25 @@ text \<open>
 
 theorem non_cond_winner_not_max_eval:
   fixes
-    e :: "'a Evaluation_Function" and
+    e :: "('a, 'v) Evaluation_Function" and
     A :: "'a set" and
-    p :: "'a Profile" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
     a :: "'a" and
     b :: "'a"
   assumes
     rating: "condorcet_rating e" and
-    f_prof: "finite_profile A p" and
-    winner: "condorcet_winner A p a" and
+    f_prof: "finite_profile V A p" and
+    winner: "condorcet_winner V A p a" and
     lin_A: "b \<in> A" and
     loser: "a \<noteq> b"
-  shows "e b A p < Max {e c A p | c. c \<in> A}"
+  shows "e V b A p < Max {e V c A p | c. c \<in> A}"
 proof -
-  have "e b A p < e a A p"
+  have "e V b A p < e V a A p"
     using lin_A loser rating winner
     unfolding condorcet_rating_def
     by metis
-  also have "e a A p = Max {e c A p | c. c \<in> A}"
+  also have "\<dots> = Max {e V c A p | c. c \<in> A}"
     using cond_winner_imp_max_eval_val f_prof rating winner
     by fastforce
   finally show ?thesis
