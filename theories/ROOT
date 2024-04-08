@@ -18,7 +18,7 @@ chapter browser_info
 session Verified_Voting_Rule_Construction = HOL +
   description
     \<open>Verified Construction of Fair Voting Rules\<close>
-  options [timeout = 500, browser_info, document = pdf, document_output = "output", document_variants="document:outline=/proof,/ML"]
+  options [timeout = 300, browser_info, document = pdf, document_output = "output", document_variants="document:outline=/proof,/ML"]
 
   sessions
     "HOL-Library"
