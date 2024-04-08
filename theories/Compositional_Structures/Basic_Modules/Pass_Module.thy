@@ -21,7 +21,8 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun pass_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun pass_module :: "nat \<Rightarrow> 'a Preference_Relation
+                      \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "pass_module n r V A p =
     ({},
     {a \<in> A. rank (limit A r) a > n},

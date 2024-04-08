@@ -87,9 +87,11 @@ next
     p' :: "('a, 'v) Profile" and
     m' :: "('a, 'v, 'a Result) Electoral_Module"
   assume
-    "finite (defer acc V A p) \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p
+    "finite (defer acc V A p)
+    \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p
         \<longrightarrow> t (acc V A p)" and
-    "finite (defer acc' V' A' p') \<and> defer (acc' \<triangleright> m') V' A' p' \<subset> defer acc' V' A' p'
+    "finite (defer acc' V' A' p')
+    \<and> defer (acc' \<triangleright> m') V' A' p' \<subset> defer acc' V' A' p'
         \<longrightarrow> t' (acc' V' A' p')" and
     "(acc, m, t, V, A, p) = (acc', m', t', V', A', p')"
   thus "acc V A p = acc' V' A' p'"
@@ -109,9 +111,11 @@ next
     p' :: "('a, 'v) Profile" and
     m' :: "('a, 'v, 'a Result) Electoral_Module"
   assume
-    "finite (defer acc V A p) \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p
+    "finite (defer acc V A p)
+    \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p
           \<longrightarrow> t (acc V A p)" and
-    "\<not> (finite (defer acc' V' A' p') \<and> defer (acc' \<triangleright> m') V' A' p' \<subset> defer acc' V' A' p'
+    "\<not> (finite (defer acc' V' A' p')
+    \<and> defer (acc' \<triangleright> m') V' A' p' \<subset> defer acc' V' A' p'
           \<longrightarrow> t' (acc' V' A' p'))" and
     "(acc, m, t, V, A, p) = (acc', m', t', V', A', p')"
   thus "acc V A p = loop_comp_helper_sumC (acc' \<triangleright> m', m', t', V', A', p')"
@@ -131,9 +135,11 @@ next
     p' :: "('a, 'v) Profile" and
     m' :: "('a, 'v, 'a Result) Electoral_Module"
   assume
-    "\<not> (finite (defer acc V A p) \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p
+    "\<not> (finite (defer acc V A p)
+    \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p
           \<longrightarrow> t (acc V A p))" and
-    "\<not> (finite (defer acc' V' A' p') \<and> defer (acc' \<triangleright> m') V' A' p' \<subset> defer acc' V' A' p'
+    "\<not> (finite (defer acc' V' A' p')
+    \<and> defer (acc' \<triangleright> m') V' A' p' \<subset> defer acc' V' A' p'
           \<longrightarrow> t' (acc' V' A' p'))" and
     "(acc, m, t, V, A, p) = (acc', m', t', V', A', p')"
   thus "loop_comp_helper_sumC (acc \<triangleright> m, m, t, V, A, p) =
@@ -151,18 +157,26 @@ proof (safe)
     p :: "('b, 'a) Profile"
   have term_rel:
     "\<exists> R. wf R \<and>
-        (finite (defer m V A p) \<and> defer (m \<triangleright> n) V A p \<subset> defer m V A p \<longrightarrow> t (m V A p) \<or>
-          ((m \<triangleright> n, n, t, V, A, p), (m, n, t, V, A, p)) \<in> R)"
+        (finite (defer m V A p)
+        \<and> defer (m \<triangleright> n) V A p \<subset> defer m V A p
+      \<longrightarrow> t (m V A p)
+        \<or> ((m \<triangleright> n, n, t, V, A, p), (m, n, t, V, A, p)) \<in> R)"
     using loop_termination_helper wf_measure "termination"
     by (metis (no_types))
   obtain
-    R :: "((('b, 'a, 'b Result) Electoral_Module \<times> ('b, 'a, 'b Result) Electoral_Module \<times>
-            ('b Termination_Condition) \<times> 'a set \<times> 'b set \<times> ('b, 'a) Profile) \<times>
-            ('b, 'a, 'b Result) Electoral_Module \<times> ('b, 'a, 'b Result) Electoral_Module \<times>
-            ('b Termination_Condition) \<times> 'a set \<times> 'b set \<times> ('b, 'a) Profile) set" where
+    R :: "((('b, 'a, 'b Result) Electoral_Module
+              \<times> ('b, 'a, 'b Result) Electoral_Module
+              \<times> ('b Termination_Condition) \<times> 'a set \<times> 'b set
+              \<times> ('b, 'a) Profile)
+          \<times> ('b, 'a, 'b Result) Electoral_Module
+              \<times> ('b, 'a, 'b Result) Electoral_Module
+              \<times> ('b Termination_Condition) \<times> 'a set \<times> 'b set
+              \<times> ('b, 'a) Profile) set" where
     "wf R \<and>
-      (finite (defer m V A p) \<and> defer (m \<triangleright> n) V A p \<subset> defer m V A p \<longrightarrow> t (m V A p) \<or>
-          ((m \<triangleright> n, n, t, V, A, p), m, n, t, V, A, p) \<in> R)"
+      (finite (defer m V A p)
+        \<and> defer (m \<triangleright> n) V A p \<subset> defer m V A p
+      \<longrightarrow> t (m V A p)
+        \<or> ((m \<triangleright> n, n, t, V, A, p), m, n, t, V, A, p) \<in> R)"
     using term_rel
     by presburger
   have "\<forall> R'.
@@ -170,9 +184,9 @@ proof (safe)
       ('b, 'a, 'b Result) Electoral_Module \<times> ('b, 'a, 'b Result) Electoral_Module
       \<times> 'b Termination_Condition \<times> 'a set \<times> 'b set \<times> ('b, 'a) Profile \<Rightarrow> bool) \<or>
       (\<exists> t' m' A' V' p' n'. wf R' \<longrightarrow>
-        ((m' \<triangleright> n', n', t', V'::'a set, A'::'b set, p'), m', n', t', V', A', p') \<notin> R' \<and>
-          finite (defer m' V' A' p') \<and> defer (m' \<triangleright> n') V' A' p' \<subset> defer m' V' A' p' \<and>
-            \<not> t' (m' V' A' p'))"
+        ((m' \<triangleright> n', n', t', V'::'a set, A'::'b set, p'), m', n', t', V', A', p') \<notin> R'
+        \<and> finite (defer m' V' A' p') \<and> defer (m' \<triangleright> n') V' A' p' \<subset> defer m' V' A' p'
+        \<and> \<not> t' (m' V' A' p'))"
     using "termination"
     by metis
   thus "loop_comp_helper_dom (m, n, t, V, A, p)"
@@ -190,16 +204,19 @@ lemma loop_comp_code_helper[code]:
     p :: "('a, 'v) Profile"
   shows
     "loop_comp_helper acc m t V A p =
-      (if (t (acc V A p) \<or> \<not> ((defer (acc \<triangleright> m) V A p) \<subset> (defer acc V A p)) \<or>
-        infinite (defer acc V A p))
+      (if (t (acc V A p) \<or> \<not> ((defer (acc \<triangleright> m) V A p) \<subset> (defer acc V A p))
+      \<or> infinite (defer acc V A p))
       then (acc V A p) else (loop_comp_helper (acc \<triangleright> m) m t V A p))"
   using loop_comp_helper.simps
   by (metis (no_types))
 
-function loop_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Termination_Condition
-            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
-  "t ({}, {}, A) \<Longrightarrow> loop_composition m t V A p = defer_module V A p" |
-  "\<not>(t ({}, {}, A)) \<Longrightarrow> loop_composition m t V A p = (loop_comp_helper m m t) V A p"
+function loop_composition :: "('a, 'v, 'a Result) Electoral_Module
+                                  \<Rightarrow> 'a Termination_Condition
+                                  \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+  "t ({}, {}, A)
+    \<Longrightarrow> loop_composition m t V A p = defer_module V A p" |
+  "\<not>(t ({}, {}, A))
+    \<Longrightarrow> loop_composition m t V A p = (loop_comp_helper m m t) V A p"
   by (fastforce, simp_all)
 termination
   using "termination" wf_empty
@@ -294,7 +311,7 @@ lemma loop_comp_helper_imp_no_def_incr:
 proof (induct arbitrary: acc rule: less_induct)
   case (less)
   have emod_acc_m: "\<S>\<C>\<F>_result.electoral_module (acc \<triangleright> m)"
-    using less.prems module_m seq_comp_sound 
+    using less.prems module_m seq_comp_sound
     by blast
   have "\<forall> A A'. (finite A \<and> A' \<subset> A) \<longrightarrow> card A' < card A"
     using psubset_card_mono
@@ -358,7 +375,8 @@ proof (induct n arbitrary: acc rule: less_induct)
     by metis
   thus ?case
   proof (cases)
-    assume card_unchanged: "card (defer (acc \<triangleright> m) V A p) = card (defer acc V A p)"
+    assume card_unchanged:
+      "card (defer (acc \<triangleright> m) V A p) = card (defer acc V A p)"
     have "defer_lift_invariance acc \<longrightarrow>
             (\<forall> q a. a \<in> (defer acc V A p) \<and> lifted V A p q a \<longrightarrow>
               (loop_comp_helper acc m t) V A q = acc V A q)"
@@ -397,9 +415,11 @@ proof (induct n arbitrary: acc rule: less_induct)
       using loop_comp_code_helper order.strict_iff_order psubset_card_mono
       by metis
     ultimately have
-      "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance acc \<longrightarrow>
-          (\<forall> q a. a \<in> (defer (loop_comp_helper acc m t) V A p) \<and> lifted V A p q a \<longrightarrow>
-                  (loop_comp_helper acc m t) V A p = (loop_comp_helper acc m t) V A q)"
+      "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance acc
+      \<longrightarrow> (\<forall> q a. a \<in> (defer (loop_comp_helper acc m t) V A p)
+                  \<and> lifted V A p q a
+            \<longrightarrow> (loop_comp_helper acc m t) V A p =
+                  (loop_comp_helper acc m t) V A q)"
       unfolding defer_lift_invariance_def
       by metis
     moreover have "defer_lift_invariance (acc \<triangleright> m)"
@@ -409,7 +429,8 @@ proof (induct n arbitrary: acc rule: less_induct)
       using less monotone_m
       by metis
   next
-    assume card_changed: "\<not> (card (defer (acc \<triangleright> m) V A p) = card (defer acc V A p))"
+    assume card_changed:
+      "\<not> (card (defer (acc \<triangleright> m) V A p) = card (defer acc V A p))"
     with prof
     have card_smaller_for_p:
       "\<S>\<C>\<F>_result.electoral_module acc \<and> finite A \<longrightarrow>
@@ -431,24 +452,27 @@ proof (induct n arbitrary: acc rule: less_induct)
       assume t_not_satisfied_for_p: "\<not> t (acc V A p)"
       hence t_not_satisfied_for_q:
         "defer_lift_invariance acc \<longrightarrow>
-            (\<forall> q a. a \<in> (defer (acc \<triangleright> m) V A p) \<and> lifted V A p q a \<longrightarrow> \<not> t (acc V A q))"
+            (\<forall> q a. a \<in> (defer (acc \<triangleright> m) V A p) \<and> lifted V A p q a
+              \<longrightarrow> \<not> t (acc V A q))"
         using monotone_m prof seq_comp_def_set_trans
         unfolding defer_lift_invariance_def
         by metis
       have dli_card_def:
-        "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance acc \<longrightarrow>
-            (\<forall> q a. a \<in> (defer (acc \<triangleright> m) V A p) \<and> Profile.lifted V A p q a \<longrightarrow>
-                card (defer (acc \<triangleright> m) V A q) \<noteq> (card (defer acc V A q)))"
+        "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance acc
+          \<longrightarrow> (\<forall> q a. a \<in> (defer (acc \<triangleright> m) V A p) \<and> Profile.lifted V A p q a
+                \<longrightarrow> card (defer (acc \<triangleright> m) V A q) \<noteq> (card (defer acc V A q)))"
       proof -
         have
           "\<forall> m'.
-            (\<not> defer_lift_invariance m' \<and> \<S>\<C>\<F>_result.electoral_module m' \<longrightarrow>
-              (\<exists> V' A' p' q' a.
-                m' V' A' p' \<noteq> m' V' A' q' \<and> lifted V' A' p' q' a \<and> a \<in> defer m' V' A' p')) \<and>
-            (defer_lift_invariance m' \<longrightarrow>
-              \<S>\<C>\<F>_result.electoral_module m' \<and>
-                (\<forall> V' A' p' q' a.
-                  m' V' A' p' \<noteq> m' V' A' q' \<longrightarrow> lifted V' A' p' q' a \<longrightarrow> a \<notin> defer m' V' A' p'))"
+            (\<not> defer_lift_invariance m' \<and> \<S>\<C>\<F>_result.electoral_module m'
+            \<longrightarrow> (\<exists> V' A' p' q' a.
+                  m' V' A' p' \<noteq> m' V' A' q' \<and> lifted V' A' p' q' a
+                \<and> a \<in> defer m' V' A' p'))
+            \<and> (defer_lift_invariance m'
+              \<longrightarrow> \<S>\<C>\<F>_result.electoral_module m'
+                \<and> (\<forall> V' A' p' q' a.
+                  m' V' A' p' \<noteq> m' V' A' q'
+                \<longrightarrow> lifted V' A' p' q' a \<longrightarrow> a \<notin> defer m' V' A' p'))"
           unfolding defer_lift_invariance_def
           by blast
         thus ?thesis
@@ -456,17 +480,18 @@ proof (induct n arbitrary: acc rule: less_induct)
           by (metis (no_types, opaque_lifting))
       qed
       hence dli_def_subset:
-        "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance acc \<longrightarrow>
-            (\<forall> p' a. a \<in> (defer (acc \<triangleright> m) V A p) \<and> lifted V A p p' a \<longrightarrow>
-                defer (acc \<triangleright> m) V A p' \<subset> defer acc V A p')"
+        "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance acc
+          \<longrightarrow> (\<forall> p' a. a \<in> (defer (acc \<triangleright> m) V A p) \<and> lifted V A p p' a
+              \<longrightarrow> defer (acc \<triangleright> m) V A p' \<subset> defer acc V A p')"
         using Profile.lifted_def dli_card_def defer_lift_invariance_def
               monotone_m psubsetI seq_comp_def_set_bounded
         by (metis (no_types, opaque_lifting))
       with t_not_satisfied_for_p
       have rec_step_q:
-        "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance acc \<longrightarrow>
-            (\<forall> q a. a \<in> (defer (acc \<triangleright> m) V A p) \<and> lifted V A p q a \<longrightarrow>
-                loop_comp_helper acc m t V A q = loop_comp_helper (acc \<triangleright> m) m t V A q)"
+        "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance acc
+          \<longrightarrow> (\<forall> q a. a \<in> (defer (acc \<triangleright> m) V A p) \<and> lifted V A p q a
+              \<longrightarrow> loop_comp_helper acc m t V A q =
+                    loop_comp_helper (acc \<triangleright> m) m t V A q)"
       proof (safe)
         fix
           q :: "('a, 'v) Profile" and
@@ -499,7 +524,8 @@ proof (induct n arbitrary: acc rule: less_induct)
       proof (safe)
         assume emod_acc: "\<S>\<C>\<F>_result.electoral_module acc"
         have sound_imp_defer_subset:
-          "\<S>\<C>\<F>_result.electoral_module m \<longrightarrow> defer (acc \<triangleright> m) V A p \<subseteq> defer acc V A p"
+          "\<S>\<C>\<F>_result.electoral_module m
+            \<longrightarrow> defer (acc \<triangleright> m) V A p \<subseteq> defer acc V A p"
           using emod_acc prof seq_comp_def_set_bounded
           by blast
         hence card_ineq: "card (defer (acc \<triangleright> m) V A p) < card (defer acc V A p)"
@@ -517,7 +543,8 @@ proof (induct n arbitrary: acc rule: less_induct)
           using def_limited_acc card_ineq card_psubset less
           by metis
         with def_limited_acc
-        show "loop_comp_helper acc m t V A p = loop_comp_helper (acc \<triangleright> m) m t V A p"
+        show "loop_comp_helper acc m t V A p =
+                loop_comp_helper (acc \<triangleright> m) m t V A p"
           using loop_comp_code_helper t_not_satisfied_for_p less
           by (metis (no_types))
       qed
@@ -531,9 +558,9 @@ proof (induct n arbitrary: acc rule: less_induct)
           a_lifted: "Profile.lifted V A p q a"
         have mod_acc: "\<S>\<C>\<F>_result.electoral_module acc"
           using less.prems
-          unfolding defer_lift_invariance_def 
+          unfolding defer_lift_invariance_def
           by simp
-        hence loop_comp_equiv: 
+        hence loop_comp_equiv:
           "loop_comp_helper acc m t V A p = loop_comp_helper (acc \<triangleright> m) m t V A p"
           using rec_step_p
           by blast
@@ -541,7 +568,8 @@ proof (induct n arbitrary: acc rule: less_induct)
           using a_in_defer_lch
           by presburger
         moreover have l_inv: "defer_lift_invariance (acc \<triangleright> m)"
-          using less.prems monotone_m voters_determine_m seq_comp_presv_def_lift_inv[of acc m]
+          using less.prems monotone_m voters_determine_m
+                seq_comp_presv_def_lift_inv
           by blast
         ultimately have "a \<in> defer (acc \<triangleright> m) V A p"
           using prof monotone_m in_mono loop_comp_helper_imp_no_def_incr
@@ -632,7 +660,7 @@ lemma loop_comp_helper_presv_def_lift_inv:
   shows "defer_lift_invariance (loop_comp_helper acc m t)"
 proof (unfold defer_lift_invariance_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (loop_comp_helper acc m t)"
-    using loop_comp_helper_imp_partit assms 
+    using loop_comp_helper_imp_partit assms
     unfolding \<S>\<C>\<F>_result.electoral_module.simps
               defer_lift_invariance_def
     by metis
@@ -776,14 +804,15 @@ proof (induct n arbitrary: acc rule: less_induct)
     have "defer acc V A p \<subseteq> A"
       using defer_in_alts prof mod_acc
       by metis
-    hence step_profile: "profile V (defer acc V A p) (limit_profile (defer acc V A p) p)"
+    hence step_profile:
+      "profile V (defer acc V A p) (limit_profile (defer acc V A p) p)"
       using prof limit_profile_sound
       by metis
     hence
       "card (defer m V (defer acc V A p) (limit_profile (defer acc V A p) p)) =
         card (defer acc V A p) - 1"
       using enough_leftover non_electing_m
-            single_elimination single_elim_decr_def_card_2 
+            single_elimination single_elim_decr_def_card_2
       by blast
     hence k_card: "k = card (defer acc V A p) - 1"
       using mod_acc prof new_card_k non_electing_m seq_comp_defers_def_set
@@ -986,7 +1015,7 @@ proof (unfold defers_def, safe)
     by metis
 next
   fix
-    A :: "'a set" and 
+    A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assume

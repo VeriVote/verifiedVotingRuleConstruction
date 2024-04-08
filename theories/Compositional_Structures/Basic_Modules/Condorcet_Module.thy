@@ -39,14 +39,14 @@ subsection \<open>Property\<close>
 
 (* Condorcet score is Condorcet rating. *)
 theorem condorcet_score_is_condorcet_rating: "condorcet_rating condorcet_score"
-proof (unfold condorcet_rating_def, safe) 
+proof (unfold condorcet_rating_def, safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
     w :: "'b" and
     l :: "'b"
-  assume 
+  assume
     c_win: "condorcet_winner V A p w" and
     l_neq_w: "l \<noteq> w"
   have "\<not> condorcet_winner V A p l"

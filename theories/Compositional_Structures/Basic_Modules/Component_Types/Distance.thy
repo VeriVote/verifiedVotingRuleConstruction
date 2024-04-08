@@ -48,18 +48,19 @@ definition triangle_ineq :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool
 definition eq_if_zero :: "'a set \<Rightarrow> 'a Distance \<Rightarrow> bool" where
   "eq_if_zero S d \<equiv> \<forall> x y. x \<in> S \<and> y \<in> S \<longrightarrow> d x y = 0 \<longrightarrow> x = y"
 
-definition vote_distance :: "('a Vote set \<Rightarrow> 'a Vote Distance \<Rightarrow> bool) \<Rightarrow>
-                                          'a Vote Distance \<Rightarrow> bool" where
+definition vote_distance :: "('a Vote set \<Rightarrow> 'a Vote Distance \<Rightarrow> bool)
+                                        \<Rightarrow> 'a Vote Distance \<Rightarrow> bool" where
   "vote_distance \<pi> d \<equiv> \<pi> {(A, p). linear_order_on A p \<and> finite A} d"
 
-definition election_distance :: "(('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool) \<Rightarrow>
-      ('a, 'v) Election Distance \<Rightarrow> bool" where
+definition election_distance :: "(('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance
+                                \<Rightarrow> bool) \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
   "election_distance \<pi> d \<equiv> \<pi> {(A, V, p). finite_profile V A p} d"
 
 subsection \<open>Standard Distance Property\<close>
 
 definition standard :: "('a, 'v) Election Distance \<Rightarrow> bool" where
- "standard d \<equiv> \<forall> A A' V V' p p'. A \<noteq> A' \<or> V \<noteq> V' \<longrightarrow> d (A, V, p) (A', V', p') = \<infinity>"
+ "standard d \<equiv>
+    \<forall> A A' V V' p p'. A \<noteq> A' \<or> V \<noteq> V' \<longrightarrow> d (A, V, p) (A', V', p') = \<infinity>"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -135,12 +136,12 @@ subsection \<open>Swap Distance\<close>
 fun neq_ord :: "'a Preference_Relation \<Rightarrow> 'a Preference_Relation \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> bool" where
   "neq_ord r s a b = ((a \<preceq>\<^sub>r b \<and> b \<preceq>\<^sub>s a) \<or> (b \<preceq>\<^sub>r a \<and> a \<preceq>\<^sub>s b))"
 
-fun pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow>
-                                'a Preference_Relation \<Rightarrow> ('a \<times> 'a) set" where
+fun pairwise_disagreements :: "'a set \<Rightarrow> 'a Preference_Relation
+                              \<Rightarrow> 'a Preference_Relation \<Rightarrow> ('a \<times> 'a) set" where
   "pairwise_disagreements A r s = {(a, b) \<in> A \<times> A. a \<noteq> b \<and> neq_ord r s a b}"
 
-fun pairwise_disagreements' :: "'a set \<Rightarrow> 'a Preference_Relation \<Rightarrow>
-                                'a Preference_Relation \<Rightarrow> ('a \<times> 'a) set" where
+fun pairwise_disagreements' :: "'a set \<Rightarrow> 'a Preference_Relation
+                                \<Rightarrow> 'a Preference_Relation \<Rightarrow> ('a \<times> 'a) set" where
   "pairwise_disagreements' A r s =
       Set.filter (\<lambda> (a, b). a \<noteq> b \<and> neq_ord r s a b) (A \<times> A)"
 
@@ -228,22 +229,24 @@ definition distance_anonymity :: "('a, 'v) Election Distance \<Rightarrow> bool"
         (d (A, V, p) (A', V', p')) =
           (d (rename \<pi> (A, V, p))) (rename \<pi> (A', V', p')))"
 
-fun distance_anonymity' :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
+fun distance_anonymity' :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance
+                                \<Rightarrow> bool" where
   "distance_anonymity' X d = invariance\<^sub>\<D> d (carrier anonymity\<^sub>\<G>) X (\<phi>_anon X)"
 
-fun distance_neutrality :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
+fun distance_neutrality :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance
+                                \<Rightarrow> bool" where
   "distance_neutrality X d = invariance\<^sub>\<D> d (carrier neutrality\<^sub>\<G>) X (\<phi>_neutr X)"
 
 fun distance_reversal_symmetry :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance
-        \<Rightarrow> bool" where
+                                      \<Rightarrow> bool" where
   "distance_reversal_symmetry X d = invariance\<^sub>\<D> d (carrier reversal\<^sub>\<G>) X (\<phi>_rev X)"
 
 definition distance_homogeneity' :: "('a, 'v::linorder) Election set
-        \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
+              \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow> bool" where
   "distance_homogeneity' X d = total_invariance\<^sub>\<D> d (homogeneity\<^sub>\<R>' X)"
 
 definition distance_homogeneity :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance
-        \<Rightarrow> bool" where
+                                        \<Rightarrow> bool" where
   "distance_homogeneity X d = total_invariance\<^sub>\<D> d (homogeneity\<^sub>\<R> X)"
 
 subsubsection \<open>Auxiliary Lemmas\<close>
@@ -253,41 +256,35 @@ lemma rewrite_total_invariance\<^sub>\<D>:
     d :: "'x Distance" and
     r :: "'x rel"
   shows "total_invariance\<^sub>\<D> d r = (\<forall> (x, y) \<in> r. \<forall> (a, b) \<in> r. d a x = d b y)"
-proof (safe)
+proof (unfold total_invariance\<^sub>\<D>.simps is_symmetry.simps product.simps, safe)
   fix
     a :: "'x" and
     b :: "'x" and
     x :: "'x" and
     y :: "'x"
   assume
-    inv: "total_invariance\<^sub>\<D> d r" and
+    "\<forall> x y. (x, y) \<in> {(p, p').
+      (fst p, fst p') \<in> r \<and> (snd p, snd p') \<in> r}
+        \<longrightarrow> tup d x = tup d y" and
     "(a, b) \<in> r" and
     "(x, y) \<in> r"
-  hence rel: "((a, x), (b, y)) \<in> product r"
-    by simp
-  hence "tup d (a, x) = tup d (b, y)"
-    using inv
+  thus "d a x = d b y"
     unfolding total_invariance\<^sub>\<D>.simps is_symmetry.simps
     by simp
-  thus "d a x = d b y"
-    by simp
 next
-  show "\<forall> (x, y) \<in> r. \<forall> (a, b) \<in> r. d a x = d b y \<Longrightarrow> total_invariance\<^sub>\<D> d r"
-  proof (unfold total_invariance\<^sub>\<D>.simps is_symmetry.simps product.simps, safe)
-    fix
-      a :: "'x" and
-      b :: "'x" and
-      x :: "'x" and
-      y :: "'x"
-    assume 
-      "\<forall> (x, y) \<in> r. \<forall> (a, b) \<in> r. d a x = d b y" and
-      "(fst (x, a), fst (y, b)) \<in> r" and
-      "(snd (x, a), snd (y, b)) \<in> r"
-    hence "d x a = d y b"
-      by auto
-    thus "tup d (x, a) = tup d (y, b)"
-      by simp
-  qed
+  fix
+    a :: "'x" and
+    b :: "'x" and
+    x :: "'x" and
+    y :: "'x"
+  assume
+    "\<forall> (x, y) \<in> r. \<forall> (a, b) \<in> r. d a x = d b y" and
+    "(fst (x, a), fst (y, b)) \<in> r" and
+    "(snd (x, a), snd (y, b)) \<in> r"
+  hence "d x a = d y b"
+    by auto
+  thus "tup d (x, a) = tup d (y, b)"
+    by simp
 qed
 
 lemma rewrite_invariance\<^sub>\<D>:
@@ -296,8 +293,9 @@ lemma rewrite_invariance\<^sub>\<D>:
     X :: "'x set" and
     Y :: "'y set" and
     \<phi> :: "('x, 'y) binary_fun"
-  shows "invariance\<^sub>\<D> d X Y \<phi> = (\<forall> x \<in> X. \<forall> y \<in> Y. \<forall> z \<in> Y. d y z = d (\<phi> x y) (\<phi> x z))"
-proof (safe)
+  shows "invariance\<^sub>\<D> d X Y \<phi> =
+            (\<forall> x \<in> X. \<forall> y \<in> Y. \<forall> z \<in> Y. d y z = d (\<phi> x y) (\<phi> x z))"
+proof (unfold invariance\<^sub>\<D>.simps is_symmetry.simps equivariance.simps, safe)
   fix
     x :: "'x" and
     y :: "'y" and
@@ -306,26 +304,25 @@ proof (safe)
     "x \<in> X" and
     "y \<in> Y" and
     "z \<in> Y" and
-    "invariance\<^sub>\<D> d X Y \<phi>"
+    "\<forall> x y. (x, y) \<in> {((u, v), x, y). (u, v) \<in> Y \<times> Y
+                    \<and> (\<exists> z \<in> X. x = \<phi> z u \<and> y = \<phi> z v)}
+          \<longrightarrow> tup d x = tup d y"
   thus "d y z = d (\<phi> x y) (\<phi> x z)"
     by fastforce
 next
-  show "\<forall> x \<in> X. \<forall> y \<in> Y. \<forall> z \<in> Y. d y z = d (\<phi> x y) (\<phi> x z) \<Longrightarrow> invariance\<^sub>\<D> d X Y \<phi>"
-  proof (unfold invariance\<^sub>\<D>.simps is_symmetry.simps equivariance.simps, safe)
-    fix
-      x :: "'x" and
-      a :: "'y" and
-      b :: "'y"
-    assume
-      "\<forall> x \<in> X. \<forall> y \<in> Y. \<forall> z \<in> Y. d y z = d (\<phi> x y) (\<phi> x z)" and
-      "x \<in> X" and
-      "a \<in> Y" and
-      "b \<in> Y"
-    hence "d a b = d (\<phi> x a) (\<phi> x b)"
-      by blast
-    thus "tup d (a, b) = tup d (\<phi> x a, \<phi> x b)"
-      by simp
-  qed
+  fix
+    x :: "'x" and
+    a :: "'y" and
+    b :: "'y"
+  assume
+    "\<forall> x \<in> X. \<forall> y \<in> Y. \<forall> z \<in> Y. d y z = d (\<phi> x y) (\<phi> x z)" and
+    "x \<in> X" and
+    "a \<in> Y" and
+    "b \<in> Y"
+  hence "d a b = d (\<phi> x a) (\<phi> x b)"
+    by blast
+  thus "tup d (a, b) = tup d (\<phi> x a, \<phi> x b)"
+    by simp
 qed
 
 lemma invar_dist_image:
@@ -380,12 +377,14 @@ proof (unfold rewrite_invariance\<^sub>\<D>, safe)
     unfolding neutrality\<^sub>\<G>_def
     using rewrite_carrier
     by blast
-  show "swap (A, q) (A', q') = swap (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q')"
+  show "swap (A, q) (A', q') =
+          swap (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q')"
   proof (cases "A = A'")
     let ?f = "(\<lambda> (a, b). (\<pi> a, \<pi> b))"
     let ?swap_set = "{(a, b) \<in> A \<times> A. a \<noteq> b \<and> neq_ord q q' a b}"
     let ?swap_set' =
-      "{(a, b) \<in> \<pi> ` A \<times> \<pi> ` A. a \<noteq> b \<and> neq_ord (rel_rename \<pi> q) (rel_rename \<pi> q') a b}"
+      "{(a, b) \<in> \<pi> ` A \<times> \<pi> ` A. a \<noteq> b
+          \<and> neq_ord (rel_rename \<pi> q) (rel_rename \<pi> q') a b}"
     let ?rel = "{(a, b) \<in> A \<times> A. a \<noteq> b \<and> neq_ord q q' a b}"
     case True
     hence "\<pi> ` A = \<pi> ` A'"
@@ -422,7 +421,8 @@ proof (unfold rewrite_invariance\<^sub>\<D>, safe)
           using bij bij_pointE
           by metis
         moreover have
-          "\<forall> a b. neq_ord q q' a b \<longrightarrow> neq_ord (rel_rename \<pi> q) (rel_rename \<pi> q') (\<pi> a) (\<pi> b)"
+          "\<forall> a b. neq_ord q q' a b
+            \<longrightarrow> neq_ord (rel_rename \<pi> q) (rel_rename \<pi> q') (\<pi> a) (\<pi> b)"
           unfolding neq_ord.simps rel_rename.simps
           by auto
         ultimately show "?f ` ?swap_set \<subseteq> ?swap_set'"
@@ -432,14 +432,17 @@ proof (unfold rewrite_invariance\<^sub>\<D>, safe)
           unfolding rel_rename.simps
           using bij bij_is_inj the_inv_f_f
           by fastforce
-        moreover have "\<forall> a b. (a, b) \<in> (rel_rename \<pi> q') \<longrightarrow> (the_inv \<pi> a, the_inv \<pi> b) \<in> q'"
+        moreover have
+          "\<forall> a b. (a, b) \<in> (rel_rename \<pi> q') \<longrightarrow> (the_inv \<pi> a, the_inv \<pi> b) \<in> q'"
           unfolding rel_rename.simps
           using bij bij_is_inj the_inv_f_f
           by fastforce
-        ultimately have "\<forall> a b. neq_ord (rel_rename \<pi> q) (rel_rename \<pi> q') a b \<longrightarrow>
-          neq_ord q q' (the_inv \<pi> a) (the_inv \<pi> b)"
+        ultimately have
+          "\<forall> a b. neq_ord (rel_rename \<pi> q) (rel_rename \<pi> q') a b
+                  \<longrightarrow> neq_ord q q' (the_inv \<pi> a) (the_inv \<pi> b)"
           by simp
-        moreover have "\<forall> a b. (a, b) \<in> \<pi> ` A \<times> \<pi> ` A \<longrightarrow> (the_inv \<pi> a, the_inv \<pi> b) \<in> A \<times> A"
+        moreover have
+          "\<forall> a b. (a, b) \<in> \<pi> ` A \<times> \<pi> ` A \<longrightarrow> (the_inv \<pi> a, the_inv \<pi> b) \<in> A \<times> A"
           using bij bij_is_inj f_the_inv_into_f inj_image_mem_iff
           by fastforce
         moreover have "\<forall> a b. a \<noteq> b \<longrightarrow> the_inv \<pi> a \<noteq> the_inv \<pi> b"
@@ -465,11 +468,8 @@ proof (unfold rewrite_invariance\<^sub>\<D>, safe)
     hence "\<pi> ` A \<noteq> \<pi> ` A'"
       using bij bij_is_inj inj_image_eq_iff
       by metis
-    hence "swap (A, q) (A', q') = \<infinity> \<and>
-      swap (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q') = \<infinity>"
-      using False
-      by simp
     thus ?thesis
+      using False
       by simp
   qed
 qed

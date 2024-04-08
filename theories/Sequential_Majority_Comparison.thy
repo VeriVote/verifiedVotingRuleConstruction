@@ -203,7 +203,7 @@ proof -
     using 20000 00011 00013 seq_comp_def_one
     by blast
   have 000: "defer_lift_invariance ?compare_two"
-    using 0000 0001 seq_comp_presv_def_lift_inv 
+    using 0000 0001 seq_comp_presv_def_lift_inv
           voters_determine_plurality_rule voters_determine_pass_mod
           voters_determine_rev_comp voters_determine_seq_comp
     by blast

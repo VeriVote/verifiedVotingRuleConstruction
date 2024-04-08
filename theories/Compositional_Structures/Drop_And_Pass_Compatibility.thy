@@ -96,7 +96,7 @@ next
     by (simp add: card_mono)
   have "\<forall> a \<in> A. {a} \<subseteq> (above (limit A r) a)"
     using lin_ord_limit
-    unfolding linear_order_on_def partial_order_on_def 
+    unfolding linear_order_on_def partial_order_on_def
               preorder_on_def refl_on_def above_def
     by auto
   hence "\<forall> a \<in> A. card {a} \<le> card (above (limit A r) a)"
@@ -148,11 +148,13 @@ next
         by blast
     qed
   next
-    show "{a \<in> A. rank (limit A r) a \<in> {1 .. n}} \<subseteq> the_inv_into A (rank (limit A r)) ` {1 .. n}"
+    show "{a \<in> A. rank (limit A r) a \<in> {1 .. n}}
+            \<subseteq> the_inv_into A (rank (limit A r)) ` {1 .. n}"
     proof
       fix a :: "'a"
       assume el: "a \<in> {a \<in> A. rank (limit A r) a \<in> {1 .. n}}"
-      then obtain b where b_img: "b \<in> {1..n} \<and> rank (limit A r) a = b"
+      then obtain b :: "nat" where
+        b_img: "b \<in> {1..n} \<and> rank (limit A r) a = b"
         by auto
       moreover have "a \<in> A"
         using el
@@ -167,10 +169,11 @@ next
   qed
   finally have "card {a \<in> A. rank (limit A r) a \<in> {1..n}} = n"
     by blast
-  also have "{a \<in> A. rank (limit A r) a \<in> {1 .. n}} = {a \<in> A. rank (limit A r) a \<le> n}"
+  also have "{a \<in> A. rank (limit A r) a \<in> {1 .. n}} =
+                {a \<in> A. rank (limit A r) a \<le> n}"
     using geq_1
     by auto
-  also have "... = reject (drop_module n r) V A p"
+  also have "\<dots> = reject (drop_module n r) V A p"
     by simp
   finally show "card (reject (drop_module n r) V A p) = n"
     by blast
@@ -223,13 +226,17 @@ next
       using assms drop_mod_sound
       unfolding drop_module.simps indep_of_alt_def
       by (metis (mono_tags, lifting))
-    moreover have "\<forall> a \<in> ?A. \<forall> p. profile V A p \<longrightarrow> a \<in> reject (drop_module n r) V A p"
+    moreover have
+      "\<forall> a \<in> ?A. \<forall> p. profile V A p
+          \<longrightarrow> a \<in> reject (drop_module n r) V A p"
       by auto
     moreover have "\<forall> a \<in> A - ?A. indep_of_alt (pass_module n r) V A a"
       using assms pass_mod_sound
       unfolding pass_module.simps indep_of_alt_def
       by metis
-    moreover have "\<forall> a \<in> A - ?A. \<forall> p. profile V A p \<longrightarrow> a \<in> reject (pass_module n r) V A p"
+    moreover have
+      "\<forall> a \<in> A - ?A. \<forall> p.
+        profile V A p \<longrightarrow> a \<in> reject (pass_module n r) V A p"
       by auto
     ultimately show "?A \<subseteq> A \<and>
         (\<forall> a \<in> ?A. indep_of_alt (drop_module n r) V A a \<and>

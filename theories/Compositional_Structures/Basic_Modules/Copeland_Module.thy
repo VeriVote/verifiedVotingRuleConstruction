@@ -35,11 +35,11 @@ theorem copeland_sound: "\<S>\<C>\<F>_result.electoral_module copeland"
   using max_elim_sound
   by metis
 
-subsection \<open>Only participating voters impact the result\<close>
+subsection \<open>Only Voters Determine Election Result\<close>
 
 lemma voters_determine_copeland_score: "voters_determine_evaluation copeland_score"
 proof (unfold copeland_score.simps voters_determine_evaluation.simps, safe)
-  fix 
+  fix
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
@@ -50,8 +50,9 @@ proof (unfold copeland_score.simps voters_determine_evaluation.simps, safe)
     "a \<in> A"
   hence "\<forall> x y. {v \<in> V. (x, y) \<in> p v} = {v \<in> V. (x, y) \<in> p' v}"
     by blast
-  hence "\<forall> x y. card {y \<in> A. wins V x p y} = card {y \<in> A. wins V x p' y} \<and>
-                card {x \<in> A. wins V x p y} = card {x \<in> A. wins V x p' y}"
+  hence "\<forall> x y.
+    card {y \<in> A. wins V x p y} = card {y \<in> A. wins V x p' y}
+    \<and> card {x \<in> A. wins V x p y} = card {x \<in> A. wins V x p' y}"
     by simp
   thus "card {y \<in> A. wins V a p y} - card {y \<in> A. wins V y p a} =
        card {y \<in> A. wins V a p' y} - card {y \<in> A. wins V y p' a}"
@@ -104,7 +105,8 @@ proof -
   hence winner_amount_zero: "card {a \<in> {w}. wins V w p a} = 0"
     by simp
   have union:
-    "{a \<in> A - {w}. wins V w p a} \<union> {x \<in> {w}. wins V w p x} = {a \<in> A. wins V w p a}"
+    "{a \<in> A - {w}. wins V w p a} \<union> {x \<in> {w}. wins V w p x} =
+        {a \<in> A. wins V w p a}"
     using win_for_winner_not_reflexive
     by blast
   have finite_defeated: "finite {a \<in> A - {w}. wins V w p a}"
@@ -162,7 +164,8 @@ proof (unfold copeland_score.simps)
     using cond_winner_imp_loss_count assms
     by (metis (no_types))
   ultimately show
-    "enat (card {a \<in> A. wins V w p a} - card {a \<in> A. wins V a p w}) = enat (card A - 1)"
+    "enat (card {a \<in> A. wins V w p a}
+      - card {a \<in> A. wins V a p w}) = enat (card A - 1)"
     by simp
 qed
 
@@ -257,13 +260,15 @@ proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
 qed
 
 theorem copeland_is_dcc: "defer_condorcet_consistency copeland"
-proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module.simps, safe)
+proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module.simps,
+        safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile"
   assume "profile V A p"
-  moreover from this have "well_formed_\<S>\<C>\<F> A (max_eliminator copeland_score V A p)"
+  moreover from this
+  have "well_formed_\<S>\<C>\<F> A (max_eliminator copeland_score V A p)"
     using max_elim_sound
     unfolding \<S>\<C>\<F>_result.electoral_module.simps
     by metis
@@ -273,22 +278,26 @@ proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_modu
     by metis
 next
   fix
-    A :: "'b set" and 
-    V :: "'v set" and 
-    p :: "('b, 'v) Profile" and 
+    A :: "'b set" and
+    V :: "'v set" and
+    p :: "('b, 'v) Profile" and
     w :: "'b"
   assume "condorcet_winner V A p w"
   moreover have "defer_condorcet_consistency (max_eliminator copeland_score)"
     by (simp add: copeland_score_is_cr)
-  ultimately have "max_eliminator copeland_score V A p = 
-    ({}, A - defer (max_eliminator copeland_score) V A p, {d \<in> A. condorcet_winner V A p d})"
+  ultimately have
+    "max_eliminator copeland_score V A p =
+      ({},
+        A - defer (max_eliminator copeland_score) V A p,
+        {d \<in> A. condorcet_winner V A p d})"
     unfolding defer_condorcet_consistency_def
     by (metis (no_types))
   moreover have "copeland V A p = max_eliminator copeland_score V A p"
     unfolding copeland.simps
     by safe
   ultimately show
-    "copeland V A p = ({}, A - defer copeland V A p, {d \<in> A. condorcet_winner V A p d})"
+    "copeland V A p =
+      ({}, A - defer copeland V A p, {d \<in> A. condorcet_winner V A p d})"
     by metis
 qed
 

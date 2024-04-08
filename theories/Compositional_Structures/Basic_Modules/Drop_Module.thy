@@ -24,7 +24,8 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun drop_module :: "nat \<Rightarrow> 'a Preference_Relation
+                      \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "drop_module n r V A p =
     ({},
     {a \<in> A. rank (limit A r) a \<le> n},

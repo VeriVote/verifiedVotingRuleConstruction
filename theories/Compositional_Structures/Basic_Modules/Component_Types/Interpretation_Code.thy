@@ -17,7 +17,8 @@ text \<open>
 
 lemma electoral_module_\<S>\<C>\<F>_code_lemma:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
-  shows "\<S>\<C>\<F>_result.electoral_module m = (\<forall> A V p. profile V A p \<longrightarrow> well_formed_\<S>\<C>\<F> A (m V A p))"
+  shows "\<S>\<C>\<F>_result.electoral_module m =
+          (\<forall> A V p. profile V A p \<longrightarrow> well_formed_\<S>\<C>\<F> A (m V A p))"
   unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by safe
 
@@ -28,7 +29,8 @@ lemma \<R>\<^sub>\<W>_\<S>\<C>\<F>_code_lemma:
     V :: "'v set" and
     A :: "'a set" and
     p :: "('a, 'v) Profile"
-  shows "\<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p = arg_min_set (score d K (A, V, p)) (limit_set_\<S>\<C>\<F> A UNIV)"
+  shows "\<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p =
+            arg_min_set (score d K (A, V, p)) (limit_set_\<S>\<C>\<F> A UNIV)"
   unfolding \<S>\<C>\<F>_result.\<R>\<^sub>\<W>.simps
   by safe
 
@@ -40,7 +42,9 @@ lemma distance_\<R>_\<S>\<C>\<F>_code_lemma:
     A :: "'a set" and
     p :: "('a, 'v) Profile"
   shows "\<S>\<C>\<F>_result.distance_\<R> d K V A p =
-      (\<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p, (limit_set_\<S>\<C>\<F> A UNIV) - \<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p, {})"
+      (\<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p,
+        (limit_set_\<S>\<C>\<F> A UNIV) - \<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p,
+        {})"
   unfolding \<S>\<C>\<F>_result.distance_\<R>.simps
   by safe
 
@@ -64,7 +68,9 @@ lemma distance_\<R>_std_\<S>\<C>\<F>_code_lemma:
     A :: "'a set" and
     p :: "('a, 'v) Profile"
   shows "\<S>\<C>\<F>_result.distance_\<R>_std d K V A p =
-      (\<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std d K V A p, (limit_set_\<S>\<C>\<F> A UNIV) - \<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std d K V A p, {})"
+      (\<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std d K V A p,
+        (limit_set_\<S>\<C>\<F> A UNIV) - \<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std d K V A p,
+        {})"
   unfolding \<S>\<C>\<F>_result.distance_\<R>_std.simps
   by safe
 

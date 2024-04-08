@@ -25,14 +25,15 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun maximum_parallel_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
-        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun maximum_parallel_composition :: "('a, 'v, 'a Result) Electoral_Module
+                              \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
+                                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "maximum_parallel_composition m n =
     (let a = max_aggregator in (m \<parallel>\<^sub>a n))"
 
 abbreviation max_parallel :: "('a, 'v, 'a Result) Electoral_Module
-        \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow>('a, 'v, 'a Result) Electoral_Module"
-        (infix "\<parallel>\<^sub>\<up>" 50) where
+                        \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
+                  \<Rightarrow>('a, 'v, 'a Result) Electoral_Module" (infix "\<parallel>\<^sub>\<up>" 50) where
   "m \<parallel>\<^sub>\<up> n == maximum_parallel_composition m n"
 
 subsection \<open>Soundness\<close>
@@ -58,11 +59,11 @@ lemma voters_determine_max_par_comp:
      "voters_determine_election n"
   shows "voters_determine_election (m \<parallel>\<^sub>\<up> n)"
   using max_aggregator.simps assms
-  unfolding Let_def maximum_parallel_composition.simps 
-            parallel_composition.simps 
+  unfolding Let_def maximum_parallel_composition.simps
+            parallel_composition.simps
             voters_determine_election.simps
   by presburger
- 
+
 subsection \<open>Lemmas\<close>
 
 lemma max_agg_eq_result:
@@ -184,13 +185,15 @@ next
         by simp
       have max_agg_res:
         "max_aggregator A (elect m V A p, reject m V A p, defer m V A p)
-          (elect n V A p, reject n V A p, defer n V A p) = (m \<parallel>\<^sub>max_aggregator n) V A p"
+          (elect n V A p, reject n V A p, defer n V A p) =
+        (m \<parallel>\<^sub>max_aggregator n) V A p"
         by simp
       have well_f_max:
         "\<forall> r' r'' e' e'' d' d'' A'.
           well_formed_\<S>\<C>\<F> A' (e', r', d') \<and>
           well_formed_\<S>\<C>\<F> A' (e'', r'', d'') \<longrightarrow>
-            reject_r (max_aggregator A' (e', r', d') (e'', r'', d'')) = r' \<inter> r''"
+            reject_r (max_aggregator A' (e', r', d') (e'', r'', d'')) =
+        r' \<inter> r''"
         using max_agg_rej_set
         by metis
       have e_mod_disj:
@@ -277,8 +280,8 @@ lemma max_agg_rej_iff_both_reject:
     "finite_profile V A p" and
     "\<S>\<C>\<F>_result.electoral_module m" and
     "\<S>\<C>\<F>_result.electoral_module n"
-  shows "(a \<in> reject (m \<parallel>\<^sub>\<up> n) V A p)
-          = (a \<in> reject m V A p \<and> a \<in> reject n V A p)"
+  shows "(a \<in> reject (m \<parallel>\<^sub>\<up> n) V A p) =
+            (a \<in> reject m V A p \<and> a \<in> reject n V A p)"
 proof
   assume rej_a: "a \<in> reject (m \<parallel>\<^sub>\<up> n) V A p"
   hence "case n V A p of (e, r, d) \<Rightarrow>
@@ -463,7 +466,7 @@ next
     by (metis (no_types))
 next
   assume "a \<in> elect n V A p"
-  thus "a \<in> elect (m \<parallel>\<^sub>\<up> n) V A p" 
+  thus "a \<in> elect (m \<parallel>\<^sub>\<up> n) V A p"
     using max_aggregator.simps[of
             "A" "elect m V A p" "reject m V A p" "defer m V A p"
             "elect n V A p" "reject n V A p" "defer n V A p"]
@@ -557,8 +560,8 @@ proof -
     by fastforce
   hence
     "A - ((elect m V A p) \<union> (elect n V A p)
-          \<union> (defer m V A p) \<union> (defer n V A p))
-      = (reject m V A p) \<inter> (reject n V A p)"
+          \<union> (defer m V A p) \<union> (defer n V A p)) =
+    (reject m V A p) \<inter> (reject n V A p)"
     by blast
   hence "let (e, r, d) = m V A p;
           (e', r', d') = n V A p in

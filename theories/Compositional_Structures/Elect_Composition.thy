@@ -92,7 +92,7 @@ proof -
         \<or> A m' \<noteq> {} \<and> finite (A m') \<and> profile (V m') (A m') (p m')
                     \<and> elect m' (V m') (A m') (p m') = {})"
     by metis
-  moreover have non_block: 
+  moreover have non_block:
     "non_blocking (elect_module::'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a Result)"
     by (simp add: electing_imp_non_blocking)
   moreover obtain

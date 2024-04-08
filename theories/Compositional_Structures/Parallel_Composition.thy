@@ -21,13 +21,15 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun parallel_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 
-        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
-        'a Aggregator \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun parallel_composition :: "('a, 'v, 'a Result) Electoral_Module
+                                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
+                                  \<Rightarrow> 'a Aggregator
+                                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "parallel_composition m n agg V A p = agg A (m V A p) (n V A p)"
 
-abbreviation parallel :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Aggregator \<Rightarrow>
-        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
+abbreviation parallel :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Aggregator
+                            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
+                            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
       ("_ \<parallel>\<^sub>_ _" [50, 1000, 51] 50) where
   "m \<parallel>\<^sub>a n == parallel_composition m n a"
 
@@ -48,8 +50,7 @@ proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
-  assume
-    "profile V A p"
+  assume "profile V A p"
   moreover have
     "\<forall> a'. aggregator a' =
       (\<forall> A' e r d e' r' d'.
@@ -61,7 +62,8 @@ proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
   moreover have
     "\<forall> m' V' A' p'.
       (\<S>\<C>\<F>_result.electoral_module m' \<and> finite (A'::'a set)
-        \<and> finite (V'::'v set) \<and> profile V' A' p') \<longrightarrow> well_formed_\<S>\<C>\<F> A' (m' V' A' p')"
+        \<and> finite (V'::'v set) \<and> profile V' A' p')
+      \<longrightarrow> well_formed_\<S>\<C>\<F> A' (m' V' A' p')"
     using par_comp_result_sound
     by (metis (no_types))
   ultimately have "well_formed_\<S>\<C>\<F> A (a A (m V A p) (n V A p))"

@@ -25,7 +25,7 @@ fun minimax_score :: "('a, 'v) Evaluation_Function" where
 
 fun minimax :: "('a, 'v, 'a Result) Electoral_Module" where
   "minimax A p = max_eliminator minimax_score A p"
-                           
+
 subsection \<open>Soundness\<close>
 
 theorem minimax_sound: "\<S>\<C>\<F>_result.electoral_module minimax"
@@ -59,8 +59,8 @@ proof (unfold minimax_score.simps, intro Min_le)
     using pref_count_voter_set_card
     by fastforce
 next
-  have "w \<in> A" 
-    using winner 
+  have "w \<in> A"
+    using winner
     by simp
   thus "prefer_count V p l w \<in> {prefer_count V p l y | y. y \<in> A - {l}}"
     using l_neq_w
@@ -73,9 +73,9 @@ theorem minimax_score_cond_rating: "condorcet_rating minimax_score"
 proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
        safe, rule ccontr)
   fix
-    A :: "'b set" and 
-    V :: "'a set" and 
-    p :: "('b, 'a) Profile" and 
+    A :: "'b set" and
+    V :: "'a set" and
+    p :: "('b, 'a) Profile" and
     w :: "'b" and
     l :: "'b"
   assume
@@ -83,10 +83,12 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
     l_in_A: "l \<in> A" and
     l_neq_w:"l \<noteq> w" and
     min_leq:
-      "\<not> Min {if finite V then enat (card {v \<in> V. let r = p v in y \<preceq>\<^sub>r l}) else \<infinity> | y. y \<in> A - {l}}
-       < Min {if finite V then
-          enat (card {v \<in> V. let r = p v in y \<preceq>\<^sub>r w}) else
-            \<infinity> | y. y \<in> A - {w}}"
+      "\<not> Min {if finite V
+            then enat (card {v \<in> V. let r = p v in y \<preceq>\<^sub>r l})
+            else \<infinity> | y. y \<in> A - {l}}
+       < Min {if finite V
+            then enat (card {v \<in> V. let r = p v in y \<preceq>\<^sub>r w})
+            else \<infinity> | y. y \<in> A - {w}}"
   hence min_count_ineq:
     "Min {prefer_count V p l y | y. y \<in> A - {l}} \<ge>
         Min {prefer_count V p w y | y. y \<in> A - {w}}"
@@ -148,7 +150,8 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
 qed
 
 theorem minimax_is_dcc: "defer_condorcet_consistency minimax"
-proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module.simps, safe)
+proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module.simps,
+        safe)
   fix
     A :: "'b set" and
     V :: "'a set" and

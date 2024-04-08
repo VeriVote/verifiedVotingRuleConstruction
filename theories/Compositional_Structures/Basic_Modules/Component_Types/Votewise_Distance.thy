@@ -19,8 +19,8 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm 
-  \<Rightarrow> ('a,'v::linorder) Election Distance" where
+fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm
+                            \<Rightarrow> ('a,'v::linorder) Election Distance" where
   "votewise_distance d n (A, V, p) (A', V', p') =
     (if (finite V) \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')
     then n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))
@@ -41,8 +41,8 @@ lemma symmetric_norm_inv_under_map2_permute:
     perm: "\<phi> permutes {0 ..< length p}" and
     len_eq: "length p = length p'" and
     sym_n: "symmetry n"
-  shows "n (map2 (\<lambda> q q'. d (A, q) (A', q')) p p')
-         = n (map2 (\<lambda> q q'. d (A, q) (A', q')) (permute_list \<phi> p) (permute_list \<phi> p'))"
+  shows "n (map2 (\<lambda> q q'. d (A, q) (A', q')) p p') =
+      n (map2 (\<lambda> q q'. d (A, q) (A', q')) (permute_list \<phi> p) (permute_list \<phi> p'))"
 proof -
   let ?z = "zip p p'" and
       ?lt_len = "\<lambda> i. {..< length i}" and
@@ -59,16 +59,16 @@ proof -
   ultimately have "(map2 (\<lambda> q q'. d (A, q) (A', q')) p p')
                    <~~> (?listpi (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
     by metis
-  hence "n (map2 (\<lambda> q q'. d (A, q) (A', q')) p p')
-         = n (?listpi (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
+  hence "n (map2 (\<lambda> q q'. d (A, q) (A', q')) p p') =
+      n (?listpi (map2 (\<lambda> x y. d (A, x) (A', y)) p p'))"
     using sym_n
     unfolding symmetry_def
     by blast
-  also have "... = n (map (case_prod (\<lambda> x y. d (A, x) (A', y)))
+  also have "\<dots> = n (map (case_prod (\<lambda> x y. d (A, x) (A', y)))
                           (?listpi (zip p p')))"
     using permute_list_map[of \<phi> ?z ?c_prod] perm len_eq atLeast_upt
     by simp
-  also have "... = n (map2 (\<lambda> x y. d (A, x) (A', y)) (?listpi p) (?listpi p'))"
+  also have "\<dots> = n (map2 (\<lambda> x y. d (A, x) (A', y)) (?listpi p) (?listpi p'))"
     using len_eq perm atLeast_upt
     by (simp add: permute_list_zip)
   finally show ?thesis
@@ -148,7 +148,8 @@ proof (unfold distance_anonymity_def, safe)
                            then card ({v \<in> ?rn_V. v < \<pi> (?sl_V!i)})
                            else i))"
   assume bij: "bij \<pi>"
-  show "votewise_distance d n (A, V, p) (A', V', p') = votewise_distance d n ?rn1 ?rn2"
+  show "votewise_distance d n (A, V, p) (A', V', p') =
+            votewise_distance d n ?rn1 ?rn2"
   proof -
     have rn_A_eq_A: "fst ?rn1 = A"
       by simp
@@ -180,7 +181,8 @@ proof (unfold distance_anonymity_def, safe)
       ultimately have inf_dist_rename: "votewise_distance d n ?rn1 ?rn2 = \<infinity>"
         using False
         by auto
-      thus "votewise_distance d n (A, V, p) (A', V', p') = votewise_distance d n ?rn1 ?rn2"
+      thus "votewise_distance d n (A, V, p) (A', V', p') =
+              votewise_distance d n ?rn1 ?rn2"
         using inf_dist
         by simp
     next
@@ -188,29 +190,26 @@ proof (unfold distance_anonymity_def, safe)
       \<comment> \<open>Case: Both distances are finite.\<close>
       have perm_funs_coincide: "\<forall> i < ?len. ?perm i = ?perm_total i"
         by presburger
-      (* the lists of V and V' have equal lengths as the sets are equal by assumption *)
       have lengths_eq: "?len = length (to_list V' p')"
         using True
         by simp
-      (* show that the list of the renamed (A, V, p)
-          permutes the original list using ?perm_total *)
       have rn_V_permutes: "(to_list V p) = permute_list ?perm (to_list ?rn_V ?rn_p)"
         using assms to_list_permutes_under_bij bij to_list_permutes_under_bij
         unfolding comp_def
         by (metis (no_types))
       hence len_V_rn_V_eq: "?len = length (to_list ?rn_V ?rn_p)"
         by simp
-      hence "permute_list ?perm (to_list ?rn_V ?rn_p)
-              = permute_list ?perm_total (to_list ?rn_V ?rn_p)"
+      hence "permute_list ?perm (to_list ?rn_V ?rn_p) =
+                permute_list ?perm_total (to_list ?rn_V ?rn_p)"
         using permute_invariant_under_coinciding_funs[of "(to_list ?rn_V ?rn_p)"]
               perm_funs_coincide
         by presburger
-      hence rn_list_perm_list_V: "(to_list V p) = permute_list ?perm_total (to_list ?rn_V ?rn_p)"
+      hence rn_list_perm_list_V:
+        "(to_list V p) = permute_list ?perm_total (to_list ?rn_V ?rn_p)"
         using rn_V_permutes
         by metis
-      (* show that the list of the renamed (A', V', p')
-          permutes the original list using ?perm_total *)
-      have rn_V'_permutes: "(to_list V' p') = permute_list ?perm (to_list ?rn_V' ?rn_p')"
+      have rn_V'_permutes:
+        "(to_list V' p') = permute_list ?perm (to_list ?rn_V' ?rn_p')"
         unfolding comp_def
         using True bij to_list_permutes_under_bij
         by (metis (no_types))
@@ -223,22 +222,22 @@ proof (unfold distance_anonymity_def, safe)
         "(to_list V' p') = permute_list ?perm_total (to_list ?rn_V' ?rn_p')"
         using rn_V'_permutes
         by metis
-      (* show that the norms of the permuted lists are equal, yielding the ?thesis *)
       have rn_lengths_eq: "length (to_list ?rn_V ?rn_p) = length (to_list ?rn_V' ?rn_p')"
         using len_V_rn_V_eq lengths_eq rn_V'_permutes
         by simp
       have perm: "?perm_total permutes {0 ..< ?len}"
       proof -
-        (*(\<lambda> i. (card ({v \<in> (\<pi> ` V). v < \<pi> ((sorted_list_of_set V)!i)})))*)
         have "\<forall> i j. (i < ?len \<and> j < ?len \<and> i \<noteq> j
                      \<longrightarrow> \<pi> ((sorted_list_of_set V)!i) \<noteq> \<pi> ((sorted_list_of_set V)!j))"
           using bij bij_pointE True nth_eq_iff_index_eq length_map
                 sorted_list_of_set.distinct_sorted_key_list_of_set to_list.elims
           by (metis (mono_tags, opaque_lifting))
-        moreover have in_bnds_imp_img_el: "\<forall> i. i < ?len \<longrightarrow> \<pi> ((sorted_list_of_set V)!i) \<in> \<pi> ` V"
+        moreover have in_bnds_imp_img_el:
+          "\<forall> i. i < ?len \<longrightarrow> \<pi> ((sorted_list_of_set V)!i) \<in> \<pi> ` V"
           using True image_eqI nth_mem sorted_list_of_set(1) to_list.simps length_map
           by metis
-        ultimately have "\<forall> i < ?len. \<forall> j < ?len. (?perm_total i = ?perm_total j \<longrightarrow> i = j)"
+        ultimately have
+          "\<forall> i < ?len. \<forall> j < ?len. (?perm_total i = ?perm_total j \<longrightarrow> i = j)"
           using linorder_rank_injective Collect_cong True finite_imageI
           by (metis (no_types, lifting))
         moreover have "\<forall> i. i < ?len \<longrightarrow> i \<in> {0 ..< ?len}"
@@ -250,7 +249,8 @@ proof (unfold distance_anonymity_def, safe)
           unfolding inj_on_def
           by simp
         have "\<forall> v' \<in> (\<pi> ` V). (card ({v\<in>(\<pi> ` V). v < v'})) < card (\<pi> ` V)"
-          using card_seteq True finite_imageI less_irrefl linorder_not_le mem_Collect_eq subsetI
+          using card_seteq True finite_imageI less_irrefl
+                linorder_not_le mem_Collect_eq subsetI
           by (metis (no_types, lifting))
         moreover have "\<forall> i < ?len. \<pi> ((sorted_list_of_set V)!i) \<in> \<pi> ` V"
           using in_bnds_imp_img_el
@@ -260,7 +260,8 @@ proof (unfold distance_anonymity_def, safe)
           by metis
         moreover have "card V = ?len"
           by simp
-        ultimately have bounded_img: "\<forall> i. (i < ?len \<longrightarrow> ?perm_total i \<in> {0 ..< ?len})"
+        ultimately have bounded_img:
+          "\<forall> i. (i < ?len \<longrightarrow> ?perm_total i \<in> {0 ..< ?len})"
           using atLeast0LessThan lessThan_iff
           by (metis (full_types))
         hence "\<forall> i. i < ?len \<longrightarrow> ?perm_total i \<in> {0 ..< ?len}"
@@ -283,25 +284,30 @@ proof (unfold distance_anonymity_def, safe)
           using atLeast0LessThan bij_imp_permutes
           by fastforce
       qed
-      have "votewise_distance d n ?rn1 ?rn2
-              = n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list ?rn_V ?rn_p) (to_list ?rn_V' ?rn_p'))"
-        using True rn_A_eq_A rn_A'_eq_A' rn_V_eq_pi_V rn_V'_eq_pi_V' rn_p_eq_pi_p rn_p'_eq_pi_p'
+      have "votewise_distance d n ?rn1 ?rn2 =
+          n (map2 (\<lambda> q q'. d (A, q) (A', q'))
+              (to_list ?rn_V ?rn_p) (to_list ?rn_V' ?rn_p'))"
+        using True rn_A_eq_A rn_A'_eq_A' rn_V_eq_pi_V
+              rn_V'_eq_pi_V' rn_p_eq_pi_p rn_p'_eq_pi_p'
         by force
-      also have "... = n (map2 (\<lambda> q q'. d (A, q) (A', q'))
+      also have "\<dots> = n (map2 (\<lambda> q q'. d (A, q) (A', q'))
                         (permute_list ?perm_total (to_list ?rn_V ?rn_p))
                         (permute_list ?perm_total (to_list ?rn_V' ?rn_p')))"
-        using symmetric_norm_inv_under_map2_permute[of ?perm_total "to_list ?rn_V ?rn_p"]
+        using symmetric_norm_inv_under_map2_permute[of
+                ?perm_total "to_list ?rn_V ?rn_p"]
               assms perm rn_lengths_eq len_V_rn_V_eq
         by simp
-      also have "... = n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
+      also have "\<dots> = n (map2 (\<lambda> q q'. d (A, q) (A', q'))
+                          (to_list V p) (to_list V' p'))"
         using rn_list_perm_list_V rn_list_perm_list_V'
         by presburger
-      also have "votewise_distance d n (A, V, p) (A', V', p')
-            = n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
+      also have "votewise_distance d n (A, V, p) (A', V', p') =
+          n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
         using True
         by force
-      finally show "votewise_distance d n (A, V, p) (A', V', p')
-                      = votewise_distance d n ?rn1 ?rn2"
+      finally show
+        "votewise_distance d n (A, V, p) (A', V', p') =
+            votewise_distance d n ?rn1 ?rn2"
         by linarith
     qed
   qed
@@ -333,41 +339,48 @@ proof (unfold distance_neutrality.simps rewrite_invariance\<^sub>\<D>, safe)
     by blast
   thus "votewise_distance d n (A, V, p) (A', V', p') =
           votewise_distance d n
-            (\<phi>_neutr valid_elections \<pi> (A, V, p)) (\<phi>_neutr valid_elections \<pi> (A', V', p'))"
+            (\<phi>_neutr valid_elections \<pi> (A, V, p))
+              (\<phi>_neutr valid_elections \<pi> (A', V', p'))"
   proof (cases "finite V \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')")
     case True
     hence "finite V \<and> V = V' \<and> (V \<noteq> {} \<or> \<pi> ` A = \<pi> ` A')"
       by metis
     hence "votewise_distance d n
-            (\<phi>_neutr valid_elections \<pi> (A, V, p)) (\<phi>_neutr valid_elections \<pi> (A', V', p'))
-        = n (map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q'))
+            (\<phi>_neutr valid_elections \<pi> (A, V, p))
+                (\<phi>_neutr valid_elections \<pi> (A', V', p')) =
+        n (map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q'))
           (to_list V (rel_rename \<pi> \<circ> p)) (to_list V' (rel_rename \<pi> \<circ> p')))"
       using valid valid'
       by auto
-    also have "(map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q'))
-            (to_list V (rel_rename \<pi> \<circ> p)) (to_list V' (rel_rename \<pi> \<circ> p')))
-        = (map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q'))
+    also have
+      "(map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q'))
+          (to_list V (rel_rename \<pi> \<circ> p)) (to_list V' (rel_rename \<pi> \<circ> p'))) =
+      (map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q'))
         (map (rel_rename \<pi>) (to_list V p)) (map (rel_rename \<pi>) (to_list V' p')))"
       using to_list_comp
       by metis
-    also have "(map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q'))
-            (map (rel_rename \<pi>) (to_list V p)) (map (rel_rename \<pi>) (to_list V' p')))
-        = (map2 (\<lambda> q q'. d (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q'))
+    also have
+      "(map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q'))
+            (map (rel_rename \<pi>) (to_list V p))
+                (map (rel_rename \<pi>) (to_list V' p'))) =
+        (map2 (\<lambda> q q'. d (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q'))
             (to_list V p) (to_list V' p'))"
       using map2_helper
       by blast
-    also have "(\<lambda> q q'. d (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q'))
-          = (\<lambda> q q'. d (A, q) (A', q'))"
+    also have
+      "(\<lambda> q q'. d (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q')) =
+          (\<lambda> q q'. d (A, q) (A', q'))"
       using rewrite_invariance\<^sub>\<D>[of d "carrier neutrality\<^sub>\<G>" UNIV vote_action]
             invar carrier UNIV_I case_prod_conv
       unfolding vote_action_def
       by (metis (no_types, lifting))
     finally have "votewise_distance d n
-        (\<phi>_neutr valid_elections \<pi> (A, V, p)) (\<phi>_neutr valid_elections \<pi> (A', V', p'))
-          = n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
+        (\<phi>_neutr valid_elections \<pi> (A, V, p))
+              (\<phi>_neutr valid_elections \<pi> (A', V', p')) =
+        n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
       by simp
-    also have "votewise_distance d n (A, V, p) (A', V', p')
-          = n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
+    also have "votewise_distance d n (A, V, p) (A', V', p') =
+        n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
       using True
       by auto
     finally show ?thesis
@@ -378,7 +391,8 @@ proof (unfold distance_neutrality.simps rewrite_invariance\<^sub>\<D>, safe)
       using bij bij_is_inj inj_image_eq_iff
       by metis
     hence "votewise_distance d n
-        (\<phi>_neutr valid_elections \<pi> (A, V, p)) (\<phi>_neutr valid_elections \<pi> (A', V', p')) = \<infinity>"
+        (\<phi>_neutr valid_elections \<pi> (A, V, p))
+            (\<phi>_neutr valid_elections \<pi> (A', V', p')) = \<infinity>"
       using valid valid'
       by auto
     also have "votewise_distance d n (A, V, p) (A', V', p') = \<infinity>"

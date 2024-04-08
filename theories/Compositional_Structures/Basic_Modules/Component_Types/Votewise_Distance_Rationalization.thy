@@ -67,12 +67,15 @@ proof (unfold standard_def, clarify)
     p' :: "('a, 'v) Profile"
   assume assms: "V \<noteq> V' \<or> A \<noteq> A'"
   let ?l = "(\<lambda> l1 l2. (map2 (\<lambda> q q'. swap (A, q) (A', q')) l1 l2))"
-  have "A \<noteq> A' \<and> V = V' \<and> V \<noteq> {} \<and> finite V \<Longrightarrow> \<forall> q q'. swap (A, q) (A', q') = \<infinity>"
+  have "A \<noteq> A' \<and> V = V' \<and> V \<noteq> {} \<and> finite V
+          \<Longrightarrow> \<forall> q q'. swap (A, q) (A', q') = \<infinity>"
     by simp
   hence "A \<noteq> A' \<and> V = V' \<and> V \<noteq> {} \<and> finite V \<Longrightarrow>
     \<forall> l1 l2. (l1 \<noteq> [] \<and> l2 \<noteq> [] \<longrightarrow> (\<forall> i < length (?l l1 l2). (?l l1 l2)!i = \<infinity>))"
     by simp
-  moreover have "V = V' \<and> V \<noteq> {} \<and> finite V \<Longrightarrow> (to_list V p) \<noteq> [] \<and> (to_list V' p') \<noteq> []"
+  moreover have
+    "V = V' \<and> V \<noteq> {} \<and> finite V
+        \<Longrightarrow> (to_list V p) \<noteq> [] \<and> (to_list V' p') \<noteq> []"
     using card_eq_0_iff length_map list.size(3) to_list.simps
           sorted_list_of_set.length_sorted_key_list_of_set
     by metis
@@ -90,20 +93,28 @@ proof (unfold standard_def, clarify)
     thus "l_one l = \<infinity>"
       by auto
   qed
-  ultimately have "A \<noteq> A' \<and> V = V' \<and> V \<noteq> {} \<and> finite V \<Longrightarrow>
-          l_one (?l (to_list V p) (to_list V' p)) = \<infinity>"
+  ultimately have "A \<noteq> A' \<and> V = V' \<and> V \<noteq> {} \<and> finite V
+        \<Longrightarrow> l_one (?l (to_list V p) (to_list V' p)) = \<infinity>"
     using length_greater_0_conv map_is_Nil_conv zip_eq_Nil_iff
     by metis
   hence "A \<noteq> A' \<and> V = V' \<and> V \<noteq> {} \<and> finite V \<Longrightarrow>
           votewise_distance swap l_one (A, V, p) (A', V', p') = \<infinity>"
     by simp
-  moreover have "V \<noteq> V' \<Longrightarrow> votewise_distance swap l_one (A, V, p) (A', V', p') = \<infinity>"
+  moreover have
+    "V \<noteq> V'
+      \<Longrightarrow> votewise_distance swap l_one (A, V, p) (A', V', p') = \<infinity>"
     by simp
-  moreover have "A \<noteq> A' \<and> V = {} \<Longrightarrow> votewise_distance swap l_one (A, V, p) (A', V', p') = \<infinity>"
+  moreover have
+    "A \<noteq> A' \<and> V = {}
+      \<Longrightarrow> votewise_distance swap l_one (A, V, p) (A', V', p') = \<infinity>"
     by simp
-  moreover have "infinite V \<Longrightarrow> votewise_distance swap l_one (A, V, p) (A', V', p') = \<infinity>"
+  moreover have
+    "infinite V
+      \<Longrightarrow> votewise_distance swap l_one (A, V, p) (A', V', p') = \<infinity>"
     by simp
-  moreover have "(A \<noteq> A' \<and> V = V' \<and> V \<noteq> {} \<and> finite V) \<or> infinite V \<or> (A \<noteq> A' \<and> V = {}) \<or> V \<noteq> V'"
+  moreover have
+    "(A \<noteq> A' \<and> V = V' \<and> V \<noteq> {} \<and> finite V)
+        \<or> infinite V \<or> (A \<noteq> A' \<and> V = {}) \<or> V \<noteq> V'"
     using assms
     by blast
   ultimately show "votewise_distance swap l_one (A, V, p) (A', V', p') = \<infinity>"
@@ -112,20 +123,25 @@ qed
 
 subsection \<open>Equivalence Lemmas\<close>
 
-type_synonym ('a, 'v) score_type = "('a, 'v) Election Distance \<Rightarrow>
-            ('a, 'v, 'a Result) Consensus_Class \<Rightarrow> ('a, 'v) Election \<Rightarrow> 'a \<Rightarrow> ereal"
+type_synonym ('a, 'v) score_type = "('a, 'v) Election Distance
+                              \<Rightarrow> ('a, 'v, 'a Result) Consensus_Class
+                                \<Rightarrow> ('a, 'v) Election \<Rightarrow> 'a \<Rightarrow> ereal"
 
-type_synonym ('a, 'v) dist_rat_type = "('a, 'v) Election Distance \<Rightarrow>
-            ('a, 'v, 'a Result) Consensus_Class \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a set"
+type_synonym ('a, 'v) dist_rat_type = "('a, 'v) Election Distance
+                              \<Rightarrow> ('a, 'v, 'a Result) Consensus_Class
+                                \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a set"
 
-type_synonym ('a, 'v) dist_rat_std_type = "('a, 'v) Election Distance \<Rightarrow>
-            ('a, 'v, 'a Result) Consensus_Class \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
+type_synonym ('a, 'v) dist_rat_std_type = "('a, 'v) Election Distance
+                              \<Rightarrow> ('a, 'v, 'a Result) Consensus_Class
+                                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
 
-type_synonym ('a, 'v) dist_type = "('a, 'v) Election Distance \<Rightarrow>
-            ('a, 'v, 'a Result) Consensus_Class \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
+type_synonym ('a, 'v) dist_type = "('a, 'v) Election Distance
+                              \<Rightarrow> ('a, 'v, 'a Result) Consensus_Class
+                                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
 
-lemma equal_score_swap: "(score::(('a, 'v::linorder) score_type)) (votewise_distance swap l_one) =
-            score_std (votewise_distance swap l_one)"
+lemma equal_score_swap: "(score::(('a, 'v::linorder) score_type))
+                      (votewise_distance swap l_one) =
+                              score_std (votewise_distance swap l_one)"
   using votewise_non_voters_irrelevant swap_standard
         \<S>\<C>\<F>_result.standard_distance_imp_equal_score
   by fast

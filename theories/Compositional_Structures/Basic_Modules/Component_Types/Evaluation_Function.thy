@@ -18,7 +18,7 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-type_synonym ('a, 'v) Evaluation_Function = 
+type_synonym ('a, 'v) Evaluation_Function =
   "'v set \<Rightarrow> 'a \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> enat"
 
 subsection \<open>Property\<close>
@@ -66,26 +66,24 @@ proof -
       ?eMax = "Max {e V b A p | b. b \<in> A}" and
       ?eW = "e V a A p"
   have "?eW \<in> ?set"
-    using CollectI condorcet_winner.simps winner
+    using CollectI winner
+    unfolding condorcet_winner.simps
     by (metis (mono_tags, lifting))
   moreover have "\<forall> e \<in> ?set. e \<le> ?eW"
   proof (safe)
     fix b :: "'a"
     assume "b \<in> A"
-    moreover have "\<forall> n n'. (n::nat) = n' \<longrightarrow> n \<le> n'"
-      by simp
-    ultimately show "e V b A p \<le> e V a A p"
+    thus "e V b A p \<le> e V a A p"
       using less_imp_le rating winner order_refl
       unfolding condorcet_rating_def
       by metis
   qed
-  ultimately have "?eW \<in> ?set \<and> (\<forall> e \<in> ?set. e \<le> ?eW)"
-    by blast
   moreover have "finite ?set"
     using f_prof
     by simp
   moreover have "?set \<noteq> {}"
-    using condorcet_winner.simps winner
+    using winner
+    unfolding condorcet_winner.simps
     by fastforce
   ultimately show ?thesis
     using Max_eq_iff
@@ -119,7 +117,7 @@ proof -
     using lin_A loser rating winner
     unfolding condorcet_rating_def
     by metis
-  also have "e V a A p = Max {e V c A p | c. c \<in> A}"
+  also have "\<dots> = Max {e V c A p | c. c \<in> A}"
     using cond_winner_imp_max_eval_val f_prof rating winner
     by fastforce
   finally show ?thesis

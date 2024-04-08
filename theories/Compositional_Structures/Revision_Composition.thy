@@ -59,7 +59,7 @@ lemma voters_determine_rev_comp:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   assumes "voters_determine_election m"
   shows "voters_determine_election (revision_composition m)"
-  using assms 
+  using assms
   unfolding voters_determine_election.simps revision_composition.simps
   by presburger
 

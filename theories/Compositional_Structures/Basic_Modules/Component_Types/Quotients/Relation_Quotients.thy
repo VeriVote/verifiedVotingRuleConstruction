@@ -75,7 +75,8 @@ proof (safe)
   have "\<forall> y \<in> r``{x}. (x, y) \<in> r"
     unfolding Image_def
     by simp
-  hence func_eq_x: "{f y | y. y \<in> r``{x}} = {f x | y. y \<in> r``{x}}"
+  hence func_eq_x:
+    "{f y | y. y \<in> r``{x}} = {f x | y. y \<in> r``{x}}"
     using assms
     unfolding congruent_def
     by fastforce
@@ -95,7 +96,8 @@ proof (safe)
     using Setcompr_eq_image r_img_elem_x_eq_t func_eq_x
     by metis
   thus "\<pi>\<^sub>\<Q> f t = f x"
-    using singleton_set_def_if_card_one is_singletonI is_singleton_altdef the_elem_eq
+    using singleton_set_def_if_card_one is_singletonI
+          is_singleton_altdef the_elem_eq
     unfolding \<pi>\<^sub>\<Q>.simps
     by metis
 qed
@@ -180,7 +182,8 @@ lemma rel_ind_by_group_act_equiv:
     \<phi> :: "('x, 'y) binary_fun"
   assumes "group_action m s \<phi>"
   shows "equiv s (action_induced_rel (carrier m) s \<phi>)"
-proof (unfold equiv_def refl_on_def sym_def Relation.trans_def action_induced_rel.simps, safe)
+proof (unfold equiv_def refl_on_def sym_def Relation.trans_def
+              action_induced_rel.simps, safe)
   fix y :: "'y"
   assume "y \<in> s"
   hence "\<phi> \<one> \<^bsub>m\<^esub> y = y"
@@ -201,7 +204,8 @@ next
     using assms
     by (simp add: group_action.orbit_sym_aux)
   thus "\<exists> h \<in> carrier m. \<phi> h (\<phi> g y) = y"
-    using assms carrier_g group.inv_closed group_action.group_hom group_hom.axioms(1)
+    using assms carrier_g group.inv_closed
+          group_action.group_hom group_hom.axioms(1)
     by metis
 next
   fix

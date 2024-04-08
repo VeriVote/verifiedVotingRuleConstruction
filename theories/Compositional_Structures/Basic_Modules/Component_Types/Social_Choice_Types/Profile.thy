@@ -48,7 +48,8 @@ fun profile_\<E> :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Profile" where
   "profile_\<E> E = snd (snd E)"
 
 fun election_equality :: "('a, 'v) Election \<Rightarrow> ('a, 'v) Election \<Rightarrow> bool" where
-  "election_equality (A, V, p) (A', V', p') = (A = A' \<and> V = V' \<and> (\<forall> v \<in> V. p v = p' v))"
+  "election_equality (A, V, p) (A', V', p') =
+        (A = A' \<and> V = V' \<and> (\<forall> v \<in> V. p v = p' v))"
 
 text \<open>
   A profile on a set of alternatives A and a voter set V consists of ballots
@@ -77,8 +78,10 @@ definition valid_elections :: "('a,'v) Election set" where
 \<comment> \<open>This function subsumes elections with fixed alternatives, finite voters, and
     a default value for the profile value on non-voters.\<close>
 fun elections_\<A> :: "'a set \<Rightarrow> ('a, 'v) Election set" where
-  "elections_\<A> A = valid_elections \<inter>
-    {E. alternatives_\<E> E = A \<and> finite (voters_\<E> E) \<and> (\<forall> v. v \<notin> voters_\<E> E \<longrightarrow> profile_\<E> E v = {})}"
+  "elections_\<A> A =
+        valid_elections
+      \<inter> {E. alternatives_\<E> E = A \<and> finite (voters_\<E> E)
+            \<and> (\<forall> v. v \<notin> voters_\<E> E \<longrightarrow> profile_\<E> E v = {})}"
 
 \<comment> \<open>Here, we count the occurrences of a ballot in an election,
     i.e., how many voters specifically chose that exact ballot.\<close>
@@ -99,15 +102,10 @@ lemma sum_comp:
 proof (induction "card X" arbitrary: X Y f g)
   case 0
   assume "bij_betw g Y X"
-  hence "card Y = 0"
-    using bij_betw_same_card "0.hyps"
-    unfolding "0.hyps"
-    by simp
-  hence "sum f X = 0 \<and> sum (f \<circ> g) Y = 0"
-    using assms 0 card_0_eq sum.empty sum.infinite
-    by metis
   thus ?case
-    by simp
+    using assms 0 card_0_eq sum.empty sum.infinite bij_betw_same_card
+    unfolding "0.hyps"
+    by metis
 next
   case (Suc n)
   assume
@@ -127,13 +125,14 @@ next
   ultimately have "sum f (X - {x}) = sum (f \<circ> g) (Y - {the_inv_into Y g x})"
     using hyp Suc
     by blast
-  moreover have
-    "sum (f \<circ> g) Y = f (g (the_inv_into Y g x)) + sum (f \<circ> g) (Y - {the_inv_into Y g x})"
+  moreover have "sum (f \<circ> g) Y =
+        f (g (the_inv_into Y g x)) + sum (f \<circ> g) (Y - {the_inv_into Y g x})"
     using Suc.hyps(2) x_in_X bij bij_betw_def calculation card.infinite
           f_the_inv_into_f_bij_betw nat.discI sum.reindex sum.remove
     by metis
-  moreover have "f (g (the_inv_into Y g x)) + sum (f \<circ> g) (Y - {the_inv_into Y g x}) =
-    f x + sum (f \<circ> g) (Y - {the_inv_into Y g x})"
+  moreover have
+    "f (g (the_inv_into Y g x)) + sum (f \<circ> g) (Y - {the_inv_into Y g x}) =
+        f x + sum (f \<circ> g) (Y - {the_inv_into Y g x})"
     using x_in_X bij f_the_inv_into_f_bij_betw
     by metis
   moreover have "sum f X = f x + sum f (X - {x})"
@@ -153,7 +152,8 @@ proof (unfold vote_count.simps)
   have "\<forall> p. finite {v \<in> voters_\<E> E. profile_\<E> E v = p}"
     using assms
     by force
-  moreover have "disjoint {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
+  moreover have
+    "disjoint {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
     unfolding disjoint_def
     by blast
   moreover have partition:
@@ -161,93 +161,106 @@ proof (unfold vote_count.simps)
     using Union_eq[of "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"]
     by blast
   ultimately have card_eq_sum':
-    "card (voters_\<E> E) = sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
-    using card_Union_disjoint[of "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"]
+    "card (voters_\<E> E) =
+        sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
+    using card_Union_disjoint[of
+            "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"]
     by auto
   have "finite {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
     using partition assms
     by (simp add: finite_UnionD)
   moreover have
     "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV} =
-        {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-              p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} \<union>
-        {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-              p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
+        {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+            | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}
+      \<union> {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+            | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
     by blast
   moreover have
-    "{} = {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-              p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} \<inter>
-          {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-              p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
+    "{} =
+        {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+            | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}
+      \<inter> {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+            | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
     by blast
-  ultimately have "sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV} =
-    sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-                p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} +
-    sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-                p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
+  ultimately have
+    "sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV} =
+        sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+            | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}
+      + sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+            | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
     using sum.union_disjoint[of
-            "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-              p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
-            "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-                p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"]
+            "{{v \<in> voters_\<E> E. profile_\<E> E v = p}
+                | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
+            "{{v \<in> voters_\<E> E. profile_\<E> E v = p}
+                | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"]
     by simp
   moreover have
-    "\<forall> X \<in> {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-            p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}. card X = 0"
+    "\<forall> X \<in> {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+            | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}.
+        card X = 0"
     using card_eq_0_iff
     by fastforce
   ultimately have card_eq_sum:
-    "card (voters_\<E> E) = sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-                          p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
+    "card (voters_\<E> E) =
+        sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+            | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     using card_eq_sum'
     by simp
-  have "inj_on (\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p})
-                {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
+  have
+    "inj_on (\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p})
+        {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     unfolding inj_on_def
     by blast
   moreover have
-    "(\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p}) ` {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} \<subseteq>
-         {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-                          p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
+    "(\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p})
+            ` {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}
+        \<subseteq> {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+              | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     by blast
   moreover have
-    "(\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p}) ` {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} \<supseteq>
-      {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-        p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
+    "(\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p})
+            ` {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}
+        \<supseteq> {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+              | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     by blast
-  ultimately have "bij_betw (\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p})
-    {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}
-    {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-      p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
+  ultimately have
+    "bij_betw (\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p})
+            {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}
+        {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+          | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     unfolding bij_betw_def
     by simp
   hence sum_rewrite:
     "(\<Sum> x \<in> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}.
             card {v \<in> voters_\<E> E. profile_\<E> E v = x}) =
-      sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-        p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
+        sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p}
+            | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     using sum_comp[of
-        "\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p}"
-        "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
-        "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p.
-          p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
-        "card"]
+            "\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p}"
+            "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
+            "{{v \<in> voters_\<E> E. profile_\<E> E v = p}
+                | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
+            "card"]
     unfolding comp_def
     by simp
-  have "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}} \<inter>
-    {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} = {}"
+  have "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}
+        \<inter> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} = {}"
     by blast
-  moreover have "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}} \<union>
-    {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} = UNIV"
+  moreover have
+    "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}
+        \<union> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}} = UNIV"
     by blast
-  ultimately have "(\<Sum> p \<in> UNIV. card {v \<in> voters_\<E> E. profile_\<E> E v = p}) =
-    (\<Sum> x \<in> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}.
-        card {v \<in> voters_\<E> E. profile_\<E> E v = x}) +
-    (\<Sum> x \<in> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}.
-        card {v \<in> voters_\<E> E. profile_\<E> E v = x})"
-    using assms sum.union_disjoint[of
-      "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
-      "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"]
+  ultimately have
+    "(\<Sum> p \<in> UNIV. card {v \<in> voters_\<E> E. profile_\<E> E v = p}) =
+        (\<Sum> x \<in> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}.
+          card {v \<in> voters_\<E> E. profile_\<E> E v = x})
+      + (\<Sum> x \<in> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}.
+          card {v \<in> voters_\<E> E. profile_\<E> E v = x})"
+    using assms
+          sum.union_disjoint[of
+            "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
+            "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"]
     using Finite_Set.finite_set add.commute finite_Un
     by (metis (mono_tags, lifting))
   moreover have
@@ -255,7 +268,9 @@ proof (unfold vote_count.simps)
         card {v \<in> voters_\<E> E. profile_\<E> E v = x} = 0"
     using card_eq_0_iff
     by fastforce
-  ultimately show "(\<Sum> p \<in> UNIV. card {v \<in> voters_\<E> E. profile_\<E> E v = p}) = card (voters_\<E> E)"
+  ultimately show
+    "(\<Sum> p \<in> UNIV. card {v \<in> voters_\<E> E. profile_\<E> E v = p}) =
+        card (voters_\<E> E)"
     using card_eq_sum sum_rewrite
     by simp
 qed
@@ -283,23 +298,17 @@ lemma rename_sound:
   shows "profile V' A q"
 proof (unfold profile_def, safe)
   fix v' :: "'v"
-  assume v'_in_V': "v' \<in> V'"
-  let ?q_img = "((the_inv) \<pi>) v'"
-  have "V' = \<pi> ` V"
+  assume "v' \<in> V'"
+  moreover have "V' = \<pi> ` V"
     using renamed
     by simp
-  hence "?q_img \<in> V"
-    using UNIV_I v'_in_V' bij bij_is_inj bij_is_surj
+  ultimately have "((the_inv \<pi>) v') \<in> V"
+    using UNIV_I bij bij_is_inj bij_is_surj
           f_the_inv_into_f inj_image_mem_iff
     by metis
-  hence "linear_order_on A (p ?q_img)"
-    using prof
+  thus "linear_order_on A (q v')"
+    using renamed bij prof
     unfolding profile_def
-    by simp
-  moreover have "q v' = p ?q_img"
-    using renamed bij
-    by simp
-  ultimately show "linear_order_on A (q v')"
     by simp
 qed
 
@@ -310,17 +319,16 @@ lemma rename_finite:
     p :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assumes
-    prof: "finite_profile V A p" and
-    renamed: "(A, V', q) = rename \<pi> (A, V, p)" and
-    bij: "bij \<pi>"
+    "finite_profile V A p" and
+    "(A, V', q) = rename \<pi> (A, V, p)" and
+    "bij \<pi>"
   shows "finite_profile V' A q"
+  using assms
 proof (safe)
-  show "finite A"
-    using prof
-    by simp
   show "finite V'"
-    using bij renamed prof
+    using assms
     by simp
+next
   show "profile V' A q"
     using assms rename_sound
     by metis
@@ -336,13 +344,14 @@ lemma rename_inv:
   shows "rename \<pi> (rename (the_inv \<pi>) (A, V, p)) = (A, V, p)"
 proof -
   have "rename \<pi> (rename (the_inv \<pi>) (A, V, p)) =
-    (A, \<pi> ` (the_inv \<pi>) ` V, p \<circ> (the_inv (the_inv \<pi>)) \<circ> (the_inv \<pi>))"
+        (A, \<pi> ` (the_inv \<pi>) ` V, p \<circ> (the_inv (the_inv \<pi>)) \<circ> (the_inv \<pi>))"
     by simp
   moreover have "\<pi> ` (the_inv \<pi>) ` V = V"
     using assms
     by (simp add: f_the_inv_into_f_bij_betw image_comp)
   moreover have "(the_inv (the_inv \<pi>)) = \<pi>"
-    using assms bij_betw_def inj_on_the_inv_into surj_def surj_imp_inv_eq the_inv_f_f
+    using assms surj_def inj_on_the_inv_into surj_imp_inv_eq the_inv_f_f
+    unfolding bij_betw_def
     by (metis (mono_tags, opaque_lifting))
   moreover have "\<pi> \<circ> (the_inv \<pi>) = id"
     using assms f_the_inv_into_f_bij_betw
@@ -355,31 +364,34 @@ lemma rename_inj:
   fixes \<pi> :: "'v \<Rightarrow> 'v"
   assumes "bij \<pi>"
   shows "inj (rename \<pi>)"
-proof (unfold inj_def split_paired_All rename.simps prod.inject,
-       intro allI impI, elim conjE)
+proof (unfold inj_def split_paired_All rename.simps, safe)
   fix
     A :: "'a set" and
     A' :: "'a set" and
     V :: "'v set" and
     V' :: "'v set" and
     p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile"
+    p' :: "('a, 'v) Profile" and
+    v :: "'v"
   assume
-    "A = A'" and
     "p \<circ> the_inv \<pi> = p' \<circ> the_inv \<pi>" and
     "\<pi> ` V = \<pi> ` V'"
-  thus "A = A' \<and> V = V' \<and> p = p'"
-    using assms bij_betw_the_inv_into bij_is_surj surj_fun_eq
-          bij_betw_imp_inj_on inj_image_eq_iff
-    by metis
+  thus
+    "v \<in> V \<Longrightarrow> v \<in> V'" and
+    "v \<in> V' \<Longrightarrow> v \<in> V" and
+    "p = p'"
+    using assms
+    by (metis bij_betw_imp_inj_on inj_image_eq_iff,
+        metis bij_betw_imp_inj_on inj_image_eq_iff,
+        metis bij_betw_the_inv_into bij_is_surj surj_fun_eq)
 qed
 
 lemma rename_surj:
   fixes \<pi> :: "'v \<Rightarrow> 'v"
   assumes "bij \<pi>"
   shows
-    on_valid_els: "rename \<pi> ` valid_elections = valid_elections" and
-    on_finite_els: "rename \<pi> ` finite_elections = finite_elections"
+    on_valid_elections: "rename \<pi> ` valid_elections = valid_elections" and
+    on_finite_elections: "rename \<pi> ` finite_elections = finite_elections"
 proof (safe)
   fix
     A :: "'a set" and
@@ -389,15 +401,12 @@ proof (safe)
     p :: "('a, 'v) Profile" and
     p' :: "('a, 'v) Profile"
   assume valid: "(A, V, p) \<in> valid_elections"
-  have "bij (the_inv \<pi>)"
-    using assms bij_betw_the_inv_into
-    by blast
   hence "rename (the_inv \<pi>) (A, V, p) \<in> valid_elections"
-    using rename_sound valid
+    using assms bij_betw_the_inv_into rename_sound
     unfolding valid_elections_def
     by fastforce
   thus "(A, V, p) \<in> rename \<pi> ` valid_elections"
-    using assms image_eqI rename_inv[of \<pi>]
+    using assms image_eqI rename_inv
     by metis
   assume "(A', V', p') = rename \<pi> (A, V, p)"
   thus "(A', V', p') \<in> valid_elections"
@@ -413,15 +422,12 @@ next
     p :: "('b, 'v) Profile" and
     p' :: "('b, 'v) Profile"
   assume finite: "(A, V, p) \<in> finite_elections"
-  have "bij (the_inv \<pi>)"
-    using assms bij_betw_the_inv_into
-    by blast
   hence "rename (the_inv \<pi>) (A, V, p) \<in> finite_elections"
-    using rename_finite finite
+    using assms bij_betw_the_inv_into rename_finite
     unfolding finite_elections_def
     by fastforce
   thus "(A, V, p) \<in> rename \<pi> ` finite_elections"
-    using assms image_eqI rename_inv[of \<pi>]
+    using assms image_eqI rename_inv
     by metis
   assume "(A', V', p') = rename \<pi> (A, V, p)"
   thus "(A', V', p') \<in> finite_elections"
@@ -436,7 +442,8 @@ text \<open>
   A profile on a voter set that has a natural order can be viewed as a list of ballots.
 \<close>
 
-fun to_list :: "'v::linorder set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a Preference_Relation) list" where
+fun to_list :: "'v::linorder set \<Rightarrow> ('a, 'v) Profile
+                  \<Rightarrow> ('a Preference_Relation) list" where
   "to_list V p = (if (finite V)
                     then (map p (sorted_list_of_set V))
                     else [])"
@@ -446,27 +453,18 @@ lemma map2_helper:
     f :: "'x \<Rightarrow> 'y \<Rightarrow> 'z" and
     g :: "'x \<Rightarrow> 'x" and
     h :: "'y \<Rightarrow> 'y" and
-    l1 :: "'x list" and
-    l2 :: "'y list"
-  shows "map2 f (map g l1) (map h l2) = map2 (\<lambda> x y. f (g x) (h y)) l1 l2"
+    l :: "'x list" and
+    l' :: "'y list"
+  shows "map2 f (map g l) (map h l') = map2 (\<lambda> x y. f (g x) (h y)) l l'"
 proof -
-  have "map2 f (map g l1) (map h l2) = map (\<lambda> (x, y). f x y) (zip (map g l1) (map h l2))"
-    by simp
-  moreover have "map (\<lambda> (x, y). f x y) (zip (map g l1) (map h l2)) =
-    map (\<lambda> (x, y). f x y) (map (\<lambda> (x, y). (g x, h y)) (zip l1 l2))"
+  have "map2 f (map g l) (map h l') =
+          map (\<lambda> (x, y). f x y) (map (\<lambda> (x, y). (g x, h y)) (zip l l'))"
     using zip_map_map
     by metis
-  moreover have "map (\<lambda> (x, y). f x y) (map (\<lambda> (x, y). (g x, h y)) (zip l1 l2)) =
-    map ((\<lambda> (x, y). f x y) \<circ> (\<lambda> (x, y). (g x, h y))) (zip l1 l2)"
-    by simp
-  moreover have "map ((\<lambda> (x, y). f x y) \<circ> (\<lambda> (x, y). (g x, h y))) (zip l1 l2) =
-    map (\<lambda> (x, y). f (g x) (h y)) (zip l1 l2)"
+  also have "\<dots> = map2 (\<lambda> x y. f (g x) (h y)) l l'"
     by auto
-  moreover have "map (\<lambda> (x, y). f (g x) (h y)) (zip l1 l2) = map2 (\<lambda> x y. f (g x) (h y)) l1 l2"
-    by simp
-  ultimately show
-    "map2 f (map g l1) (map h l2) = map2 (\<lambda> x y. f (g x) (h y)) l1 l2"
-    by simp
+  finally show ?thesis
+    by presburger
 qed
 
 lemma to_list_simp:
@@ -474,17 +472,16 @@ lemma to_list_simp:
     i :: "nat" and
     V :: "'v::linorder set" and
     p :: "('a, 'v) Profile"
-  assumes
-    "i < card V"
+  assumes "i < card V"
   shows "(to_list V p)!i = p ((sorted_list_of_set V)!i)"
 proof -
   have "(to_list V p)!i = (map p (sorted_list_of_set V))!i"
     by simp
-  also have "... = p ((sorted_list_of_set V)!i)"
+  also have "\<dots> = p ((sorted_list_of_set V)!i)"
     using assms
     by simp
   finally show ?thesis
-    by simp
+    by presburger
 qed
 
 lemma to_list_comp:
@@ -493,31 +490,7 @@ lemma to_list_comp:
     p :: "('a, 'v) Profile" and
     f :: "'a rel \<Rightarrow> 'a rel"
   shows "to_list V (f \<circ> p) = map f (to_list V p)"
-proof -
-  have "\<forall> i < card V. (to_list V (f \<circ> p))!i = (f \<circ> p) ((sorted_list_of_set V)!i)"
-    using to_list_simp
-    by blast
-  moreover have
-    "\<forall> i < card V. (f \<circ> p) ((sorted_list_of_set V)!i) = (map (f \<circ> p) (sorted_list_of_set V))!i"
-    unfolding map_def
-    by simp
-  moreover have 
-    "\<forall> i < card V. (map (f \<circ> p) (sorted_list_of_set V))!i =
-      (map f (map p (sorted_list_of_set V)))!i"
-    by simp
-  moreover have "map p (sorted_list_of_set V) = to_list V p"
-    using to_list_simp list_eq_iff_nth_eq
-    by simp
-  ultimately have "\<forall> i < card V. (to_list V (f \<circ> p))!i = (map f (to_list V p))!i"
-    by presburger
-  moreover have "length (map f (to_list V p)) = card V"
-    by simp
-  moreover have "length (to_list V (f \<circ> p)) = card V" 
-    by simp
-  ultimately show ?thesis
-    using nth_equalityI
-    by simp
-qed
+  by simp
 
 lemma set_card_upper_bound:
   fixes
@@ -525,29 +498,24 @@ lemma set_card_upper_bound:
     V :: "nat set"
   assumes
     fin_V: "finite V" and
-    bound_v: "\<forall> v \<in> V. i > v"
-  shows "i \<ge> card V"
+    bound_v: "\<forall> v \<in> V. v < i"
+  shows "card V \<le> i"
 proof (cases "V = {}")
   case True
   thus ?thesis
     by simp
 next
   case False
-  hence "Max V \<in> V"
-    using fin_V
+  moreover with fin_V have "Max V \<in> V"
     by simp
-  moreover have "Max V \<ge> (card V) - 1"
-    using False Max_ge_iff fin_V calculation card_Diff1_less finite_le_enumerate
-          card_Diff_singleton finite_enumerate_in_set
-    by metis
   ultimately show ?thesis
-    using fin_V bound_v
-    by fastforce
+    using assms Suc_leI card_le_Suc_Max order_trans
+    by metis
 qed
 
 lemma sorted_list_of_set_nth_equals_card:
   fixes
-    V :: "'v::linorder set" and
+    V :: "'v :: linorder set" and
     x :: "'v"
   assumes
     fin_V: "finite V" and
@@ -556,13 +524,10 @@ lemma sorted_list_of_set_nth_equals_card:
 proof -
   let ?c = "card {v \<in> V. v < x}" and
       ?set = "{v \<in> V. v < x}"
-  have ex_index: "\<forall> v \<in> V. \<exists> n. n < card V \<and> (sorted_list_of_set V!n) = v"
-    using sorted_list_of_set.distinct_sorted_key_list_of_set
-          sorted_list_of_set.length_sorted_key_list_of_set
-          sorted_list_of_set.set_sorted_key_list_of_set
-          distinct_Ex1 fin_V
+  have "\<forall> v \<in> V. \<exists> n. n < card V \<and> (sorted_list_of_set V!n) = v"
+    using length_sorted_list_of_set sorted_list_of_set_unique in_set_conv_nth fin_V
     by metis
-  then obtain \<phi> where
+  then obtain \<phi> :: "'v \<Rightarrow> nat" where
     index_\<phi>: "\<forall> v \<in> V. \<phi> v < card V \<and> (sorted_list_of_set V!(\<phi> v)) = v"
     by metis
   \<comment> \<open>\<open>\<phi> x = ?c\<close>, i.e., \<open>\<phi> x \<ge> ?c\<close> and \<open>\<phi> x \<le> ?c\<close>\<close>
@@ -570,17 +535,12 @@ proof -
   have inj_\<phi>: "inj_on \<phi> V"
     using inj_onI index_\<phi>
     by metis
-  have mono_\<phi>: "\<forall> v v'. v \<in> V \<and> v' \<in> V \<and> v < v' \<longrightarrow> \<phi> v < \<phi> v'"
-    using sorted_list_of_set.idem_if_sorted_distinct dual_order.strict_trans2 fin_V index_\<phi>
-          finite_sorted_distinct_unique linorder_neqE_nat sorted_wrt_iff_nth_less
-          sorted_list_of_set.length_sorted_key_list_of_set order_less_irrefl
-    by (metis (full_types))
-  have "\<forall> v \<in> ?set. v < x"
-    by simp
-  hence "\<forall> v \<in> ?set. \<phi> v < ?i"
-    using mono_\<phi> x_V
-    by simp
-  hence "\<forall> j \<in> {\<phi> v | v. v \<in> ?set}. ?i > j"
+  have "\<forall> v \<in> V. \<forall> v' \<in> V. v < v' \<longrightarrow> \<phi> v < \<phi> v'"
+    using leD linorder_le_less_linear sorted_list_of_set_unique
+          sorted_sorted_list_of_set sorted_nth_mono fin_V index_\<phi>
+    by metis
+  hence "\<forall> j \<in> {\<phi> v | v. v \<in> ?set}. j < ?i"
+    using x_V
     by blast
   moreover have fin_img: "finite ?set"
     using fin_V
@@ -591,54 +551,51 @@ proof -
   also have "card {\<phi> v | v. v \<in> ?set} = ?c"
     using inj_\<phi>
     by (simp add: card_image inj_on_subset setcompr_eq_image)
-  finally have geq: "?i \<ge> ?c"
+  finally have geq: "?c \<le> ?i"
     by simp
   have sorted_\<phi>:
-    "\<forall> i j. i < card V \<and> j < card V \<and> i < j
-            \<longrightarrow> (sorted_list_of_set V!i) < (sorted_list_of_set V!j)"
+    "\<forall> i < card V. \<forall> j < card V. i < j
+        \<longrightarrow> (sorted_list_of_set V!i) < (sorted_list_of_set V!j)"
     by (simp add: sorted_wrt_nth_less)
   have leq: "?i \<le> ?c"
   proof (rule ccontr, cases "?c < card V")
     case True
     let ?A = "\<lambda> j. {sorted_list_of_set V!j}"
     assume "\<not> ?i \<le> ?c"
-    hence "?i > ?c"
+    hence "?c < ?i"
       by simp
     hence "\<forall> j \<le> ?c. sorted_list_of_set V!j \<in> V \<and> sorted_list_of_set V!j < x"
-      using sorted_\<phi> dual_order.strict_trans2 geq index_\<phi> x_V fin_V
-            nth_mem sorted_list_of_set.length_sorted_key_list_of_set
-            sorted_list_of_set.set_sorted_key_list_of_set
+      using sorted_\<phi> geq index_\<phi> x_V fin_V set_sorted_list_of_set
+            length_sorted_list_of_set nth_mem order.strict_trans1
       by (metis (mono_tags, lifting))
     hence "{sorted_list_of_set V!j | j. j \<le> ?c} \<subseteq> {v \<in> V. v < x}"
       by blast
-    also have "{sorted_list_of_set V!j | j. j \<le> ?c}
-               = {sorted_list_of_set V!j | j. j \<in> {0 ..< (?c+1)}}"
+    also have "{sorted_list_of_set V!j | j. j \<le> ?c} =
+                  {sorted_list_of_set V!j | j. j \<in> {0 ..< (?c + 1)}}"
       using add.commute
       by auto
-    also have "{sorted_list_of_set V!j | j. j \<in> {0 ..< (?c+1)}}
-               = (\<Union> j \<in> {0 ..< (?c+1)}. {sorted_list_of_set V!j})"
+    also have "{sorted_list_of_set V!j | j. j \<in> {0 ..< (?c + 1)}} =
+                  (\<Union> j \<in> {0 ..< (?c + 1)}. {sorted_list_of_set V!j})"
       by blast
-    finally have subset: "(\<Union> j \<in> {0 ..< (?c+1)}. ?A j) \<subseteq> {v \<in> V. v < x}"
+    finally have subset: "(\<Union> j \<in> {0 ..< (?c + 1)}. ?A j) \<subseteq> {v \<in> V. v < x}"
       by simp
-    have "\<forall> i \<le> ?c. \<forall> j \<le> ?c. i \<noteq> j \<longrightarrow> sorted_list_of_set V!i \<noteq> sorted_list_of_set V!j"
+    have "\<forall> i \<le> ?c. \<forall> j \<le> ?c.
+              i \<noteq> j \<longrightarrow> sorted_list_of_set V!i \<noteq> sorted_list_of_set V!j"
       using True
       by (simp add: nth_eq_iff_index_eq)
-    hence "\<forall> i \<in> {0 ..< (?c+1)}. \<forall> j \<in> {0 ..< (?c+1)}.
+    hence "\<forall> i \<in> {0 ..< (?c + 1)}. \<forall> j \<in> {0 ..< (?c + 1)}.
               (i \<noteq> j \<longrightarrow> {sorted_list_of_set V!i} \<inter> {sorted_list_of_set V!j} = {})"
       by fastforce
-    hence "disjoint_family_on ?A {0 ..< (?c+1)}"
+    hence "disjoint_family_on ?A {0 ..< (?c + 1)}"
       unfolding disjoint_family_on_def
       by simp
-    moreover have "finite {0 ..< (?c+1)}"
+    moreover have "\<forall> j \<in> {0 ..< (?c + 1)}. card (?A j) = 1"
       by simp
-    moreover have "\<forall> j \<in> {0 ..< (?c+1)}. card (?A j) = 1"
-      by simp
-    ultimately have "card (\<Union> j \<in> {0 ..< (?c+1)}. ?A j) = (\<Sum> j \<in> {0 ..< (?c+1)}. 1)"
+    ultimately have
+      "card (\<Union> j \<in> {0 ..< (?c + 1)}. ?A j) = (\<Sum> j \<in> {0 ..< (?c + 1)}. 1)"
       using card_UN_disjoint'
       by fastforce
-    also have "(\<Sum> j \<in> {0 ..< (?c+1)}. 1) = ?c + 1"
-      by auto
-    finally have "card (\<Union> j \<in> {0 ..< (?c+1)}. ?A j) = ?c + 1"
+    hence "card (\<Union> j \<in> {0 ..< (?c + 1)}. ?A j) = ?c + 1"
       by simp
     hence "?c + 1 \<le> ?c"
       using subset card_mono fin_img
@@ -647,9 +604,8 @@ proof -
       by simp
   next
     case False
-    assume "\<not> ?i \<le> ?c"
     thus False
-      using False x_V index_\<phi> geq order_le_less_trans 
+      using x_V index_\<phi> geq order_le_less_trans
       by blast
   qed
   thus ?thesis
@@ -662,8 +618,7 @@ lemma to_list_permutes_under_bij:
     \<pi> :: "'v::linorder \<Rightarrow> 'v" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
-  assumes
-    bij: "bij \<pi>"
+  assumes "bij \<pi>"
   shows
     "let \<phi> = (\<lambda> i. card {v \<in> \<pi> ` V. v < \<pi> ((sorted_list_of_set V)!i)})
       in (to_list V p) = permute_list \<phi> (to_list (\<pi> ` V) (\<lambda> x. p (the_inv \<pi> x)))"
@@ -672,14 +627,11 @@ proof (cases "finite V")
   \<comment> \<open>If \<open>V\<close> is infinite, both lists are empty.\<close>
   hence "to_list V p = []"
     by simp
-  moreover have "to_list (\<pi> ` V) (\<lambda> x. p (the_inv \<pi> x)) = []"
-  proof -
-    have "infinite (\<pi> ` V)"
-      using False assms bij_betw_finite bij_betw_subset top_greatest
-      by metis
-    thus ?thesis
-      by simp
-  qed
+  moreover have "infinite (\<pi> ` V)"
+    using False assms bij_betw_finite bij_betw_subset top_greatest
+    by metis
+  hence "to_list (\<pi> ` V) (\<lambda> x. p (the_inv \<pi> x)) = []"
+    by simp
   ultimately show ?thesis
     by simp
 next
@@ -703,10 +655,12 @@ next
   show ?thesis
   proof (unfold Let_def permute_list_def, rule nth_equalityI)
     \<comment> \<open>The lists have equal lengths.\<close>
-    show "length (to_list V p) =
-            length
-              (map (\<lambda> i. to_list ?img ?q ! card {v \<in> ?img. v < \<pi> (sorted_list_of_set V!i)})
-                   [0 ..< length (to_list ?img ?q)])"
+    show
+      "length (to_list V p) =
+          length (map
+            (\<lambda> i. to_list ?img ?q!(card {v \<in> ?img.
+                v < \<pi> (sorted_list_of_set V!i)}))
+              [0 ..< length (to_list ?img ?q)])"
       using eq_length
       by simp
   next
@@ -714,17 +668,18 @@ next
     fix i :: "nat"
     assume in_bnds: "i < ?n"
     let ?c = "card {v \<in> ?img. v < \<pi> (sorted_list_of_set V!i)}"
-    have "map (\<lambda> i. (to_list ?img ?q)!?c) [0 ..< ?n]!i = p ((sorted_list_of_set V)!i)"
+    have "map (\<lambda> i. (to_list ?img ?q)!?c) [0 ..< ?n]!i =
+            p ((sorted_list_of_set V)!i)"
     proof -
       have "\<forall> v. v \<in> ?img \<longrightarrow> {v' \<in> ?img. v' < v} \<subseteq> ?img - {v}"
         by blast
       moreover have elem_of_img: "\<pi> (sorted_list_of_set V!i) \<in> ?img"
         using True in_bnds image_eqI nth_mem card_length_V
-              sorted_list_of_set.length_sorted_key_list_of_set
-              sorted_list_of_set.set_sorted_key_list_of_set
+              length_sorted_list_of_set set_sorted_list_of_set
         by metis
-      ultimately have "{v \<in> ?img. v < \<pi> (sorted_list_of_set V!i)}
-                        \<subseteq> ?img - {\<pi> (sorted_list_of_set V!i)}"
+      ultimately have
+        "{v \<in> ?img. v < \<pi> (sorted_list_of_set V!i)}
+      \<subseteq> ?img - {\<pi> (sorted_list_of_set V!i)}"
         by simp
       hence "{v \<in> ?img. v < \<pi> (sorted_list_of_set V!i)} \<subset> ?img"
         using elem_of_img
@@ -757,7 +712,7 @@ next
       using True in_bnds
       by simp
     finally show "to_list V p!i =
-        map (\<lambda> i. (to_list ?img ?q)!(card {v \<in> ?img. v < \<pi> (sorted_list_of_set V ! i)}))
+        map (\<lambda> i. (to_list ?img ?q)!(card {v \<in> ?img. v < \<pi> (sorted_list_of_set V!i)}))
           [0 ..< length (to_list ?img ?q)]!i"
       using in_bnds eq_length Collect_cong card_eq
       by simp
@@ -796,7 +751,7 @@ lemma set_compr:
     A :: "'a set" and
     f :: "'a \<Rightarrow> 'a set"
   shows "{f x | x. x \<in> A} = f ` A"
-  by auto
+  by blast
 
 lemma pref_count_set_compr:
   fixes
@@ -804,8 +759,9 @@ lemma pref_count_set_compr:
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
     a :: "'a"
-  shows "{prefer_count V p a a' | a'. a' \<in> A - {a}} = (prefer_count V p a) ` (A - {a})"
-  by auto
+  shows "{prefer_count V p a a' | a'. a' \<in> A - {a}} =
+            (prefer_count V p a) ` (A - {a})"
+  by blast
 
 lemma pref_count:
   fixes
@@ -822,21 +778,17 @@ lemma pref_count:
     neq: "a \<noteq> b"
   shows "prefer_count V p a b = card V - (prefer_count V p b a)"
 proof -
-  have "\<forall> v \<in> V. connex A (p v)"
-    using prof
-    unfolding profile_def
-    by (simp add: lin_ord_imp_connex)
-  hence asym: "\<forall> v \<in> V. \<not> (let r = (p v) in (b \<preceq>\<^sub>r a)) \<longrightarrow> (let r = (p v) in (a \<preceq>\<^sub>r b))"
-    using a_in_A b_in_A
-    unfolding connex_def
+  have "\<forall> v \<in> V. \<not> (let r = (p v) in (b \<preceq>\<^sub>r a)) \<longrightarrow> (let r = (p v) in (a \<preceq>\<^sub>r b))"
+    using a_in_A b_in_A prof lin_ord_imp_connex
+    unfolding profile_def connex_def
     by metis
-  have "\<forall> v \<in> V. ((b, a) \<in> (p v) \<longrightarrow> (a, b) \<notin> (p v))"
+  moreover have "\<forall> v \<in> V. ((b, a) \<in> (p v) \<longrightarrow> (a, b) \<notin> (p v))"
     using antisymD neq lin_imp_antisym prof
     unfolding profile_def
     by metis
-  hence "{v \<in> V. (let r = (p v) in (b \<preceq>\<^sub>r a))} =
-            V - {v \<in> V. (let r = (p v) in (a \<preceq>\<^sub>r b))}"
-    using asym
+  ultimately have
+    "{v \<in> V. (let r = (p v) in (b \<preceq>\<^sub>r a))} =
+        V - {v \<in> V. (let r = (p v) in (a \<preceq>\<^sub>r b))}"
     by auto
   thus ?thesis
     by (simp add: card_Diff_subset Collect_mono fin)
@@ -858,46 +810,32 @@ lemma pref_count_sym:
     a_neq_c: "a \<noteq> c" and
     c_neq_b: "c \<noteq> b"
   shows "prefer_count V p b c \<ge> prefer_count V p c a"
-proof (cases)
-  assume fin_V: "finite V"
-  have nat1: "prefer_count V p c a \<in> \<nat>"
+proof (cases "finite V")
+  case True
+  moreover have
+    nat1: "prefer_count V p c a \<in> \<nat>" and
+    nat2: "prefer_count V p b c \<in> \<nat>"
     unfolding Nats_def
-    using of_nat_eq_enat fin_V
-    by simp
-  have nat2: "prefer_count V p b c \<in> \<nat>"
-    unfolding Nats_def
-    using of_nat_eq_enat fin_V
-    by simp
-  have smaller: "prefer_count V p c a \<le> card V"
-    using prof fin_V pref_count_voter_set_card
+    using True of_nat_eq_enat
+    by (simp, simp)
+  moreover have smaller: "prefer_count V p c a \<le> card V"
+    using True prof pref_count_voter_set_card
     by metis
-  have "prefer_count V p a c = card V - (prefer_count V p c a)"
-    using pref_count prof a_in_A c_in_A a_neq_c fin_V
-    by (metis (no_types, opaque_lifting))
-  moreover have pref_count_b_eq:
+  moreover have
+    "prefer_count V p a c = card V - (prefer_count V p c a)" and
+    pref_count_b_eq:
     "prefer_count V p c b = card V - (prefer_count V p b c)"
-    using pref_count prof a_in_A c_in_A a_neq_c b_in_A c_neq_b fin_V
-    by metis
-  hence ineq: "card V - (prefer_count V p b c) \<le> card V - (prefer_count V p c a)"
-    using calculation pref_count_ineq
-    by simp
-  hence "card V - (prefer_count V p b c) + (prefer_count V p c a) \<le>
-          card V - (prefer_count V p c a) + (prefer_count V p c a)"
+    using True pref_count prof c_in_A
+    by (metis (no_types, opaque_lifting) a_in_A a_neq_c,
+        metis (no_types, opaque_lifting) b_in_A c_neq_b)
+  hence "card V - (prefer_count V p b c) + (prefer_count V p c a)
+      \<le> card V - (prefer_count V p c a) + (prefer_count V p c a)"
     using pref_count_b_eq pref_count_ineq
-    by auto
-  hence "card V + (prefer_count V p c a) \<le> card V + (prefer_count V p b c)"
-    using nat1 nat2 fin_V smaller
     by simp
-  thus ?thesis
+  ultimately show ?thesis
     by simp
 next
-  assume inf_V: "infinite V"
-  have "prefer_count V p c a = infinity"
-    using inf_V
-    by simp
-  moreover have "prefer_count V p b c = infinity"
-    using inf_V
-    by simp
+  case False
   thus ?thesis
     by simp
 qed
@@ -925,7 +863,7 @@ lemma wins_inf_voters:
     b :: "'a" and
     V :: "'v set"
   assumes "infinite V"
-  shows "wins V b p a = False"
+  shows "\<not> wins V b p a"
   using assms
   by simp
 
@@ -978,12 +916,12 @@ lemma cond_winner_unique_eq:
   shows "b = a"
 proof (rule ccontr)
   assume b_neq_a: "b \<noteq> a"
-  have "wins V b p a"
-    using b_neq_a insert_Diff insert_iff assms
+  hence "wins V b p a"
+    using insert_Diff insert_iff assms
     by simp
   hence "\<not> wins V a p b"
     by (simp add: wins_antisym)
-  moreover have a_wins_against_b: "wins V a p b"
+  moreover have "wins V a p b"
     using Diff_iff b_neq_a singletonD assms
     by auto
   ultimately show False
@@ -1060,18 +998,15 @@ lemma limit_profile_sound:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
-    profile: "profile V B p" and
-    subset: "A \<subseteq> B"
+    "profile V B p" and
+    "A \<subseteq> B"
   shows "profile V A (limit_profile A p)"
-proof -
+proof (unfold profile_def)
   have "\<forall> v \<in> V. linear_order_on A (limit A (p v))"
-    using profile subset limit_presv_lin_ord
+    using assms limit_presv_lin_ord
     unfolding profile_def
     by metis
-  hence "\<forall> v \<in> V. linear_order_on A ((limit_profile A p) v)"
-    by simp
-  thus ?thesis
-    unfolding profile_def
+  thus "\<forall> v \<in> V. linear_order_on A ((limit_profile A p) v)"
     by simp
 qed
 
@@ -1104,26 +1039,18 @@ lemma lifted_imp_equiv_prof_except_a:
   assumes "lifted V A p p' a"
   shows "equiv_prof_except_a V A p p' a"
 proof (unfold equiv_prof_except_a_def, safe)
-  from assms
-  show "profile V A p"
+  show
+    "profile V A p" and
+    "profile V A p'" and
+    "a \<in> A"
+    using assms
     unfolding lifted_def
-    by metis
-next
-  from assms
-  show "profile V A p'"
-    unfolding lifted_def
-    by metis
-next
-  from assms
-  show "a \<in> A"
-    unfolding lifted_def
-    by metis
+    by (metis, metis, metis)
 next
   fix v :: "'v"
   assume "v \<in> V"
-  with assms
-  show "equiv_rel_except_a A (p v) (p' v) a"
-    using lifted_imp_equiv_rel_except_a trivial_equiv_rel
+  thus "equiv_rel_except_a A (p v) (p' v) a"
+    using assms lifted_imp_equiv_rel_except_a trivial_equiv_rel
     unfolding lifted_def profile_def
     by (metis (no_types))
 qed
@@ -1152,10 +1079,8 @@ proof (clarify)
   hence "equiv_rel_except_a A' (p v) (q v) a"
     using change equiv_prof_except_a_def
     by metis
-  hence "limit A (p v) = limit A (q v)"
-    using not_in_A negl_diff_imp_eq_limit subset
-    by metis
   thus "limit_profile A p v = limit_profile A q v"
+    using subset not_in_A negl_diff_imp_eq_limit
     by simp
 qed
 
@@ -1170,53 +1095,49 @@ lemma limit_prof_eq_or_lifted:
   assumes
     lifted_a: "lifted V A' p p' a" and
     subset: "A \<subseteq> A'"
-  shows "(\<forall> v \<in> V. limit_profile A p v = limit_profile A p' v) \<or>
-            lifted V A (limit_profile A p) (limit_profile A p') a"
-proof (cases)
-  assume a_in_A: "a \<in> A"
-  have "\<forall> v \<in> V. (Preference_Relation.lifted A' (p v) (p' v) a \<or> (p v) = (p' v))"
+  shows "(\<forall> v \<in> V. limit_profile A p v = limit_profile A p' v)
+        \<or> lifted V A (limit_profile A p) (limit_profile A p') a"
+proof (cases "a \<in> A")
+  case True
+  have "\<forall> v \<in> V. Preference_Relation.lifted A' (p v) (p' v) a \<or> (p v) = (p' v)"
     using lifted_a
     unfolding lifted_def
     by metis
   hence one:
     "\<forall> v \<in> V.
-         (Preference_Relation.lifted A (limit A (p v)) (limit A (p' v)) a \<or>
-           (limit A (p v)) = (limit A (p' v)))"
+         Preference_Relation.lifted A (limit A (p v)) (limit A (p' v)) a \<or>
+           (limit A (p v)) = (limit A (p' v))"
     using limit_lifted_imp_eq_or_lifted subset
     by metis
   thus ?thesis
-  proof (cases)
-    assume "\<forall> v \<in> V. (limit A (p v)) = (limit A (p' v))"
+  proof (cases "\<forall> v \<in> V. limit A (p v) = limit A (p' v)")
+    case True
     thus ?thesis
       by simp
   next
-    assume forall_limit_p_q:
-      "\<not> (\<forall> v \<in> V. (limit A (p v)) = (limit A (p' v)))"
+    case False
     let ?p = "limit_profile A p"
     let ?q = "limit_profile A p'"
-    have "profile V A ?p \<and> profile V A ?q"
-      using lifted_a limit_profile_sound subset
+    have
+      "profile V A ?p" and
+      "profile V A ?q"
+      using lifted_a subset limit_profile_sound
       unfolding lifted_def
-      by metis
+      by (safe, safe)
     moreover have
       "\<exists> v \<in> V. Preference_Relation.lifted A (?p v) (?q v) a"
-      using forall_limit_p_q lifted_a limit_profile.simps one
-      unfolding lifted_def
+      using False one
+      unfolding limit_profile.simps
       by (metis (no_types, lifting))
-    moreover have
-      "\<forall> v \<in> V. (\<not> Preference_Relation.lifted A (?p v) (?q v) a) \<longrightarrow> (?p v) = (?q v)"
-      using lifted_a limit_profile.simps one
-      unfolding lifted_def
-      by metis
     ultimately have "lifted V A ?p ?q a"
-      using a_in_A lifted_a rev_finite_subset subset
-      unfolding lifted_def
+      using True lifted_a one rev_finite_subset subset
+      unfolding lifted_def limit_profile.simps
       by (metis (no_types, lifting))
     thus ?thesis
       by simp
   qed
 next
-  assume "a \<notin> A"
+  case False
   thus ?thesis
     using lifted_a negl_diff_imp_eq_limit_prof subset lifted_imp_equiv_prof_except_a
     by metis

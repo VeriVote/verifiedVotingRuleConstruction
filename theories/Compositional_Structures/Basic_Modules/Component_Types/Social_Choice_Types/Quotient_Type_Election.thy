@@ -12,19 +12,24 @@ begin
 lemma election_equality_equiv:
   "election_equality E E" and
   "election_equality E E' \<Longrightarrow> election_equality E' E" and
-  "election_equality E E' \<Longrightarrow> election_equality E' F \<Longrightarrow> election_equality E F"
+  "election_equality E E' \<Longrightarrow> election_equality E' F
+      \<Longrightarrow> election_equality E F"
 proof -
   have "\<forall> E. E = (fst E, fst (snd E), snd (snd E))"
     by simp
   thus
     "election_equality E E" and
     "election_equality E E' \<Longrightarrow> election_equality E' E" and
-    "election_equality E E' \<Longrightarrow> election_equality E' F \<Longrightarrow> election_equality E F"
-    using election_equality.simps[of "fst E" "fst (snd E)" "snd (snd E)"]
+    "election_equality E E' \<Longrightarrow> election_equality E' F
+        \<Longrightarrow> election_equality E F"
+    using election_equality.simps[of
+            "fst E" "fst (snd E)" "snd (snd E)"]
           election_equality.simps[of
-            "fst E'" "fst (snd E')" "snd (snd E')" "fst E" "fst (snd E)" "snd (snd E)"]
+            "fst E'" "fst (snd E')" "snd (snd E')"
+            "fst E" "fst (snd E)" "snd (snd E)"]
           election_equality.simps[of
-            "fst E'" "fst (snd E')" "snd (snd E')" "fst F" "fst (snd F)" "snd (snd F)"]
+            "fst E'" "fst (snd E')" "snd (snd E')"
+            "fst F" "fst (snd F)" "snd (snd F)"]
     by (metis, metis, metis)
 qed
 

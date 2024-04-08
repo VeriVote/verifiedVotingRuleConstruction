@@ -39,9 +39,11 @@ text \<open>
   To enable currying, the Election type is not used here because that would require tuples.
 \<close>
 
-type_synonym ('a, 'v, 'r) Electoral_Module = "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r"
+type_synonym ('a, 'v, 'r) Electoral_Module = "'v set \<Rightarrow> 'a set
+                                              \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r"
 
-fun fun\<^sub>\<E> :: "('v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r) \<Rightarrow> (('a, 'v) Election \<Rightarrow> 'r)" where
+fun fun\<^sub>\<E> :: "('v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'r)
+                  \<Rightarrow> (('a, 'v) Election \<Rightarrow> 'r)" where
   "fun\<^sub>\<E> m = (\<lambda> E. m (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E))"
 
 text \<open>
@@ -72,11 +74,13 @@ text \<open>
   in multiple structures to create more complex electoral modules.
 \<close>
 
-fun (in result) electoral_module :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
+fun (in result) electoral_module :: "('a, 'v, ('r Result)) Electoral_Module
+                                      \<Rightarrow> bool" where
     "electoral_module m = (\<forall> A V p. profile V A p \<longrightarrow> well_formed A (m V A p))"
 
 fun voters_determine_election :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
-  "voters_determine_election m = (\<forall> A V p p'. (\<forall> v \<in> V. p v = p' v) \<longrightarrow> m V A p = m V A p')"
+  "voters_determine_election m =
+    (\<forall> A V p p'. (\<forall> v \<in> V. p v = p' v) \<longrightarrow> m V A p = m V A p')"
 
 lemma (in result) electoral_modI:
   fixes m :: "('a, 'v, ('r Result)) Electoral_Module"
@@ -102,7 +106,8 @@ text \<open>
   identical result.
 \<close>
 
-definition (in result) anonymity :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
+definition (in result) anonymity :: "('a, 'v, ('r Result)) Electoral_Module
+                                          \<Rightarrow> bool" where
   "anonymity m \<equiv>
     electoral_module m \<and>
       (\<forall> A V p \<pi>::('v \<Rightarrow> 'v).
@@ -128,14 +133,14 @@ text \<open>
   implies anonymity.
 \<close>
 
-fun (in result) homogeneity :: "('a, 'v) Election set \<Rightarrow> ('a, 'v, ('r Result)) Electoral_Module
-        \<Rightarrow> bool" where
+fun (in result) homogeneity :: "('a, 'v) Election set
+                                \<Rightarrow> ('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
   "homogeneity X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R> X))"
 \<comment> \<open>This does not require any specific behaviour on infinite voter sets \<open>\<dots>\<close>
     It might make sense to extend the definition to that case somehow.\<close>
 
 fun homogeneity' :: "('a, 'v::linorder) Election set \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module
-        \<Rightarrow> bool" where
+                          \<Rightarrow> bool" where
   "homogeneity' X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R>' X))"
 
 lemma (in result) hom_imp_anon:
@@ -149,23 +154,24 @@ proof (unfold anonymity'.simps is_symmetry.simps, intro allI impI)
     E :: "('a, 'v) Election" and
     E' :: "('a, 'v) Election"
   assume rel: "(E, E') \<in> anonymity\<^sub>\<R> X"
-  hence "E \<in> X \<and> E' \<in> X"
+  hence
+    "E \<in> X" and
+    "E' \<in> X"
     unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
-    by blast
-  moreover with this
-    have fin: "finite (voters_\<E> E) \<and> finite (voters_\<E> E')"
+    by (simp, safe)
+  moreover from this have
+    "finite (voters_\<E> E)" and
+    "finite (voters_\<E> E')"
     using assms
-    by simp
-  moreover with this
-    have "\<forall> r. vote_count r E = 1 * (vote_count r E')"
-    using anon_rel_vote_count rel mult_1
-    by metis
-  moreover with fin
-    have "alternatives_\<E> E = alternatives_\<E> E'"
+    unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+    by (metis, metis)
+  moreover from this have
+    "\<forall> r. vote_count r E = 1 * (vote_count r E')" and
+    "alternatives_\<E> E = alternatives_\<E> E'"
     using anon_rel_vote_count rel
-    by blast
+    by (metis mult_1, metis)
   ultimately show "fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
-    using assms zero_less_one
+    using assms
     unfolding homogeneity.simps is_symmetry.simps homogeneity\<^sub>\<R>.simps
     by blast
 qed
@@ -179,8 +185,9 @@ text \<open>
 
 fun (in result_properties) neutrality :: "('a, 'v) Election set
         \<Rightarrow> ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
-  "neutrality X m = is_symmetry (fun\<^sub>\<E> m)
-    (action_induced_equivariance (carrier neutrality\<^sub>\<G>) X (\<phi>_neutr X) (result_action \<psi>_neutr))"
+  "neutrality X m =
+    is_symmetry (fun\<^sub>\<E> m) (action_induced_equivariance (carrier neutrality\<^sub>\<G>) X
+          (\<phi>_neutr X) (result_action \<psi>_neutr))"
 
 subsection \<open>Reversal Symmetry of Social Welfare Rules\<close>
 
@@ -189,10 +196,11 @@ text \<open>
   reverses the result rankings as well.
 \<close>
 
-definition reversal_symmetry :: "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'a rel Result) Electoral_Module
-        \<Rightarrow> bool" where
-  "reversal_symmetry X m = is_symmetry (fun\<^sub>\<E> m)
-    (action_induced_equivariance (carrier reversal\<^sub>\<G>) X (\<phi>_rev X) (result_action \<psi>_rev))"
+definition reversal_symmetry :: "('a, 'v) Election set
+                        \<Rightarrow> ('a, 'v, 'a rel Result) Electoral_Module \<Rightarrow> bool" where
+  "reversal_symmetry X m =
+    is_symmetry (fun\<^sub>\<E> m) (action_induced_equivariance (carrier reversal\<^sub>\<G>) X
+          (\<phi>_rev X) (result_action \<psi>_rev))"
 
 subsection \<open>Social Choice Modules\<close>
 
@@ -210,7 +218,8 @@ text \<open>
 definition defers :: "nat \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "defers n m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
-      (\<forall> A V p. (card A \<ge> n \<and> finite A \<and> profile V A p) \<longrightarrow> card (defer m V A p) = n)"
+      (\<forall> A V p. (card A \<ge> n \<and> finite A \<and> profile V A p)
+          \<longrightarrow> card (defer m V A p) = n)"
 
 text \<open>
   "rejects n" is true for all electoral modules that reject exactly
@@ -220,7 +229,8 @@ text \<open>
 definition rejects :: "nat \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "rejects n m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
-      (\<forall> A V p. (card A \<ge> n \<and> finite A \<and> profile V A p) \<longrightarrow> card (reject m V A p) = n)"
+      (\<forall> A V p. (card A \<ge> n \<and> finite A \<and> profile V A p)
+          \<longrightarrow> card (reject m V A p) = n)"
 
 text \<open>
   As opposed to "rejects", "eliminates" allows to stop rejecting if no
@@ -247,14 +257,14 @@ text \<open>
   a's ranking does not influence the outcome.
 \<close>
 
-definition indep_of_alt :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> 'a
-        \<Rightarrow> bool" where
+definition indep_of_alt :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set
+                                \<Rightarrow> 'a set \<Rightarrow> 'a \<Rightarrow> bool" where
   "indep_of_alt m V A a \<equiv>
     \<S>\<C>\<F>_result.electoral_module m
       \<and> (\<forall> p q. equiv_prof_except_a V A p q a \<longrightarrow> m V A p = m V A q)"
 
 definition unique_winner_if_profile_non_empty :: "('a, 'v, 'a Result) Electoral_Module
-        \<Rightarrow> bool" where
+                                                      \<Rightarrow> bool" where
   "unique_winner_if_profile_non_empty m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
     (\<forall> A V p. (A \<noteq> {} \<and> V \<noteq> {} \<and> profile V A p) \<longrightarrow>
@@ -262,8 +272,9 @@ definition unique_winner_if_profile_non_empty :: "('a, 'v, 'a Result) Electoral_
 
 subsection \<open>Equivalence Definitions\<close>
 
-definition prof_contains_result :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set
-                                    \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
+definition prof_contains_result :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set
+                                      \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile
+                                          \<Rightarrow> 'a \<Rightarrow> bool" where
   "prof_contains_result m V A p q a \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
     profile V A p \<and> profile V A q \<and> a \<in> A \<and>
@@ -338,7 +349,6 @@ lemma par_comp_result_sound:
     "profile V A p"
   shows "well_formed_\<S>\<C>\<F> A (m V A p)"
   using assms
-  unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by simp
 
 lemma result_presv_alts:
@@ -353,63 +363,45 @@ lemma result_presv_alts:
   shows "(elect m V A p) \<union> (reject m V A p) \<union> (defer m V A p) = A"
 proof (safe)
   fix a :: "'a"
-  assume "a \<in> elect m V A p"
-  moreover have
-    "\<forall> p'. set_equals_partition A p' \<longrightarrow>
-        (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
-    by simp
-  moreover have "set_equals_partition A (m V A p)"
+  have
+    partition_1:
+    "\<forall> p'. set_equals_partition A p'
+      \<longrightarrow> (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)" and
+    partition_2:
+    "set_equals_partition A (m V A p)"
     using assms
-    unfolding \<S>\<C>\<F>_result.electoral_module.simps
-    by simp
-  ultimately show "a \<in> A"
-    using UnI1 fstI
-    by (metis (no_types))
-next
-  fix a :: "'a"
-  assume "a \<in> reject m V A p"
-  moreover have
-    "\<forall> p'. set_equals_partition A p' \<longrightarrow>
-        (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
-    by simp
-  moreover have "set_equals_partition A (m V A p)"
-    using assms
-    unfolding \<S>\<C>\<F>_result.electoral_module.simps
-    by simp
-  ultimately show "a \<in> A"
-    using UnI1 fstI sndI subsetD sup_ge2
-    by metis
-next
-  fix a :: "'a"
-  assume "a \<in> defer m V A p"
-  moreover have
-    "\<forall> p'. set_equals_partition A p' \<longrightarrow>
-        (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
-    by simp
-  moreover have "set_equals_partition A (m V A p)"
-    using assms
-    unfolding \<S>\<C>\<F>_result.electoral_module.simps
-    by simp
-  ultimately show "a \<in> A"
-    using sndI subsetD sup_ge2
-    by metis
-next
-  fix a :: "'a"
-  assume
-    "a \<in> A" and
-    "a \<notin> defer m V A p" and
-    "a \<notin> reject m V A p"
-  moreover have
-    "\<forall> p'. set_equals_partition A p' \<longrightarrow>
-        (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)"
-    by simp
-  moreover have "set_equals_partition A (m V A p)"
-    using assms
-    unfolding \<S>\<C>\<F>_result.electoral_module.simps
-    by simp
-  ultimately show "a \<in> elect m V A p"
-    using fst_conv snd_conv Un_iff
-    by metis
+    by (simp, simp)
+  {
+    assume "a \<in> elect m V A p"
+    with partition_1 partition_2
+    show "a \<in> A"
+      using UnI1 fstI
+      by (metis (no_types))
+  }
+  {
+    assume "a \<in> reject m V A p"
+    with partition_1 partition_2
+    show "a \<in> A"
+      using UnI1 fstI sndI subsetD sup_ge2
+      by metis
+  }
+  {
+    assume "a \<in> defer m V A p"
+    with partition_1 partition_2
+    show "a \<in> A"
+      using sndI subsetD sup_ge2
+      by metis
+  }
+  {
+    assume
+      "a \<in> A" and
+      "a \<notin> defer m V A p" and
+      "a \<notin> reject m V A p"
+    with partition_1 partition_2
+    show "a \<in> elect m V A p"
+      using fst_conv snd_conv Un_iff
+      by metis
+  }
 qed
 
 lemma result_disj:
@@ -427,63 +419,56 @@ lemma result_disj:
         (reject m V A p) \<inter> (defer m V A p) = {}"
 proof (safe)
   fix a :: "'a"
-  assume
-    "a \<in> elect m V A p" and
-    "a \<in> reject m V A p"
-  moreover have "well_formed_\<S>\<C>\<F> A (m V A p)"
+  have wf: "well_formed_\<S>\<C>\<F> A (m V A p)"
     using assms
     unfolding \<S>\<C>\<F>_result.electoral_module.simps
     by metis
-  ultimately show "a \<in> {}"
-    using prod.exhaust_sel DiffE UnCI result_imp_rej
-    by (metis (no_types))
-next
-  fix a :: "'a"
-  assume
-    elect_a: "a \<in> elect m V A p" and
-    defer_a: "a \<in> defer m V A p"
-  have disj:
-    "\<forall> p'. disjoint3 p' \<longrightarrow>
-      (\<exists> B C D. p' = (B, C, D) \<and> B \<inter> C = {} \<and> B \<inter> D = {} \<and> C \<inter> D = {})"
-    by simp
-  have "well_formed_\<S>\<C>\<F> A (m V A p)"
+  have disj: "disjoint3 (m V A p)"
     using assms
-    unfolding \<S>\<C>\<F>_result.electoral_module.simps
-    by metis
-  hence "disjoint3 (m V A p)"
     by simp
-  then obtain
-    e :: "'a Result \<Rightarrow> 'a set" and
-    r :: "'a Result \<Rightarrow> 'a set" and
-    d :: "'a Result \<Rightarrow> 'a set"
-    where
-    "m V A p =
-      (e (m V A p), r (m V A p), d (m V A p)) \<and>
-        e (m V A p) \<inter> r (m V A p) = {} \<and>
-        e (m V A p) \<inter> d (m V A p) = {} \<and>
-        r (m V A p) \<inter> d (m V A p) = {}"
-    using elect_a defer_a disj
-    by metis
-  hence "((elect m V A p) \<inter> (reject m V A p) = {}) \<and>
+  {
+    assume
+      "a \<in> elect m V A p" and
+      "a \<in> reject m V A p"
+    with wf disj
+    show "a \<in> {}"
+      using prod.exhaust_sel DiffE UnCI result_imp_rej
+      by (metis (no_types))
+  }
+  {
+    assume
+      elect_a: "a \<in> elect m V A p" and
+      defer_a: "a \<in> defer m V A p"
+    then obtain
+      e :: "'a Result \<Rightarrow> 'a set" and
+      r :: "'a Result \<Rightarrow> 'a set" and
+      d :: "'a Result \<Rightarrow> 'a set"
+      where
+        "m V A p =
+        (e (m V A p), r (m V A p), d (m V A p)) \<and>
+          e (m V A p) \<inter> r (m V A p) = {} \<and>
+          e (m V A p) \<inter> d (m V A p) = {} \<and>
+          r (m V A p) \<inter> d (m V A p) = {}"
+      using IntI emptyE prod.collapse disj disjoint3.simps
+      by metis
+    hence "((elect m V A p) \<inter> (reject m V A p) = {}) \<and>
           ((elect m V A p) \<inter> (defer m V A p) = {}) \<and>
           ((reject m V A p) \<inter> (defer m V A p) = {})"
-    using eq_snd_iff fstI
-    by metis
-  thus "a \<in> {}"
-    using elect_a defer_a disjoint_iff_not_equal
-    by (metis (no_types))
-next
-  fix a :: "'a"
-  assume
-    "a \<in> reject m V A p" and
-    "a \<in> defer m V A p"
-  moreover have "well_formed_\<S>\<C>\<F> A (m V A p)"
-    using assms
-    unfolding \<S>\<C>\<F>_result.electoral_module.simps
-    by simp
-  ultimately show "a \<in> {}"
-    using prod.exhaust_sel DiffE UnCI result_imp_rej
-    by (metis (no_types))
+      using eq_snd_iff fstI
+      by metis
+    thus "a \<in> {}"
+      using elect_a defer_a disjoint_iff_not_equal
+      by (metis (no_types))
+  }
+  {
+    assume
+      "a \<in> reject m V A p" and
+      "a \<in> defer m V A p"
+    with wf disj
+    show "a \<in> {}"
+      using prod.exhaust_sel DiffE UnCI result_imp_rej
+      by (metis (no_types))
+  }
 qed
 
 lemma elect_in_alts:
@@ -555,19 +540,10 @@ lemma upper_card_bounds_for_result:
     upper_card_bound_for_elect: "card (elect m V A p) \<le> card A" and
     upper_card_bound_for_reject: "card (reject m V A p) \<le> card A" and
     upper_card_bound_for_defer: "card (defer m V A p) \<le> card A"
-proof -
-  show "card (elect m V A p) \<le> card A"
-    using assms card_mono elect_in_alts
-    by metis
-next
-  show "card (reject m V A p) \<le> card A"
-    using assms card_mono reject_in_alts
-    by metis
-next
-  show "card (defer m V A p) \<le> card A"
-    using assms card_mono defer_in_alts
-    by metis
-qed
+  using assms card_mono
+  by (metis elect_in_alts,
+      metis reject_in_alts,
+      metis defer_in_alts)
 
 lemma reject_not_elec_or_def:
   fixes
@@ -580,18 +556,11 @@ lemma reject_not_elec_or_def:
     "profile V A p"
   shows "reject m V A p = A - (elect m V A p) - (defer m V A p)"
 proof -
-  have "well_formed_\<S>\<C>\<F> A (m V A p)"
-    using assms
-    unfolding \<S>\<C>\<F>_result.electoral_module.simps
-    by simp
-  hence "(elect m V A p) \<union> (reject m V A p) \<union> (defer m V A p) = A"
-    using assms result_presv_alts
-    by simp
-  moreover have
-    "(elect m V A p) \<inter> (reject m V A p) = {} \<and> (reject m V A p) \<inter> (defer m V A p) = {}"
-    using assms result_disj
+  from assms have "(elect m V A p) \<union> (reject m V A p) \<union> (defer m V A p) = A"
+    using result_presv_alts
     by blast
-  ultimately show ?thesis
+  with assms show ?thesis
+    using result_disj
     by blast
 qed
 
@@ -606,14 +575,11 @@ lemma elec_and_def_not_rej:
     "profile V A p"
   shows "elect m V A p \<union> defer m V A p = A - (reject m V A p)"
 proof -
-  have "(elect m V A p) \<union> (reject m V A p) \<union> (defer m V A p) = A"
-    using assms result_presv_alts
+  from assms have "(elect m V A p) \<union> (reject m V A p) \<union> (defer m V A p) = A"
+    using result_presv_alts
     by blast
-  moreover have
-    "(elect m V A p) \<inter> (reject m V A p) = {} \<and> (reject m V A p) \<inter> (defer m V A p) = {}"
-    using assms result_disj
-    by blast
-  ultimately show ?thesis
+  with assms show ?thesis
+    using result_disj
     by blast
 qed
 
@@ -627,18 +593,11 @@ lemma defer_not_elec_or_rej:
     "profile V A p"
   shows "defer m V A p = A - (elect m V A p) - (reject m V A p)"
 proof -
-  have "well_formed_\<S>\<C>\<F> A (m V A p)"
-    using assms
-    unfolding \<S>\<C>\<F>_result.electoral_module.simps
+  from assms have "(elect m V A p) \<union> (reject m V A p) \<union> (defer m V A p) = A"
+    using result_presv_alts
     by simp
-  hence "(elect m V A p) \<union> (reject m V A p) \<union> (defer m V A p) = A"
-    using assms result_presv_alts
-    by simp
-  moreover have
-    "(elect m V A p) \<inter> (defer m V A p) = {} \<and> (reject m V A p) \<inter> (defer m V A p) = {}"
-    using assms result_disj
-    by blast
-  ultimately show ?thesis
+  with assms show ?thesis
+    using result_disj
     by blast
 qed
 
@@ -670,43 +629,24 @@ lemma mod_contains_result_comm:
   assumes "mod_contains_result m n V A p a"
   shows "mod_contains_result n m V A p a"
 proof (unfold mod_contains_result_def, safe)
-  from assms
-  show "\<S>\<C>\<F>_result.electoral_module n"
+  show
+    "\<S>\<C>\<F>_result.electoral_module n" and
+    "\<S>\<C>\<F>_result.electoral_module m" and
+    "profile V A p" and
+    "a \<in> A"
+    using assms
     unfolding mod_contains_result_def
     by safe
 next
-  from assms
-  show "\<S>\<C>\<F>_result.electoral_module m"
+  show
+    "a \<in> elect n V A p \<Longrightarrow> a \<in> elect m V A p" and
+    "a \<in> reject n V A p \<Longrightarrow> a \<in> reject m V A p" and
+    "a \<in> defer n V A p \<Longrightarrow> a \<in> defer m V A p"
+    using assms IntI electoral_mod_defer_elem empty_iff result_disj
     unfolding mod_contains_result_def
-    by safe
-next
-  from assms
-  show "profile V A p"
-    unfolding mod_contains_result_def
-    by safe
-next
-  from assms
-  show "a \<in> A"
-    unfolding mod_contains_result_def
-    by safe
-next
-  assume "a \<in> elect n V A p"
-  thus "a \<in> elect m V A p"
-    using IntI assms electoral_mod_defer_elem empty_iff result_disj
-    unfolding mod_contains_result_def
-    by (metis (mono_tags, lifting))
-next
-  assume "a \<in> reject n V A p"
-  thus "a \<in> reject m V A p"
-    using IntI assms electoral_mod_defer_elem empty_iff result_disj
-    unfolding mod_contains_result_def
-    by (metis (mono_tags, lifting))
-next
-  assume "a \<in> defer n V A p"
-  thus "a \<in> defer m V A p"
-    using IntI assms electoral_mod_defer_elem empty_iff result_disj
-    unfolding mod_contains_result_def
-    by (metis (mono_tags, lifting))
+    by (metis (mono_tags, lifting),
+        metis (mono_tags, lifting),
+        metis (mono_tags, lifting))
 qed
 
 lemma not_rej_imp_elec_or_defer:
@@ -754,73 +694,68 @@ lemma eq_alts_in_profs_imp_eq_results:
     prof_q: "profile V A q"
   shows "m V A p = m V A q"
 proof -
-  have elected_in_A: "elect m V A q \<subseteq> A"
-    using elect_in_alts mod_m prof_q
-    by metis
-  have rejected_in_A: "reject m V A q \<subseteq> A"
-    using reject_in_alts mod_m prof_q
-    by metis
-  have deferred_in_A: "defer m V A q \<subseteq> A"
-    using defer_in_alts mod_m prof_q
-    by metis
-  have "\<forall> a \<in> elect m V A p. a \<in> elect m V A q"
-    using elect_in_alts eq prof_contains_result_def mod_m prof_p in_mono
-    by metis
-  moreover have "\<forall> a \<in> elect m V A q. a \<in> elect m V A p"
-  proof
+  have
+    elected_in_A: "elect m V A q \<subseteq> A" and
+    rejected_in_A: "reject m V A q \<subseteq> A" and
+    deferred_in_A: "defer m V A q \<subseteq> A"
+    using mod_m prof_q
+    by (metis elect_in_alts, metis reject_in_alts, metis defer_in_alts)
+  have
+    "\<forall> a \<in> elect m V A p. a \<in> elect m V A q" and
+    "\<forall> a \<in> reject m V A p. a \<in> reject m V A q" and
+    "\<forall> a \<in> defer m V A p. a \<in> defer m V A q"
+    using eq mod_m prof_p in_mono
+    unfolding prof_contains_result_def
+    by (metis (no_types, lifting) elect_in_alts,
+        metis (no_types, lifting) reject_in_alts,
+        metis (no_types, lifting) defer_in_alts)
+  moreover have
+    "\<forall> a \<in> elect m V A q. a \<in> elect m V A p" and
+    "\<forall> a \<in> reject m V A q. a \<in> reject m V A p" and
+    "\<forall> a \<in> defer m V A q. a \<in> defer m V A p"
+  proof (safe)
     fix a :: "'a"
     assume q_elect_a: "a \<in> elect m V A q"
     hence "a \<in> A"
       using elected_in_A
       by blast
-    moreover have "a \<notin> defer m V A q"
-      using q_elect_a prof_q mod_m result_disj
-      by blast
-    moreover have "a \<notin> reject m V A q"
-      using q_elect_a disjoint_iff_not_equal prof_q mod_m result_disj
-      by metis
+    moreover have
+      "a \<notin> defer m V A q" and
+      "a \<notin> reject m V A q"
+      using q_elect_a prof_q mod_m result_disj disjoint_iff_not_equal
+      by (metis, metis)
     ultimately show "a \<in> elect m V A p"
-      using electoral_mod_defer_elem eq prof_contains_result_def
+      using eq electoral_mod_defer_elem
+      unfolding prof_contains_result_def
       by metis
-  qed
-  moreover have "\<forall> a \<in> reject m V A p. a \<in> reject m V A q"
-    using reject_in_alts eq prof_contains_result_def mod_m prof_p subset_iff
-    by (metis (no_types, lifting))
-  moreover have "\<forall> a \<in> reject m V A q. a \<in> reject m V A p"
-  proof
+  next
     fix a :: "'a"
     assume q_rejects_a: "a \<in> reject m V A q"
     hence "a \<in> A"
       using rejected_in_A
       by blast
-    moreover have a_not_deferred_q: "a \<notin> defer m V A q"
-      using q_rejects_a prof_q mod_m result_disj
-      by blast
-    moreover have a_not_elected_q: "a \<notin> elect m V A q"
-      using q_rejects_a disjoint_iff_not_equal prof_q mod_m result_disj
-      by metis
+    moreover have
+      "a \<notin> defer m V A q" and
+      "a \<notin> elect m V A q"
+      using q_rejects_a prof_q mod_m result_disj disjoint_iff_not_equal
+      by (metis, metis)
     ultimately show "a \<in> reject m V A p"
-      using electoral_mod_defer_elem eq prof_contains_result_def
+      using eq electoral_mod_defer_elem
+      unfolding prof_contains_result_def
       by metis
-  qed
-  moreover have "\<forall> a \<in> defer m V A p. a \<in> defer m V A q"
-    using defer_in_alts eq prof_contains_result_def mod_m prof_p subset_eq
-    by (metis (no_types, lifting))
-  moreover have "\<forall> a \<in> defer m V A q. a \<in> defer m V A p"
-  proof
+  next
     fix a :: "'a"
     assume q_defers_a: "a \<in> defer m V A q"
     moreover have "a \<in> A"
       using q_defers_a deferred_in_A
       by blast
-    moreover have "a \<notin> elect m V A q"
-      using q_defers_a prof_q mod_m result_disj
-      by blast
-    moreover have "a \<notin> reject m V A q"
-      using q_defers_a prof_q disjoint_iff_not_equal mod_m result_disj
-      by metis
+    moreover have
+      "a \<notin> elect m V A q" and
+      "a \<notin> reject m V A q"
+      using q_defers_a prof_q mod_m result_disj disjoint_iff_not_equal
+      by (metis, metis)
     ultimately show "a \<in> defer m V A p"
-      using electoral_mod_defer_elem eq
+      using eq electoral_mod_defer_elem
       unfolding prof_contains_result_def
       by metis
   qed
@@ -846,16 +781,14 @@ lemma eq_def_and_elect_imp_eq:
     def_eq: "defer m V A p = defer n V A q"
   shows "m V A p = n V A q"
 proof -
-  have "reject m V A p = A - ((elect m V A p) \<union> (defer m V A p))"
-    using mod_m fin_p elect_rej_def_combination result_imp_rej
+  have
+    "reject m V A p = A - ((elect m V A p) \<union> (defer m V A p))" and
+    "reject n V A q = A - ((elect n V A q) \<union> (defer n V A q))"
+    using elect_rej_def_combination result_imp_rej mod_m mod_n fin_p fin_q
     unfolding \<S>\<C>\<F>_result.electoral_module.simps
-    by metis
-  moreover have "reject n V A q = A - ((elect n V A q) \<union> (defer n V A q))"
-    using mod_n fin_q elect_rej_def_combination result_imp_rej
-    unfolding \<S>\<C>\<F>_result.electoral_module.simps
-    by metis
-  ultimately show ?thesis
-    using elec_eq def_eq prod_eqI
+    by (metis, metis)
+  thus ?thesis
+    using prod_eqI elec_eq def_eq
     by metis
 qed
 
@@ -894,27 +827,21 @@ lemma electing_for_only_alt:
     electing: "electing m" and
     prof: "profile V A p"
   shows "elect m V A p = A"
-proof (safe)
-  fix a :: "'a"
-  assume elect_a: "a \<in> elect m V A p"
-  have "\<S>\<C>\<F>_result.electoral_module m \<longrightarrow> elect m V A p \<subseteq> A"
-    using prof elect_in_alts
-    by blast
-  hence "elect m V A p \<subseteq> A"
-    using electing
+proof (intro equalityI)
+  show elect_in_A: "elect m V A p \<subseteq> A"
+    using electing prof elect_in_alts
     unfolding electing_def
     by metis
-  thus "a \<in> A"
-    using elect_a
-    by blast
-next
-  fix a :: "'a"
-  assume "a \<in> A"
-  thus "a \<in> elect m V A p"
-    using electing prof one_alt One_nat_def Suc_leI card_seteq card_gt_0_iff
-          elect_in_alts infinite_super lessI
-    unfolding electing_def
-    by metis
+  show "A \<subseteq> elect m V A p"
+  proof (intro subsetI)
+    fix a :: "'a"
+    assume "a \<in> A"
+    thus "a \<in> elect m V A p"
+      using one_alt electing prof elect_in_A IntD2 Int_absorb2 card_1_singletonE
+            card_gt_0_iff equals0I zero_less_one singletonD
+      unfolding electing_def
+      by (metis (no_types))
+  qed
 qed
 
 theorem electing_imp_non_blocking:
@@ -957,7 +884,8 @@ text \<open>
 
 definition non_electing :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "non_electing m \<equiv>
-    \<S>\<C>\<F>_result.electoral_module m \<and> (\<forall> A V p. profile V A p \<longrightarrow> elect m V A p = {})"
+    \<S>\<C>\<F>_result.electoral_module m
+      \<and> (\<forall> A V p. profile V A p \<longrightarrow> elect m V A p = {})"
 
 lemma single_rej_decr_def_card:
   fixes
@@ -972,7 +900,8 @@ lemma single_rej_decr_def_card:
   shows "card (defer m V A p) = card A - 1"
 proof -
   have no_elect:
-    "\<S>\<C>\<F>_result.electoral_module m \<and> (\<forall> V A q. profile V A q \<longrightarrow> elect m V A q = {})"
+    "\<S>\<C>\<F>_result.electoral_module m
+        \<and> (\<forall> V A q. profile V A q \<longrightarrow> elect m V A q = {})"
     using non_electing
     unfolding non_electing_def
     by (metis (no_types))
@@ -1004,7 +933,8 @@ lemma single_elim_decr_def_card_2:
   shows "card (defer m V A p) = card A - 1"
 proof -
   have no_elect:
-    "\<S>\<C>\<F>_result.electoral_module m \<and> (\<forall> A V q. profile V A q \<longrightarrow> elect m V A q = {})"
+    "\<S>\<C>\<F>_result.electoral_module m
+        \<and> (\<forall> A V q. profile V A q \<longrightarrow> elect m V A q = {})"
     using non_electing
     unfolding non_electing_def
     by (metis (no_types))
@@ -1043,13 +973,15 @@ definition decrementing :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> b
     \<S>\<C>\<F>_result.electoral_module m \<and>
       (\<forall> A V p. profile V A p \<and> card A > 1 \<longrightarrow> card (reject m V A p) \<ge> 1)"
 
-definition defer_condorcet_consistency :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
+definition defer_condorcet_consistency :: "('a, 'v, 'a Result) Electoral_Module
+                                              \<Rightarrow> bool" where
   "defer_condorcet_consistency m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
     (\<forall> A V p a. condorcet_winner V A p a \<longrightarrow>
       (m V A p = ({}, A - (defer m V A p), {d \<in> A. condorcet_winner V A p d})))"
 
-definition condorcet_compatibility :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
+definition condorcet_compatibility :: "('a, 'v, 'a Result) Electoral_Module
+                                          \<Rightarrow> bool" where
   "condorcet_compatibility m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
     (\<forall> A V p a. condorcet_winner V A p a \<longrightarrow>
@@ -1077,7 +1009,8 @@ text \<open>
 definition defer_lift_invariance :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "defer_lift_invariance m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
-      (\<forall> A V p q a. (a \<in> (defer m V A p) \<and> lifted V A p q a) \<longrightarrow> m V A p = m V A q)"
+      (\<forall> A V p q a. (a \<in> (defer m V A p) \<and> lifted V A p q a)
+                      \<longrightarrow> m V A p = m V A q)"
 
 fun dli_rel :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v) Election rel" where
   "dli_rel m = {((A, V, p), (A, V, q)) |A V p q. (\<exists> a \<in> defer m V A p. lifted V A p q a)}"
@@ -1087,7 +1020,8 @@ lemma rewrite_dli_as_invariance:
     m :: "('a, 'v, 'a Result) Electoral_Module"
   shows
     "defer_lift_invariance m =
-      (\<S>\<C>\<F>_result.electoral_module m \<and> (is_symmetry (fun\<^sub>\<E> m) (Invariance (dli_rel m))))"
+      (\<S>\<C>\<F>_result.electoral_module m
+            \<and> (is_symmetry (fun\<^sub>\<E> m) (Invariance (dli_rel m))))"
 proof (unfold is_symmetry.simps, safe)
   assume "defer_lift_invariance m"
   thus "\<S>\<C>\<F>_result.electoral_module m"
@@ -1157,7 +1091,8 @@ text \<open>
   makes a the only elected alternative.
 \<close>
 
-definition invariant_monotonicity :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
+definition invariant_monotonicity :: "('a, 'v, 'a Result) Electoral_Module
+                                          \<Rightarrow> bool" where
   "invariant_monotonicity m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
         (\<forall> A V p q a. (a \<in> elect m V A p \<and> lifted V A p q a) \<longrightarrow>
@@ -1169,7 +1104,8 @@ text \<open>
   makes a the only deferred alternative.
 \<close>
 
-definition defer_invariant_monotonicity :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
+definition defer_invariant_monotonicity :: "('a, 'v, 'a Result) Electoral_Module
+                                                \<Rightarrow> bool" where
   "defer_invariant_monotonicity m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and> non_electing m \<and>
         (\<forall> A V p q a. (a \<in> defer m V A p \<and> lifted V A p q a) \<longrightarrow>
@@ -1190,38 +1126,24 @@ lemma ccomp_and_dd_imp_def_only_winner:
     winner: "condorcet_winner V A p a"
   shows "defer m V A p = {a}"
 proof (rule ccontr)
-  assume not_w: "defer m V A p \<noteq> {a}"
-  have def_one: "defers 1 m"
+  assume "defer m V A p \<noteq> {a}"
+  moreover have def_one: "defers 1 m"
     using dd
     unfolding defer_deciding_def
     by metis
   hence c_win: "finite_profile V A p \<and>  a \<in> A \<and> (\<forall> b \<in> A - {a}. wins V a p b)"
     using winner
     by auto
-  hence "card (defer m V A p) = 1"
-    using Suc_leI card_gt_0_iff def_one equals0D
-    unfolding One_nat_def defers_def
+  ultimately have "\<exists> b \<in> A. b \<noteq> a \<and> defer m V A p = {b}"
+    using Suc_leI card_gt_0_iff def_one equals0D card_1_singletonE
+          defer_in_alts insert_subset
+    unfolding defer_deciding_def One_nat_def defers_def
     by metis
-  hence "\<exists> b \<in> A. defer m V A p = {b}"
-    using card_1_singletonE dd defer_in_alts insert_subset c_win
-    unfolding defer_deciding_def
-    by metis
-  hence "\<exists> b \<in> A. b \<noteq> a \<and> defer m V A p = {b}"
-    using not_w
-    by metis
-  hence not_in_defer: "a \<notin> defer m V A p"
-    by auto
-  have "non_electing m"
-    using dd
-    unfolding defer_deciding_def
-    by simp
-  hence "a \<notin> elect m V A p"
-    using c_win equals0D
-    unfolding non_electing_def
-    by simp
+  hence "a \<notin> defer m V A p"
+    by force
   hence "a \<in> reject m V A p"
-    using not_in_defer ccomp c_win electoral_mod_defer_elem
-    unfolding condorcet_compatibility_def
+    using ccomp c_win electoral_mod_defer_elem dd equals0D
+    unfolding defer_deciding_def non_electing_def condorcet_compatibility_def
     by metis
   moreover have "a \<notin> reject m V A p"
     using ccomp c_win winner
@@ -1249,25 +1171,22 @@ next
     p :: "('a, 'v) Profile" and
     a :: "'a"
   assume c_winner: "condorcet_winner V A p a"
-  hence elect_empty: "elect m V A p = {}"
+  hence "elect m V A p = {}"
     using dd
     unfolding defer_deciding_def non_electing_def
     by simp
-  have cond_winner_a: "{a} = {c \<in> A. condorcet_winner V A p c}"
-    using cond_winner_unique c_winner
-    by metis
-  have defer_a: "defer m V A p = {a}"
+  moreover have "defer m V A p = {a}"
     using c_winner dd ccomp ccomp_and_dd_imp_def_only_winner
     by simp
-  hence "reject m V A p = A - defer m V A p"
-    using Diff_empty dd reject_not_elec_or_def c_winner elect_empty
+  ultimately have "m V A p = ({}, A - defer m V A p, {a})"
+    using c_winner reject_not_elec_or_def elect_rej_def_combination Diff_empty dd
     unfolding defer_deciding_def condorcet_winner.simps
     by metis
-  hence "m V A p = ({}, A - defer m V A p, {a})"
-    using elect_empty defer_a elect_rej_def_combination
+  moreover have "{a} = {c \<in> A. condorcet_winner V A p c}"
+    using c_winner cond_winner_unique
     by metis
-  thus "m V A p = ({}, A - defer m V A p, {c \<in> A. condorcet_winner V A p c})"
-    using cond_winner_a
+  ultimately show
+    "m V A p = ({}, A - defer m V A p, {c \<in> A. condorcet_winner V A p c})"
     by simp
 qed
 
@@ -1282,20 +1201,17 @@ theorem disj_compat_comm[simp]:
   assumes "disjoint_compatibility m n"
   shows "disjoint_compatibility n m"
 proof (unfold disjoint_compatibility_def, safe)
-  show "\<S>\<C>\<F>_result.electoral_module m"
+  show
+    "\<S>\<C>\<F>_result.electoral_module m" and
+    "\<S>\<C>\<F>_result.electoral_module n"
     using assms
     unfolding disjoint_compatibility_def
-    by simp
+    by safe
 next
-  show "\<S>\<C>\<F>_result.electoral_module n"
-    using assms
-    unfolding disjoint_compatibility_def
-    by simp
-next
-  fix 
+  fix
     A :: "'a set" and
     V :: "'v set"
-  obtain B where
+  obtain B :: "'a set" where
     "B \<subseteq> A \<and>
       (\<forall> a \<in> B.
         indep_of_alt m V A a \<and> (\<forall> p. profile V A p \<longrightarrow> a \<in> reject m V A p)) \<and>
@@ -1310,14 +1226,7 @@ next
         indep_of_alt n V A a \<and> (\<forall> p. profile V A p \<longrightarrow> a \<in> reject n V A p)) \<and>
       (\<forall> a \<in> B.
         indep_of_alt m V A a \<and> (\<forall> p. profile V A p \<longrightarrow> a \<in> reject m V A p))"
-    by auto
-  hence "\<exists> B \<subseteq> A.
-          (\<forall> a \<in> A - B.
-            indep_of_alt n V A a \<and> (\<forall> p. profile V A p \<longrightarrow> a \<in> reject n V A p)) \<and>
-          (\<forall> a \<in> A - (A - B).
-            indep_of_alt m V A a \<and> (\<forall> p. profile V A p \<longrightarrow> a \<in> reject m V A p))"
-    using double_diff order_refl
-    by metis
+    by blast
   thus "\<exists> B \<subseteq> A.
           (\<forall> a \<in> B.
             indep_of_alt n V A a \<and> (\<forall> p. profile V A p \<longrightarrow> a \<in> reject n V A p)) \<and>
@@ -1343,7 +1252,8 @@ subsection \<open>Social Choice Properties\<close>
 
 subsubsection \<open>Condorcet Consistency\<close>
 
-definition condorcet_consistency :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
+definition condorcet_consistency :: "('a, 'v, 'a Result) Electoral_Module
+                                        \<Rightarrow> bool" where
   "condorcet_consistency m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
     (\<forall> A V p a. condorcet_winner V A p a \<longrightarrow>
@@ -1359,7 +1269,7 @@ proof (safe)
   assume "condorcet_consistency m"
   thus "\<S>\<C>\<F>_result.electoral_module m"
     unfolding condorcet_consistency_def
-    by metis
+    by (metis (mono_tags, lifting))
 next
   fix
     A :: "'a set" and
@@ -1376,13 +1286,10 @@ next
 next
   assume
     "\<S>\<C>\<F>_result.electoral_module m" and
-    "\<forall> A V p a. condorcet_winner V A p a \<longrightarrow> m V A p = ({a}, A - elect m V A p, {})"
-  moreover have
-    "\<forall> A V p a. condorcet_winner V A p (a::'a) \<longrightarrow>
-        {b \<in> A. condorcet_winner V A p b} = {a}"
+    "\<forall> A V p a. condorcet_winner V A p a
+          \<longrightarrow> m V A p = ({a}, A - elect m V A p, {})"
+  thus "condorcet_consistency m"
     using cond_winner_unique
-    by (metis (full_types))
-  ultimately show "condorcet_consistency m"
     unfolding condorcet_consistency_def
     by (metis (mono_tags, lifting))
 qed
@@ -1399,27 +1306,23 @@ proof (unfold condorcet_consistency', safe)
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
     a :: "'a"
-  assume
-    e_mod: "\<S>\<C>\<F>_result.electoral_module m" and
-    cc: "\<forall> A V p a'. condorcet_winner V A p a' \<longrightarrow>
-      m V A p = ({a'}, A - elect m V A p, {})" and
-    c_win: "condorcet_winner V A p a"
-  show "m V A p = ({a}, A - {a}, {})"
-    using cc c_win fst_conv
-    by metis
-next
-  fix
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    a :: "'a"
-  assume
-    e_mod: "\<S>\<C>\<F>_result.electoral_module m" and
-    cc: "\<forall> A V p a'. condorcet_winner V A p a' \<longrightarrow> m V A p = ({a'}, A -  {a'}, {})" and
-    c_win: "condorcet_winner V A p a"
-  show "m V A p = ({a}, A -  elect m V A p, {})"
-    using cc c_win fst_conv
-    by metis
+  assume "condorcet_winner V A p a"
+  {
+    moreover assume
+      "\<forall> A V p a'. condorcet_winner V A p a'
+          \<longrightarrow> m V A p = ({a'}, A - elect m V A p, {})"
+    ultimately show "m V A p = ({a}, A - {a}, {})"
+      using fst_conv
+      by metis
+  }
+  {
+    moreover assume
+      "\<forall> A V p a'. condorcet_winner V A p a'
+          \<longrightarrow> m V A p = ({a'}, A -  {a'}, {})"
+    ultimately show "m V A p = ({a}, A -  elect m V A p, {})"
+      using fst_conv
+      by metis
+  }
 qed
 
 subsubsection \<open>(Weak) Monotonicity\<close>

@@ -161,7 +161,7 @@ proof
     using plurality_elim_equiv fin_A prof_A A_non_empty snd_conv
     unfolding revision_composition.simps
     by metis
-  ultimately have "a \<in> defer plurality V A p"  
+  ultimately have "a \<in> defer plurality V A p"
     by blast
   hence "a \<in> elect plurality_rule V A p"
     by simp

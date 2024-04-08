@@ -33,15 +33,17 @@ proof (intro \<S>\<C>\<F>_result.electoral_modI)
     A :: "'a set" and
     V :: "'v::wellorder set" and
     p :: "('a, 'v) Profile"
-  have "{a \<in> A. above (p (least V)) a = {a}} \<union> {a \<in> A. above (p (least V)) a \<noteq> {a}} = A"
+  have "{a \<in> A. above (p (least V)) a = {a}}
+          \<union> {a \<in> A. above (p (least V)) a \<noteq> {a}} = A"
     by blast
   hence "set_equals_partition A (elect_first_module V A p)"
     by simp
   moreover have
-    "\<forall> a \<in> A. (a \<notin> {a' \<in> A.  above (p (least V)) a' = {a'}} \<or> 
+    "\<forall> a \<in> A. (a \<notin> {a' \<in> A.  above (p (least V)) a' = {a'}} \<or>
                 a \<notin> {a' \<in> A. above (p (least V)) a' \<noteq> {a'}})"
     by simp
-  hence "{a \<in> A. above (p (least V)) a = {a}} \<inter> {a \<in> A. above (p (least V)) a \<noteq> {a}} = {}"
+  hence "{a \<in> A. above (p (least V)) a = {a}}
+          \<inter> {a \<in> A. above (p (least V)) a \<noteq> {a}} = {}"
     by blast
   hence "disjoint3 (elect_first_module V A p)"
     by simp

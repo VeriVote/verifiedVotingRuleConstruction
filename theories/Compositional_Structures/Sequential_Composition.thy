@@ -20,9 +20,9 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun sequential_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 
-                               ('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
-                               ('a, 'v, 'a Result) Electoral_Module" where
+fun sequential_composition :: "('a, 'v, 'a Result) Electoral_Module
+                            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
+                            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "sequential_composition m n V A p =
     (let new_A = defer m V A p;
         new_p = limit_profile new_A p in (
@@ -31,13 +31,14 @@ fun sequential_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow
                   defer n V new_A new_p))"
 
 abbreviation sequence ::
-  "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module 
+  "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
     \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
      (infix "\<triangleright>" 50) where
   "m \<triangleright> n == sequential_composition m n"
 
-fun sequential_composition' :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 
-        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun sequential_composition' :: "('a, 'v, 'a Result) Electoral_Module
+                                  \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
+                                  \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "sequential_composition' m n V A p =
     (let (m_e, m_r, m_d) = m V A p; new_A = m_d;
         new_p = limit_profile new_A p;
@@ -48,39 +49,44 @@ lemma voters_determine_seq_comp:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     n :: "('a, 'v, 'a Result) Electoral_Module"
-  assumes 
+  assumes
     "voters_determine_election m \<and> voters_determine_election n"
   shows "voters_determine_election (m \<triangleright> n)"
 proof (unfold voters_determine_election.simps, clarify)
-  fix 
+  fix
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
     p' :: "('a, 'v) Profile"
   assume coincide: "\<forall> v \<in> V. p v = p' v"
-  hence eq: "m V A p = m V A p' \<and> n V A p = n V A p'" 
-    using assms 
+  hence eq: "m V A p = m V A p' \<and> n V A p = n V A p'"
+    using assms
     unfolding voters_determine_election.simps
     by blast
-  hence coincide_limit: 
-    "\<forall> v \<in> V. limit_profile (defer m V A p) p v = limit_profile (defer m V A p') p' v"
+  hence coincide_limit:
+    "\<forall> v \<in> V. limit_profile (defer m V A p) p v =
+                limit_profile (defer m V A p') p' v"
     using coincide
     by simp
   moreover have
-    "elect m V A p \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p)
-      = elect m V A p' \<union> elect n V (defer m V A p') (limit_profile (defer m V A p') p')"
+    "elect m V A p
+      \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p) =
+    elect m V A p'
+      \<union> elect n V (defer m V A p') (limit_profile (defer m V A p') p')"
     using assms eq coincide_limit
     unfolding voters_determine_election.simps
     by metis
-  moreover have 
-    "reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p)
-      = reject m V A p' \<union> reject n V (defer m V A p') (limit_profile (defer m V A p') p')"
+  moreover have
+    "reject m V A p
+      \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p) =
+    reject m V A p'
+      \<union> reject n V (defer m V A p') (limit_profile (defer m V A p') p')"
     using assms eq coincide_limit
     unfolding voters_determine_election.simps
     by metis
-  moreover have 
-    "defer n V (defer m V A p) (limit_profile (defer m V A p) p)
-      = defer n V (defer m V A p') (limit_profile (defer m V A p') p')"
+  moreover have
+    "defer n V (defer m V A p) (limit_profile (defer m V A p) p) =
+    defer n V (defer m V A p') (limit_profile (defer m V A p') p')"
     using assms eq coincide_limit
     unfolding voters_determine_election.simps
     by metis
@@ -108,7 +114,7 @@ proof -
     by metis
   have defer_in_A:
     "\<forall> A' V' p' m' a.
-      (profile V' A' p' \<and> 
+      (profile V' A' p' \<and>
        \<S>\<C>\<F>_result.electoral_module m' \<and>
        (a::'a) \<in> defer m' V' A' p') \<longrightarrow>
       a \<in> A'"
@@ -128,7 +134,9 @@ proof -
       reject m V A p \<inter> defer m V A p = {}"
     using prof module_m
     by (simp add: result_disj)
-  have "reject n V (defer m V A p) (limit_profile (defer m V A p) p) \<subseteq> defer m V A p"
+  have "reject n V (defer m V A p)
+          (limit_profile (defer m V A p) p)
+        \<subseteq> defer m V A p"
     using def_presv_prof reject_in_alts prof module_m module_n
     by metis
   with disjoint_m module_m module_n prof
@@ -150,14 +158,17 @@ proof -
       by metis
     then obtain g :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a" where
       "\<forall> B B'.
-        (B \<inter> B' = {} \<longrightarrow> (\<forall> a b. a \<in> B \<and> b \<in> B' \<longrightarrow> a \<noteq> b)) \<and>
-          (B \<inter> B' \<noteq> {} \<longrightarrow> f B B' \<in> B \<and> g B B' \<in> B' \<and> f B B' = g B B')"
+        (B \<inter> B' = {}
+          \<longrightarrow> (\<forall> a b. a \<in> B \<and> b \<in> B' \<longrightarrow> a \<noteq> b)) \<and>
+          (B \<inter> B' \<noteq> {}
+            \<longrightarrow> f B B' \<in> B \<and> g B B' \<in> B' \<and> f B B' = g B B')"
       by auto
     thus ?thesis
       using defer_in_A disj_n module_n prof_def_lim prof
       by (metis (no_types, opaque_lifting))
   qed
-  have rej_intersect_new_elect_empty: "reject m V A p \<inter> elect n V ?new_A ?new_p = {}"
+  have rej_intersect_new_elect_empty:
+    "reject m V A p \<inter> elect n V ?new_A ?new_p = {}"
     using disj_n disjoint_m disjoint_n def_presv_prof prof
           module_m module_n elec_n_in_def_m
     by blast
@@ -185,7 +196,8 @@ proof -
   next
     fix x :: "'a"
     assume
-      "x \<in> elect n V (defer m V A p) (limit_profile (defer m V A p) p)" and
+      "x \<in> elect n V (defer m V A p)
+              (limit_profile (defer m V A p) p)" and
       "x \<in> reject m V A p"
     thus "x \<in> {}"
       using rej_intersect_new_elect_empty
@@ -193,23 +205,28 @@ proof -
   next
     fix x :: "'a"
     assume
-      "x \<in> elect n V (defer m V A p) (limit_profile (defer m V A p) p)" and
-      "x \<in> reject n V (defer m V A p) (limit_profile (defer m V A p) p)"
+      "x \<in> elect n V (defer m V A p)
+            (limit_profile (defer m V A p) p)" and
+      "x \<in> reject n V (defer m V A p)
+          (limit_profile (defer m V A p) p)"
     thus "x \<in> {}"
       using disjoint_iff_not_equal module_n prof_def_lim result_disj prof
       by metis
   qed
   moreover have
-    "(elect m V A p \<union> elect n V ?new_A ?new_p) \<inter> (defer n V ?new_A ?new_p) = {}"
+    "(elect m V A p \<union> elect n V ?new_A ?new_p)
+      \<inter> (defer n V ?new_A ?new_p) = {}"
     using Int_Un_distrib2 Un_empty elect_defer_diff module_n
           prof_def_lim result_disj prof
     by (metis (no_types))
   moreover have
-    "(reject m V A p \<union> reject n V ?new_A ?new_p) \<inter> (defer n V ?new_A ?new_p) = {}"
+    "(reject m V A p \<union> reject n V ?new_A ?new_p)
+      \<inter> (defer n V ?new_A ?new_p) = {}"
   proof (safe)
     fix x :: "'a"
     assume
-      x_in_def: "x \<in> defer n V (defer m V A p) (limit_profile (defer m V A p) p)" and
+      x_in_def:
+      "x \<in> defer n V (defer m V A p) (limit_profile (defer m V A p) p)" and
       x_in_rej: "x \<in> reject m V A p"
     from x_in_def
     have "x \<in> defer m V A p"
@@ -283,15 +300,19 @@ proof (unfold sequential_composition'.simps sequential_composition.simps)
       (case m V A E of (e, r, d) \<Rightarrow>
         case n V d (limit_profile d E) of (e', r', d') \<Rightarrow>
         (e \<union> e', r \<union> r', d')) =
-          (elect m V A E \<union> elect n V (defer m V A E) (limit_profile (defer m V A E) E),
-            reject m V A E \<union> reject n V (defer m V A E) (limit_profile (defer m V A E) E),
+          (elect m V A E
+            \<union> elect n V (defer m V A E) (limit_profile (defer m V A E) E),
+            reject m V A E
+            \<union> reject n V (defer m V A E) (limit_profile (defer m V A E) E),
             defer n V (defer m V A E) (limit_profile (defer m V A E) E))"
     using case_prod_beta'
     by (metis (no_types, lifting))
   thus
     "(\<lambda> m n V A p.
         let A' = defer m V A p; p' = limit_profile A' p in
-      (elect m V A p \<union> elect n V A' p', reject m V A p \<union> reject n V A' p', defer n V A' p')) =
+      (elect m V A p \<union> elect n V A' p',
+        reject m V A p \<union> reject n V A' p',
+        defer n V A' p')) =
       (\<lambda> m n V A pr.
         let (e, r, d) = m V A pr; A' = d; p' = limit_profile A' pr;
           (e', r', d') = n V A' p' in
@@ -350,8 +371,8 @@ proof -
     by metis
   show ?thesis
   proof
-      have
-      "(elect m V A p) \<union> (elect n V (defer m V A p) (limit_profile (defer m V A p) p)) =
+    have "(elect m V A p)
+      \<union> (elect n V (defer m V A p) (limit_profile (defer m V A p) p)) =
           elect m V A p"
       using elect_in_alts[of "n" "V" "defer m V A p" "(limit_profile (defer m V A p) p)"]
             empty_defer module_n prof prof_no_alt
@@ -478,7 +499,8 @@ lemma seq_comp_defers_def_set:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
-  shows "defer (m \<triangleright> n) V A p = defer n V (defer m V A p) (limit_profile (defer m V A p) p)"
+  shows "defer (m \<triangleright> n) V A p =
+          defer n V (defer m V A p) (limit_profile (defer m V A p) p)"
   using snd_conv
   unfolding sequential_composition.simps
   by metis
@@ -491,7 +513,8 @@ lemma seq_comp_def_then_elect_elec_set:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   shows "elect (m \<triangleright> n) V A p =
-            elect n V (defer m V A p) (limit_profile (defer m V A p) p) \<union> (elect m V A p)"
+            elect n V (defer m V A p)
+              (limit_profile (defer m V A p) p) \<union> (elect m V A p)"
   using Un_commute fst_conv
   unfolding sequential_composition.simps
   by metis
@@ -577,14 +600,17 @@ proof -
   proof (unfold non_blocking_def)
     assume
       emod_reject_m:
-      "\<S>\<C>\<F>_result.electoral_module m \<and>
-        (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> reject m V A p \<noteq> A)" and
+      "\<S>\<C>\<F>_result.electoral_module m
+      \<and> (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p
+          \<longrightarrow> reject m V A p \<noteq> A)" and
       emod_reject_n:
-      "\<S>\<C>\<F>_result.electoral_module n \<and>
-        (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> reject n V A p \<noteq> A)"
+      "\<S>\<C>\<F>_result.electoral_module n
+      \<and> (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p
+          \<longrightarrow> reject n V A p \<noteq> A)"
     show
-      "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n) \<and>
-        (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p \<longrightarrow> reject (m \<triangleright> n) V A p \<noteq> A)"
+      "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)
+      \<and> (\<forall> A V p. A \<noteq> {} \<and> finite A \<and> profile V A p
+          \<longrightarrow> reject (m \<triangleright> n) V A p \<noteq> A)"
     proof (safe)
       show "\<S>\<C>\<F>_result.electoral_module (m \<triangleright> n)"
         using emod_reject_m emod_reject_n seq_comp_sound
@@ -601,23 +627,27 @@ proof -
         rej_mn: "reject (m \<triangleright> n) V A p = A" and
         x_in_A: "x \<in> A"
       from emod_reject_m fin_A prof_A
-      have fin_defer: 
-        "finite (defer m V A p) \<and> profile V (defer m V A p) (limit_profile (defer m V A p) p)"
+      have fin_defer:
+        "finite (defer m V A p)
+        \<and> profile V (defer m V A p) (limit_profile (defer m V A p) p)"
         using def_presv_prof defer_in_alts finite_subset
         by (metis (no_types))
       from emod_reject_m emod_reject_n fin_A prof_A
       have seq_elect:
         "elect (m \<triangleright> n) V A p =
-          elect n V (defer m V A p) (limit_profile (defer m V A p) p) \<union> elect m V A p"
+          elect n V (defer m V A p)
+            (limit_profile (defer m V A p) p) \<union> elect m V A p"
         using seq_comp_def_then_elect_elec_set
         by metis
       from emod_reject_n emod_reject_m fin_A prof_A
       have def_limit:
-        "defer (m \<triangleright> n) V A p = defer n V (defer m V A p) (limit_profile (defer m V A p) p)"
+        "defer (m \<triangleright> n) V A p =
+          defer n V (defer m V A p) (limit_profile (defer m V A p) p)"
         using seq_comp_defers_def_set
         by metis
       from emod_reject_n emod_reject_m fin_A prof_A
-      have "elect (m \<triangleright> n) V A p \<union> defer (m \<triangleright> n) V A p = A - reject (m \<triangleright> n) V A p"
+      have "elect (m \<triangleright> n) V A p \<union> defer (m \<triangleright> n) V A p =
+              A - reject (m \<triangleright> n) V A p"
         using elec_and_def_not_rej seq_comp_sound
         by metis
       hence elect_def_disj:
@@ -700,7 +730,8 @@ theorem seq_comp_electing[simp]:
   shows "electing (m \<triangleright> n)"
 proof -
   have defer_card_eq_one:
-    "\<forall> A V p. (card A \<ge> 1 \<and> finite A \<and> profile V A p) \<longrightarrow> card (defer m V A p) = 1"
+    "\<forall> A V p. (card A \<ge> 1 \<and> finite A \<and> profile V A p)
+          \<longrightarrow> card (defer m V A p) = 1"
     using def_one_m
     unfolding defers_def
     by metis
@@ -711,15 +742,17 @@ proof -
   thus ?thesis
   proof -
     have "\<forall> m'.
-          (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
-              (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') \<longrightarrow> elect m' V' A' p' \<noteq> {}))
+          (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m'
+          \<and> (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p')
+              \<longrightarrow> elect m' V' A' p' \<noteq> {}))
         \<and> (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m' \<or>
               (\<exists> A V p. (A \<noteq> {} \<and> finite A \<and> profile V A p \<and> elect m' V A p = {})))"
       unfolding electing_def
       by blast
     hence "\<forall> m'.
-          (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
-              (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') \<longrightarrow> elect m' V' A' p' \<noteq> {}))
+          (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m'
+          \<and> (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p')
+              \<longrightarrow> elect m' V' A' p' \<noteq> {}))
         \<and> (\<exists> A V p. (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m' \<or> A \<noteq> {}
             \<and> finite A \<and> profile V A p \<and> elect m' V A p = {}))"
       by simp
@@ -730,10 +763,11 @@ proof -
       f_mod:
        "\<forall> m'::('a, 'v, 'a Result) Electoral_Module.
         (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
-          (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p') 
-            \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and> 
-          (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m' \<or> A m' \<noteq> {} \<and>
-          finite (A m') \<and> profile (V m') (A m') (p m') \<and> elect m' (V m') (A m') (p m') = {})"
+          (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p')
+            \<longrightarrow> elect m' V' A' p' \<noteq> {}))
+        \<and> (electing m' \<or> \<not> \<S>\<C>\<F>_result.electoral_module m' \<or> A m' \<noteq> {}
+        \<and> finite (A m') \<and> profile (V m') (A m') (p m')
+        \<and> elect m' (V m') (A m') (p m') = {})"
       by metis
     hence f_elect:
       "\<S>\<C>\<F>_result.electoral_module n \<and>
@@ -742,8 +776,9 @@ proof -
       unfolding electing_def
       by metis
     have def_card_one:
-      "\<S>\<C>\<F>_result.electoral_module m \<and>
-        (\<forall> A V p. (1 \<le> card A \<and> finite A \<and> profile V A p) \<longrightarrow> card (defer m V A p) = 1)"
+      "\<S>\<C>\<F>_result.electoral_module m
+      \<and> (\<forall> A V p. (1 \<le> card A \<and> finite A \<and> profile V A p)
+          \<longrightarrow> card (defer m V A p) = 1)"
       using def_one_m defer_card_eq_one
       unfolding defers_def
       by blast
@@ -969,7 +1004,8 @@ next
     unfolding non_blocking_def
     by metis
   moreover have
-    "defer (m \<triangleright> n) V A p = defer n V (defer m V A p) (limit_profile (defer m V A p) p)"
+    "defer (m \<triangleright> n) V A p =
+      defer n V (defer m V A p) (limit_profile (defer m V A p) p)"
     using seq_comp_defers_def_set
     by (metis (no_types, opaque_lifting))
   ultimately show "card (defer (m \<triangleright> n) V A p) = 1"
@@ -1053,11 +1089,12 @@ next
       moreover have "a \<notin> defer m V S q"
         using a_in_A compatible defer_not_elec_or_rej[of m V A p]
               profiles rej_A IntI emptyE result_disj
-        unfolding disjoint_compatibility_def 
+        unfolding disjoint_compatibility_def
         by metis
       ultimately have
-        "\<forall> v \<in> V. limit_profile (defer m V S p) p v = limit_profile (defer m V S q) q v"
-        using lifting_equiv_p_q negl_diff_imp_eq_limit_prof[of V S p q a "defer m V S q"]
+        "\<forall> v \<in> V. limit_profile (defer m V S p) p v =
+                      limit_profile (defer m V S q) q v"
+        using lifting_equiv_p_q negl_diff_imp_eq_limit_prof[of V S]
         unfolding eq_def limit_profile.simps
         by blast
       with eq_def
@@ -1152,41 +1189,52 @@ next
     using Diff_empty
     by (metis (full_types))
   have cond_win:
-    "finite A \<and> finite V \<and> profile V A p \<and> a \<in> A \<and> (\<forall> a'. a' \<in> A - {a'} \<longrightarrow> wins V a p a')"
+    "finite A \<and> finite V \<and> profile V A p
+      \<and> a \<in> A \<and> (\<forall> a'. a' \<in> A - {a'} \<longrightarrow> wins V a p a')"
     using cw_a condorcet_winner.simps DiffD2 singletonI
     by (metis (no_types))
   have "\<forall> a' A'. (a'::'a) \<in> A' \<longrightarrow> insert a' (A' - {a'}) = A'"
     by blast
   have nb_n_full:
     "\<S>\<C>\<F>_result.electoral_module n \<and>
-      (\<forall> A' V' p'. A' \<noteq> {} \<and> finite A' \<and> finite V' \<and> profile V' A' p' \<longrightarrow> reject n V' A' p' \<noteq> A')"
+      (\<forall> A' V' p'.
+        A' \<noteq> {} \<and> finite A' \<and> finite V' \<and> profile V' A' p'
+          \<longrightarrow> reject n V' A' p' \<noteq> A')"
     using nb_n non_blocking_def
     by metis
-  have def_seq_diff: "defer (m \<triangleright> n) V A p = A - elect (m \<triangleright> n) V A p - reject (m \<triangleright> n) V A p"
+  have def_seq_diff:
+    "defer (m \<triangleright> n) V A p = A - elect (m \<triangleright> n) V A p - reject (m \<triangleright> n) V A p"
     using defer_not_elec_or_rej cond_win sound_seq_m_n
     by metis
   have set_ins: "\<forall> a' A'. (a'::'a) \<in> A' \<longrightarrow> insert a' (A' - {a'}) = A'"
     by fastforce
   have "\<forall> p' A' p''. p' = (A'::'a set, p''::'a set \<times> 'a set) \<longrightarrow> snd p' = p''"
     by simp
-  hence "snd (elect m V A p \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p),
-          reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
+  hence
+    "snd (elect m V A p
+        \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p),
+          reject m V A p
+        \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
           defer n V (defer m V A p) (limit_profile (defer m V A p) p)) =
-            (reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
-            defer n V (defer m V A p) (limit_profile (defer m V A p) p))"
+      (reject m V A p
+      \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
+      defer n V (defer m V A p) (limit_profile (defer m V A p) p))"
     by blast
   hence seq_snd_simplified:
     "snd ((m \<triangleright> n) V A p) =
-      (reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
-        defer n V (defer m V A p) (limit_profile (defer m V A p) p))"
+      (reject m V A p
+      \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
+      defer n V (defer m V A p) (limit_profile (defer m V A p) p))"
     using sequential_composition.simps
     by metis
   hence seq_rej_union_eq_rej:
-    "reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p) =
+    "reject m V A p
+    \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p) =
         reject (m \<triangleright> n) V A p"
     by simp
   hence seq_rej_union_subset_A:
-    "reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p) \<subseteq> A"
+    "reject m V A p
+    \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p) \<subseteq> A"
     using sound_seq_m_n cond_win reject_in_alts
     by (metis (no_types))
   hence "A - {a} = reject (m \<triangleright> n) V A p - {a}"
@@ -1243,10 +1291,13 @@ next
   have "\<forall> p' A' p''. p' = (A'::'a set, p''::'a set \<times> 'a set) \<longrightarrow> snd p' = p''"
     by simp
   hence m_seq_n:
-    "snd (elect m V A p \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p),
-      reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
-        defer n V (defer m V A p) (limit_profile (defer m V A p) p)) =
-          (reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
+    "snd (elect m V A p
+      \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p),
+      reject m V A p
+      \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
+      defer n V (defer m V A p) (limit_profile (defer m V A p) p)) =
+          (reject m V A p
+          \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
             defer n V (defer m V A p) (limit_profile (defer m V A p) p))"
     by blast
   have "a' \<in> elect m V A p"
@@ -1255,14 +1306,17 @@ next
     unfolding non_electing_def
     by (metis (no_types))
   hence a_in_rej_union:
-    "a \<in> reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p)"
+    "a \<in> reject m V A p
+    \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p)"
     using Diff_iff a'_in_rej condorcet_winner.simps cw_a
           reject_not_elec_or_def sound_m
     by (metis (no_types))
   have m_seq_n_full:
     "(m \<triangleright> n) V A p =
-      (elect m V A p \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p),
-      reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
+      (elect m V A p
+      \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p),
+      reject m V A p
+      \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
       defer n V (defer m V A p) (limit_profile (defer m V A p) p))"
     unfolding sequential_composition.simps
     by metis
@@ -1272,7 +1326,8 @@ next
     using a_in_rej_union m_seq_n m_seq_n_full
     by presburger
   moreover have
-    "finite A \<and> finite V \<and> profile V A p \<and> a \<in> A \<and> (\<forall> a''. a'' \<in> A - {a} \<longrightarrow> wins V a p a'')"
+    "finite A \<and> finite V \<and> profile V A p
+    \<and> a \<in> A \<and> (\<forall> a''. a'' \<in> A - {a} \<longrightarrow> wins V a p a'')"
     using cw_a m_seq_n_full a'_in_elect_seq_m_n a'_in_rej ne_n sound_m
     unfolding condorcet_winner.simps
     by metis
@@ -1301,20 +1356,26 @@ next
   ultimately have "a' \<in> reject m V A p"
     using DiffI a'_in_A singletonD
     by (metis (no_types))
-  hence "a' \<in> reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p)"
+  hence "a' \<in> reject m V A p
+      \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p)"
     by blast
   moreover have
     "(m \<triangleright> n) V A p =
-      (elect m V A p \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p),
-        reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
-        defer n V (defer m V A p) (limit_profile (defer m V A p) p))"
+      (elect m V A p
+      \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p),
+        reject m V A p
+      \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
+       defer n V (defer m V A p) (limit_profile (defer m V A p) p))"
     unfolding sequential_composition.simps
     by metis
   moreover have
-    "snd (elect m V A p \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p),
-      reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
+    "snd (elect m V A p
+      \<union> elect n V (defer m V A p) (limit_profile (defer m V A p) p),
+      reject m V A p
+      \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
       defer n V (defer m V A p) (limit_profile (defer m V A p) p)) =
-        (reject m V A p \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
+        (reject m V A p
+        \<union> reject n V (defer m V A p) (limit_profile (defer m V A p) p),
         defer n V (defer m V A p) (limit_profile (defer m V A p) p))"
     using snd_conv
     by metis
@@ -1386,7 +1447,7 @@ next
       using dcc_m snd_conv
       by (metis (no_types, lifting))
     hence "defer (m \<triangleright> n) V A p = {a}"
-      using cw_a a'_in_def_seq_m_n condorcet_winner.elims(2) empty_iff 
+      using cw_a a'_in_def_seq_m_n condorcet_winner.elims(2) empty_iff
             seq_comp_def_set_bounded sound_m subset_singletonD nb_n
       unfolding non_blocking_def
       by metis
@@ -1562,11 +1623,13 @@ next
     using finite_profile_p defers_one
     unfolding defers_def
     by (metis (no_types))
-  have fin_prof_def_m_q: "profile V (defer m V A q) (limit_profile (defer m V A q) q)"
+  have fin_prof_def_m_q:
+    "profile V (defer m V A q) (limit_profile (defer m V A q) q)"
     using def_presv_prof electoral_mod_m finite_profile_q
     by (metis (no_types))
   have def_seq_m_n_q:
-    "defer (m \<triangleright> n) V A q = defer n V (defer m V A q) (limit_profile (defer m V A q) q)"
+    "defer (m \<triangleright> n) V A q =
+      defer n V (defer m V A q) (limit_profile (defer m V A q) q)"
     using seq_comp_defers_def_set
     by simp
   have prof_def_m: "profile V (defer m V A p) (limit_profile (defer m V A p) p)"
@@ -1581,7 +1644,8 @@ next
   have a_non_empty: "a \<notin> {}"
     by simp
   have def_seq_m_n:
-    "defer (m \<triangleright> n) V A p = defer n V (defer m V A p) (limit_profile (defer m V A p) p)"
+    "defer (m \<triangleright> n) V A p =
+      defer n V (defer m V A p) (limit_profile (defer m V A p) p)"
     using seq_comp_defers_def_set
     by simp
   have "1 \<le> card (defer n V (defer m V A p) (limit_profile (defer m V A p) p))"
@@ -1589,9 +1653,11 @@ next
           seq_comp_defers_def_set One_nat_def Suc_leI defer_in_alts
           electoral_mod_m finite_profile_p finite_subset
     by (metis (mono_tags))
-  hence "card (defer n V (defer n V (defer m V A p) (limit_profile (defer m V A p) p))
-          (limit_profile (defer n V (defer m V A p) (limit_profile (defer m V A p) p))
-            (limit_profile (defer m V A p) p))) = 1"
+  hence "card (defer n V (defer n V (defer m V A p)
+        (limit_profile (defer m V A p) p))
+      (limit_profile (defer n V (defer m V A p)
+        (limit_profile (defer m V A p) p))
+      (limit_profile (defer m V A p) p))) = 1"
     using n_defers_exactly_one_p prof_seq_comp_m_n defers_one defer_in_alts
           electoral_mod_m finite_profile_p finite_subset prof_def_m
     unfolding defers_def
@@ -1651,26 +1717,29 @@ next
       using finite_profile_q non_electing_m
       unfolding non_electing_def
       by simp
-    ultimately have elect_m_equal: "elect m V A p = elect m V A q"
+    ultimately have elect_m_equal:
+      "elect m V A p = elect m V A q"
       by simp
-    have "(\<forall> v \<in> V. (limit_profile (defer m V A p) p) v = (limit_profile (defer m V A p) q) v)
-        \<or> lifted V (defer m V A q) (limit_profile (defer m V A p) p)
+    have "(\<forall> v \<in> V. (limit_profile (defer m V A p) p) v =
+                      (limit_profile (defer m V A p) q) v)
+          \<or> lifted V (defer m V A q) (limit_profile (defer m V A p) p)
                   (limit_profile (defer m V A p) q) a"
       using def_eq defer_in_alts electoral_mod_m lifted_a finite_profile_q
             limit_prof_eq_or_lifted
       by metis
     moreover have
-      "(\<forall> v \<in> V. (limit_profile (defer m V A p) p) v = (limit_profile (defer m V A p) q) v)
-        \<Longrightarrow> n V (defer m V A p) (limit_profile (defer m V A p) p)
-            = n V (defer m V A q) (limit_profile (defer m V A q) q)"
+      "(\<forall> v \<in> V. (limit_profile (defer m V A p) p) v =
+                    (limit_profile (defer m V A p) q) v)
+        \<Longrightarrow> n V (defer m V A p) (limit_profile (defer m V A p) p) =
+              n V (defer m V A q) (limit_profile (defer m V A q) q)"
       using voters_determine_n def_eq
       unfolding voters_determine_election.simps
       by presburger
     moreover have
       "lifted V (defer m V A q) (limit_profile (defer m V A p) p)
                                 (limit_profile (defer m V A p) q) a
-        \<Longrightarrow> defer n V (defer m V A p) (limit_profile (defer m V A p) p)
-            = defer n V (defer m V A q) (limit_profile (defer m V A q) q)"
+        \<Longrightarrow> defer n V (defer m V A p) (limit_profile (defer m V A p) p) =
+              defer n V (defer m V A q) (limit_profile (defer m V A q) q)"
     proof -
       assume lifted:
         "Profile.lifted V (defer m V A q) (limit_profile (defer m V A p) p)
