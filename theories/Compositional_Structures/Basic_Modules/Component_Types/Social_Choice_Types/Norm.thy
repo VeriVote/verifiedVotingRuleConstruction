@@ -8,6 +8,7 @@ section \<open>Norm\<close>
 theory Norm
   imports "HOL-Library.Extended_Real"
           "HOL-Combinatorics.List_Permutation"
+          Auxiliary_Results
 begin
 
 text \<open>
@@ -121,21 +122,34 @@ proof (unfold symmetry_def, safe)
     l :: "ereal list" and
     l' :: "ereal list"
   assume perm: "l <~~> l'"
-  then obtain \<pi> :: "nat \<Rightarrow> nat"
+  from perm obtain \<pi>
     where
       perm\<^sub>\<pi>: "\<pi> permutes {..< length l}" and
       l\<^sub>\<pi>: "permute_list \<pi> l = l'"
     using mset_eq_permutation
     by metis
-  hence "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!(\<pi> i)\<bar>)"
+  from perm\<^sub>\<pi> l\<^sub>\<pi>
+  have "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!(\<pi> i)\<bar>)"
     using permute_list_nth
-    by force
-  hence "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!i\<bar>)"
-    using f_the_inv_into_f_bij_betw perm\<^sub>\<pi> permutes_imp_bij sum.cong
-          sum_over_image_of_bijection
-    by (smt (verit))
-  thus "l_one l = l_one l'"
-    using perm perm_length l_one.elims
+    by fastforce
+  also have "... = sum (\<lambda>i. \<bar>l!(\<pi> i)\<bar>) {0..<length l}"
+    using lessThan_atLeast0 
+    by presburger
+  also have "(\<lambda>i. \<bar>l!(\<pi> i)\<bar>) = ((\<lambda>i. \<bar>l!i\<bar>) \<circ> \<pi>)"
+    by fastforce
+  also have "sum ((\<lambda>i. \<bar>l!i\<bar>) \<circ> \<pi>) {0..<length l} = sum (\<lambda>i. \<bar>l!i\<bar>) {0..<length l}"
+    using sum_comp[of "\<pi>" "{0..<length l}" "{0..<length l}" "(\<lambda>i. \<bar>l!i\<bar>)"] perm\<^sub>\<pi>
+    by (metis atLeast_upt set_upt sum.permute)
+  also have "\<dots> = (\<Sum> i < length l. \<bar>l!i\<bar>)"
+    using perm\<^sub>\<pi> permutes_inv_eq atLeast0LessThan 
+    by presburger
+  finally have "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!i\<bar>)"
+    by simp
+  moreover have "length l = length l'"
+    using perm perm_length
+    by metis
+  ultimately show "l_one l = l_one l'"
+    using l_one.elims
     by metis
 qed
 
