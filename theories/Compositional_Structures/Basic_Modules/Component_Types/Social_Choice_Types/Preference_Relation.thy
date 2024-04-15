@@ -5,8 +5,6 @@
 \<^marker>\<open>contributor "Karsten Diekhoff, Karlsruhe Institute of Technology (KIT)"\<close>
 \<^marker>\<open>contributor "Michael Kirsten, Karlsruhe Institute of Technology (KIT)"\<close>
 
-chapter \<open>Social-Choice Types\<close>
-
 section \<open>Preference Relation\<close>
 
 theory Preference_Relation

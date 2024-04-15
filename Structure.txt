@@ -53,16 +53,17 @@
 |                   | 3.01. Relation_Quotients (*Quotient_Rules*)
 |                   | 2.02. Profile_List (*Refined_Types*)
 |                   | 2.01. Preference_List (*Refined_Types*)
-|                   |   12. Quotient_Type_Election
-|                   |   11. Ordered_Relation
-|                   |   10. Voting_Symmetry
-|                   |   09. Property_Interpretations
-│                   │   08. Result_Interpretations
-|                   |   07. Social_Welfare_Result
-|                   |   06. Social_Choice_Result
-│                   │   05. Profile
-│                   │   04. Result
-|                   |   03. Symmetry_Of_Functions
-|                   |   02. Norm
-│                   │   01. Preference_Relation
+|                   |   13. Quotient_Type_Election
+|                   |   12. Ordered_Relation
+|                   |   11. Voting_Symmetry
+|                   |   10. Property_Interpretations
+│                   │   09. Result_Interpretations
+|                   |   08. Social_Welfare_Result
+|                   |   07. Social_Choice_Result
+│                   │   06. Profile
+│                   │   05. Result
+|                   |   04. Symmetry_Of_Functions
+|                   |   03. Norm
+│                   │   02. Preference_Relation
+│                   │   01. Auxiliary_Lemmas
 └───────────────────└────────────────────────────────────────────

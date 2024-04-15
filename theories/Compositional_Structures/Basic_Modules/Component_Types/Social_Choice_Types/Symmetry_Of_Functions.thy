@@ -70,131 +70,17 @@ definition action_induced_equivariance :: "'z set \<Rightarrow> 'x set \<Rightar
 
 subsection \<open>Auxiliary Lemmas\<close>
 
-lemma inj_imp_inj_on_set_system:
-  fixes f :: "'x \<Rightarrow> 'y"
-  assumes "inj f"
-  shows "inj (\<lambda> s. {f ` x | x. x \<in> s})"
-proof (unfold inj_def, safe)
-  fix
-    s :: "'x set set" and
-    t :: "'x set set" and
-    x :: "'x set"
-  assume f_elem_s_eq_f_elem_t: "{f ` x' | x'. x' \<in> s} = {f ` x' | x'. x' \<in> t}"
-  then obtain y :: "'x set" where
-    "f ` y = f ` x"
-    by metis
-  hence y_eq_x: "y = x"
-    using image_inv_f_f assms
-    by metis
-  moreover have
-    "x \<in> t \<longrightarrow> f ` x \<in> {f ` x' | x'. x' \<in> s}" and
-    "x \<in> s \<longrightarrow> f ` x \<in> {f ` x' | x'. x' \<in> t}"
-    using f_elem_s_eq_f_elem_t
-    by auto
-  ultimately have
-    "x \<in> t \<longrightarrow> y \<in> s" and
-    "x \<in> s \<longrightarrow> y \<in> t"
-    using assms
-    by (simp_all add: inj_image_eq_iff)
-  thus
-    "x \<in> t \<Longrightarrow> x \<in> s" and
-    "x \<in> s \<Longrightarrow> x \<in> t"
-    using y_eq_x
-    by (simp, simp)
-qed
-
-lemma inj_and_surj_imp_surj_on_set_system:
-  fixes f :: "'x \<Rightarrow> 'y"
-  assumes
-    "inj f" and
-    "surj f"
-  shows "surj (\<lambda> s. {f ` x | x. x \<in> s})"
-proof (unfold surj_def, safe)
-  fix s :: "'y set set"
-  have "\<forall> x. f ` (the_inv f) ` x = x"
-    using image_f_inv_f assms surj_imp_inv_eq the_inv_f_f
-    by (metis (no_types, opaque_lifting))
-  hence "s = {f ` (the_inv f) ` x | x. x \<in> s}"
-    by simp
-  also have
-    "{f ` (the_inv f) ` x | x. x \<in> s} =
-        {f ` x | x. x \<in> {(the_inv f) ` x | x. x \<in> s}}"
-    by blast
-  finally show "\<exists> t. s = {f ` x | x. x \<in> t}"
-    by blast
-qed
-
-lemma bij_imp_bij_on_set_system:
-  fixes f :: "'x \<Rightarrow> 'y"
-  assumes "bij f"
-  shows "bij (\<lambda> s. {f ` x | x. x \<in> s})"
-proof (unfold bij_def)
-  have "range f = UNIV"
-    using assms
-    unfolding bij_betw_def
-    by safe
-  moreover have "inj f"
-    using assms
-    unfolding bij_betw_def
-    by safe
-  ultimately show "inj (\<lambda> s. {f ` x | x. x \<in> s}) \<and> surj (\<lambda> s. {f ` x | x. x \<in> s})"
-    using inj_imp_inj_on_set_system
-    by (simp add: inj_and_surj_imp_surj_on_set_system)
-qed
-
 lemma un_left_inv_singleton_set_system: "\<Union> \<circ> singleton_set_system = id"
 proof
   fix s :: "'x set"
   have "(\<Union> \<circ> singleton_set_system) s = {x. \<exists> s' \<in> singleton_set_system s. x \<in> s'}"
     by auto
-  also have
-    "{x. \<exists> s' \<in> singleton_set_system s. x \<in> s'} = {x. {x} \<in> singleton_set_system s}"
+  also have "\<dots> = {x. {x} \<in> singleton_set_system s}"
     by auto
-  also have "{x. {x} \<in> singleton_set_system s} = {x. {x} \<in> {{x} | x. x \<in> s}}"
+  also have "\<dots> = {x. {x} \<in> {{x} | x. x \<in> s}}"
     by simp
   finally show "(\<Union> \<circ> singleton_set_system) s = id s"
     by simp
-qed
-
-lemma the_inv_comp:
-  fixes
-    f :: "'y \<Rightarrow> 'z" and
-    g :: "'x \<Rightarrow> 'y" and
-    s :: "'x set" and
-    t :: "'y set" and
-    u :: "'z set" and
-    x :: "'z"
-  assumes
-    "bij_betw f t u" and
-    "bij_betw g s t" and
-    "x \<in> u"
-  shows "the_inv_into s (f \<circ> g) x = ((the_inv_into s g) \<circ> (the_inv_into t f)) x"
-proof (unfold comp_def)
-  have el_Y: "the_inv_into t f x \<in> t"
-    using assms bij_betw_apply bij_betw_the_inv_into
-    by metis
-  hence "g (the_inv_into s g (the_inv_into t f x)) = the_inv_into t f x"
-    using assms f_the_inv_into_f_bij_betw
-    by metis
-  moreover have "f (the_inv_into t f x) = x"
-    using el_Y assms f_the_inv_into_f_bij_betw
-    by metis
-  ultimately have "(f \<circ> g) (the_inv_into s g (the_inv_into t f x)) = x"
-    by simp
-  hence "the_inv_into s (f \<circ> g) x =
-      the_inv_into s (f \<circ> g) ((f \<circ> g) (the_inv_into s g (the_inv_into t f x)))"
-    by presburger
-  also have
-    "the_inv_into s (f \<circ> g) ((f \<circ> g) (the_inv_into s g (the_inv_into t f x))) =
-      the_inv_into s g (the_inv_into t f x)"
-    using assms bij_betw_apply bij_betw_imp_inj_on bij_betw_the_inv_into bij_betw_trans
-          the_inv_into_f_eq
-    by (metis (no_types, lifting))
-  also have "the_inv_into s (f \<circ> g) x = the_inv_into s (\<lambda>x. f (g x)) x"
-    using o_apply
-    by metis
-  finally show "the_inv_into s (\<lambda>x. f (g x)) x = the_inv_into s g (the_inv_into t f x)"
-    by presburger
 qed
 
 lemma preimg_comp:

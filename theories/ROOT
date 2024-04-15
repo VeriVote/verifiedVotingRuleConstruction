@@ -18,7 +18,8 @@ chapter browser_info
 session Verified_Voting_Rule_Construction = HOL +
   description
     \<open>Verified Construction of Fair Voting Rules\<close>
-  options [timeout = 300, browser_info, document = pdf, document_output = "output", document_variants="document:outline=/proof,/ML"]
+  options [timeout = 400, browser_info, document = pdf, document_output = "output",
+            document_variants = "document:outline=/proof,/ML"]
 
   sessions
     "HOL-Library"
@@ -38,6 +39,7 @@ session Verified_Voting_Rule_Construction = HOL +
 
   theories
   (* "Social-Choice Types" *)
+    "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Auxiliary_Lemmas"
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Preference_Relation"
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Norm"
     "Compositional_Structures/Basic_Modules/Component_Types/Social_Choice_Types/Result"
