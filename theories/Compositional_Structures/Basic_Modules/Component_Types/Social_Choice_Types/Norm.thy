@@ -8,7 +8,7 @@ section \<open>Norm\<close>
 theory Norm
   imports "HOL-Library.Extended_Real"
           "HOL-Combinatorics.List_Permutation"
-          Auxiliary_Results
+          Auxiliary_Lemmas
 begin
 
 text \<open>
@@ -52,26 +52,29 @@ next
     A' :: "'b set" and
     x :: "nat"
   assume
-    IH: "\<And> A A'. x = card A \<Longrightarrow> bij_betw f A A'
-            \<Longrightarrow> sum g A = (\<Sum> a \<in> A'. g (the_inv_into A f a))" and
-    suc: "Suc x = card A" and
+    suc_x: "Suc x = card A" and
     bij_A_A': "bij_betw f A A'"
+  hence card_A'_from_x: "card A' = Suc x"
+    using bij_betw_same_card
+    by metis
+  have x_lt_card_A: "x < card A"
+    using suc_x
+    by presburger
   obtain a :: "'a" where
     a_in_A: "a \<in> A"
-    using suc card_eq_SucD insertI1
+    using suc_x card_eq_SucD insertI1
     by metis
   hence a_compl_A: "insert a (A - {a}) = A"
-    by blast
-  have "inj_on f A \<and> A' = f ` A"
-    using bij_A_A'
-    unfolding bij_betw_def
+    using insert_absorb
     by simp
   hence
     inj_on_A: "inj_on f A" and
     img_of_A: "A' = f ` A"
+    using bij_A_A'
+    unfolding bij_betw_def
     by (simp, simp)
-  have "inj_on f (insert a A)"
-    using inj_on_A a_compl_A
+  hence "inj_on f (insert a A)"
+    using a_compl_A
     by simp
   hence A'_sub_fa: "A' - {f a} = f ` (A - {a})"
     using img_of_A
@@ -80,27 +83,24 @@ next
     using inj_on_A a_compl_A inj_on_insert
     unfolding bij_betw_def
     by (metis (no_types))
-  have inv_without_a:
-    "\<forall> a' \<in> A' - {f a}. the_inv_into (A - {a}) f a' = the_inv_into A f a'"
-    using inj_on_A A'_sub_fa
-    by (simp add: inj_on_diff the_inv_into_f_eq)
-  have card_without_a: "card (A - {a}) = x"
-    using suc a_in_A Diff_empty card_Diff_insert diff_Suc_1 empty_iff
+  moreover have card_without_a: "card (A - {a}) = x"
+    using suc_x a_in_A
     by simp
-  hence card_A'_from_x: "card A' = Suc x \<and> card (A' - {f a}) = x"
-    using suc bij_A_A' bij_without_a
-    by (simp add: bij_betw_same_card)
-  hence "(\<Sum> a \<in> A. g a) = (\<Sum> a \<in> (A - {a}). g a) + g a"
-    using suc add.commute card_Diff1_less_iff insert_Diff insert_Diff_single lessI
-          sum.insert_remove card_without_a
+  ultimately have card_A'_sub_f_eq_x: "card (A' - {f a}) = x"
+    using bij_betw_same_card
     by metis
+  have "(\<Sum> a \<in> A. g a) = (\<Sum> a \<in> (A - {a}). g a) + g a"
+    using x_lt_card_A add.commute card_Diff1_less_iff card_without_a
+          insert_Diff insert_Diff_single sum.insert_remove
+    by (metis (no_types))
   also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}).
                     g (the_inv_into A f a')) + g (the_inv_into A f (f a))"
-    using IH bij_without_a card_without_a inv_without_a a_in_A bij_A_A'
-    by (simp add: bij_betw_imp_inj_on the_inv_into_f_f)
+    using bij_without_a a_in_A bij_A_A' bij_betw_imp_inj_on the_inv_into_f_f
+          A'_sub_fa DiffD1 sum.reindex_cong
+    by (metis (mono_tags, lifting))
   finally show "(\<Sum> a \<in> A. g a) = (\<Sum> a' \<in> A'. g (the_inv_into A f a'))"
     using add.commute card_Diff1_less_iff insert_Diff insert_Diff_single lessI
-          sum.insert_remove card_A'_from_x
+          sum.insert_remove card_A'_from_x card_A'_sub_f_eq_x
     by metis
 qed
 
@@ -122,26 +122,26 @@ proof (unfold symmetry_def, safe)
     l :: "ereal list" and
     l' :: "ereal list"
   assume perm: "l <~~> l'"
-  from perm obtain \<pi>
+  then obtain \<pi> :: "nat \<Rightarrow> nat"
     where
       perm\<^sub>\<pi>: "\<pi> permutes {..< length l}" and
       l\<^sub>\<pi>: "permute_list \<pi> l = l'"
     using mset_eq_permutation
     by metis
-  from perm\<^sub>\<pi> l\<^sub>\<pi>
-  have "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!(\<pi> i)\<bar>)"
+  hence "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!(\<pi> i)\<bar>)"
     using permute_list_nth
     by fastforce
-  also have "... = sum (\<lambda>i. \<bar>l!(\<pi> i)\<bar>) {0..<length l}"
+  also have "\<dots> = sum (\<lambda>i. \<bar>l!(\<pi> i)\<bar>) {0 ..< length l}"
     using lessThan_atLeast0 
     by presburger
-  also have "(\<lambda>i. \<bar>l!(\<pi> i)\<bar>) = ((\<lambda>i. \<bar>l!i\<bar>) \<circ> \<pi>)"
+  also have "(\<lambda> i. \<bar>l!(\<pi> i)\<bar>) = ((\<lambda> i. \<bar>l!i\<bar>) \<circ> \<pi>)"
     by fastforce
-  also have "sum ((\<lambda>i. \<bar>l!i\<bar>) \<circ> \<pi>) {0..<length l} = sum (\<lambda>i. \<bar>l!i\<bar>) {0..<length l}"
-    using sum_comp[of "\<pi>" "{0..<length l}" "{0..<length l}" "(\<lambda>i. \<bar>l!i\<bar>)"] perm\<^sub>\<pi>
-    by (metis atLeast_upt set_upt sum.permute)
+  also have "sum ((\<lambda> i. \<bar>l!i\<bar>) \<circ> \<pi>) {0 ..< length l} =
+              sum (\<lambda> i. \<bar>l!i\<bar>) {0 ..< length l}"
+    using perm\<^sub>\<pi> atLeast_upt set_upt sum.permute
+    by metis
   also have "\<dots> = (\<Sum> i < length l. \<bar>l!i\<bar>)"
-    using perm\<^sub>\<pi> permutes_inv_eq atLeast0LessThan 
+    using atLeast0LessThan
     by presburger
   finally have "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!i\<bar>)"
     by simp

@@ -10,7 +10,7 @@ section \<open>Preference Profile\<close>
 
 theory Profile
   imports Preference_Relation
-          Auxiliary_Results
+          Auxiliary_Lemmas
           "HOL-Library.Extended_Nat"
           "HOL-Combinatorics.Permutations"
 begin
@@ -455,7 +455,8 @@ proof (cases "V = {}")
     by simp
 next
   case False
-  moreover with fin_V have "Max V \<in> V"
+  moreover with fin_V
+  have "Max V \<in> V"
     by simp
   ultimately show ?thesis
     using assms Suc_leI card_le_Suc_Max order_trans
