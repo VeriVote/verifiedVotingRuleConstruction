@@ -1450,8 +1450,8 @@ next
       using pos
       by simp
     hence "\<forall> p. ?prod mod (snd (fraction p)) = 0"
-      using pos finite UNIV_I bits_mod_0 mod_prod_eq mod_self prod_zero
-      by (metis (mono_tags, lifting))
+      using finite UNIV_I mod_mod_trivial mod_prod_eq mod_self prod_zero
+      by (metis (no_types, lifting))
     hence div: "\<forall> p. (?prod div (snd (fraction p))) * (snd (fraction p)) = ?prod"
       using add.commute add_0 div_mult_mod_eq
       by metis
