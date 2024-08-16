@@ -23,7 +23,7 @@ text \<open>
 
 locale result_properties = result +
   fixes \<psi>_neutr :: "('a \<Rightarrow> 'a, 'b) binary_fun" and
-        \<E> :: "('a, 'v) Election"
+        voter_type :: "'v itself"
   assumes
     act_neutr: "group_action neutrality\<^sub>\<G> UNIV \<psi>_neutr" and
     well_formed_res_neutr:
