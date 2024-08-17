@@ -62,8 +62,8 @@ subsubsection \<open>Homogeneity\<close>
 
 fun homogeneity\<^sub>\<R> :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election rel" where
   "homogeneity\<^sub>\<R> \<E> =
-      {(E, E') \<in> \<E> \<times> \<E>.
-          alternatives_\<E> E = alternatives_\<E> E'
+      {(E, E'). E \<in> \<E>
+        \<and>  alternatives_\<E> E = alternatives_\<E> E'
         \<and> finite (voters_\<E> E) \<and> finite (voters_\<E> E')
         \<and> (\<exists> n > 0. \<forall> r::('a Preference_Relation).
               vote_count r E = n * (vote_count r E'))}"
@@ -74,8 +74,8 @@ fun copy_list :: "nat \<Rightarrow> 'x list \<Rightarrow> 'x list" where
 
 fun homogeneity\<^sub>\<R>' :: "('a, 'v::linorder) Election set \<Rightarrow> ('a, 'v) Election rel" where
   "homogeneity\<^sub>\<R>' \<E> =
-      {(E, E') \<in> \<E> \<times> \<E>.
-          alternatives_\<E> E = alternatives_\<E> E'
+      {(E, E'). E \<in> \<E>
+        \<and>  alternatives_\<E> E = alternatives_\<E> E'
         \<and> finite (voters_\<E> E) \<and> finite (voters_\<E> E')
         \<and> (\<exists> n > 0.
             to_list (voters_\<E> E') (profile_\<E> E') =
@@ -605,7 +605,7 @@ lemma anon_rel_vote_count:
   assumes
     "finite (voters_\<E> E)" and
     "(E, E') \<in> anonymity\<^sub>\<R> \<E>"
-  shows "alternatives_\<E> E = alternatives_\<E> E' \<and> (E, E') \<in> \<E> \<times> \<E>
+  shows "alternatives_\<E> E = alternatives_\<E> E' \<and> E \<in> \<E>
           \<and> (\<forall> p. vote_count p E = vote_count p E')"
 proof -
   have "E \<in> \<E>"
@@ -664,7 +664,7 @@ proof -
     using bijection_\<pi> bij_betw_same_card bij_betw_subset top_greatest
     by (metis (no_types, lifting))
   ultimately show
-    "alternatives_\<E> E = alternatives_\<E> E' \<and> (E, E') \<in> \<E> \<times> \<E>
+    "alternatives_\<E> E = alternatives_\<E> E' \<and> E \<in> \<E>
       \<and> (\<forall> p. vote_count p E = vote_count p E')"
     using eq_alts assms
     by simp
@@ -1359,7 +1359,7 @@ next
 qed
 
 interpretation \<phi>_neutral_action:
-  "group_action" "neutrality\<^sub>\<G>" "valid_elections" "\<phi>_neutr valid_elections"
+  group_action "neutrality\<^sub>\<G>" "valid_elections" "\<phi>_neutr valid_elections"
 proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def
               neutrality\<^sub>\<G>_def, intro conjI group_BijGroup, safe)
   fix \<pi> :: "'a \<Rightarrow> 'a"
@@ -1463,7 +1463,7 @@ proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def
     by safe
 qed
 
-interpretation \<psi>_neutral\<^sub>\<w>_action: "group_action" "neutrality\<^sub>\<G>" "UNIV" "\<psi>_neutr\<^sub>\<w>"
+interpretation \<psi>_neutral\<^sub>\<w>_action: group_action "neutrality\<^sub>\<G>" "UNIV" "\<psi>_neutr\<^sub>\<w>"
 proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def
               group_hom_axioms_def, intro conjI group_BijGroup, safe)
   fix \<pi> :: "'a \<Rightarrow> 'a"
@@ -1513,8 +1513,7 @@ proof (unfold rewrite_equivariance, safe)
     r :: "'a"
   assume
     carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
-    prof: "(A, V, p) \<in> valid_elections" and
-    neutr_valid_el: "\<phi>_neutr valid_elections \<pi> (A, V, p) \<in> valid_elections"
+    prof: "(A, V, p) \<in> valid_elections"
   {
     moreover assume
       "r \<in> limit_set_\<S>\<C>\<F> (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V, p))) UNIV"
@@ -1540,7 +1539,6 @@ proof (unfold rewrite_equivariance voters_\<E>.simps profile_\<E>.simps set_acti
         safe)
   show "\<And> \<pi> A V p r.
           \<pi> \<in> carrier neutrality\<^sub>\<G> \<Longrightarrow> (A, V, p) \<in> valid_elections
-        \<Longrightarrow> \<phi>_neutr valid_elections \<pi> (A, V , p) \<in> valid_elections
         \<Longrightarrow> r \<in> limit_set_\<S>\<W>\<F>
           (alternatives_\<E> (\<phi>_neutr valid_elections \<pi> (A, V , p))) UNIV
         \<Longrightarrow> r \<in> \<psi>_neutr\<^sub>\<w> \<pi> ` limit_set_\<S>\<W>\<F> (alternatives_\<E> (A, V, p)) UNIV"
@@ -1632,8 +1630,11 @@ proof (unfold rewrite_equivariance voters_\<E>.simps profile_\<E>.simps set_acti
     r :: "'a rel"
   assume
     carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
-    prof: "(A, V, p) \<in> valid_elections" and
-    prof_\<pi>: "\<phi>_neutr valid_elections \<pi> (A, V, p) \<in> valid_elections"
+    prof: "(A, V, p) \<in> valid_elections"
+  hence prof_\<pi>: 
+    "\<phi>_neutr valid_elections \<pi> (A, V, p) \<in> valid_elections"
+    using \<phi>_neutral_action.element_image
+    by blast
   moreover have inv_group_elem: "inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> \<in> carrier neutrality\<^sub>\<G>"
     using carrier_\<pi> \<psi>_neutral\<^sub>\<c>_action.group_hom group.inv_closed
     unfolding group_hom_def

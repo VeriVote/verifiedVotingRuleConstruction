@@ -154,18 +154,23 @@ proof (unfold anonymity'.simps is_symmetry.simps, intro allI impI)
     E :: "('a, 'v) Election" and
     E' :: "('a, 'v) Election"
   assume rel: "(E, E') \<in> anonymity\<^sub>\<R> X"
-  hence
-    "E \<in> X" and
-    "E' \<in> X"
+  then obtain \<pi> :: "'v \<Rightarrow> 'v" where
+    bij: "\<pi> \<in> carrier anonymity\<^sub>\<G>" and img: "E' = \<phi>_anon X \<pi> E"
     unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
-    by (simp, safe)
-  moreover from this have
-    "finite (voters_\<E> E)" and
-    "finite (voters_\<E> E')"
+    by blast
+  from rel have "E \<in> X"
+    unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+    by blast
+  moreover from this have fin_E: "finite (voters_\<E> E)"
     using assms
     unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
-    by (metis, metis)
-  moreover from this have
+    by blast
+  moreover with this have "finite (voters_\<E> E')"
+    using bij img
+    unfolding \<phi>_anon.simps extensional_continuation.simps anonymity\<^sub>\<G>_def
+    using rename.simps
+    sorry
+  moreover from this and fin_E have
     "\<forall> r. vote_count r E = 1 * (vote_count r E')" and
     "alternatives_\<E> E = alternatives_\<E> E'"
     using anon_rel_vote_count rel
@@ -173,7 +178,7 @@ proof (unfold anonymity'.simps is_symmetry.simps, intro allI impI)
   ultimately show "fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
     using assms
     unfolding homogeneity.simps is_symmetry.simps homogeneity\<^sub>\<R>.simps
-    by blast
+    sledgehammer
 qed
 
 subsubsection \<open>Neutrality\<close>
@@ -246,7 +251,7 @@ text \<open>
   "elects n" is true for all electoral modules that
   elect exactly n alternatives, whenever there are n or more alternatives.
 \<close>
-
+)
 definition elects :: "nat \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "elects n m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
