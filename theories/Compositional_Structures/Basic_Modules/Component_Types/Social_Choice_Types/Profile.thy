@@ -234,7 +234,7 @@ text \<open>
 fun rename :: "('v \<Rightarrow> 'v) \<Rightarrow> ('a, 'v) Election \<Rightarrow> ('a, 'v) Election" where
   "rename \<pi> (A, V, p) = (A, \<pi> ` V, p \<circ> (the_inv \<pi>))"
 
-lemma rename_sound:
+lemma rename_sound:                     
   fixes
     A :: "'a set" and
     V :: "'v set" and
@@ -282,6 +282,20 @@ next
     using assms rename_sound
     by metis
 qed
+
+lemma rename_finite':
+  fixes
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    \<pi> :: "'v \<Rightarrow> 'v"
+  assumes
+    "finite V" and
+    "(A, V', q) = rename \<pi> (A, V, p)" and
+    "bij \<pi>"
+  shows "finite V'"
+  using assms 
+  by simp
 
 lemma rename_inv:
   fixes

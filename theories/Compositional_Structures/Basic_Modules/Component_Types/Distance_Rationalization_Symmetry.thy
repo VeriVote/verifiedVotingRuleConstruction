@@ -71,6 +71,9 @@ qed
 
 subsubsection \<open>Equivariance\<close>
 
+abbreviation Restr' :: "'x rel \<Rightarrow> 'x set \<Rightarrow> 'x rel" where
+  "Restr' r X \<equiv> r Int (X \<times> UNIV)" 
+
 lemma restr_induced_rel:
   fixes
     X :: "'x set" and
@@ -78,7 +81,7 @@ lemma restr_induced_rel:
     Y' :: "'y set" and
     \<phi> :: "('x, 'y) binary_fun"
   assumes "Y' \<subseteq> Y"
-  shows "Restr (action_induced_rel X Y \<phi>) Y' = action_induced_rel X Y' \<phi>"
+  shows "Restr' (action_induced_rel X Y \<phi>) Y' = action_induced_rel X Y' \<phi>"
   using assms
   by auto
 
@@ -112,8 +115,10 @@ proof (unfold action_induced_equivariance_def equivar_prop_set_valued_def is_sym
     g :: "'z"
   assume
     group_elem: "g \<in> carrier G" and
-    x_in_X: "x \<in> X" and
-    img_X: "\<phi> g x \<in> X"
+    x_in_X: "x \<in> X"
+  hence img_X: "\<phi> g x \<in> X"
+    using action_\<phi> group_action.element_image
+    by metis
   let ?x' = "\<phi> g x"
   let ?c = "closest_preimg_distance f domain\<^sub>f d x" and
       ?c' = "closest_preimg_distance f domain\<^sub>f d ?x'"
@@ -202,7 +207,7 @@ lemma closest_dist_invar_under_refl_rel_and_tot_invar_dist:
     d :: "'x Distance" and
     rel :: "'x rel"
   assumes
-    r_refl: "refl_on domain\<^sub>f (Restr rel domain\<^sub>f)" and
+    r_refl: "refl_on' domain\<^sub>f (Restr' rel domain\<^sub>f)" and
     tot_invar_d: "total_invariance\<^sub>\<D> d rel"
   shows "is_symmetry (closest_preimg_distance f domain\<^sub>f d) (Invariance rel)"
 proof (unfold is_symmetry.simps, intro allI impI ext)
@@ -213,7 +218,7 @@ proof (unfold is_symmetry.simps, intro allI impI ext)
   assume rel: "(a, b) \<in> rel"
   have "\<forall> c \<in> domain\<^sub>f. (c, c) \<in> rel"
     using r_refl
-    unfolding refl_on_def
+    unfolding refl_on'_def
     by simp
   hence "\<forall> c \<in> domain\<^sub>f. d a c = d b c"
     using rel tot_invar_d
@@ -232,7 +237,7 @@ lemma refl_rel_and_tot_invar_dist_imp_invar_minimizer:
     rel :: "'x rel" and
     img :: "'y set"
   assumes
-    r_refl: "refl_on domain\<^sub>f (Restr rel domain\<^sub>f)" and
+    r_refl: "refl_on' domain\<^sub>f (Restr' rel domain\<^sub>f)" and
     tot_invar_d: "total_invariance\<^sub>\<D> d rel"
   shows "is_symmetry (minimizer f domain\<^sub>f d img) (Invariance rel)"
 proof -
@@ -502,11 +507,10 @@ theorem (in result) tot_invar_dist_imp_invar_dr_rule:
     C :: "('a, 'v, 'r Result) Consensus_Class" and
     rel :: "('a, 'v) Election rel"
   assumes
-    r_refl: "refl_on (elections_\<K> C) (Restr rel (elections_\<K> C))" and
+    r_refl: "refl_on' (elections_\<K> C) (Restr' rel (elections_\<K> C))" and
     tot_invar_d: "total_invariance\<^sub>\<D> d rel" and
     invar_res:
-      "is_symmetry (\<lambda> E. limit_set (alternatives_\<E> E) UNIV)
-            (Invariance rel)"
+      "is_symmetry (\<lambda> E. limit_set (alternatives_\<E> E) UNIV) (Invariance rel)"
   shows "is_symmetry (fun\<^sub>\<E> (distance_\<R> d C)) (Invariance rel)"
 proof -
   let ?min =
@@ -824,13 +828,13 @@ theorem (in result) tot_hom_dist_imp_hom_dr:
   assumes "distance_homogeneity finite_elections_\<V> d"
   shows "homogeneity finite_elections_\<V> (distance_\<R> d C)"
 proof -
-  have "Restr (homogeneity\<^sub>\<R> finite_elections_\<V>) (elections_\<K> C) =
+  have "Restr' (homogeneity\<^sub>\<R> finite_elections_\<V>) (elections_\<K> C) =
           homogeneity\<^sub>\<R> (elections_\<K> C)"
     using cons_domain_finite
     unfolding homogeneity\<^sub>\<R>.simps finite_elections_\<V>_def
     by blast
-  hence "refl_on (elections_\<K> C)
-      (Restr (homogeneity\<^sub>\<R> finite_elections_\<V>) (elections_\<K> C))"
+  hence "refl_on' (elections_\<K> C)
+      (Restr' (homogeneity\<^sub>\<R> finite_elections_\<V>) (elections_\<K> C))"
     using refl_homogeneity\<^sub>\<R>[of "elections_\<K> C"] cons_domain_finite[of C]
     by presburger
   moreover have
@@ -841,7 +845,7 @@ proof -
   ultimately show ?thesis
     using assms tot_invar_dist_imp_invar_dr_rule
     unfolding distance_homogeneity_def homogeneity.simps
-    by metis
+    by blast
 qed
 
 theorem (in result) tot_hom_dist_imp_hom_dr':
@@ -851,13 +855,13 @@ theorem (in result) tot_hom_dist_imp_hom_dr':
   assumes "distance_homogeneity' finite_elections_\<V> d"
   shows "homogeneity' finite_elections_\<V> (distance_\<R> d C)"
 proof -
-  have "Restr (homogeneity\<^sub>\<R>' finite_elections_\<V>) (elections_\<K> C) =
+  have "Restr' (homogeneity\<^sub>\<R>' finite_elections_\<V>) (elections_\<K> C) =
           homogeneity\<^sub>\<R>' (elections_\<K> C)"
     using cons_domain_finite
     unfolding homogeneity\<^sub>\<R>'.simps finite_elections_\<V>_def
     by blast
-  hence "refl_on (elections_\<K> C)
-      (Restr (homogeneity\<^sub>\<R>' finite_elections_\<V>) (elections_\<K> C))"
+  hence "refl_on' (elections_\<K> C)
+      (Restr' (homogeneity\<^sub>\<R>' finite_elections_\<V>) (elections_\<K> C))"
     using refl_homogeneity\<^sub>\<R>'[of "elections_\<K> C"] cons_domain_finite[of C]
     by presburger
   moreover have

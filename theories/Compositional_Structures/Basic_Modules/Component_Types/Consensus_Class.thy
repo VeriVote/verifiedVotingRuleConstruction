@@ -271,22 +271,29 @@ fun consensus_rule_reversal_symmetry :: "('a, 'v) Election set
 
 subsection \<open>Inference Rules\<close>
 
-lemma consensus_choice_equivar:
+text \<open>
+  If m and n are equivariant under (\<phi>, \<psi>) and c is an invariant consensus class
+  under \<phi>, then "if c then m else n" is also equivariant.
+\<close>
+
+lemma if_else_cons_equivar:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
+    n :: "('a, 'v, 'a Result) Electoral_Module" and
     c :: "('a, 'v) Consensus" and
     G :: "'x set" and
     X :: "('a, 'v) Election set" and
     \<phi> :: "('x, ('a, 'v) Election) binary_fun" and
     \<psi> :: "('x, 'a) binary_fun" and
     f :: "'a Result \<Rightarrow> 'a set"
-  defines "equivar \<equiv> action_induced_equivariance G X \<phi> (set_action \<psi>)"
+  defines 
+    "equivar \<equiv> action_induced_equivariance G X \<phi> (set_action \<psi>)" and
+    "if_else_cons \<equiv> (c, (\<lambda> V A p. if c (A, V, p) then m V A p else n V A p))"
   assumes
     equivar_m: "is_symmetry (f \<circ> fun\<^sub>\<E> m) equivar" and
-    equivar_defer: "is_symmetry (f \<circ> fun\<^sub>\<E> defer_module) equivar" and
-    \<comment> \<open>This could be generalized to arbitrary modules instead of \<open>defer_module\<close>.\<close>
+    equivar_n: "is_symmetry (f \<circ> fun\<^sub>\<E> n) equivar" and
     invar_cons: "is_symmetry c (Invariance (action_induced_rel G X \<phi>))"
-  shows "is_symmetry (f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m)))
+  shows "is_symmetry (f \<circ> fun\<^sub>\<E> (rule_\<K> if_else_cons))
               (action_induced_equivariance G X \<phi> (set_action \<psi>))"
 proof (unfold rewrite_equivariance, intro ballI impI)
   fix
@@ -294,45 +301,47 @@ proof (unfold rewrite_equivariance, intro ballI impI)
     g :: "'x"
   assume
     g_in_G: "g \<in> G" and
-    E_in_X: "E \<in> X" and
-    \<phi>_g_E_in_X: "\<phi> g E \<in> X"
-  show "(f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) (\<phi> g E) =
-           set_action \<psi> g ((f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) E)"
+    E_in_X: "E \<in> X"
+  show "(f \<circ> fun\<^sub>\<E> (rule_\<K> if_else_cons)) (\<phi> g E) =
+           set_action \<psi> g ((f \<circ> fun\<^sub>\<E> (rule_\<K> if_else_cons)) E)"
   proof (cases "c E")
     case True
     hence "c (\<phi> g E)"
-      using invar_cons rewrite_invar_ind_by_act g_in_G \<phi>_g_E_in_X E_in_X
+      using invar_cons rewrite_invar_ind_by_act g_in_G E_in_X
       by metis
-    hence "(f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) (\<phi> g E) =
+    hence "(f \<circ> fun\<^sub>\<E> (rule_\<K> if_else_cons)) (\<phi> g E) =
         (f \<circ> fun\<^sub>\<E> m) (\<phi> g E)"
+      unfolding if_else_cons_def
       by simp
     also have "(f \<circ> fun\<^sub>\<E> m) (\<phi> g E) =
       set_action \<psi> g ((f \<circ> fun\<^sub>\<E> m) E)"
-      using equivar_m E_in_X \<phi>_g_E_in_X g_in_G rewrite_equivariance
+      using equivar_m E_in_X g_in_G rewrite_equivariance
       unfolding equivar_def
       by (metis (mono_tags, lifting))
     also have "(f \<circ> fun\<^sub>\<E> m) E =
-        (f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) E"
-      using True E_in_X g_in_G invar_cons
+        (f \<circ> fun\<^sub>\<E> (rule_\<K> if_else_cons)) E"
+      using True E_in_X g_in_G invar_cons if_else_cons_def
       by simp
     finally show ?thesis
       by simp
   next
     case False
     hence "\<not> c (\<phi> g E)"
-      using invar_cons rewrite_invar_ind_by_act g_in_G \<phi>_g_E_in_X E_in_X
+      using invar_cons rewrite_invar_ind_by_act g_in_G E_in_X
       by metis
-    hence "(f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) (\<phi> g E) =
-      (f \<circ> fun\<^sub>\<E> defer_module) (\<phi> g E)"
+    hence "(f \<circ> fun\<^sub>\<E> (rule_\<K> if_else_cons)) (\<phi> g E) =
+      (f \<circ> fun\<^sub>\<E> n) (\<phi> g E)"
+      unfolding if_else_cons_def
       by simp
-    also have "(f \<circ> fun\<^sub>\<E> defer_module) (\<phi> g E) =
-      set_action \<psi> g ((f \<circ> fun\<^sub>\<E> defer_module) E)"
-      using equivar_defer E_in_X g_in_G \<phi>_g_E_in_X rewrite_equivariance
+    also have "(f \<circ> fun\<^sub>\<E> n) (\<phi> g E) =
+      set_action \<psi> g ((f \<circ> fun\<^sub>\<E> n) E)"
+      using equivar_n E_in_X g_in_G rewrite_equivariance
       unfolding equivar_def
       by (metis (mono_tags, lifting))
-    also have "(f \<circ> fun\<^sub>\<E> defer_module) E =
-      (f \<circ> fun\<^sub>\<E> (rule_\<K> (consensus_choice c m))) E"
+    also have "(f \<circ> fun\<^sub>\<E> n) E =
+      (f \<circ> fun\<^sub>\<E> (rule_\<K> if_else_cons)) E"
       using False E_in_X g_in_G invar_cons
+      unfolding if_else_cons_def
       by simp
     finally show ?thesis
       by simp
@@ -590,10 +599,14 @@ proof -
     "\<forall> \<pi>. \<forall> E \<in> domain. \<phi>_neutr domain \<pi> E = \<phi>_neutr valid_elections \<pi> E"
     unfolding domain_def \<phi>_neutr.simps
     by auto
-  have "consensus_neutrality domain strong_unanimity\<^sub>\<C>"
+  hence "neutrality\<^sub>\<R> domain \<subseteq> neutrality\<^sub>\<R> valid_elections"
+    unfolding neutrality\<^sub>\<R>.simps action_induced_rel.simps
+    using domain_def 
+    by auto
+  hence "consensus_neutrality domain strong_unanimity\<^sub>\<C>"
     using strong_unanimity\<^sub>\<C>_neutral invar_under_subset_rel
-    unfolding domain_def
-    by simp
+    unfolding consensus_neutrality.simps
+    by blast
   hence "is_symmetry strong_unanimity\<^sub>\<C>
      (Invariance (action_induced_rel (carrier neutrality\<^sub>\<G>) domain (\<phi>_neutr valid_elections)))"
     unfolding consensus_neutrality.simps neutrality\<^sub>\<R>.simps
@@ -611,11 +624,12 @@ proof -
                           (\<phi>_neutr valid_elections) (set_action \<psi>_neutr\<^sub>\<c>))"
     using defer_winners_equivariant[of
             "carrier neutrality\<^sub>\<G>" domain "\<phi>_neutr valid_elections" "\<psi>_neutr\<^sub>\<c>"]
-          consensus_choice_equivar[of
-            "elect_r" "elect_first_module" "carrier neutrality\<^sub>\<G>" domain
-            "\<phi>_neutr valid_elections" "\<psi>_neutr\<^sub>\<c>" "strong_unanimity\<^sub>\<C>"]
+          if_else_cons_equivar[of
+            "elect_r" "elect_first_module" "carrier neutrality\<^sub>\<G>" 
+            domain "\<phi>_neutr valid_elections" "\<psi>_neutr\<^sub>\<c>" "defer_module" 
+            "strong_unanimity\<^sub>\<C>"]
     unfolding strong_unanimity_def
-    by metis
+    by fastforce
   thus ?thesis
     unfolding \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
     using coincides equivar_ind_by_act_coincide
@@ -706,7 +720,8 @@ proof (unfold closed_restricted_rel.simps restricted_rel.simps neutrality\<^sub>
     unfolding \<K>\<^sub>\<E>.simps strong_unanimity_def valid_elections_def
     by simp
   ultimately have unanimous': "(A', V', p') \<in> ?domain"
-    using strong_unanimity\<^sub>\<C>_neutral
+    using strong_unanimity\<^sub>\<C>_neutral valid' 
+    unfolding consensus_neutrality.simps
     by force
   have rewrite: "\<forall> \<pi> \<in> carrier neutrality\<^sub>\<G>.
       \<phi>_neutr ?domain \<pi> (A, V, p) \<in> ?domain
@@ -720,7 +735,7 @@ proof (unfold closed_restricted_rel.simps restricted_rel.simps neutrality\<^sub>
             "carrier neutrality\<^sub>\<G>" ?domain
             "\<phi>_neutr ?domain" "set_action \<psi>_neutr\<^sub>\<c>"]
     unfolding \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
-    by blast
+    by metis
   have img': "\<phi>_neutr ?domain \<pi> (A, V, p) = (A', V', p')"
     using img unanimous
     by simp

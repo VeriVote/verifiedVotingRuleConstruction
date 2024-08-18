@@ -1665,12 +1665,15 @@ qed
 
 subsection \<open>Homogeneity Lemmas\<close>
 
+definition refl_on' :: "'x set \<Rightarrow> 'x rel \<Rightarrow> bool" where
+  "refl_on' X r = (\<forall> x \<in> X. (x, x) \<in> r)"
+
 lemma refl_homogeneity\<^sub>\<R>:
   fixes \<E> :: "('a, 'v) Election set"
   assumes "\<E> \<subseteq> finite_elections_\<V>"
-  shows "refl_on \<E> (homogeneity\<^sub>\<R> \<E>)"
+  shows "refl_on' \<E> (homogeneity\<^sub>\<R> \<E>)"
   using assms
-  unfolding refl_on_def finite_elections_\<V>_def
+  unfolding refl_on'_def finite_elections_\<V>_def
   by auto
 
 lemma (in result) well_formed_res_homogeneity:
@@ -1681,9 +1684,9 @@ lemma (in result) well_formed_res_homogeneity:
 lemma refl_homogeneity\<^sub>\<R>':
   fixes \<E> :: "('a, 'v::linorder) Election set"
   assumes "\<E> \<subseteq> finite_elections_\<V>"
-  shows "refl_on \<E> (homogeneity\<^sub>\<R>' \<E>)"
+  shows "refl_on' \<E> (homogeneity\<^sub>\<R>' \<E>)"
   using assms
-  unfolding homogeneity\<^sub>\<R>'.simps refl_on_def finite_elections_\<V>_def
+  unfolding homogeneity\<^sub>\<R>'.simps refl_on'_def finite_elections_\<V>_def
   by auto
 
 lemma (in result) well_formed_res_homogeneity':

@@ -155,9 +155,12 @@ proof (unfold anonymity'.simps is_symmetry.simps, intro allI impI)
     E' :: "('a, 'v) Election"
   assume rel: "(E, E') \<in> anonymity\<^sub>\<R> X"
   then obtain \<pi> :: "'v \<Rightarrow> 'v" where
-    bij: "\<pi> \<in> carrier anonymity\<^sub>\<G>" and img: "E' = \<phi>_anon X \<pi> E"
+    "\<pi> \<in> carrier anonymity\<^sub>\<G>" and img: "E' = \<phi>_anon X \<pi> E"
     unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
     by blast
+  hence bij: "bij \<pi>"
+    unfolding anonymity\<^sub>\<G>_def
+    by (simp add: rewrite_carrier)
   from rel have "E \<in> X"
     unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
     by blast
@@ -165,11 +168,10 @@ proof (unfold anonymity'.simps is_symmetry.simps, intro allI impI)
     using assms
     unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
     by blast
-  moreover with this have "finite (voters_\<E> E')"
-    using bij img
-    unfolding \<phi>_anon.simps extensional_continuation.simps anonymity\<^sub>\<G>_def
-    using rename.simps
-    sorry
+  moreover have "finite (voters_\<E> E')"
+    using bij img \<open>E \<in> X\<close> fin_E rename.simps rename_finite'
+    unfolding \<phi>_anon.simps extensional_continuation.simps
+    by (metis split_pairs voters_\<E>.simps)
   moreover from this and fin_E have
     "\<forall> r. vote_count r E = 1 * (vote_count r E')" and
     "alternatives_\<E> E = alternatives_\<E> E'"
@@ -178,7 +180,7 @@ proof (unfold anonymity'.simps is_symmetry.simps, intro allI impI)
   ultimately show "fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
     using assms
     unfolding homogeneity.simps is_symmetry.simps homogeneity\<^sub>\<R>.simps
-    sledgehammer
+    by blast
 qed
 
 subsubsection \<open>Neutrality\<close>
@@ -251,7 +253,7 @@ text \<open>
   "elects n" is true for all electoral modules that
   elect exactly n alternatives, whenever there are n or more alternatives.
 \<close>
-)
+
 definition elects :: "nat \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
   "elects n m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>

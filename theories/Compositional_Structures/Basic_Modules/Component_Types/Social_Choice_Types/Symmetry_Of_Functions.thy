@@ -65,7 +65,7 @@ fun is_symmetry :: "('x \<Rightarrow> 'y) \<Rightarrow> ('x, 'y) symmetry \<Righ
 
 definition action_induced_equivariance :: "'z set \<Rightarrow> 'x set \<Rightarrow> ('z, 'x) binary_fun
       \<Rightarrow> ('z, 'y) binary_fun \<Rightarrow> ('x,'y) symmetry" where
-  "action_induced_equivariance s t \<phi> \<psi> = Equivariance t {(\<phi> x, \<psi> x) | x. x \<in> s}"
+  "action_induced_equivariance t s \<phi> \<psi> = Equivariance s {(\<phi> z, \<psi> z) | z. z \<in> t}"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -554,7 +554,8 @@ lemma invar_parameterized_fun:
 lemma invar_under_subset_rel:
   fixes
     f :: "'x \<Rightarrow> 'y" and
-    r :: "'x rel"
+    r :: "'x rel" and
+    rel :: "'x rel"
   assumes
     subset: "r \<subseteq> rel" and
     invar: "is_symmetry f (Invariance rel)"
