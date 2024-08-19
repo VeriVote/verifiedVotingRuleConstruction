@@ -271,11 +271,6 @@ fun consensus_rule_reversal_symmetry :: "('a, 'v) Election set
 
 subsection \<open>Inference Rules\<close>
 
-text \<open>
-  If m and n are equivariant under (\<phi>, \<psi>) and c is an invariant consensus class
-  under \<phi>, then "if c then m else n" is also equivariant.
-\<close>
-
 lemma if_else_cons_equivar:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and

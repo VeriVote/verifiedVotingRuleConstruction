@@ -170,26 +170,163 @@ lemma anon_rel_equiv:
  "equiv (elections_\<A> UNIV) (anonymity\<^sub>\<R> (elections_\<A> UNIV))"
 proof -
   have subset: "elections_\<A> UNIV \<subseteq> valid_elections"
-      by simp
-  have "equiv valid_elections (anonymity\<^sub>\<R> valid_elections)"
+    by simp
+  have equiv: "equiv valid_elections (anonymity\<^sub>\<R> valid_elections)"
     using rel_ind_by_group_act_equiv[of
             "anonymity\<^sub>\<G>" "valid_elections" "\<phi>_anon valid_elections"]
           rel_ind_by_coinciding_action_on_subset_eq_restr
-    by (simp add: anonymous_group_action.group_action_axioms)
-  moreover have
-    "\<forall> \<pi> \<in> carrier anonymity\<^sub>\<G>.
-      \<forall> E \<in> elections_\<A> UNIV.
-        \<phi>_anon (elections_\<A> UNIV) \<pi> E = \<phi>_anon valid_elections \<pi> E"
-    using subset
-    unfolding \<phi>_anon.simps
+    by (simp add: anonymous_group_action.group_action_axioms) 
+  have closed: 
+    "closed_restricted_rel
+      (anonymity\<^sub>\<R> valid_elections) valid_elections (elections_\<A> UNIV)"
+  proof (unfold closed_restricted_rel.simps restricted_rel.simps, safe)
+    fix
+      A :: "'c set" and
+      V :: "'d set" and
+      p :: "('c, 'd) Profile" and
+      A' :: "'c set" and
+      V' :: "'d set" and
+      p' :: "('c, 'd) Profile"
+    assume
+      elt: "(A, V, p) \<in> elections_\<A> UNIV" and
+      rel: "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> valid_elections"
+    hence valid: "(A, V, p) \<in> valid_elections"
+      unfolding elections_\<A>.simps
+      by blast
+    then obtain \<pi> :: "'d \<Rightarrow> 'd" where
+      "bij \<pi>" and img: "(A', V', p') = rename \<pi> (A, V, p)"
+      using rel
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps 
+                anonymity\<^sub>\<G>_def \<phi>_anon.simps rewrite_carrier
+                extensional_continuation.simps 
+      by auto
+    hence "(A', V', p') \<in> valid_elections"
+      using valid rename_sound 
+      unfolding valid_elections_def
+      by fastforce
+    moreover have "A' = A \<and> finite V"
+      using \<open>bij \<pi>\<close> elt img rename.simps valid valid_elections_def
+      by auto
+    moreover have "\<forall> v. v \<notin> V' \<longrightarrow> (the_inv \<pi> v) \<notin> V"
+      using elt Pair_inject UNIV_I \<open>bij \<pi>\<close> rename.simps
+            f_the_inv_into_f_bij_betw image_eqI img 
+      unfolding elections_\<A>.simps
+      by (metis (mono_tags, opaque_lifting))
+    moreover have "\<forall> v. v \<notin> V' \<longrightarrow> p' v = p (the_inv \<pi> v)"
+      using img
+      by simp
+    ultimately show "(A', V', p') \<in> elections_\<A> UNIV"
+      using elt img
+      unfolding elections_\<A>.simps rename.simps
+      by auto
+  qed
+  have
+    "anonymity\<^sub>\<R> (elections_\<A> UNIV) = 
+      restricted_rel (anonymity\<^sub>\<R> valid_elections) (elections_\<A> UNIV) valid_elections"
+  proof (unfold restricted_rel.simps, safe)
+    fix
+      A :: "'c set" and
+      V :: "'d set" and
+      p :: "('c, 'd) Profile" and
+      A' :: "'c set" and
+      V' :: "'d set" and
+      p' :: "('c, 'd) Profile"
+    assume
+      rel: "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV)"
+    hence valid: "(A, V, p) \<in> valid_elections"
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps elections_\<A>.simps
+      by blast
+    then obtain \<pi> :: "'d \<Rightarrow> 'd" where
+      "bij \<pi>" and img: "(A', V', p') = rename \<pi> (A, V, p)"
+      using rel
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps 
+                anonymity\<^sub>\<G>_def \<phi>_anon.simps rewrite_carrier
+                extensional_continuation.simps 
+      by auto
+    thus "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> valid_elections"
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+                anonymity\<^sub>\<G>_def \<phi>_anon.simps rewrite_carrier
+      using valid
+      by auto
+  next
+    fix
+      A :: "'c set" and
+      V :: "'d set" and
+      p :: "('c, 'd) Profile" and
+      A' :: "'c set" and
+      V' :: "'d set" and
+      p' :: "('c, 'd) Profile"
+    assume
+      rel: "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV)"
+    thus "(A, V, p) \<in> elections_\<A> UNIV"
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+      by blast
+  next
+    fix
+      A :: "'c set" and
+      V :: "'d set" and
+      p :: "('c, 'd) Profile" and
+      A' :: "'c set" and
+      V' :: "'d set" and
+      p' :: "('c, 'd) Profile"
+    assume
+      rel: "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV)"
+    hence 
+      "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> valid_elections"
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+      by fastforce
+    moreover have elt: "(A, V, p) \<in> elections_\<A> UNIV"
+      using rel
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+      by blast
+    ultimately have
+      "((A, V, p), A', V', p') \<in> restricted_rel 
+        (anonymity\<^sub>\<R> valid_elections) (elections_\<A> UNIV) valid_elections"
+      using equiv
+      unfolding restricted_rel.simps equiv_def refl_on_def
+      by blast
+    hence "(A', V', p') \<in> elections_\<A> UNIV"
+      using closed elt
+      unfolding closed_restricted_rel.simps
+      by blast
+    thus "(A', V', p') \<in> valid_elections"
+      using subset
+      by blast
+  next
+    fix
+      A :: "'c set" and
+      V :: "'d set" and
+      p :: "('c, 'd) Profile" and
+      A' :: "'c set" and
+      V' :: "'d set" and
+      p' :: "('c, 'd) Profile"
+    assume
+      elt: "(A, V, p) \<in> elections_\<A> UNIV" and
+      rel: "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> valid_elections"
+    then obtain \<pi> :: "'d \<Rightarrow> 'd" where
+      "bij \<pi>" and img: "(A', V', p') = rename \<pi> (A, V, p)"
+      using rel
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps 
+                anonymity\<^sub>\<G>_def \<phi>_anon.simps rewrite_carrier
+                extensional_continuation.simps 
+      by auto
+    thus "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV)"
+      using elt
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps 
+                anonymity\<^sub>\<G>_def \<phi>_anon.simps rewrite_carrier
+                extensional_continuation.simps 
+      by auto
+  qed
+  also have "... = Restr (anonymity\<^sub>\<R> valid_elections) (elections_\<A> UNIV)"
+    using restr_equals_restricted_rel closed subset
+    by blast
+  finally have
+    "anonymity\<^sub>\<R> (elections_\<A> UNIV) = 
+      Restr (anonymity\<^sub>\<R> valid_elections) (elections_\<A> UNIV)"
     by simp
-  ultimately show ?thesis
-    using subset equiv_rel_restr
-          rel_ind_by_coinciding_action_on_subset_eq_restr[of
-            "elections_\<A> UNIV" "valid_elections"
-            "carrier anonymity\<^sub>\<G>" "\<phi>_anon (elections_\<A> UNIV)"]
-    unfolding anonymity\<^sub>\<R>.simps
-    by (metis (no_types))
+  thus ?thesis
+    using equiv_rel_restr subset equiv
+    by metis
 qed
 
 text \<open>

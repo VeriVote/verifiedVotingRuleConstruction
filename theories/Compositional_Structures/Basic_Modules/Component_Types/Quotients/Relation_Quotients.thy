@@ -147,6 +147,41 @@ qed
 
 subsection \<open>Equivalence Relations\<close>
 
+lemma restr_equals_restricted_rel:
+  fixes
+    s :: "'x set" and
+    t :: "'x set" and
+    r :: "'x rel"
+  assumes
+    "closed_restricted_rel r s t" and
+    "t \<subseteq> s"
+  shows
+    "restricted_rel r t s = Restr r t" 
+proof(simp, safe)
+  fix
+    a :: 'x and
+    b :: 'x
+  assume
+    "(a, b) \<in> r" and
+    "a \<in> t" and
+    "b \<in> s"
+  hence "(a, b) \<in> restricted_rel r t s"
+    by simp
+  thus "b \<in> t" 
+    using assms \<open>a \<in> t\<close>
+    unfolding closed_restricted_rel.simps
+    by blast
+next
+  fix
+    a :: 'x and
+    b :: 'x
+  assume
+    "b \<in> t"
+  thus "b \<in> s"
+    using assms
+    by blast
+qed
+
 lemma equiv_rel_restr:
   fixes
     s :: "'x set" and
@@ -223,6 +258,26 @@ next
     using assms carrier_g carrier_h group_action.group_hom
           group_hom.axioms(1) monoid.m_closed
     unfolding group_def
+    by metis
+next
+  fix
+    y :: "'y" and
+    g :: "'x"
+  assume
+    y_in_s: "y \<in> s" and
+    carrier_g: "g \<in> carrier m"
+  thus "\<phi> g y \<in> s"
+    using assms group_action.element_image
+    by metis
+next
+  fix
+    y :: "'y" and
+    g :: "'x"
+  assume
+    y_in_s: "y \<in> s" and
+    carrier_g: "g \<in> carrier m"
+  thus "\<phi> g y \<in> s"
+    using assms group_action.element_image
     by metis
 qed
 

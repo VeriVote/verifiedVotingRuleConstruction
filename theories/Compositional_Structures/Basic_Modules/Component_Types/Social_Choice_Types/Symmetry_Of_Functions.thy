@@ -23,7 +23,7 @@ fun preimg :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightarrow> 'y \<Rig
 subsection \<open>Relations for Symmetry Constructions\<close>
 
 fun restricted_rel :: "'x rel \<Rightarrow> 'x set \<Rightarrow> 'x set \<Rightarrow> 'x rel" where
-  "restricted_rel r s s' = r \<inter> s \<times> s'"
+  "restricted_rel r s s' = r \<inter> (s \<times> s')"
 
 fun closed_restricted_rel :: "'x rel \<Rightarrow> 'x set \<Rightarrow> 'x set \<Rightarrow> bool" where
   "closed_restricted_rel r s t = ((restricted_rel r t s) `` t \<subseteq> t)"
