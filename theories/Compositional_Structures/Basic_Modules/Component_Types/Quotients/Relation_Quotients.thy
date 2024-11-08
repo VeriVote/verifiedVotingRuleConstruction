@@ -149,34 +149,25 @@ subsection \<open>Equivalence Relations\<close>
 
 lemma restr_equals_restricted_rel:
   fixes
-    s :: "'x set" and
-    t :: "'x set" and
-    r :: "'x rel"
+    s t :: "'a set" and
+    r :: "'a rel"
   assumes
     "closed_restricted_rel r s t" and
     "t \<subseteq> s"
-  shows
-    "restricted_rel r t s = Restr r t" 
+  shows "restricted_rel r t s = Restr r t"
 proof(simp, safe)
-  fix
-    a :: 'x and
-    b :: 'x
+  fix a b :: "'a"
   assume
     "(a, b) \<in> r" and
     "a \<in> t" and
     "b \<in> s"
-  hence "(a, b) \<in> restricted_rel r t s"
-    by simp
   thus "b \<in> t" 
-    using assms \<open>a \<in> t\<close>
-    unfolding closed_restricted_rel.simps
+    using assms
+    unfolding closed_restricted_rel.simps restricted_rel.simps
     by blast
 next
-  fix
-    a :: 'x and
-    b :: 'x
-  assume
-    "b \<in> t"
+  fix a b :: "'a"
+  assume "b \<in> t"
   thus "b \<in> s"
     using assms
     by blast
@@ -184,8 +175,7 @@ qed
 
 lemma equiv_rel_restr:
   fixes
-    s :: "'x set" and
-    t :: "'x set" and
+    s t :: "'x set" and
     r :: "'x rel"
   assumes
     "equiv s r" and
@@ -245,8 +235,7 @@ next
 next
   fix
     y :: "'y" and
-    g :: "'x" and
-    h :: "'x"
+    g h :: "'x"
   assume
     y_in_s: "y \<in> s" and
     carrier_g: "g \<in> carrier m" and

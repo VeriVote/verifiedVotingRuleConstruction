@@ -45,7 +45,7 @@ theorem pairwise_majority_rule'_sound: "\<S>\<C>\<F>_result.electoral_module pai
   using condorcet'_rule_sound elector_sound iter.simps iter_elect.simps loop_comp_sound
   by metis
 
-subsection \<open>Condorcet Consistency Property\<close>
+subsection \<open>Condorcet Consistency\<close>
 
 theorem condorcet_condorcet: "condorcet_consistency pairwise_majority_rule"
 proof (unfold pairwise_majority_rule.simps)

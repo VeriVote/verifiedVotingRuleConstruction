@@ -34,6 +34,8 @@ lemma prof_abstr_presv_size:
   shows "length p = length (to_list {0 ..< length p} (pl_to_pr_\<alpha> p))"
   by simp
 
+subsection \<open>Refinement Proof\<close>
+
 text \<open>
   A profile on a finite set of alternatives A contains only ballots that are
   lists of linear orders on A.

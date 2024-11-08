@@ -143,7 +143,7 @@ proof -
     by metis
 qed
 
-subsection \<open>(Weak) Monotonicity Property\<close>
+subsection \<open>(Weak) Monotonicity\<close>
 
 text \<open>
   The following proof is a fully modular proof for weak monotonicity of

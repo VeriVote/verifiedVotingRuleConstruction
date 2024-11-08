@@ -19,8 +19,8 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm
-                            \<Rightarrow> ('a,'v::linorder) Election Distance" where
+fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm \<Rightarrow>
+        ('a,'v::linorder) Election Distance" where
   "votewise_distance d n (A, V, p) (A', V', p') =
     (if (finite V) \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')
     then n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))
@@ -32,11 +32,9 @@ lemma symmetric_norm_inv_under_map2_permute:
   fixes
     d :: "'a Vote Distance" and
     n :: "Norm" and
-    A  :: "'a set" and
-    A' :: "'a set" and
+    A A'  :: "'a set" and
     \<phi> :: "nat \<Rightarrow> nat" and
-    p  :: "('a Preference_Relation) list" and
-    p' :: "('a Preference_Relation) list"
+    p p'  :: "('a Preference_Relation) list"
   assumes
     perm: "\<phi> permutes {0 ..< length p}" and
     len_eq: "length p = length p'" and
@@ -76,19 +74,16 @@ proof -
 qed
 
 lemma permute_invariant_under_map:
-  fixes
-    l :: "'a list" and
-    ls :: "'a list"
-  assumes "l <~~> ls"
-  shows "map f l <~~> map f ls"
+  fixes l l' :: "'a list"
+  assumes "l <~~> l'"
+  shows "map f l <~~> map f l'"
   using assms
   by simp
 
 lemma linorder_rank_injective:
   fixes
     V :: "'v::linorder set" and
-    v :: "'v" and
-    v' :: "'v"
+    v v' :: "'v"
   assumes
     v_in_V: "v \<in> V" and
     v'_in_V: "v' \<in> V" and
@@ -110,8 +105,7 @@ qed
 lemma permute_invariant_under_coinciding_funs:
   fixes
     l :: "'v list" and
-    \<pi>_1 :: "nat \<Rightarrow> nat" and
-    \<pi>_2 :: "nat \<Rightarrow> nat"
+    \<pi>_1 \<pi>_2 :: "nat \<Rightarrow> nat"
   assumes "\<forall> i < length l. \<pi>_1 i = \<pi>_2 i"
   shows "permute_list \<pi>_1 l = permute_list \<pi>_2 l"
   using assms
@@ -126,12 +120,9 @@ lemma symmetric_norm_imp_distance_anonymous:
   shows "distance_anonymity (votewise_distance d n)"
 proof (unfold distance_anonymity_def, safe)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v::linorder set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v::linorder set" and
+    p p' :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   let ?rn1 = "rename \<pi> (A, V, p)" and
       ?rn2 = "rename \<pi> (A', V', p')" and
@@ -319,35 +310,32 @@ lemma neutral_dist_imp_neutral_votewise_dist:
     n :: "Norm"
   defines "vote_action \<equiv> (\<lambda> \<pi> (A, q). (\<pi> ` A, rel_rename \<pi> q))"
   assumes invar: "invariance\<^sub>\<D> d (carrier neutrality\<^sub>\<G>) UNIV vote_action"
-  shows "distance_neutrality valid_elections (votewise_distance d n)"
+  shows "distance_neutrality well_formed_elections (votewise_distance d n)"
 proof (unfold distance_neutrality.simps rewrite_invariance\<^sub>\<D>, safe)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v::linorder set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v::linorder set" and
+    p p' :: "('a, 'v) Profile" and
     \<pi> :: "'a \<Rightarrow> 'a"
   assume
     carrier: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
-    valid: "(A, V, p) \<in> valid_elections" and
-    valid': "(A', V', p') \<in> valid_elections"
+    valid: "(A, V, p) \<in> well_formed_elections" and
+    valid': "(A', V', p') \<in> well_formed_elections"
   hence bij: "bij \<pi>"
     unfolding neutrality\<^sub>\<G>_def
     using rewrite_carrier
     by blast
   thus "votewise_distance d n (A, V, p) (A', V', p') =
           votewise_distance d n
-            (\<phi>_neutr valid_elections \<pi> (A, V, p))
-              (\<phi>_neutr valid_elections \<pi> (A', V', p'))"
+            (\<phi>_neutral well_formed_elections \<pi> (A, V, p))
+              (\<phi>_neutral well_formed_elections \<pi> (A', V', p'))"
   proof (cases "finite V \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')")
     case True
     hence "finite V \<and> V = V' \<and> (V \<noteq> {} \<or> \<pi> ` A = \<pi> ` A')"
       by metis
     hence "votewise_distance d n
-            (\<phi>_neutr valid_elections \<pi> (A, V, p))
-                (\<phi>_neutr valid_elections \<pi> (A', V', p')) =
+            (\<phi>_neutral well_formed_elections \<pi> (A, V, p))
+                (\<phi>_neutral well_formed_elections \<pi> (A', V', p')) =
         n (map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q'))
           (to_list V (rel_rename \<pi> \<circ> p)) (to_list V' (rel_rename \<pi> \<circ> p')))"
       using valid valid'
@@ -375,8 +363,8 @@ proof (unfold distance_neutrality.simps rewrite_invariance\<^sub>\<D>, safe)
       unfolding vote_action_def
       by (metis (no_types, lifting))
     finally have "votewise_distance d n
-        (\<phi>_neutr valid_elections \<pi> (A, V, p))
-              (\<phi>_neutr valid_elections \<pi> (A', V', p')) =
+        (\<phi>_neutral well_formed_elections \<pi> (A, V, p))
+              (\<phi>_neutral well_formed_elections \<pi> (A', V', p')) =
         n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
       by simp
     also have "votewise_distance d n (A, V, p) (A', V', p') =
@@ -391,8 +379,8 @@ proof (unfold distance_neutrality.simps rewrite_invariance\<^sub>\<D>, safe)
       using bij bij_is_inj inj_image_eq_iff
       by metis
     hence "votewise_distance d n
-        (\<phi>_neutr valid_elections \<pi> (A, V, p))
-            (\<phi>_neutr valid_elections \<pi> (A', V', p')) = \<infinity>"
+        (\<phi>_neutral well_formed_elections \<pi> (A, V, p))
+            (\<phi>_neutral well_formed_elections \<pi> (A', V', p')) = \<infinity>"
       using valid valid'
       by auto
     also have "votewise_distance d n (A, V, p) (A', V', p') = \<infinity>"

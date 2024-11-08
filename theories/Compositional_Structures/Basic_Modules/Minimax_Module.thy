@@ -40,8 +40,7 @@ lemma non_cond_winner_minimax_score:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    w :: "'a" and
-    l :: "'a"
+    w l :: "'a"
   assumes
     prof: "profile V A p" and
     winner: "condorcet_winner V A p w" and
@@ -76,8 +75,7 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
-    w :: "'b" and
-    l :: "'b"
+    w l :: "'b"
   assume
     winner: "condorcet_winner V A p w" and
     l_in_A: "l \<in> A" and

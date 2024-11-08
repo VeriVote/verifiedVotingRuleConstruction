@@ -3,7 +3,7 @@
 *)
 \<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
 
-section \<open>Function Symmetry Properties\<close>
+section \<open>Symmetry Properties of Functions\<close>
 
 theory Symmetry_Of_Functions
   imports "HOL-Algebra.Group_Action"
@@ -38,8 +38,8 @@ fun equivariance :: "'x set \<Rightarrow> 'y set \<Rightarrow> ('x,'y) binary_fu
   "equivariance s t \<phi> =
       {((u, v), (x, y)). (u, v) \<in> t \<times> t \<and> (\<exists> z \<in> s. x = \<phi> z u \<and> y = \<phi> z v)}"
 
-fun set_closed_rel :: "'x set \<Rightarrow> 'x rel \<Rightarrow> bool" where
-  "set_closed_rel s r = (\<forall> x y. (x, y) \<in> r \<longrightarrow> x \<in> s \<longrightarrow> y \<in> s)"
+fun closed_rel :: "'x set \<Rightarrow> 'x rel \<Rightarrow> bool" where
+  "closed_rel s r = (\<forall> x y. (x, y) \<in> r \<longrightarrow> x \<in> s \<longrightarrow> y \<in> s)"
 
 fun singleton_set_system :: "'x set \<Rightarrow> 'x set set" where
   "singleton_set_system s = {{x} | x. x \<in> s}"
@@ -63,8 +63,8 @@ fun is_symmetry :: "('x \<Rightarrow> 'y) \<Rightarrow> ('x, 'y) symmetry \<Righ
   "is_symmetry f (Invariance r) = (\<forall> x. \<forall> y. (x, y) \<in> r \<longrightarrow> f x = f y)" |
   "is_symmetry f (Equivariance s \<tau>) = (\<forall> (\<phi>, \<psi>) \<in> \<tau>. \<forall> x \<in> s. f (\<phi> x) = \<psi> (f x))"
 
-definition action_induced_equivariance :: "'z set \<Rightarrow> 'x set \<Rightarrow> ('z, 'x) binary_fun
-      \<Rightarrow> ('z, 'y) binary_fun \<Rightarrow> ('x,'y) symmetry" where
+definition action_induced_equivariance :: "'z set \<Rightarrow> 'x set \<Rightarrow> ('z, 'x) binary_fun \<Rightarrow>
+        ('z, 'y) binary_fun \<Rightarrow> ('x,'y) symmetry" where
   "action_induced_equivariance t s \<phi> \<psi> = Equivariance s {(\<phi> z, \<psi> z) | z. z \<in> t}"
 
 subsection \<open>Auxiliary Lemmas\<close>
@@ -130,9 +130,7 @@ proof (unfold action_induced_equivariance_def is_symmetry.simps, safe)
   ultimately show "f (\<phi> g x) = id (f x)"
     by simp
 next
-  fix
-    x :: "'x" and
-    y :: "'x"
+  fix x y :: "'x"
   assume
     equivar: 
       "\<forall> (\<phi>, \<psi>) \<in> {(\<phi> g, id) |g. g \<in> t}. \<forall> x \<in> s. f (\<phi> x) = \<psi> (f x)" and
@@ -196,11 +194,9 @@ lemma rewrite_equivariance:
 lemma rewrite_group_action_img:
   fixes
     m :: "'x monoid" and
-    s :: "'y set" and
+    s t :: "'y set" and
     \<phi> :: "('x, 'y) binary_fun" and
-    t :: "'y set" and
-    x :: "'x" and
-    y :: "'x"
+    x y :: "'x"
   assumes
     "t \<subseteq> s" and
     "x \<in> carrier m" and
@@ -233,8 +229,7 @@ lemma universal_set_carrier_imp_bij_group:
 
 lemma rewrite_sym_group:
   fixes
-    f :: "'a \<Rightarrow> 'a" and
-    g :: "'a \<Rightarrow> 'a" and
+    f g :: "'a \<Rightarrow> 'a" and
     s :: "'a set"
   assumes
     "f \<in> carrier (BijGroup s)" and
@@ -255,8 +250,7 @@ lemma simp_extensional_univ:
 lemma extensional_continuation_subset:
   fixes
     f :: "'a \<Rightarrow> 'b" and
-    s :: "'a set" and
-    t :: "'a set" and
+    s t :: "'a set" and
     x :: "'a"
   assumes
     "t \<subseteq> s" and
@@ -268,25 +262,23 @@ lemma extensional_continuation_subset:
 
 lemma rel_ind_by_coinciding_action_on_subset_eq_restr:
   fixes
-    \<phi> :: "('a, 'b) binary_fun" and
-    \<psi> :: "('a, 'b) binary_fun" and
+    \<phi> \<psi> :: "('a, 'b) binary_fun" and
     s :: "'a set" and
-    t :: "'b set" and
-    u :: "'b set"
+    t u :: "'b set"
   assumes
     "u \<subseteq> t" and
     "\<forall> x \<in> s. \<forall> y \<in> u. \<psi> x y = \<phi> x y"
   shows "action_induced_rel s u \<psi> = restricted_rel (action_induced_rel s t \<phi>) u UNIV"
 proof (simp, safe)
-  fix x :: 'b
+  fix x :: "'b"
   assume "x \<in> u"
   thus "x \<in> t"
     using assms
     by blast
 next
   fix 
-    g :: 'a and
-    x :: 'b
+    g :: "'a" and
+    x :: "'b"
   assume 
     "g \<in> s" and
     "x \<in> u"
@@ -298,14 +290,14 @@ next
     by blast
 next
   fix 
-    g :: 'a and
-    x :: 'b
+    g :: "'a" and
+    x :: "'b"
   show "\<psi> g x \<in> UNIV"
     by blast
 next
   fix 
-    g :: 'a and
-    x :: 'b
+    g :: "'a" and
+    x :: "'b"
   assume 
     "g \<in> s" and
     "x \<in> u"
@@ -321,8 +313,7 @@ lemma coinciding_actions_ind_equal_rel:
   fixes
     s :: "'x set" and
     t :: "'y set" and
-    \<phi> :: "('x, 'y) binary_fun" and
-    \<psi> :: "('x, 'y) binary_fun"
+    \<phi> \<psi> :: "('x, 'y) binary_fun"
   assumes "\<forall> x \<in> s. \<forall> y \<in> t. \<phi> x y = \<psi> x y"
   shows "action_induced_rel s t \<phi> = action_induced_rel s t \<psi>"
   unfolding extensional_continuation.simps
@@ -390,9 +381,7 @@ next
       unfolding BijGroup_def Bij_def
       by simp
   }
-  fix
-    x :: "'x" and
-    y :: "'x"
+  fix x y :: "'x"
   note
     \<open>x \<in> carrier m \<Longrightarrow> \<phi>_img x \<in> carrier (BijGroup (Pow s))\<close> and
     \<open>y \<in> carrier m \<Longrightarrow> \<phi>_img y \<in> carrier (BijGroup (Pow s))\<close>
@@ -554,11 +543,10 @@ lemma invar_parameterized_fun:
 lemma invar_under_subset_rel:
   fixes
     f :: "'x \<Rightarrow> 'y" and
-    r :: "'x rel" and
-    rel :: "'x rel"
+    r s :: "'x rel"
   assumes
-    subset: "r \<subseteq> rel" and
-    invar: "is_symmetry f (Invariance rel)"
+    subset: "r \<subseteq> s" and
+    invar: "is_symmetry f (Invariance s)"
   shows "is_symmetry f (Invariance r)"
   using assms
   by auto
@@ -568,8 +556,7 @@ lemma equivar_ind_by_act_coincide:
     s :: "'x set" and
     t :: "'y set" and
     f :: "'y \<Rightarrow> 'z" and
-    \<phi> :: "('x, 'y) binary_fun" and
-    \<phi>' :: "('x, 'y) binary_fun" and
+    \<phi> \<phi>' :: "('x, 'y) binary_fun" and
     \<psi> :: "('x, 'z) binary_fun"
   assumes "\<forall> x \<in> s. \<forall> y \<in> t. \<phi> x y = \<phi>' x y"
   shows "is_symmetry f (action_induced_equivariance s t \<phi> \<psi>) =
@@ -581,8 +568,7 @@ lemma equivar_ind_by_act_coincide:
 lemma equivar_under_subset:
   fixes
     f :: "'x \<Rightarrow> 'y" and
-    s :: "'x set" and
-    t :: "'x set" and
+    s t :: "'x set" and
     \<tau> :: "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set"
   assumes
     "is_symmetry f (Equivariance s \<tau>)" and
@@ -596,8 +582,7 @@ lemma equivar_under_subset':
   fixes
     f :: "'x \<Rightarrow> 'y" and
     s :: "'x set" and
-    \<tau> :: "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set" and
-    \<upsilon> :: "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set"
+    \<tau> \<upsilon> :: "(('x \<Rightarrow> 'x) \<times> ('y \<Rightarrow> 'y)) set"
   assumes
     "is_symmetry f (Equivariance s \<tau>)" and
     "\<upsilon> \<subseteq> \<tau>"
@@ -609,8 +594,7 @@ lemma equivar_under_subset':
 theorem group_action_equivar_f_imp_equivar_preimg:
   fixes
     f :: "'x \<Rightarrow> 'y" and
-    \<D>\<^sub>f :: "'x set" and
-    s :: "'x set" and
+    \<D>\<^sub>f s :: "'x set" and
     m :: "'z monoid" and
     \<phi> :: "('z, 'x) binary_fun" and
     \<psi> :: "('z, 'y) binary_fun" and
@@ -707,7 +691,7 @@ next
     by simp
 qed
 
-subsubsection \<open>Invariance and Equivariance Function Composition\<close>
+subsection \<open>Function Composition\<close>
 
 lemma invar_comp:
   fixes
@@ -796,8 +780,7 @@ qed
 
 lemma equivar_set_minus:
   fixes
-    f :: "'x \<Rightarrow> 'y set" and
-    g :: "'x \<Rightarrow> 'y set" and
+    f g :: "'x \<Rightarrow> 'y set" and
     s :: "'z set" and
     t :: "'x set" and
     \<phi> :: "('z, 'x) binary_fun" and

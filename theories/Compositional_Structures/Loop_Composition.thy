@@ -24,9 +24,8 @@ subsection \<open>Definition\<close>
 
 lemma loop_termination_helper:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    m acc :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
@@ -44,9 +43,9 @@ text \<open>
   function.
 \<close>
 
-function loop_comp_helper ::
-    "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
-        'a Termination_Condition \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+function loop_comp_helper :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Termination_Condition \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
     "finite (defer acc V A p) \<and> (defer (acc \<triangleright> m) V A p) \<subset> (defer acc V A p)
         \<longrightarrow> t (acc V A p) \<Longrightarrow>
     loop_comp_helper acc m t V A p = acc V A p" |
@@ -74,18 +73,12 @@ proof -
     by metis
 next
   fix
-    t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    t' :: "'a Termination_Condition" and
-    acc' :: "('a, 'v, 'a Result) Electoral_Module" and
-    A' :: "'a set" and
-    V' :: "'v set" and
-    p' :: "('a, 'v) Profile" and
-    m' :: "('a, 'v, 'a Result) Electoral_Module"
+    t t' :: "'a Termination_Condition" and
+    acc acc' :: "('a, 'v, 'a Result) Electoral_Module" and
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p p' :: "('a, 'v) Profile" and
+    m m' :: "('a, 'v, 'a Result) Electoral_Module"
   assume
     "finite (defer acc V A p)
     \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p
@@ -98,18 +91,12 @@ next
     by fastforce
 next
   fix
-    t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    t' :: "'a Termination_Condition" and
-    acc' :: "('a, 'v, 'a Result) Electoral_Module" and
-    A' :: "'a set" and
-    V' :: "'v set" and
-    p' :: "('a, 'v) Profile" and
-    m' :: "('a, 'v, 'a Result) Electoral_Module"
+    t t' :: "'a Termination_Condition" and
+    acc acc' :: "('a, 'v, 'a Result) Electoral_Module" and
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p p' :: "('a, 'v) Profile" and
+    m m' :: "('a, 'v, 'a Result) Electoral_Module"
   assume
     "finite (defer acc V A p)
     \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p
@@ -122,18 +109,12 @@ next
     by force
 next
   fix
-    t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
-    A :: "'a set" and
-    V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    t' :: "'a Termination_Condition" and
-    acc' :: "('a, 'v, 'a Result) Electoral_Module" and
-    A' :: "'a set" and
-    V' :: "'v set" and
-    p' :: "('a, 'v) Profile" and
-    m' :: "('a, 'v, 'a Result) Electoral_Module"
+    t t' :: "'a Termination_Condition" and
+    acc acc' :: "('a, 'v, 'a Result) Electoral_Module" and
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p p' :: "('a, 'v) Profile" and
+    m m' :: "('a, 'v, 'a Result) Electoral_Module"
   assume
     "\<not> (finite (defer acc V A p)
     \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p
@@ -149,8 +130,7 @@ qed
 termination
 proof (safe)
   fix
-    m :: "('b, 'a, 'b Result) Electoral_Module" and
-    n :: "('b, 'a, 'b Result) Electoral_Module" and
+    m n :: "('b, 'a, 'b Result) Electoral_Module" and
     t :: "'b Termination_Condition" and
     A :: "'b set" and
     V :: "'a set" and
@@ -196,9 +176,8 @@ qed
 
 lemma loop_comp_code_helper[code]:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    m acc :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
@@ -210,9 +189,8 @@ lemma loop_comp_code_helper[code]:
   using loop_comp_helper.simps
   by (metis (no_types))
 
-function loop_composition :: "('a, 'v, 'a Result) Electoral_Module
-                                  \<Rightarrow> 'a Termination_Condition
-                                  \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+function loop_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        'a Termination_Condition \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "t ({}, {}, A)
     \<Longrightarrow> loop_composition m t V A p = defer_module V A p" |
   "\<not>(t ({}, {}, A))
@@ -222,8 +200,8 @@ termination
   using "termination" wf_empty
   by blast
 
-abbreviation loop :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Termination_Condition
-            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" ("_ \<circlearrowleft>\<^sub>_" 50) where
+abbreviation loop :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Termination_Condition \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" ("_ \<circlearrowleft>\<^sub>_" 50) where
   "m \<circlearrowleft>\<^sub>t \<equiv> loop_composition m t"
 
 lemma loop_comp_code[code]:
@@ -240,9 +218,8 @@ lemma loop_comp_code[code]:
 
 lemma loop_comp_helper_imp_partit:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    m acc :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
@@ -294,9 +271,8 @@ theorem loop_comp_sound:
 
 lemma loop_comp_helper_imp_no_def_incr:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    m acc :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
@@ -335,9 +311,8 @@ subsection \<open>Lemmas\<close>
 
 lemma loop_comp_helper_def_lift_inv_helper:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    m acc :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
@@ -424,7 +399,7 @@ proof (induct n arbitrary: acc rule: less_induct)
       by metis
     moreover have "defer_lift_invariance (acc \<triangleright> m)"
       using less monotone_m seq_comp_presv_def_lift_inv
-      by simp
+      by safe
     ultimately show ?thesis
       using less monotone_m
       by metis
@@ -457,7 +432,7 @@ proof (induct n arbitrary: acc rule: less_induct)
         using monotone_m prof seq_comp_def_set_trans
         unfolding defer_lift_invariance_def
         by metis
-      have dli_card_def:
+      have dli_card_defer:
         "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance acc
           \<longrightarrow> (\<forall> q a. a \<in> (defer (acc \<triangleright> m) V A p) \<and> Profile.lifted V A p q a
                 \<longrightarrow> card (defer (acc \<triangleright> m) V A q) \<noteq> (card (defer acc V A q)))"
@@ -483,7 +458,7 @@ proof (induct n arbitrary: acc rule: less_induct)
         "defer_lift_invariance (acc \<triangleright> m) \<and> defer_lift_invariance acc
           \<longrightarrow> (\<forall> p' a. a \<in> (defer (acc \<triangleright> m) V A p) \<and> lifted V A p p' a
               \<longrightarrow> defer (acc \<triangleright> m) V A p' \<subset> defer acc V A p')"
-        using Profile.lifted_def dli_card_def defer_lift_invariance_def
+        using Profile.lifted_def dli_card_defer defer_lift_invariance_def
               monotone_m psubsetI seq_comp_def_set_bounded
         by (metis (no_types, opaque_lifting))
       with t_not_satisfied_for_p
@@ -615,13 +590,11 @@ qed
 
 lemma loop_comp_helper_def_lift_inv:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    m acc :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    p q :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
     "defer_lift_invariance m" and
@@ -639,8 +612,7 @@ lemma lifted_imp_fin_prof:
   fixes
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    p q :: "('a, 'v) Profile" and
     a :: "'a"
   assumes "lifted V A p q a"
   shows "finite_profile V A p"
@@ -650,9 +622,8 @@ lemma lifted_imp_fin_prof:
 
 lemma loop_comp_helper_presv_def_lift_inv:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module"
+    m acc :: "('a, 'v, 'a Result) Electoral_Module" and
+    t :: "'a Termination_Condition"
   assumes
     "defer_lift_invariance m" and
     "voters_determine_election m" and
@@ -668,8 +639,7 @@ next
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    p q :: "('a, 'v) Profile" and
     a :: "'a"
   assume
     "a \<in> defer (loop_comp_helper acc m t) V A p" and
@@ -681,9 +651,8 @@ qed
 
 lemma loop_comp_presv_non_electing_helper:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    m acc :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
@@ -744,14 +713,12 @@ qed
    It might be worth revising this proof at some point in the future. *)
 lemma loop_comp_helper_iter_elim_def_n_helper:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    m acc :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    n :: "nat" and
-    x :: "nat"
+    n x :: "nat"
   assumes
     non_electing_m: "non_electing m" and
     single_elimination: "eliminates 1 m" and
@@ -855,9 +822,8 @@ qed
 
 lemma loop_comp_helper_iter_elim_def_n:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    m acc :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition" and
-    acc :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
@@ -950,8 +916,7 @@ next
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    p q :: "('a, 'v) Profile" and
     a :: "'a"
   assume
     "a \<in> defer (m \<circlearrowleft>\<^sub>t) V A p" and

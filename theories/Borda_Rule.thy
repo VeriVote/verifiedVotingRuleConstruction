@@ -39,7 +39,7 @@ theorem borda_rule\<^sub>\<R>_sound: "\<S>\<C>\<F>_result.electoral_module borda
   using \<S>\<C>\<F>_result.\<R>_sound
   by metis
 
-subsection \<open>Anonymity Property\<close>
+subsection \<open>Anonymity\<close>
 
 theorem borda_rule\<^sub>\<R>_anonymous: "\<S>\<C>\<F>_result.anonymity borda_rule\<^sub>\<R>"
 proof (unfold borda_rule\<^sub>\<R>.simps swap_\<R>.simps)

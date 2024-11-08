@@ -21,15 +21,13 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun parallel_composition :: "('a, 'v, 'a Result) Electoral_Module
-                                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
-                                  \<Rightarrow> 'a Aggregator
-                                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun parallel_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Aggregator \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "parallel_composition m n agg V A p = agg A (m V A p) (n V A p)"
 
-abbreviation parallel :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Aggregator
-                            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
-                            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
+abbreviation parallel :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Aggregator \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
       ("_ \<parallel>\<^sub>_ _" [50, 1000, 51] 50) where
   "m \<parallel>\<^sub>a n == parallel_composition m n a"
 
@@ -37,8 +35,7 @@ subsection \<open>Soundness\<close>
 
 theorem par_comp_sound[simp]:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     a :: "'a Aggregator"
   assumes
     "\<S>\<C>\<F>_result.electoral_module m" and
@@ -82,8 +79,7 @@ text \<open>
 
 theorem conserv_agg_presv_non_electing[simp]:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     a :: "'a Aggregator"
   assumes
     non_electing_m: "non_electing m" and

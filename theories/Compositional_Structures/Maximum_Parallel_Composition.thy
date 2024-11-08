@@ -25,23 +25,21 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun maximum_parallel_composition :: "('a, 'v, 'a Result) Electoral_Module
-                              \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
-                                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun maximum_parallel_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "maximum_parallel_composition m n =
     (let a = max_aggregator in (m \<parallel>\<^sub>a n))"
 
-abbreviation max_parallel :: "('a, 'v, 'a Result) Electoral_Module
-                        \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
-                  \<Rightarrow>('a, 'v, 'a Result) Electoral_Module" (infix "\<parallel>\<^sub>\<up>" 50) where
+abbreviation max_parallel :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" (infix "\<parallel>\<^sub>\<up>" 50) where
   "m \<parallel>\<^sub>\<up> n == maximum_parallel_composition m n"
 
 subsection \<open>Soundness\<close>
 
 theorem max_par_comp_sound:
-  fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module"
+  fixes m n :: "('a, 'v, 'a Result) Electoral_Module"
   assumes
      "\<S>\<C>\<F>_result.electoral_module m" and
      "\<S>\<C>\<F>_result.electoral_module n"
@@ -51,9 +49,7 @@ theorem max_par_comp_sound:
   by metis
 
 lemma voters_determine_max_par_comp:
-  fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module"
+  fixes m n :: "('a, 'v, 'a Result) Electoral_Module"
   assumes
      "voters_determine_election m" and
      "voters_determine_election n"
@@ -68,8 +64,7 @@ subsection \<open>Lemmas\<close>
 
 lemma max_agg_eq_result:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
@@ -116,7 +111,7 @@ next
   assume not_a_elect: "a \<notin> elect (m \<parallel>\<^sub>\<up> n) V A p"
   thus ?thesis
   proof (cases)
-    assume a_in_def: "a \<in> defer (m \<parallel>\<^sub>\<up> n) V A p"
+    assume a_in_defer: "a \<in> defer (m \<parallel>\<^sub>\<up> n) V A p"
     thus ?thesis
     proof (safe)
       assume not_mod_cont_mn: "\<not> mod_contains_result (m \<parallel>\<^sub>\<up> n) n V A p a"
@@ -151,7 +146,7 @@ next
         using prof_p result_disj
         by metis
       have a_not_elect: "a \<notin> elect (m \<parallel>\<^sub>max_aggregator n) V A p"
-        using result_disj_max a_in_def
+        using result_disj_max a_in_defer
         by force
       have result_m: "(elect m V A p, reject m V A p, defer m V A p) = m V A p"
         by auto
@@ -170,7 +165,7 @@ next
       hence a_not_elect_mn: "a \<notin> elect m V A p \<and> a \<notin> elect n V A p"
         by blast
       have a_not_mpar_rej: "a \<notin> reject (m \<parallel>\<^sub>\<up> n) V A p"
-        using result_disj_max a_in_def
+        using result_disj_max a_in_defer
         by fastforce
       have mod_cont_res_fg:
         "\<forall> m' n' A' V' p' (a'::'a).
@@ -270,8 +265,7 @@ qed
 
 lemma max_agg_rej_iff_both_reject:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a,'v) Profile" and
@@ -317,14 +311,13 @@ next
     by metis
   ultimately show "a \<in> reject (m \<parallel>\<^sub>\<up> n) V A p"
     using DiffD1 max_agg_eq_result mod_contains_result_comm mod_contains_result_def
-          reject_not_elec_or_def assms
+          reject_not_elected_or_deferred assms
     by (metis (no_types))
 qed
 
 lemma max_agg_rej_fst_imp_seq_contained:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
@@ -396,8 +389,7 @@ qed
 
 lemma max_agg_rej_fst_equiv_seq_contained:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
@@ -443,14 +435,13 @@ qed
 
 lemma max_agg_rej_snd_imp_seq_contained:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
-    f_prof:  "finite_profile V A p" and
+    f_prof: "finite_profile V A p" and
     module_m: "\<S>\<C>\<F>_result.electoral_module m" and
     module_n: "\<S>\<C>\<F>_result.electoral_module n" and
     rejected: "a \<in> reject m V A p"
@@ -491,8 +482,7 @@ qed
 
 lemma max_agg_rej_snd_equiv_seq_contained:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
@@ -538,8 +528,7 @@ qed
 
 lemma max_agg_rej_intersect:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
@@ -556,7 +545,7 @@ proof -
     by metis
   hence "A - ((elect m V A p) \<union> (defer m V A p)) = (reject m V A p)
       \<and> A - ((elect n V A p) \<union> (defer n V A p)) = (reject n V A p)"
-    using assms reject_not_elec_or_def
+    using assms reject_not_elected_or_deferred
     by fastforce
   hence
     "A - ((elect m V A p) \<union> (elect n V A p)
@@ -573,8 +562,7 @@ qed
 
 lemma dcompat_dec_by_one_mod:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     a :: "'a"
@@ -596,9 +584,7 @@ text \<open>
 \<close>
 
 theorem conserv_max_agg_presv_non_electing[simp]:
-  fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module"
+  fixes m n :: "('a, 'v, 'a Result) Electoral_Module"
   assumes
     "non_electing m" and
     "non_electing n"
@@ -612,9 +598,7 @@ text \<open>
 \<close>
 
 theorem par_comp_def_lift_inv[simp]:
-  fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module"
+  fixes m n :: "('a, 'v, 'a Result) Electoral_Module"
   assumes
     compatible: "disjoint_compatibility m n" and
     monotone_m: "defer_lift_invariance m" and
@@ -635,8 +619,7 @@ proof (unfold defer_lift_invariance_def, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    p q :: "('a, 'v) Profile" and
     a :: "'a"
   assume
     defer_a: "a \<in> defer (m \<parallel>\<^sub>\<up> n) V A p" and
@@ -871,8 +854,7 @@ qed
 
 lemma par_comp_rej_card:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
@@ -932,9 +914,7 @@ text \<open>
 \<close>
 
 theorem par_comp_elim_one[simp]:
-  fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module"
+  fixes m n :: "('a, 'v, 'a Result) Electoral_Module"
   assumes
     defers_m_one: "defers 1 m" and
     non_elec_m: "non_electing m" and

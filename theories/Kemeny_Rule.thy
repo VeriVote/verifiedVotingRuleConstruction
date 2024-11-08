@@ -31,7 +31,7 @@ theorem kemeny_rule_sound: "\<S>\<C>\<F>_result.electoral_module kemeny_rule"
   using \<S>\<C>\<F>_result.\<R>_sound
   by metis
 
-subsection \<open>Anonymity Property\<close>
+subsection \<open>Anonymity\<close>
 
 theorem kemeny_rule_anonymous: "\<S>\<C>\<F>_result.anonymity kemeny_rule"
 proof (unfold kemeny_rule.simps swap_\<R>.simps)
@@ -46,14 +46,14 @@ proof (unfold kemeny_rule.simps swap_\<R>.simps)
     by metis
 qed
 
-subsection \<open>Neutrality Property\<close>
+subsection \<open>Neutrality\<close>
 
-lemma swap_dist_neutral: "distance_neutrality valid_elections
+lemma swap_dist_neutral: "distance_neutrality well_formed_elections
                               (votewise_distance swap l_one)"
   using neutral_dist_imp_neutral_votewise_dist swap_neutral
   by blast
 
-theorem kemeny_rule_neutral: "\<S>\<C>\<F>_properties.neutrality valid_elections kemeny_rule"
+theorem kemeny_rule_neutral: "\<S>\<C>\<F>_properties.neutrality well_formed_elections kemeny_rule"
   using strong_unanimity_neutral' swap_dist_neutral strong_unanimity_closed_under_neutrality
         \<S>\<C>\<F>_properties.neutr_dist_and_cons_imp_neutr_dr
   unfolding kemeny_rule.simps swap_\<R>.simps

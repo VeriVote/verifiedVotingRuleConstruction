@@ -139,9 +139,7 @@ next
       using reject_a elect_nonempty
       by simp
   next
-    fix
-      a :: "'a" and
-      b :: "'a"
+    fix a b :: "'a"
     assume
       "b \<in> A" and
       "win_count V p a < win_count V p b"
@@ -191,9 +189,7 @@ next
     thus "a \<in> A"
       by fastforce
   next
-    fix
-      a :: "'a" and
-      b :: "'a"
+    fix a b :: "'a"
     assume "b \<in> A"
     hence "win_count V p b \<in> {win_count V p x | x. x \<in> A}"
       by blast
@@ -281,8 +277,7 @@ proof (unfold plurality_score.simps voters_determine_evaluation.simps, safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
-    p :: "('b, 'a) Profile" and
-    p' :: "('b, 'a) Profile" and
+    p p' :: "('b, 'a) Profile" and
     a :: "'b"
   assume
     "\<forall> v \<in> V. p v = p' v" and
@@ -334,8 +329,7 @@ lemma plurality_def_inv_mono_alts:
   fixes
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    p q :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
     defer_a: "a \<in> defer plurality V A p" and
@@ -544,8 +538,7 @@ next
   fix
     A :: "'b set" and
     V :: "'a set" and
-    p :: "('b, 'a) Profile" and
-    q :: "('b, 'a) Profile" and
+    p q :: "('b, 'a) Profile" and
     a :: "'b"
   assume "a \<in> defer plurality V A p \<and> Profile.lifted V A p q a"
   hence "defer plurality V A q = defer plurality V A p

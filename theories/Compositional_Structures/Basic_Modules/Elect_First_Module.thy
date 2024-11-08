@@ -3,7 +3,7 @@
 *)
 \<^marker>\<open>creator "Marion Steinriede, Karlsruhe Institute of Technology (KIT)"\<close>
 
-section \<open>Elect First Module\<close>
+section \<open>Elect-First Module\<close>
 
 theory Elect_First_Module
   imports "Component_Types/Electoral_Module"
@@ -28,7 +28,7 @@ fun elect_first_module :: "('a, 'v::wellorder, 'a Result) Electoral_Module" wher
 subsection \<open>Soundness\<close>
 
 theorem elect_first_mod_sound: "\<S>\<C>\<F>_result.electoral_module elect_first_module"
-proof (intro \<S>\<C>\<F>_result.electoral_modI)
+proof (intro \<S>\<C>\<F>_result.electoral_modI allI impI)
   fix
     A :: "'a set" and
     V :: "'v::wellorder set" and

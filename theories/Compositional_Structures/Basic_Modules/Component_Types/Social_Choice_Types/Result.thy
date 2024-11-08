@@ -55,16 +55,16 @@ text \<open>
 locale result =
   fixes
     well_formed :: "'a set \<Rightarrow> ('r Result) \<Rightarrow> bool" and
-    limit_set :: "'a set \<Rightarrow> 'r set \<Rightarrow> 'r set"
-  assumes "\<And> (A::('a set)) (r::('r Result)).
-    (set_equals_partition (limit_set A UNIV) r \<and> disjoint3 r) \<Longrightarrow> well_formed A r"
+    limit :: "'a set \<Rightarrow> 'r set \<Rightarrow> 'r set"
+  assumes "\<forall> (A::('a set)) (r::('r Result)).
+    (set_equals_partition (limit A UNIV) r \<and> disjoint3 r) \<longrightarrow> well_formed A r"
 
 text \<open>
   These three functions return the elect, reject, or defer set of a result.
 \<close>
 
-fun (in result) limit_res :: "'a set \<Rightarrow> 'r Result \<Rightarrow> 'r Result" where
-  "limit_res A (e, r, d) = (limit_set A e, limit_set A r, limit_set A d)"
+fun (in result) limit\<^sub>\<R> :: "'a set \<Rightarrow> 'r Result \<Rightarrow> 'r Result" where
+  "limit\<^sub>\<R> A (e, r, d) = (limit A e, limit A r, limit A d)"
 
 abbreviation elect_r :: "'r Result \<Rightarrow> 'r set" where
   "elect_r r \<equiv> fst r"

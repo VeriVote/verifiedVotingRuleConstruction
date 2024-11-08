@@ -11,7 +11,7 @@ theory Social_Choice_Result
   imports Result
 begin
 
-subsection \<open>Social Choice Result\<close>
+subsection \<open>Definition\<close>
 
 text \<open>
   A social choice result contains three sets of alternatives:
@@ -21,17 +21,13 @@ text \<open>
 fun well_formed_\<S>\<C>\<F> :: "'a set \<Rightarrow> 'a Result \<Rightarrow> bool" where
   "well_formed_\<S>\<C>\<F> A res = (disjoint3 res \<and> set_equals_partition A res)"
 
-fun limit_set_\<S>\<C>\<F> :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
-  "limit_set_\<S>\<C>\<F> A r = A \<inter> r"
+fun limit_\<S>\<C>\<F> :: "'a set \<Rightarrow> 'a set \<Rightarrow> 'a set" where
+  "limit_\<S>\<C>\<F> A r = A \<inter> r"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
 lemma result_imp_rej:
-  fixes
-    A :: "'a set" and
-    e :: "'a set" and
-    r :: "'a set" and
-    d :: "'a set"
+  fixes A e r d :: "'a set"
   assumes "well_formed_\<S>\<C>\<F> A (e, r, d)"
   shows "A - (e \<union> d) = r"
 proof (safe)
@@ -80,11 +76,7 @@ next
 qed
 
 lemma result_count:
-  fixes
-    A :: "'a set" and
-    e :: "'a set" and
-    r :: "'a set" and
-    d :: "'a set"
+  fixes A e r d :: "'a set"
   assumes
     wf_result: "well_formed_\<S>\<C>\<F> A (e, r, d)" and
     fin_A: "finite A"

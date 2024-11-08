@@ -19,12 +19,12 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun revision_composition :: "('a, 'v, 'a Result) Electoral_Module
-        \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun revision_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "revision_composition m V A p = ({}, A - elect m V A p, elect m V A p)"
 
-abbreviation rev :: "('a, 'v, 'a Result) Electoral_Module
-        \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" ("_\<down>" 50) where
+abbreviation rev :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" ("_\<down>" 50) where
   "m\<down> == revision_composition m"
 
 subsection \<open>Soundness\<close>
@@ -40,18 +40,14 @@ proof -
     by metis
   hence "\<forall> A V p. profile V A p \<longrightarrow> (A - elect m V A p) \<union> elect m V A p = A"
     by blast
-  hence unity:
-    "\<forall> A V p. profile V A p \<longrightarrow>
+  hence "\<forall> A V p. profile V A p \<longrightarrow>
       set_equals_partition A (revision_composition m V A p)"
     by simp
-  have "\<forall> A V p. profile V A p \<longrightarrow> (A - elect m V A p) \<inter> elect m V A p = {}"
+  moreover have "\<forall> A V p. profile V A p \<longrightarrow> (A - elect m V A p) \<inter> elect m V A p = {}"
     by blast
-  hence disjoint:
-    "\<forall> A V p. profile V A p \<longrightarrow> disjoint3 (revision_composition m V A p)"
+  hence "\<forall> A V p. profile V A p \<longrightarrow> disjoint3 (revision_composition m V A p)"
     by simp
-  from unity disjoint
-  show ?thesis
-    unfolding \<S>\<C>\<F>_result.electoral_module.simps
+  ultimately show ?thesis
     by simp
 qed
 
@@ -136,11 +132,8 @@ next
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
-    a :: "'a" and
-    x :: "'a" and
-    x' :: "'a"
+    p q :: "('a, 'v) Profile" and
+    a x x' :: "'a"
   assume
     rev_p_defer_a: "a \<in> defer (m\<down>) V A p" and
     a_lifted: "lifted V A p q a" and
@@ -165,11 +158,8 @@ next
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
-    a :: "'a" and
-    x :: "'a" and
-    x' :: "'a"
+    p q :: "('a, 'v) Profile" and
+    a x x' :: "'a"
   assume
     rev_p_defer_a: "a \<in> defer (m\<down>) V A p" and
     a_lifted: "lifted V A p q a" and
@@ -197,11 +187,8 @@ next
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
-    a :: "'a" and
-    x :: "'a" and
-    x' :: "'a"
+    p q :: "('a, 'v) Profile" and
+    a x x' :: "'a"
   assume
     "a \<in> defer (m\<down>) V A p" and
     "lifted V A p q a" and
@@ -215,11 +202,8 @@ next
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
-    a :: "'a" and
-    x :: "'a" and
-    x' :: "'a"
+    p q :: "('a, 'v) Profile" and
+    a x x' :: "'a"
   assume
     rev_p_defer_a: "a \<in> defer (m\<down>) V A p" and
     a_lifted: "lifted V A p q a" and

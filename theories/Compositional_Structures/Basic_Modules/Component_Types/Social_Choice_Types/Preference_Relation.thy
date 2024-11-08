@@ -91,8 +91,7 @@ lemma limited_dest:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     "a \<preceq>\<^sub>r b" and
     "limited A r"
@@ -132,9 +131,7 @@ lemma lin_ord_imp_connex:
   assumes "linear_order_on A r"
   shows "connex A r"
 proof (unfold connex_def limited_def, safe)
-  fix
-    a :: "'a" and
-    b :: "'a"
+  fix a b :: "'a"
   assume "(a, b) \<in> r"
   moreover have "refl_on A r"
     using assms partial_order_onD
@@ -145,9 +142,7 @@ proof (unfold connex_def limited_def, safe)
     "b \<in> A"
     by (simp_all add: refl_on_domain)
 next
-  fix
-    a :: "'a" and
-    b :: "'a"
+  fix a b :: "'a"
   assume
     "a \<in> A" and
     "b \<in> A" and
@@ -178,9 +173,7 @@ lemma connex_antsym_and_trans_imp_lin_ord:
   shows "linear_order_on A r"
 proof (unfold connex_def linear_order_on_def partial_order_on_def
               preorder_on_def refl_on_def total_on_def, safe)
-  fix
-    a :: "'a" and
-    b :: "'a"
+  fix a b :: "'a"
   assume "(a, b) \<in> r"
   thus
     "a \<in> A" and
@@ -202,9 +195,7 @@ next
     using antisym_r
     by simp
 next
-  fix
-    a :: "'a" and
-    b :: "'a"
+  fix a b :: "'a"
   assume
     "a \<in> A" and
     "b \<in> A" and
@@ -229,8 +220,7 @@ lemma limit_to_limits:
 
 lemma limit_presv_connex:
   fixes
-    B :: "'a set" and
-    A :: "'a set" and
+    A B :: "'a set" and
     r :: "'a Preference_Relation"
   assumes
     connex: "connex B r" and
@@ -238,9 +228,7 @@ lemma limit_presv_connex:
   shows "connex A (limit A r)"
 proof (unfold connex_def limited_def limit.simps is_less_preferred_than.simps, safe)
   let ?s = "{(a, b). (a, b) \<in> r \<and> a \<in> A \<and> b \<in> A}"
-  fix
-    a :: "'a" and
-    b :: "'a"
+  fix a b :: "'a"
   assume
     a_in_A: "a \<in> A" and
     b_in_A: "b \<in> A" and
@@ -278,8 +266,7 @@ lemma limit_presv_trans:
 
 lemma limit_presv_lin_ord:
   fixes
-    A :: "'a set" and
-    B :: "'a set" and
+    A B :: "'a set" and
     r :: "'a Preference_Relation"
   assumes
     "linear_order_on B r" and
@@ -294,8 +281,7 @@ lemma limit_presv_prefs:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     "a \<preceq>\<^sub>r b" and
     "a \<in> A" and
@@ -308,8 +294,7 @@ lemma limit_rel_presv_prefs:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes "(a, b) \<in> limit A r"
   shows "a \<preceq>\<^sub>r b"
   using mem_Collect_eq assms
@@ -317,8 +302,7 @@ lemma limit_rel_presv_prefs:
 
 lemma limit_trans:
   fixes
-    A :: "'a set" and
-    B :: "'a set" and
+    A B :: "'a set" and
     r :: "'a Preference_Relation"
   assumes "A \<subseteq> B"
   shows "limit A r = limit A (limit B r)"
@@ -355,8 +339,7 @@ subsection \<open>Auxiliary Lemmas\<close>
 lemma above_trans:
   fixes
     r :: "'a Preference_Relation" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     "trans r" and
     "(a, b) \<in> r"
@@ -381,8 +364,7 @@ lemma above_refl:
 lemma above_subset_geq_one:
   fixes
     A :: "'a set" and
-    r :: "'a Preference_Relation" and
-    r' :: "'a Preference_Relation" and
+    r r' :: "'a Preference_Relation" and
     a :: "'a"
   assumes
     "linear_order_on A r" and
@@ -410,8 +392,7 @@ lemma above_connex:
 lemma pref_imp_in_above:
   fixes
     r :: "'a Preference_Relation" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   shows "(a \<preceq>\<^sub>r b) = (b \<in> above r a)"
   unfolding above_def
   by simp
@@ -420,8 +401,7 @@ lemma limit_presv_above:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     "b \<in> above r a" and
     "a \<in> A" and
@@ -432,11 +412,9 @@ lemma limit_presv_above:
 
 lemma limit_rel_presv_above:
   fixes
-    A :: "'a set" and
-    B :: "'a set" and
+    A B :: "'a set" and
     r :: "'a Preference_Relation" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes "b \<in> above (limit B r) a"
   shows "b \<in> above r a"
   using assms limit_rel_presv_prefs mem_Collect_eq pref_imp_in_above
@@ -661,8 +639,7 @@ lemma above_one_eq:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     lin_ord: "linear_order_on A r" and
     fin_A: "finite A" and
@@ -741,8 +718,7 @@ lemma rank_unique:
   fixes
     A :: "'a set" and
     r :: "'a Preference_Relation" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     lin_ord: "linear_order_on A r" and
     fin_A: "finite A" and
@@ -834,8 +810,7 @@ lemma trivial_equiv_rel:
 lemma lifted_imp_equiv_rel_except_a:
   fixes
     A :: "'a set" and
-    r :: "'a Preference_Relation" and
-    r' :: "'a Preference_Relation" and
+    r r' :: "'a Preference_Relation" and
     a :: "'a"
   assumes "lifted A r r' a"
   shows "equiv_rel_except_a A r r' a"
@@ -846,8 +821,7 @@ lemma lifted_imp_equiv_rel_except_a:
 lemma lifted_imp_switched:
   fixes
     A :: "'a set" and
-    r :: "'a Preference_Relation" and
-    r' :: "'a Preference_Relation" and
+    r r' :: "'a Preference_Relation" and
     a :: "'a"
   assumes "lifted A r r' a"
   shows "\<forall> a' \<in> A - {a}. \<not> (a' \<preceq>\<^sub>r a \<and> a \<preceq>\<^sub>r' a')"
@@ -909,10 +883,8 @@ qed
 lemma lifted_mono:
   fixes
     A :: "'a set" and
-    r :: "'a Preference_Relation" and
-    r' :: "'a Preference_Relation" and
-    a :: "'a" and
-    a' :: "'a"
+    r r' :: "'a Preference_Relation" and
+    a a' :: "'a"
   assumes
     lifted: "lifted A r r' a" and
     a'_pref_a: "a' \<preceq>\<^sub>r a"
@@ -953,8 +925,7 @@ qed
 lemma lifted_above_subset:
   fixes
     A :: "'a set" and
-    r :: "'a Preference_Relation" and
-    r' :: "'a Preference_Relation" and
+    r r' :: "'a Preference_Relation" and
     a :: "'a"
   assumes "lifted A r r' a"
   shows "above r' a \<subseteq> above r a"
@@ -998,10 +969,8 @@ qed
 lemma lifted_above_mono:
   fixes
     A :: "'a set" and
-    r :: "'a Preference_Relation" and
-    r' :: "'a Preference_Relation" and
-    a :: "'a" and
-    a' :: "'a"
+    r r' :: "'a Preference_Relation" and
+    a a' :: "'a"
   assumes
     lifted_a: "lifted A r r' a" and
     a'_in_A_sub_a: "a' \<in> A - {a}"
@@ -1024,10 +993,8 @@ qed
 
 lemma limit_lifted_imp_eq_or_lifted:
   fixes
-    A :: "'a set" and
-    A' :: "'a set" and
-    r :: "'a Preference_Relation" and
-    r' :: "'a Preference_Relation" and
+    A A' :: "'a set" and
+    r r' :: "'a Preference_Relation" and
     a :: "'a"
   assumes
     lifted: "lifted A' r r' a" and
@@ -1121,10 +1088,8 @@ qed
 
 lemma negl_diff_imp_eq_limit:
   fixes
-    A :: "'a set" and
-    A' :: "'a set" and
-    r :: "'a Preference_Relation" and
-    r' :: "'a Preference_Relation" and
+    A A' :: "'a set" and
+    r r' :: "'a Preference_Relation" and
     a :: "'a"
   assumes
     change: "equiv_rel_except_a A' r r' a" and
@@ -1147,10 +1112,8 @@ qed
 theorem lifted_above_winner_alts:
   fixes
     A :: "'a set" and
-    r :: "'a Preference_Relation" and
-    r' :: "'a Preference_Relation" and
-    a :: "'a" and
-    a' :: "'a"
+    r r' :: "'a Preference_Relation" and
+    a a' :: "'a"
   assumes
     lifted_a: "lifted A r r' a" and
     a'_above_a': "above r a' = {a'}" and
@@ -1215,8 +1178,7 @@ qed
 theorem lifted_above_winner_single:
   fixes
     A :: "'a set" and
-    r :: "'a Preference_Relation" and
-    r' :: "'a Preference_Relation" and
+    r r' :: "'a Preference_Relation" and
     a :: "'a"
   assumes
     "lifted A r r' a" and
@@ -1229,10 +1191,8 @@ theorem lifted_above_winner_single:
 theorem lifted_above_winner_other:
   fixes
     A :: "'a set" and
-    r :: "'a Preference_Relation" and
-    r' :: "'a Preference_Relation" and
-    a :: "'a" and
-    a' :: "'a"
+    r r' :: "'a Preference_Relation" and
+    a a' :: "'a"
   assumes
     lifted_a: "lifted A r r' a" and
     a'_above_a': "above r' a' = {a'}" and

@@ -21,8 +21,8 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun pass_module :: "nat \<Rightarrow> 'a Preference_Relation
-                      \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun pass_module :: "nat \<Rightarrow> 'a Preference_Relation \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "pass_module n r V A p =
     ({},
     {a \<in> A. rank (limit A r) a > n},
@@ -80,7 +80,7 @@ theorem pass_mod_non_blocking[simp]:
     n :: "nat"
   assumes
     order: "linear_order r" and
-    g0_n: "n > 0"
+    greater_zero: "n > 0"
   shows "non_blocking (pass_module n r)"
 proof (unfold non_blocking_def, safe)
   show "\<S>\<C>\<F>_result.electoral_module (pass_module n r)"
@@ -105,7 +105,7 @@ next
     using fin_A a_in_A lin above_one
     by blast
   moreover have "{b \<in> A. rank (limit A r) b > n} \<noteq> A"
-    using Suc_leI g0_n leD mem_Collect_eq above_rank calculation
+    using Suc_leI greater_zero leD mem_Collect_eq above_rank calculation
     unfolding One_nat_def
     by (metis (no_types, lifting))
   hence "reject (pass_module n r) V A p \<noteq> A"
@@ -347,7 +347,7 @@ next
     using limit_presv_lin_ord assms top_greatest
     by blast
   ultimately obtain b where
-    b: "above (limit (A - {a}) r) b = {b}"
+    top_b: "above (limit (A - {a}) r) b = {b}"
     using above_one
     by metis
   hence "\<forall> c \<in> A - {a}. let q = limit (A - {a}) r in (c \<preceq>\<^sub>q b)"
@@ -360,14 +360,14 @@ next
   hence b_best: "\<forall> c \<in> A - {a}. (c, b) \<in> limit A r"
     by auto
   hence "\<forall> c \<in> A - {a, b}. c \<notin> above (limit A r) b"
-    using b Diff_iff Diff_insert2 above_presv_limit insert_subset
+    using top_b Diff_iff Diff_insert2 above_presv_limit insert_subset
           assms limit_presv_above limit_rel_presv_above
     by metis
   moreover have above_subset: "above (limit A r) b \<subseteq> A"
     using above_presv_limit assms
     by metis
   moreover have b_above_b: "b \<in> above (limit A r) b"
-    using b b_best above_presv_limit mem_Collect_eq assms insert_subset
+    using top_b b_best above_presv_limit mem_Collect_eq assms insert_subset
     unfolding above_def
     by metis
   ultimately have above_b_eq_ab: "above (limit A r) b = {a, b}"

@@ -30,7 +30,7 @@ fun nonempty_set\<^sub>\<C> :: "('a, 'v) Consensus" where
 
 text \<open>
   Nonempty profile, i.e., nonempty voter set.
-  Note that this is also true if p v = {} for all voters v in V.
+  Note that this is also true if p(v) = {} holds for all voters v in V.
 \<close>
 
 fun nonempty_profile\<^sub>\<C> :: "('a, 'v) Consensus" where
@@ -86,33 +86,28 @@ fun consensus_neutrality :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Consen
 subsection \<open>Auxiliary Lemmas\<close>
 
 lemma cons_anon_conj:
-  fixes
-    c1 :: "('a, 'v) Consensus" and
-    c2 :: "('a, 'v) Consensus"
+  fixes c c' :: "('a, 'v) Consensus"
   assumes
-    anon1: "consensus_anonymity c1" and
-    anon2: "consensus_anonymity c2"
-  shows "consensus_anonymity (\<lambda> e. c1 e \<and> c2 e)"
+    "consensus_anonymity c" and
+    "consensus_anonymity c'"
+  shows "consensus_anonymity (\<lambda> e. c e \<and> c' e)"
 proof (unfold consensus_anonymity_def Let_def, clarify)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p q :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
     bij: "bij \<pi>" and
     prof: "profile V A p" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
-    c1: "c1 (A, V, p)" and
-    c2: "c2 (A, V, p)"
+    c: "c (A, V, p)" and
+    c': "c' (A, V, p)"
   hence "profile V' A' q"
     using rename_sound renamed bij fst_conv rename.simps
     by metis
-  thus "c1 (A', V', q) \<and> c2 (A', V', q)"
-    using bij renamed c1 c2 assms prof
+  thus "c (A', V', q) \<and> c' (A', V', q)"
+    using bij renamed c c' assms prof
     unfolding consensus_anonymity_def
     by auto
 qed
@@ -122,12 +117,10 @@ theorem cons_conjunction_invariant:
     \<CC> :: "('a, 'v) Consensus set" and
     rel :: "('a, 'v) Election rel"
   defines "C \<equiv> (\<lambda> E. (\<forall> C' \<in> \<CC>. C' E))"
-  assumes "\<And> C'. C' \<in> \<CC> \<Longrightarrow> is_symmetry C' (Invariance rel)"
+  assumes "\<forall> C'. C' \<in> \<CC> \<longrightarrow> is_symmetry C' (Invariance rel)"
   shows "is_symmetry C (Invariance rel)"
 proof (unfold is_symmetry.simps, intro allI impI)
-  fix
-    E :: "('a,'v) Election" and
-    E' :: "('a,'v) Election"
+  fix E E' :: "('a,'v) Election"
   assume "(E,E') \<in> rel"
   hence "\<forall> C' \<in> \<CC>. C' E = C' E'"
     using assms
@@ -141,12 +134,9 @@ qed
 lemma cons_anon_invariant:
   fixes
     c :: "('a, 'v) Consensus" and
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p q :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assumes
     anon: "consensus_anonymity c" and
@@ -175,12 +165,9 @@ lemma ex_anon_cons_imp_cons_anonymous:
   shows "consensus_anonymity b"
 proof (unfold consensus_anonymity_def Let_def, safe)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p q :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
     bij: "bij \<pi>" and
@@ -221,12 +208,9 @@ lemma nonempty_set_cons_anonymous: "consensus_anonymity nonempty_set\<^sub>\<C>"
 lemma nonempty_profile_cons_anonymous: "consensus_anonymity nonempty_profile\<^sub>\<C>"
 proof (unfold consensus_anonymity_def Let_def, clarify)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p q :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
     bij: "bij \<pi>" and
@@ -248,12 +232,9 @@ lemma equal_top_cons'_anonymous:
   shows "consensus_anonymity (equal_top\<^sub>\<C>' a)"
 proof (unfold consensus_anonymity_def Let_def, clarify)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p q :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
     bij: "bij \<pi>" and
@@ -291,12 +272,9 @@ lemma eq_vote_cons'_anonymous:
   shows "consensus_anonymity (equal_vote\<^sub>\<C>' r)"
 proof (unfold consensus_anonymity_def Let_def, clarify)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p q :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
     bij: "bij \<pi>" and
@@ -327,29 +305,26 @@ lemma eq_vote_cons_anonymous: "consensus_anonymity equal_vote\<^sub>\<C>"
 
 subsubsection \<open>Neutrality\<close>
 
-lemma nonempty_set\<^sub>\<C>_neutral: "consensus_neutrality valid_elections nonempty_set\<^sub>\<C>"
-  unfolding valid_elections_def
+lemma nonempty_set\<^sub>\<C>_neutral: "consensus_neutrality well_formed_elections nonempty_set\<^sub>\<C>"
+  unfolding well_formed_elections_def
   by auto
 
-lemma nonempty_profile\<^sub>\<C>_neutral: "consensus_neutrality valid_elections nonempty_profile\<^sub>\<C>"
-  unfolding valid_elections_def
+lemma nonempty_profile\<^sub>\<C>_neutral: "consensus_neutrality well_formed_elections nonempty_profile\<^sub>\<C>"
+  unfolding well_formed_elections_def
   by auto
 
-lemma equal_vote\<^sub>\<C>_neutral: "consensus_neutrality valid_elections equal_vote\<^sub>\<C>"
-proof (unfold valid_elections_def consensus_neutrality.simps is_symmetry.simps,
+lemma equal_vote\<^sub>\<C>_neutral: "consensus_neutrality well_formed_elections equal_vote\<^sub>\<C>"
+proof (unfold well_formed_elections_def consensus_neutrality.simps is_symmetry.simps,
        intro allI impI,
        unfold split_paired_all neutrality\<^sub>\<R>.simps action_induced_rel.simps
-       voters_\<E>.simps alternatives_\<E>.simps profile_\<E>.simps \<phi>_neutr.simps
+       voters_\<E>.simps alternatives_\<E>.simps profile_\<E>.simps \<phi>_neutral.simps
        extensional_continuation.simps equal_vote\<^sub>\<C>.simps equal_vote\<^sub>\<C>'.simps
        alternatives_rename.simps case_prod_unfold mem_Collect_eq fst_conv
        snd_conv mem_Sigma_iff conj_assoc If_def simp_thms, safe)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p p' :: "('a, 'v) Profile" and
     \<pi> :: "'a \<Rightarrow> 'a" and
     r :: "'a rel"
   assume
@@ -401,10 +376,11 @@ proof (unfold valid_elections_def consensus_neutrality.simps is_symmetry.simps,
 qed
 
 lemma strong_unanimity\<^sub>\<C>_neutral:
-  "consensus_neutrality valid_elections strong_unanimity\<^sub>\<C>"
+  "consensus_neutrality well_formed_elections strong_unanimity\<^sub>\<C>"
   using nonempty_set\<^sub>\<C>_neutral equal_vote\<^sub>\<C>_neutral nonempty_profile\<^sub>\<C>_neutral
         cons_conjunction_invariant[of
-          "{nonempty_set\<^sub>\<C>, nonempty_profile\<^sub>\<C>, equal_vote\<^sub>\<C>}" "neutrality\<^sub>\<R> valid_elections"]
+          "{nonempty_set\<^sub>\<C>, nonempty_profile\<^sub>\<C>, equal_vote\<^sub>\<C>}"
+          "neutrality\<^sub>\<R> well_formed_elections"]
   unfolding strong_unanimity\<^sub>\<C>.simps
   by fastforce
 

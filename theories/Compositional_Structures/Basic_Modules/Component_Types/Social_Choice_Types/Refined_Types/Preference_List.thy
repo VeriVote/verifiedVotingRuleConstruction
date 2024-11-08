@@ -29,8 +29,7 @@ subsection \<open>Auxiliary Lemmas About Lists\<close>
 
 lemma is_arg_min_equal:
   fixes
-    f :: "'a \<Rightarrow> 'b::ord" and
-    g :: "'a \<Rightarrow> 'b" and
+    f g :: "'a \<Rightarrow> 'b::ord" and
     S :: "'a set" and
     x :: "'a"
   assumes "\<forall> x \<in> S. f x = g x"
@@ -306,9 +305,7 @@ proof (cases "A = {}", unfold linear_order_on_def total_on_def
         partial_order_on_def antisym_def preorder_on_def,
         intro conjI impI allI ballI)
   case True
-  fix
-    x :: "'a" and
-    y :: "'a"
+  fix x y :: "'a"
   show
     "refl_on A r" and
     "trans r" and
@@ -319,9 +316,7 @@ proof (cases "A = {}", unfold linear_order_on_def total_on_def
     by (simp, simp, simp, simp)
 next
   case False
-  fix
-    x :: "'a" and
-    y :: "'a"
+  fix x y :: "'a"
   show "((refl_on A r \<and> trans r)
       \<and> (\<forall> x y. (x, y) \<in> r \<longrightarrow> (y, x) \<in> r \<longrightarrow> x = y))
       \<and> (\<forall> x \<in> A. \<forall> y \<in> A. x \<noteq> y \<longrightarrow> (x, y) \<in> r \<or> (y, x) \<in> r)"
@@ -348,9 +343,7 @@ next
       using assms rel_trans
       by safe
   next
-    fix
-      x :: "'a" and
-      y :: "'a"
+    fix x y :: "'a"
     assume
       "(x, y) \<in> r" and
       "(y, x) \<in> r"
@@ -367,9 +360,7 @@ next
       using assms
       by metis
   next
-    fix
-      x :: "'a" and
-      y :: "'a"
+    fix x y :: "'a"
     assume
       "x \<in> A" and
       "y \<in> A" and
@@ -508,9 +499,7 @@ proof -
   qed
   moreover have "pl_\<alpha> ?l = r"
   proof (intro equalityI, unfold pl_\<alpha>_def is_less_preferred_than_l.simps, safe)
-    fix
-      a :: "'a" and
-      b :: "'a"
+    fix a b :: "'a"
     assume
       in_bounds_a: "a \<in> set ?l" and
       in_bounds_b: "b \<in> set ?l"
@@ -569,9 +558,7 @@ proof -
     ultimately show "(a, b) \<in> r"
       by auto
   next
-    fix
-      a :: "'a" and
-      b :: "'a"
+    fix a b :: "'a"
     assume a_b_rel: "(a, b) \<in> r"
     hence
       a_in_A: "a \<in> A" and
@@ -631,9 +618,7 @@ proof -
 qed
 
 lemma pl_\<alpha>_eq_imp_list_eq:
-  fixes
-    l :: "'x list" and
-    l' :: "'x list"
+  fixes l l' :: "'x list"
   assumes
     fin_set_l: "finite (set l)" and
     set_eq: "set l = set l'" and
@@ -726,8 +711,7 @@ lemma limited_dest:
   fixes
     A :: "'a set" and
     l :: "'a Preference_List" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     "a \<lesssim>\<^sub>l b" and
     "limited A l"
@@ -758,9 +742,7 @@ next
     wf_a_l: "well_formed_l (a#l)"
   show "pl_\<alpha> (limit_l A (a#l)) = limit A (pl_\<alpha> (a#l))"
   proof (unfold limit_l.simps limit.simps, intro equalityI, safe)
-    fix
-      b :: "'a" and
-      c :: "'a"
+    fix b c :: "'a"
     assume
       b_less_c: "(b, c) \<in> pl_\<alpha> (filter (\<lambda> a. a \<in> A) (a#l))"
     moreover have limit_preference_list_assoc:
@@ -808,9 +790,8 @@ next
         unfolding pl_\<alpha>_def
         by (metis (no_types))
       moreover obtain
-        f :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> 'a" and
-        g :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> 'a list" and
-        h :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> 'a" where
+        f h :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> 'a" and
+        g :: "'a \<Rightarrow> 'a list \<Rightarrow> 'a \<Rightarrow> 'a list" where
         "\<forall> d s e. d \<lesssim>\<^sub>s e \<longrightarrow>
           d = f e s d \<and> s = g e s d \<and> e = h e s d
           \<and> f e s d \<in> set (g e s d) \<and> h e s d \<in> set (g e s d)
@@ -862,9 +843,7 @@ next
       by (metis (no_types, lifting),
           metis (no_types, lifting))
   next
-    fix
-      b :: "'a" and
-      c :: "'a"
+    fix b c :: "'a"
     assume
       b_less_c: "(b, c) \<in> pl_\<alpha> (a#l)" and
       b_in_A: "b \<in> A" and
@@ -979,8 +958,7 @@ lemma lin_ord_imp_connex_l:
 lemma above_trans:
   fixes
     l :: "'a Preference_List" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     "trans l" and
     "a \<lesssim>\<^sub>l b"
@@ -994,8 +972,7 @@ lemma above_trans:
 lemma less_preferred_l_rel_equiv:
   fixes
     l :: "'a Preference_List" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   shows "a \<lesssim>\<^sub>l b =
     Preference_Relation.is_less_preferred_than a (pl_\<alpha> l) b"
   unfolding pl_\<alpha>_def
@@ -1158,9 +1135,7 @@ lemma rel_of_pref_pred_for_set_eq_list_to_rel:
   fixes l :: "'a Preference_List"
   shows "relation_of (\<lambda> y z. y \<lesssim>\<^sub>l z) (set l) = pl_\<alpha> l"
 proof (unfold relation_of_def, safe)
-  fix
-    a :: "'a" and
-    b :: "'a"
+  fix a b :: "'a"
   assume "a \<lesssim>\<^sub>l b"
   moreover have "(a \<lesssim>\<^sub>l b) = (a \<preceq>\<^sub>(pl_\<alpha> l) b)"
     using less_preferred_l_rel_equiv
@@ -1168,9 +1143,7 @@ proof (unfold relation_of_def, safe)
   ultimately show "(a, b) \<in> pl_\<alpha> l"
     by simp
 next
-  fix
-    a :: "'a" and
-    b :: "'a"
+  fix a b :: "'a"
   assume "(a, b) \<in> pl_\<alpha> l"
   thus "a \<lesssim>\<^sub>l b"
     using less_preferred_l_rel_equiv

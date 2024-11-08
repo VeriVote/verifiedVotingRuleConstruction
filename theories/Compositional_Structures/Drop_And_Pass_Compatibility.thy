@@ -7,7 +7,7 @@
 
 chapter \<open>Compositional Structures\<close>
 
-section \<open>Drop And Pass Compatibility\<close>
+section \<open>Drop- and Pass-Compatibility\<close>
 
 theory Drop_And_Pass_Compatibility
   imports "Basic_Modules/Drop_Module"
@@ -18,8 +18,6 @@ text \<open>
   This is a collection of properties about the interplay and compatibility
   of both the drop module and the pass module.
 \<close>
-
-subsection \<open>Properties\<close>
 
 theorem drop_zero_mod_rej_zero[simp]:
   fixes r :: "'a Preference_Relation"

@@ -17,8 +17,6 @@ text \<open>
   of the loop.
 \<close>
 
-subsection \<open>Definition\<close>
-
 type_synonym 'r Termination_Condition = "'r Result \<Rightarrow> bool"
 
 end

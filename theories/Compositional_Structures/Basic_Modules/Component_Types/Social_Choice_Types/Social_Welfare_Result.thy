@@ -10,8 +10,6 @@ theory Social_Welfare_Result
           Preference_Relation
 begin
 
-subsection \<open>Social Welfare Result\<close>
-
 text \<open>
   A social welfare result contains three sets of relations:
   elected, rejected, and deferred
@@ -23,8 +21,8 @@ fun well_formed_\<S>\<W>\<F> :: "'a set \<Rightarrow> ('a Preference_Relation) R
   "well_formed_\<S>\<W>\<F> A res = (disjoint3 res \<and>
                                   set_equals_partition {r. linear_order_on A r} res)"
 
-fun limit_set_\<S>\<W>\<F> ::
+fun limit_\<S>\<W>\<F> ::
   "'a set \<Rightarrow> ('a Preference_Relation) set \<Rightarrow> ('a Preference_Relation) set" where
-  "limit_set_\<S>\<W>\<F> A res = {limit A r | r. r \<in> res \<and> linear_order_on A (limit A r)}"
+  "limit_\<S>\<W>\<F> A res = {limit A r | r. r \<in> res \<and> linear_order_on A (limit A r)}"
 
 end
