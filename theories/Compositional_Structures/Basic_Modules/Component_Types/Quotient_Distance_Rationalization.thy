@@ -140,10 +140,9 @@ proof (safe)
   fix
     p :: "'x list" and
     i :: "nat"
-  assume
-    "p \<in> relation_paths r"
+  assume "p \<in> relation_paths r"
   then obtain k :: "nat" where
-    "length p = 2 * k" and
+    len_p: "length p = 2 * k" and
     rel: "\<forall> i < k. (p!(2 * i), p!(2 * i + 1)) \<in> r"
     by auto
   moreover obtain k' :: "nat" where

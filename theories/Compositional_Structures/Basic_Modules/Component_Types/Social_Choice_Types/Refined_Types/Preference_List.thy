@@ -143,7 +143,7 @@ qed
 
 lemma all_ls_elems_same_len:
   fixes l :: "'a set list"
-  shows "\<forall> l'::('a list). l' \<in> listset l \<longrightarrow> length l' = length l"
+  shows "\<forall> l' :: 'a list. l' \<in> listset l \<longrightarrow> length l' = length l"
 proof (induct l, safe)
   case Nil
   fix l :: "'a list"
@@ -160,7 +160,7 @@ next
     "\<forall> l'. l' \<in> listset l \<longrightarrow> length l' = length l" and
     "m \<in> listset (a#l)"
   moreover have
-    "\<forall> a' l'::('a set list). listset (a'#l') =
+    "\<forall> a' l' :: 'a set list. listset (a'#l') =
       {b#m | b m. b \<in> a' \<and> m \<in> listset l'}"
     by (simp add: set_Cons_def)
   ultimately show "length m = length (a#l)"
@@ -407,7 +407,8 @@ proof -
     unfolding underS_def linear_order_on_def
               partial_order_on_def preorder_on_def
     by (metis (mono_tags, lifting))
-  hence a_lt_b_imp: "\<forall> a \<in> A. \<forall> b \<in> A. a \<in> (underS r b) \<longrightarrow> (underS r a) \<subset> (underS r b)"
+  hence a_lt_b_imp:
+    "\<forall> a \<in> A. \<forall> b \<in> A. a \<in> (underS r b) \<longrightarrow> (underS r a) \<subset> (underS r b)"
     using preorder_on_def partial_order_on_def linear_order_on_def
           antisym lin_order psubsetI underS_E underS_incr
     by metis
@@ -428,7 +429,7 @@ proof -
     using inj_on_def
     by blast
   have in_bounds: "\<forall> a \<in> A. ?\<phi> a < card A"
-    using CollectD IntD1 card_seteq fin inf_sup_ord(2) linorder_le_less_linear
+    using CollectD IntD1 card_seteq fin inf_le2 linorder_le_less_linear
     unfolding underS_def
     by (metis (mono_tags, lifting))
   hence "?\<phi> ` A \<subseteq> {0 ..< card A}"
@@ -439,7 +440,7 @@ proof -
     by blast
   ultimately have "?\<phi> ` A = {0 ..< card A}"
     by (simp add: card_subset_eq)
-  hence bij: "bij_betw ?\<phi> A {0 ..< card A}"
+  hence bij_A: "bij_betw ?\<phi> A {0 ..< card A}"
     using inj
     unfolding bij_betw_def
     by safe
@@ -522,7 +523,7 @@ proof -
       using index_eq set_eq_A
       by metis
     moreover have "\<forall> a < card A. ?\<phi> (?inv a) < card A"
-      using fin bij_inv bij
+      using fin bij_inv bij_A
       unfolding bij_betw_def
       by fastforce
     hence "?\<phi> b \<le> card A - 1 \<and> ?\<phi> a \<le> card A - 1"
@@ -595,7 +596,7 @@ lemma index_helper:
     "x \<in> set l"
   shows "index l x = card {y \<in> set l. index l y < index l x}"
 proof -
-  have bij: "bij_betw (index l) (set l) {0 ..< length l}"
+  have bij_l: "bij_betw (index l) (set l) {0 ..< length l}"
     using assms bij_betw_index
     by blast
   hence "card {y \<in> set l. index l y < index l x} =
@@ -608,7 +609,7 @@ proof -
   also have
     "{m | m. m \<in> index l ` (set l) \<and> m < index l x} =
         {m | m. m < index l x}"
-    using bij assms atLeastLessThan_iff bot_nat_0.extremum
+    using bij_l assms atLeastLessThan_iff bot_nat_0.extremum
           index_image index_less_size_conv order_less_trans
     by metis
   also have "card {m | m. m < index l x} = index l x"
@@ -743,8 +744,7 @@ next
   show "pl_\<alpha> (limit_l A (a#l)) = limit A (pl_\<alpha> (a#l))"
   proof (unfold limit_l.simps limit.simps, intro equalityI, safe)
     fix b c :: "'a"
-    assume
-      b_less_c: "(b, c) \<in> pl_\<alpha> (filter (\<lambda> a. a \<in> A) (a#l))"
+    assume b_less_c: "(b, c) \<in> pl_\<alpha> (filter (\<lambda> a. a \<in> A) (a#l))"
     moreover have limit_preference_list_assoc:
       "pl_\<alpha> (limit_l A l) = limit A (pl_\<alpha> l)"
       using wf_a_l wf_imp_limit
@@ -759,7 +759,7 @@ next
     thus "(b, c) \<in> pl_\<alpha> (a#l)"
     proof (unfold pl_\<alpha>_def is_less_preferred_than_l.simps, safe)
       have idx_set_eq:
-        "\<forall> a' l' a''. (a'::'a) \<lesssim>\<^sub>l' a'' =
+        "\<forall> a' l' a''. (a' :: 'a) \<lesssim>\<^sub>l' a'' =
             (a' \<in> set l' \<and> a'' \<in> set l' \<and> index l' a'' \<le> index l' a')"
         using is_less_preferred_than_l.simps
         by blast

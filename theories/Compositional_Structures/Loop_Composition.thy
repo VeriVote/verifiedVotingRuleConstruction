@@ -46,9 +46,11 @@ text \<open>
 function loop_comp_helper :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
         ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Termination_Condition \<Rightarrow>
         ('a, 'v, 'a Result) Electoral_Module" where
+    loop_comp_helper_finite:
     "finite (defer acc V A p) \<and> (defer (acc \<triangleright> m) V A p) \<subset> (defer acc V A p)
         \<longrightarrow> t (acc V A p) \<Longrightarrow>
     loop_comp_helper acc m t V A p = acc V A p" |
+    loop_comp_helper_infinite:
     "\<not> (finite (defer acc V A p) \<and> (defer (acc \<triangleright> m) V A p) \<subset> (defer acc V A p)
         \<longrightarrow> t (acc V A p)) \<Longrightarrow>
     loop_comp_helper acc m t V A p = loop_comp_helper (acc \<triangleright> m) m t V A p"
@@ -164,7 +166,7 @@ proof (safe)
       ('b, 'a, 'b Result) Electoral_Module \<times> ('b, 'a, 'b Result) Electoral_Module
       \<times> 'b Termination_Condition \<times> 'a set \<times> 'b set \<times> ('b, 'a) Profile \<Rightarrow> bool) \<or>
       (\<exists> t' m' A' V' p' n'. wf R' \<longrightarrow>
-        ((m' \<triangleright> n', n', t', V'::'a set, A'::'b set, p'), m', n', t', V', A', p') \<notin> R'
+        ((m' \<triangleright> n', n', t', V' :: 'a set, A' :: 'b set, p'), m', n', t', V', A', p') \<notin> R'
         \<and> finite (defer m' V' A' p') \<and> defer (m' \<triangleright> n') V' A' p' \<subset> defer m' V' A' p'
         \<and> \<not> t' (m' V' A' p'))"
     using "termination"
@@ -200,8 +202,9 @@ termination
   using "termination" wf_empty
   by blast
 
-abbreviation loop :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Termination_Condition \<Rightarrow>
-        ('a, 'v, 'a Result) Electoral_Module" ("_ \<circlearrowleft>\<^sub>_" 50) where
+abbreviation loop :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        'a Termination_Condition \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
+        ("_ \<circlearrowleft>\<^sub>_" 50) where
   "m \<circlearrowleft>\<^sub>t \<equiv> loop_composition m t"
 
 lemma loop_comp_code[code]:
@@ -244,7 +247,7 @@ proof (induct arbitrary: acc rule: less_induct)
   hence "\<not> t (acc V A p) \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p \<and>
             finite (defer acc V A p) \<longrightarrow>
           well_formed_\<S>\<C>\<F> A (loop_comp_helper acc m t V A p)"
-    using less.hyps less.prems loop_comp_helper.simps(2)
+    using less.hyps less.prems loop_comp_helper_infinite
           psubset_card_mono
   by metis
   moreover have "well_formed_\<S>\<C>\<F> A (acc V A p)"
@@ -300,8 +303,8 @@ proof (induct arbitrary: acc rule: less_induct)
   hence "\<not> t (acc V A p) \<and> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p \<and>
             finite (defer acc V A p) \<longrightarrow>
           defer (loop_comp_helper acc m t) V A p \<subseteq> defer acc V A p"
-    using loop_comp_helper.simps(2)
-    by metis
+    using loop_comp_helper_infinite
+    by (metis (no_types))
   thus ?case
     using eq_iff loop_comp_code_helper
     by (metis (no_types))
@@ -765,7 +768,7 @@ proof (induct n arbitrary: acc rule: less_induct)
     hence enough_leftover: "card (defer acc V A p) > 1"
       using x_greater_zero
       by simp
-    obtain k where
+    obtain k :: "nat" where
       new_card_k: "k = card (defer (acc \<triangleright> m) V A p)"
       by metis
     have "defer acc V A p \<subseteq> A"
@@ -779,7 +782,7 @@ proof (induct n arbitrary: acc rule: less_induct)
       "card (defer m V (defer acc V A p) (limit_profile (defer acc V A p) p)) =
         card (defer acc V A p) - 1"
       using enough_leftover non_electing_m
-            single_elimination single_elim_decr_def_card_2
+            single_elimination single_elim_decr_def_card'
       by blast
     hence k_card: "k = card (defer acc V A p) - 1"
       using mod_acc prof new_card_k non_electing_m seq_comp_defers_def_set
@@ -877,7 +880,7 @@ next
       by linarith
     moreover from this
     have "card (defer m V A p) = card A - 1"
-      using non_electing_m single_elimination single_elim_decr_def_card_2
+      using non_electing_m single_elimination single_elim_decr_def_card'
             prof x_greater_zero
       by fastforce
     ultimately have "card (defer m V A p) \<ge> x"
@@ -902,7 +905,9 @@ theorem loop_comp_presv_def_lift_inv[simp]:
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     t :: "'a Termination_Condition"
-  assumes "defer_lift_invariance m" and "voters_determine_election m"
+  assumes
+    "defer_lift_invariance m" and
+    "voters_determine_election m"
   shows "defer_lift_invariance (m \<circlearrowleft>\<^sub>t)"
 proof (unfold defer_lift_invariance_def, safe)
   have "\<S>\<C>\<F>_result.electoral_module m"

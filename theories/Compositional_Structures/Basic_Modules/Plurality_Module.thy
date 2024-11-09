@@ -70,13 +70,13 @@ proof (unfold plurality.simps plurality'.simps plurality_score.simps, standard)
 next
   let ?no_max =
     "{a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} = A"
-  have "?no_max \<Longrightarrow> {win_count V p x | x. x \<in> A} \<noteq> {}"
+  have "?no_max \<longrightarrow> {win_count V p x | x. x \<in> A} \<noteq> {}"
     using non_empty_A
     by blast
   moreover have finite_winners: "finite {win_count V p x | x. x \<in> A}"
     using fin_A
     by simp
-  ultimately have exists_max: "?no_max \<Longrightarrow> False"
+  ultimately have exists_max: "?no_max \<longrightarrow> False"
     using Max_in
     by fastforce
   have rej_eq:
@@ -337,7 +337,7 @@ lemma plurality_def_inv_mono_alts:
   shows "defer plurality V A q = defer plurality V A p
           \<or> defer plurality V A q = {a}"
 proof -
-  have set_disj: "\<forall> b c. (b::'a) \<notin> {c} \<or> b = c"
+  have set_disj: "\<forall> b c. b \<notin> {c} \<or> b = c"
     by blast
   have lifted_winner: "\<forall> b \<in> A. \<forall> i \<in> V.
       above (p i) b = {b} \<longrightarrow> (above (q i) b = {b} \<or> above (q i) a = {a})"

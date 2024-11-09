@@ -77,9 +77,9 @@ lemma distance_\<R>_std_\<S>\<C>\<F>_code_lemma:
   by safe
 
 lemma anonymity_\<S>\<C>\<F>_code_lemma: "\<S>\<C>\<F>_result.anonymity =
-    (\<lambda> m::(('a, 'v, 'a Result) Electoral_Module).
+    (\<lambda> m :: ('a, 'v, 'a Result) Electoral_Module.
       \<S>\<C>\<F>_result.electoral_module m \<and>
-          (\<forall> A V p \<pi>::('v \<Rightarrow> 'v).
+          (\<forall> A V p \<pi> :: ('v \<Rightarrow> 'v).
                 bij \<pi> \<longrightarrow> (let (A', V', q) = (rename \<pi> (A, V, p)) in
             profile V A p \<and> profile V' A' q \<longrightarrow> m V A p = m V' A' q)))"
   unfolding \<S>\<C>\<F>_result.anonymity_def

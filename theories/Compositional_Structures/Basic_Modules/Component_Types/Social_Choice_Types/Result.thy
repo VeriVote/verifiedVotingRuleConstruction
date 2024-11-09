@@ -56,7 +56,7 @@ locale result =
   fixes
     well_formed :: "'a set \<Rightarrow> ('r Result) \<Rightarrow> bool" and
     limit :: "'a set \<Rightarrow> 'r set \<Rightarrow> 'r set"
-  assumes "\<forall> (A::('a set)) (r::('r Result)).
+  assumes "\<forall> (A :: 'a set) (r :: 'r Result).
     (set_equals_partition (limit A UNIV) r \<and> disjoint3 r) \<longrightarrow> well_formed A r"
 
 text \<open>

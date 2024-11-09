@@ -47,67 +47,66 @@ proof -
 qed
 
 typedef 'a Ordered_Preference =
-  "{p :: 'a::finite Preference_Relation. linear_order_on (UNIV::'a set) p}"
+  "{p :: 'a :: finite Preference_Relation. linear_order_on (UNIV :: 'a set) p}"
   morphisms ord2pref pref2ord
 proof (unfold mem_Collect_eq)
-  have "finite (UNIV::'a set)"
+  have "finite (UNIV :: 'a set)"
     by simp
   then obtain p :: "'a Preference_Relation" where
-    "linear_order_on (UNIV::'a set) p"
+    "linear_order_on (UNIV :: 'a set) p"
     using fin_ordered
     by metis
-  thus "\<exists> p::'a Preference_Relation. linear_order p"
+  thus "\<exists> p :: 'a Preference_Relation. linear_order p"
     by blast
 qed
 
 instance Ordered_Preference :: (finite) "finite"
 proof
-  have "(UNIV::'a Ordered_Preference set) =
+  have "(UNIV :: 'a Ordered_Preference set) =
           pref2ord ` {p :: 'a Preference_Relation.
-              linear_order_on (UNIV::'a set) p}"
+              linear_order_on (UNIV :: 'a set) p}"
     using type_definition.Abs_image
           type_definition_Ordered_Preference
     by blast
   moreover have
     "finite {p :: 'a Preference_Relation.
-        linear_order_on (UNIV::'a set) p}"
+        linear_order_on (UNIV :: 'a set) p}"
     by simp
   ultimately show
-    "finite (UNIV::'a Ordered_Preference set)"
+    "finite (UNIV :: 'a Ordered_Preference set)"
     using finite_imageI
     by metis
 qed
 
 lemma range_ord2pref: "range ord2pref = {p. linear_order p}"
-  using type_definition_Ordered_Preference
-        type_definition.Rep_range
+  using type_definition_Ordered_Preference type_definition.Rep_range
   by metis
 
-lemma card_ord_pref: "card (UNIV::'a::finite Ordered_Preference set) =
-                        fact (card (UNIV::'a set))"
+lemma card_ord_pref: "card (UNIV :: 'a :: finite Ordered_Preference set) =
+                        fact (card (UNIV :: 'a set))"
 proof -
-  let ?n = "card (UNIV::'a set)" and
+  let ?n = "card (UNIV :: 'a set)" and
       ?perm = "permutations_of_set (UNIV :: 'a set)"
-  have "(UNIV::('a Ordered_Preference set)) =
+  have "(UNIV :: 'a Ordered_Preference set) =
     pref2ord ` {p :: 'a Preference_Relation.
-                  linear_order_on (UNIV::'a set) p}"
+                  linear_order_on (UNIV :: 'a set) p}"
     using type_definition_Ordered_Preference type_definition.Abs_image
     by blast
   moreover have
     "inj_on pref2ord {p :: 'a Preference_Relation.
-        linear_order_on (UNIV::'a set) p}"
+        linear_order_on (UNIV :: 'a set) p}"
     using inj_onCI pref2ord_inject
     by metis
   ultimately have
     "bij_betw pref2ord
       {p :: 'a Preference_Relation.
-        linear_order_on (UNIV::'a set) p}
-          (UNIV::('a Ordered_Preference set))"
+        linear_order_on (UNIV :: 'a set) p}
+          (UNIV :: 'a Ordered_Preference set)"
     using bij_betw_imageI
     by metis
-  hence "card (UNIV::('a Ordered_Preference set)) =
+  hence "card (UNIV :: 'a Ordered_Preference set) =
     card {p :: 'a Preference_Relation.
-            linear_order_on (UNIV::'a set) p}"
+            linear_order_on (UNIV :: 'a set) p}"
     using bij_betw_same_card
     by metis
   moreover have "card ?perm = fact ?n"

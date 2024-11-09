@@ -82,7 +82,7 @@ proof -
     V :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set" and
     p :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v) Profile" where
     electing_mod:
-     "\<forall> m'::('a, 'v, 'a Result) Electoral_Module.
+     "\<forall> m' :: ('a, 'v, 'a Result) Electoral_Module.
       (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
         (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p')
           \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and>
@@ -91,7 +91,7 @@ proof -
                     \<and> elect m' (V m') (A m') (p m') = {})"
     by metis
   moreover have non_block:
-    "non_blocking (elect_module::'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a Result)"
+    "non_blocking (elect_module :: 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a Result)"
     by (simp add: electing_imp_non_blocking)
   moreover obtain
     e :: "'a Result \<Rightarrow> 'a set" and
@@ -177,7 +177,7 @@ next
     assume x_in_elect_or_defer: "x \<in> elect m V A p \<union> defer m V A p"
     hence x_eq_w: "x = w"
       using Diff_empty Diff_iff assms cond_winner_unique c_win fin_A fin_V insert_iff
-            snd_conv prod.sel(1) sup_bot.left_neutral
+            snd_conv sup_bot.left_neutral fst_eqD
       unfolding defer_condorcet_consistency_def
       by (metis (mono_tags, lifting))
     have "\<forall> x. x \<in> elect m V A p \<longrightarrow> x \<in> A"

@@ -230,7 +230,8 @@ next
     by (simp add: group_action.orbit_sym_aux)
   thus "\<exists> h \<in> carrier m. \<phi> h (\<phi> g y) = y"
     using assms carrier_g group.inv_closed
-          group_action.group_hom group_hom.axioms(1)
+          group_action.group_hom
+    unfolding group_hom_def
     by metis
 next
   fix
@@ -245,16 +246,16 @@ next
     by (simp add: group_action.composition_rule)
   thus "\<exists> f \<in> carrier m. \<phi> f y = \<phi> h (\<phi> g y)"
     using assms carrier_g carrier_h group_action.group_hom
-          group_hom.axioms(1) monoid.m_closed
-    unfolding group_def
+          monoid.m_closed
+    unfolding group_def group_hom_def
     by metis
 next
   fix
     y :: "'y" and
     g :: "'x"
   assume
-    y_in_s: "y \<in> s" and
-    carrier_g: "g \<in> carrier m"
+    "y \<in> s" and
+    "g \<in> carrier m"
   thus "\<phi> g y \<in> s"
     using assms group_action.element_image
     by metis
@@ -263,8 +264,8 @@ next
     y :: "'y" and
     g :: "'x"
   assume
-    y_in_s: "y \<in> s" and
-    carrier_g: "g \<in> carrier m"
+    "y \<in> s" and
+    "g \<in> carrier m"
   thus "\<phi> g y \<in> s"
     using assms group_action.element_image
     by metis

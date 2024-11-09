@@ -34,7 +34,7 @@ fun maximum_parallel_composition :: "('a, 'v, 'a Result) Electoral_Module \<Righ
 abbreviation max_parallel :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
         ('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
         ('a, 'v, 'a Result) Electoral_Module" (infix "\<parallel>\<^sub>\<up>" 50) where
-  "m \<parallel>\<^sub>\<up> n == maximum_parallel_composition m n"
+  "m \<parallel>\<^sub>\<up> n \<equiv> maximum_parallel_composition m n"
 
 subsection \<open>Soundness\<close>
 
@@ -86,7 +86,7 @@ proof (cases)
     by auto
   moreover have
     "\<forall> m' n' V' A' p' a'.
-      mod_contains_result m' n' V' A' p' (a'::'a) =
+      mod_contains_result m' n' V' A' p' (a' :: 'a) =
         (\<S>\<C>\<F>_result.electoral_module m'
           \<and> \<S>\<C>\<F>_result.electoral_module n'
           \<and> profile V' A' p' \<and> a' \<in> A'
@@ -153,7 +153,7 @@ next
       have result_n: "(elect n V A p, reject n V A p, defer n V A p) = n V A p"
         by auto
       have max_pq:
-        "\<forall> (A'::'a set) m' n'.
+        "\<forall> (A' :: 'a set) m' n'.
           elect_r (max_aggregator A' m' n') = elect_r m' \<union> elect_r n'"
         by force
       have "a \<notin> elect (m \<parallel>\<^sub>max_aggregator n) V A p"
@@ -168,7 +168,7 @@ next
         using result_disj_max a_in_defer
         by fastforce
       have mod_cont_res_fg:
-        "\<forall> m' n' A' V' p' (a'::'a).
+        "\<forall> m' n' A' V' p' (a' :: 'a).
           mod_contains_result m' n' V' A' p' a' =
             (\<S>\<C>\<F>_result.electoral_module m'
               \<and> \<S>\<C>\<F>_result.electoral_module n'
@@ -192,7 +192,7 @@ next
         using max_agg_rej_set
         by metis
       have e_mod_disj:
-        "\<forall> m' (V'::'v set) (A'::'a set) p'.
+        "\<forall> m' (V' :: 'v set) (A' :: 'a set) p'.
           \<S>\<C>\<F>_result.electoral_module m' \<and> profile V' A' p'
           \<longrightarrow> elect m' V' A' p' \<union> reject m' V' A' p' \<union> defer m' V' A' p' = A'"
         using result_presv_alts
@@ -200,7 +200,7 @@ next
       hence e_mod_disj_n: "elect n V A p \<union> reject n V A p \<union> defer n V A p = A"
         using prof_p module_n
         by metis
-      have "\<forall> m' n' A' V' p' (b::'a).
+      have "\<forall> m' n' A' V' p' (b :: 'a).
               mod_contains_result m' n' V' A' p' b =
                 (\<S>\<C>\<F>_result.electoral_module m'
                   \<and> \<S>\<C>\<F>_result.electoral_module n'

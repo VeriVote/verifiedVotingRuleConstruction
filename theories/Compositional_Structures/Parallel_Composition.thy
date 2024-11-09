@@ -29,7 +29,7 @@ fun parallel_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
 abbreviation parallel :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Aggregator \<Rightarrow>
         ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
       ("_ \<parallel>\<^sub>_ _" [50, 1000, 51] 50) where
-  "m \<parallel>\<^sub>a n == parallel_composition m n a"
+  "m \<parallel>\<^sub>a n \<equiv> parallel_composition m n a"
 
 subsection \<open>Soundness\<close>
 
@@ -51,15 +51,15 @@ proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
   moreover have
     "\<forall> a'. aggregator a' =
       (\<forall> A' e r d e' r' d'.
-        (well_formed_\<S>\<C>\<F> (A'::'a set) (e, r', d)
+        (well_formed_\<S>\<C>\<F> (A' :: 'a set) (e, r', d)
         \<and> well_formed_\<S>\<C>\<F> A' (r, d', e'))
             \<longrightarrow> well_formed_\<S>\<C>\<F> A' (a' A' (e, r', d) (r, d', e')))"
     unfolding aggregator_def
     by blast
   moreover have
     "\<forall> m' V' A' p'.
-      (\<S>\<C>\<F>_result.electoral_module m' \<and> finite (A'::'a set)
-        \<and> finite (V'::'v set) \<and> profile V' A' p')
+      (\<S>\<C>\<F>_result.electoral_module m' \<and> finite (A' :: 'a set)
+        \<and> finite (V' :: 'v set) \<and> profile V' A' p')
       \<longrightarrow> well_formed_\<S>\<C>\<F> A' (m' V' A' p')"
     using par_comp_result_sound
     by (metis (no_types))
@@ -120,7 +120,7 @@ next
     unfolding non_electing_def
     by simp
   have "\<forall> r r' d d' e e' A' f.
-          ((well_formed_\<S>\<C>\<F> (A'::'a set) (e', r', d') \<and>
+          ((well_formed_\<S>\<C>\<F> (A' :: 'a set) (e', r', d') \<and>
             well_formed_\<S>\<C>\<F> A' (e, r, d)) \<longrightarrow>
             elect_r (f A' (e', r', d') (e, r, d)) \<subseteq> e' \<union> e \<and>
               reject_r (f A' (e', r', d') (e, r, d)) \<subseteq> r' \<union> r \<and>
@@ -134,7 +134,7 @@ next
   hence "\<forall> a'. agg_conservative a' =
           (aggregator a' \<and>
             (\<forall> A' e e' d d' r r'.
-              (well_formed_\<S>\<C>\<F> (A'::'a set) (e, r, d) \<and>
+              (well_formed_\<S>\<C>\<F> (A' :: 'a set) (e, r, d) \<and>
                well_formed_\<S>\<C>\<F> A' (e', r', d')) \<longrightarrow>
                 elect_r (a' A' (e, r, d) (e', r', d')) \<subseteq> e \<union> e' \<and>
                   reject_r (a' A' (e, r, d) (e', r', d')) \<subseteq> r \<union> r' \<and>

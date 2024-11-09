@@ -74,7 +74,7 @@ subsection \<open>Properties\<close>
 
 definition consensus_anonymity :: "('a, 'v) Consensus \<Rightarrow> bool" where
   "consensus_anonymity c \<equiv>
-    (\<forall> A V p \<pi>::('v \<Rightarrow> 'v).
+    (\<forall> A V p \<pi> :: ('v \<Rightarrow> 'v).
         bij \<pi> \<longrightarrow>
           (let (A', V', q) = (rename \<pi> (A, V, p)) in
             profile V A p \<longrightarrow> profile V' A' q
@@ -98,16 +98,17 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     p q :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
-    bij: "bij \<pi>" and
-    prof: "profile V A p" and
+    bij_\<pi>: "bij \<pi>" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
-    c: "c (A, V, p)" and
-    c': "c' (A, V, p)"
+    prof: "profile V A p"
   hence "profile V' A' q"
-    using rename_sound renamed bij fst_conv rename.simps
+    using rename_sound fst_conv rename.simps
     by metis
-  thus "c (A', V', q) \<and> c' (A', V', q)"
-    using bij renamed c c' assms prof
+  moreover assume
+    "c (A, V, p)" and
+    "c' (A, V, p)"
+  ultimately show "c (A', V', q) \<and> c' (A', V', q)"
+    using bij_\<pi> renamed assms prof
     unfolding consensus_anonymity_def
     by auto
 qed
@@ -140,17 +141,17 @@ lemma cons_anon_invariant:
     \<pi> :: "'v \<Rightarrow> 'v"
   assumes
     anon: "consensus_anonymity c" and
-    bij: "bij \<pi>" and
+    bij_\<pi>: "bij \<pi>" and
     prof_p: "profile V A p" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
     cond_c: "c (A, V, p)"
   shows "c (A', V', q)"
 proof -
   have "profile V' A' q"
-    using rename_sound bij renamed prof_p
+    using rename_sound bij_\<pi> renamed prof_p
     by fastforce
   thus ?thesis
-    using anon cond_c renamed rename_finite bij prof_p
+    using anon cond_c renamed rename_finite bij_\<pi> prof_p
     unfolding consensus_anonymity_def Let_def
     by auto
 qed
@@ -170,7 +171,7 @@ proof (unfold consensus_anonymity_def Let_def, safe)
     p q :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
-    bij: "bij \<pi>" and
+    bij_\<pi>: "bij \<pi>" and
     cond_b: "b (A, V, p)" and
     prof_p: "profile V A p" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)"
@@ -184,10 +185,10 @@ proof (unfold consensus_anonymity_def Let_def, safe)
     using all_cond_anon
     by simp
   moreover have "profile V' A' q"
-    using prof_p renamed bij rename_sound
+    using prof_p renamed bij_\<pi> rename_sound
     by fastforce
   ultimately have "b' x (A', V', q)"
-    using all_cond_anon bij prof_p renamed
+    using all_cond_anon bij_\<pi> prof_p renamed
     unfolding consensus_anonymity_def
     by auto
   hence "\<exists> x. b' x (A', V', q)"
@@ -213,16 +214,15 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     p q :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
-    bij: "bij \<pi>" and
-    prof_p: "profile V A p" and
-    renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
-    not_empty_p: "nonempty_profile\<^sub>\<C> (A, V, p)"
-  have "card V = card V'"
-    using renamed bij rename.simps Pair_inject
-          bij_betw_same_card bij_betw_subset top_greatest
+    bij_\<pi>: "bij \<pi>" and
+    renamed: "rename \<pi> (A, V, p) = (A', V', q)"
+  hence "card V = card V'"
+    using rename.simps Pair_inject bij_betw_same_card
+          bij_betw_subset top_greatest
     by (metis (mono_tags, lifting))
-  thus "nonempty_profile\<^sub>\<C> (A', V', q)"
-    using not_empty_p length_0_conv renamed
+  moreover assume "nonempty_profile\<^sub>\<C> (A, V, p)"
+  ultimately show "nonempty_profile\<^sub>\<C> (A', V', q)"
+    using length_0_conv renamed
     unfolding nonempty_profile\<^sub>\<C>.simps
     by auto
 qed
@@ -237,7 +237,7 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     p q :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
-    bij: "bij \<pi>" and
+    bij_\<pi>: "bij \<pi>" and
     prof_p: "profile V A p" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
     top_cons_a: "equal_top\<^sub>\<C>' a (A, V, p)"
@@ -245,7 +245,7 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     using renamed
     by auto
   moreover have "\<forall> v' \<in> V'. (the_inv \<pi>) v' \<in> V"
-    using bij renamed rename.simps bij_is_inj
+    using bij_\<pi> renamed rename.simps bij_is_inj
           f_the_inv_into_f_bij_betw inj_image_mem_iff
     by fastforce
   moreover have winner: "\<forall> v \<in> V. above (p v) a = {a}"
@@ -277,7 +277,7 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     p q :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
-    bij: "bij \<pi>" and
+    bij_\<pi>: "bij \<pi>" and
     prof_p: "profile V A p" and
     renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
     eq_vote: "equal_vote\<^sub>\<C>' r (A, V, p)"
@@ -285,7 +285,7 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     using renamed
     by auto
   moreover have "\<forall> v' \<in> V'. (the_inv \<pi>) v' \<in> V"
-    using bij renamed rename.simps bij_is_inj
+    using bij_\<pi> renamed rename.simps bij_is_inj
           f_the_inv_into_f_bij_betw inj_image_mem_iff
     by fastforce
   moreover have winner: "\<forall> v \<in> V. p v = r"
@@ -375,8 +375,8 @@ proof (unfold well_formed_elections_def consensus_neutrality.simps is_symmetry.s
     by metis
 qed
 
-lemma strong_unanimity\<^sub>\<C>_neutral:
-  "consensus_neutrality well_formed_elections strong_unanimity\<^sub>\<C>"
+lemma strong_unanimity\<^sub>\<C>_neutral: "consensus_neutrality
+        well_formed_elections strong_unanimity\<^sub>\<C>"
   using nonempty_set\<^sub>\<C>_neutral equal_vote\<^sub>\<C>_neutral nonempty_profile\<^sub>\<C>_neutral
         cons_conjunction_invariant[of
           "{nonempty_set\<^sub>\<C>, nonempty_profile\<^sub>\<C>, equal_vote\<^sub>\<C>}"

@@ -134,10 +134,10 @@ lemma plurality_rule_elect_non_empty:
   shows "elect plurality_rule V A p \<noteq> {}"
 proof
   assume plurality_elect_none: "elect plurality_rule V A p = {}"
-  obtain max where
+  obtain max :: "enat" where
     max: "max = Max (win_count V p ` A)"
     by simp
-  then obtain a where
+  then obtain a :: "'a" where
     max_a: "win_count V p a = max \<and> a \<in> A"
     using Max_in A_non_empty fin_A prof_A empty_is_image finite_imageI imageE
     by (metis (no_types, lifting))

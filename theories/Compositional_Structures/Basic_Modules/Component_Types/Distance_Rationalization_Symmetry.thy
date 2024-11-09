@@ -255,8 +255,7 @@ theorem group_act_invar_dist_and_invar_f_imp_invar_minimizer:
   assumes
     action_\<phi>: "group_action G A \<phi>" and
     "domain\<^sub>f \<subseteq> A" and
-    closed_domain: "closed_restricted_rel rel A domain\<^sub>f" and
-    (* Could the closed_domain requirement be weakened? *)
+    closed_domain: "closed_restricted_rel rel A domain\<^sub>f" and (* Could this be weakened? *)
     invar_d: "invariance\<^sub>\<D> d (carrier G) A \<phi>" and
     invar_f: "is_symmetry f (Invariance rel')"
   shows "is_symmetry (minimizer f domain\<^sub>f d img) (Invariance rel)"
@@ -305,37 +304,31 @@ proof -
   have "preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w} =
     {E \<in> elections_\<K> C. (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) E = {w}}"
     by simp
-  also have
-    "{E \<in> elections_\<K> C. (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) E = {w}} =
+  also have "{E \<in> elections_\<K> C. (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) E = {w}} =
         {E \<in> elections_\<K> C.
           elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}"
     by simp
-  also have
-    "{E \<in> elections_\<K> C.
+  also have "{E \<in> elections_\<K> C.
         elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}} =
       elections_\<K> C
         \<inter> {E. elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}"
     by blast
-  also have
-    "elections_\<K> C
+  also have "elections_\<K> C
       \<inter> {E. elect (rule_\<K> C)
           (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}} =
       \<K>\<^sub>\<E> C w"
   proof
-    show
-      "elections_\<K> C
+    show "elections_\<K> C
         \<inter> {E. elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}
           \<subseteq> \<K>\<^sub>\<E> C w"
       unfolding \<K>\<^sub>\<E>.simps
       by force
   next
-    have
-      "\<forall> E \<in> \<K>\<^sub>\<E> C w. E \<in> {E. elect (rule_\<K> C) (voters_\<E> E)
-        (alternatives_\<E> E) (profile_\<E> E) = {w}}"
+    have "\<forall> E \<in> \<K>\<^sub>\<E> C w. E \<in> {E. elect (rule_\<K> C) (voters_\<E> E)
+            (alternatives_\<E> E) (profile_\<E> E) = {w}}"
       unfolding \<K>\<^sub>\<E>.simps
       by force
-    hence
-      "\<forall> E \<in> \<K>\<^sub>\<E> C w.
+    hence "\<forall> E \<in> \<K>\<^sub>\<E> C w.
         E \<in> elections_\<K> C
           \<inter> {E. elect (rule_\<K> C)
               (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}"
@@ -868,6 +861,7 @@ subsection \<open>Properties\<close>
 fun decisiveness :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow>
         ('a, 'v, 'r Result) Electoral_Module \<Rightarrow> bool" where
   "decisiveness X d m =
-    (\<nexists> E. E \<in> X \<and> (\<exists> \<delta> > 0. \<forall> E' \<in> X. d E E' < \<delta> \<longrightarrow> card (elect_r (fun\<^sub>\<E> m E')) > 1))"
+    (\<nexists> E. E \<in> X
+    \<and> (\<exists> \<delta> > 0. \<forall> E' \<in> X. d E E' < \<delta> \<longrightarrow> card (elect_r (fun\<^sub>\<E> m E')) > 1))"
 
 end

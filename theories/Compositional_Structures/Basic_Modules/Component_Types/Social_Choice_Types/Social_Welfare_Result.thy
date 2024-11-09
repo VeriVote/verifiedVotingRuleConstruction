@@ -21,8 +21,8 @@ fun well_formed_\<S>\<W>\<F> :: "'a set \<Rightarrow> ('a Preference_Relation) R
   "well_formed_\<S>\<W>\<F> A res = (disjoint3 res \<and>
                                   set_equals_partition {r. linear_order_on A r} res)"
 
-fun limit_\<S>\<W>\<F> ::
-  "'a set \<Rightarrow> ('a Preference_Relation) set \<Rightarrow> ('a Preference_Relation) set" where
+fun limit_\<S>\<W>\<F> :: "'a set \<Rightarrow> ('a Preference_Relation) set \<Rightarrow>
+        ('a Preference_Relation) set" where
   "limit_\<S>\<W>\<F> A res = {limit A r | r. r \<in> res \<and> linear_order_on A (limit A r)}"
 
 end

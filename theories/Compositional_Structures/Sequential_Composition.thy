@@ -21,7 +21,8 @@ text \<open>
 subsection \<open>Definition\<close>
 
 fun sequential_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
-        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "sequential_composition m n V A p =
     (let new_A = defer m V A p;
         new_p = limit_profile new_A p in (
@@ -31,11 +32,12 @@ fun sequential_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow
 
 abbreviation sequence :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
         ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
-     (infix "\<triangleright>" 50) where
-  "m \<triangleright> n == sequential_composition m n"
+        (infix "\<triangleright>" 50) where
+  "m \<triangleright> n \<equiv> sequential_composition m n"
 
 fun sequential_composition' :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
-        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "sequential_composition' m n V A p =
     (let (m_e, m_r, m_d) = m V A p; new_A = m_d;
         new_p = limit_profile new_A p;
@@ -109,7 +111,7 @@ proof -
     "\<forall> A' V' p' m' a.
       (profile V' A' p' \<and>
        \<S>\<C>\<F>_result.electoral_module m' \<and>
-       (a::'a) \<in> defer m' V' A' p') \<longrightarrow>
+       a \<in> defer m' V' A' p') \<longrightarrow>
       a \<in> A'"
     using UnCI result_presv_alts
     by (metis (mono_tags))
@@ -220,7 +222,7 @@ proof -
     assume "x \<in> defer n V (defer m V A p) (limit_profile (defer m V A p) p)"
     hence "x \<in> defer m V A p"
       using defer_in_A module_n prof_def_lim prof
-      by blast
+      by metis
     moreover assume "x \<in> reject m V A p"
     ultimately have "x \<in> reject m V A p \<inter> defer m V A p"
       by fastforce
@@ -252,9 +254,10 @@ lemma seq_comp_presv_alts:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
-  assumes module_m: "\<S>\<C>\<F>_result.electoral_module m" and
-          module_n: "\<S>\<C>\<F>_result.electoral_module n" and
-          prof:  "profile V A p"
+  assumes
+    module_m: "\<S>\<C>\<F>_result.electoral_module m" and
+    module_n: "\<S>\<C>\<F>_result.electoral_module n" and
+    prof: "profile V A p"
   shows "set_equals_partition A ((m \<triangleright> n) V A p)"
 proof -
   let ?new_A = "defer m V A p"
@@ -322,7 +325,7 @@ proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assume "profile V A p"
-  moreover have "\<forall> r. well_formed_\<S>\<C>\<F> (A::'a set) r =
+  moreover have "\<forall> r. well_formed_\<S>\<C>\<F> (A :: 'a set) r =
           (disjoint3 r \<and> set_equals_partition A r)"
     by simp
   ultimately show "well_formed_\<S>\<C>\<F> A ((m \<triangleright> n) V A p)"
@@ -369,7 +372,7 @@ proof -
     have rej_empty:
       "\<forall> m' V' p'.
         (\<S>\<C>\<F>_result.electoral_module m'
-          \<and> profile V' ({}::'a set) p') \<longrightarrow> reject m' V' {} p' = {}"
+          \<and> profile V' {} p') \<longrightarrow> reject m' V' {} p' = {}"
       using bot.extremum_uniqueI reject_in_alts
       by metis
     have "(reject m V A p, defer n V {} (limit_profile {} p)) = snd (m V A p)"
@@ -706,7 +709,7 @@ proof -
     using def_one_m
     unfolding defers_def
     by metis
-  hence def_m1_not_empty:
+  hence def_m_not_empty:
     "\<forall> A V p. (A \<noteq> {} \<and> finite A \<and> profile V A p) \<longrightarrow> defer m V A p \<noteq> {}"
     using One_nat_def Suc_leI card_eq_0_iff card_gt_0_iff zero_neq_one
     by metis
@@ -732,7 +735,7 @@ proof -
       V :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set" and
       p :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v) Profile" where
       f_mod:
-       "\<forall> m'::('a, 'v, 'a Result) Electoral_Module.
+       "\<forall> m' :: ('a, 'v, 'a Result) Electoral_Module.
         (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
           (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p')
             \<longrightarrow> elect m' V' A' p' \<noteq> {}))
@@ -759,7 +762,7 @@ proof -
     with f_mod f_elect def_card_one
     show ?thesis
       using seq_comp_def_then_elect_elec_set def_presv_prof defer_in_alts
-            def_m1_not_empty bot_eq_sup_iff finite_subset
+            def_m_not_empty bot_eq_sup_iff finite_subset
       unfolding electing_def
       by metis
   qed
@@ -1009,7 +1012,8 @@ next
     using compatible module_m' seq_comp_sound
     unfolding disjoint_compatibility_def
     by metis
-  obtain A :: "'a set" where rej_A:
+  obtain A :: "'a set" where
+    rej_A:
     "A \<subseteq> S \<and>
       (\<forall> a \<in> A.
         indep_of_alt m V S a \<and> (\<forall> p. profile V S p \<longrightarrow> a \<in> reject m V S p)) \<and>
@@ -1136,11 +1140,11 @@ next
     unfolding defer_condorcet_consistency_def
     by (metis (mono_tags, lifting))
   have rej_m: "reject m V A p = A - {a}"
-    using cw_a cond_winner_unique dcc_m prod.sel(1) snd_conv
+    using cw_a cond_winner_unique dcc_m prod.sel
     unfolding defer_condorcet_consistency_def
     by (metis (mono_tags, lifting))
   have "elect m V A p = {}"
-    using cw_a def_m rej_m dcc_m prod.sel(1)
+    using cw_a def_m rej_m dcc_m fst_conv
     unfolding defer_condorcet_consistency_def
     by (metis (mono_tags, lifting))
   hence diff_elect_m: "A - elect m V A p = A"
@@ -1151,7 +1155,7 @@ next
       \<and> a \<in> A \<and> (\<forall> a'. a' \<in> A - {a'} \<longrightarrow> wins V a p a')"
     using cw_a condorcet_winner.simps DiffD2 singletonI
     by (metis (no_types))
-  have "\<forall> a' A'. (a'::'a) \<in> A' \<longrightarrow> insert a' (A' - {a'}) = A'"
+  have "\<forall> a' A'. (a' :: 'a) \<in> A' \<longrightarrow> insert a' (A' - {a'}) = A'"
     by blast
   have nb_n_full:
     "\<S>\<C>\<F>_result.electoral_module n \<and>
@@ -1164,9 +1168,9 @@ next
     "defer (m \<triangleright> n) V A p = A - elect (m \<triangleright> n) V A p - reject (m \<triangleright> n) V A p"
     using defer_not_elec_or_rej cond_win sound_seq_m_n
     by metis
-  have set_ins: "\<forall> a' A'. (a'::'a) \<in> A' \<longrightarrow> insert a' (A' - {a'}) = A'"
+  have set_ins: "\<forall> a' A'. (a' :: 'a) \<in> A' \<longrightarrow> insert a' (A' - {a'}) = A'"
     by fastforce
-  have "\<forall> p' A' p''. p' = (A'::'a set, p''::'a set \<times> 'a set) \<longrightarrow> snd p' = p''"
+  have "\<forall> p' A' p''. p' = (A' :: 'a set, p'' :: 'a set \<times> 'a set) \<longrightarrow> snd p' = p''"
     by simp
   hence
     "snd (elect m V A p
@@ -1238,14 +1242,15 @@ next
     using seq_comp_sound
     by metis
   have "reject m V A p = A - {a}"
-    using cw_a dcc_m prod.sel(1) snd_conv result_m
+    using cw_a dcc_m prod.sel result_m
     unfolding defer_condorcet_consistency_def
     by (metis (mono_tags, lifting))
   hence a'_in_rej: "a' \<in> reject m V A p"
-    using Diff_iff cw_a not_cw_a' a'_in_elect_seq_m_n condorcet_winner.elims(1)
-          elect_in_alts singleton_iff sound_seq_m_n subset_iff
+    using Diff_iff cw_a not_cw_a' a'_in_elect_seq_m_n subset_iff
+          elect_in_alts singleton_iff sound_seq_m_n
+    unfolding condorcet_winner.simps
     by (metis (no_types, lifting))
-  have "\<forall> p' A' p''. p' = (A'::'a set, p''::'a set \<times> 'a set) \<longrightarrow> snd p' = p''"
+  have "\<forall> p' A' p''. p' = (A' :: 'a set, p'' :: 'a set \<times> 'a set) \<longrightarrow> snd p' = p''"
     by simp
   hence m_seq_n:
     "snd (elect m V A p
@@ -1277,7 +1282,7 @@ next
       defer n V (defer m V A p) (limit_profile (defer m V A p) p))"
     unfolding sequential_composition.simps
     by metis
-  have "\<forall> A' A''. (A'::'a set) = fst (A', A''::'a set)"
+  have "\<forall> A' A''. (A':: 'a set) = fst (A', A'' :: 'a set)"
     by simp
   hence "a \<in> reject (m \<triangleright> n) V A p"
     using a_in_rej_union m_seq_n m_seq_n_full
@@ -1303,7 +1308,7 @@ next
     a'_in_A: "a' \<in> A" and
     not_cw_a': "\<not> condorcet_winner V A p a'"
   have "reject m V A p = A - {a}"
-    using cw_a cond_winner_unique dcc_m prod.sel(1) snd_conv
+    using cw_a cond_winner_unique dcc_m prod.sel
     unfolding defer_condorcet_consistency_def
     by (metis (mono_tags, lifting))
   moreover have "a \<noteq> a'"
@@ -1401,9 +1406,9 @@ next
       using dcc_m snd_conv
       by (metis (no_types, lifting))
     hence "defer (m \<triangleright> n) V A p = {a}"
-      using cw_a a'_in_def_seq_m_n condorcet_winner.elims(2) empty_iff
-            seq_comp_def_set_bounded sound_m subset_singletonD nb_n
-      unfolding non_blocking_def
+      using cw_a a'_in_def_seq_m_n empty_iff sound_m nb_n
+            seq_comp_def_set_bounded subset_singletonD
+      unfolding condorcet_winner.simps non_blocking_def
       by metis
     thus "a' = a"
       using a'_in_def_seq_m_n

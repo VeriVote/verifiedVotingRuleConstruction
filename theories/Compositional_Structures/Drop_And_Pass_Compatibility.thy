@@ -41,7 +41,7 @@ next
   hence connex: "connex A (limit A r)"
     using limit_presv_connex subset_UNIV
     by metis
-  have "\<forall> B a. B \<noteq> {} \<or> (a::'a) \<notin> B"
+  have "\<forall> B a. B \<noteq> {} \<or> (a :: 'a) \<notin> B"
     by simp
   hence "\<forall> a B. a \<in> A \<and> a \<in> B \<longrightarrow> connex B (limit A r) \<longrightarrow>
             \<not> card (above (limit A r) a) \<le> 0"
@@ -100,7 +100,7 @@ next
   hence "\<forall> a \<in> A. card {a} \<le> card (above (limit A r) a)"
     using card_mono fin_A rev_finite_subset above_presv_limit
     by metis
-  hence geq_1: "\<forall> a \<in> A. 1 \<le> rank (limit A r) a"
+  hence rank_geq_one: "\<forall> a \<in> A. 1 \<le> rank (limit A r) a"
     by simp
   with leq have "\<forall> a \<in> A. rank (limit A r) a \<in> {1 .. card A}"
     by simp
@@ -109,7 +109,7 @@ next
   moreover have inj: "inj_on (rank (limit A r)) A"
     using fin_A inj_onI rank_unique lin_ord_limit
     by metis
-  ultimately have bij: "bij_betw (rank (limit A r)) A {1 .. card A}"
+  ultimately have bij_A: "bij_betw (rank (limit A r)) A {1 .. card A}"
     using bij_betw_def bij_betw_finite bij_betw_iff_card card_seteq
           dual_order.refl ex_bij_betw_nat_finite_1 fin_A
     by metis
@@ -123,7 +123,7 @@ next
     using card_n
     by simp
   ultimately have "card (?inv_rank ` {1 .. n}) = n"
-    using numeral_One numeral_eq_iff semiring_norm(85) card_atLeastAtMost
+    using numeral_One numeral_eq_iff card_atLeastAtMost diff_Suc_1
     by presburger
   also have "?inv_rank ` {1..n} = {a \<in> A. rank (limit A r) a \<in> {1 .. n}}"
   proof
@@ -131,10 +131,11 @@ next
     proof
       fix a :: "'a"
       assume "a \<in> ?inv_rank ` {1..n}"
-      then obtain b where b_img: "b \<in> {1 .. n} \<and> ?inv_rank b = a"
+      then obtain b :: "nat" where
+        b_img: "b \<in> {1 .. n} \<and> ?inv_rank b = a"
         by auto
       hence "rank (limit A r) a = b"
-        using subset f_the_inv_into_f_bij_betw subsetD bij
+        using subset f_the_inv_into_f_bij_betw subsetD bij_A
         by metis
       hence "rank (limit A r) a \<in> {1 .. n}"
         using b_img
@@ -169,7 +170,7 @@ next
     by blast
   also have "{a \<in> A. rank (limit A r) a \<in> {1 .. n}} =
                 {a \<in> A. rank (limit A r) a \<le> n}"
-    using geq_1
+    using rank_geq_one
     by auto
   also have "\<dots> = reject (drop_module n r) V A p"
     by simp

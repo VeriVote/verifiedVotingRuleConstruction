@@ -25,7 +25,7 @@ fun revision_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
 
 abbreviation rev :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
         ('a, 'v, 'a Result) Electoral_Module" ("_\<down>" 50) where
-  "m\<down> == revision_composition m"
+  "m\<down> \<equiv> revision_composition m"
 
 subsection \<open>Soundness\<close>
 

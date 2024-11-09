@@ -34,19 +34,19 @@ locale result_properties = result +
 
 sublocale result_properties \<subseteq> result
   using result_axioms
-  by simp
+  by safe
 
 subsection \<open>Interpretations\<close>
 
-global_interpretation \<S>\<C>\<F>_properties:
-  "result_properties" "well_formed_\<S>\<C>\<F>" "limit_\<S>\<C>\<F>" "\<psi>_neutral\<^sub>\<c>"
+global_interpretation \<S>\<C>\<F>_properties: "result_properties" "well_formed_\<S>\<C>\<F>"
+        "limit_\<S>\<C>\<F>" "\<psi>_neutral\<^sub>\<c>"
   unfolding result_properties_def result_properties_axioms_def
   using neutrality_\<S>\<C>\<F> \<psi>_neutral\<^sub>\<c>_action.group_action_axioms
         \<S>\<C>\<F>_result.result_axioms
   by blast
 
-global_interpretation \<S>\<W>\<F>_properties:
-  "result_properties" "well_formed_\<S>\<W>\<F>" "limit_\<S>\<W>\<F>" "\<psi>_neutral\<^sub>\<w>"
+global_interpretation \<S>\<W>\<F>_properties: "result_properties" "well_formed_\<S>\<W>\<F>"
+        "limit_\<S>\<W>\<F>" "\<psi>_neutral\<^sub>\<w>"
   unfolding result_properties_def result_properties_axioms_def
   using neutrality_\<S>\<W>\<F> \<psi>_neutral\<^sub>\<w>_action.group_action_axioms
         \<S>\<W>\<F>_result.result_axioms

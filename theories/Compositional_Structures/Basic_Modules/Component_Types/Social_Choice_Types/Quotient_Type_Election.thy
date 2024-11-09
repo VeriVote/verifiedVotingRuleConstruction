@@ -11,10 +11,10 @@ begin
 
 lemma election_equality_equiv:
   "election_equality E E" and
-  "election_equality E E' \<Longrightarrow> election_equality E' E" and
-  "election_equality E E' \<Longrightarrow> election_equality E' F
-      \<Longrightarrow> election_equality E F"
-proof -
+  "election_equality E E' \<longrightarrow> election_equality E' E" and
+  "election_equality E E' \<longrightarrow> election_equality E' F
+      \<longrightarrow> election_equality E F"
+proof (safe)
   have "\<forall> E. E = (fst E, fst (snd E), snd (snd E))"
     by simp
   thus

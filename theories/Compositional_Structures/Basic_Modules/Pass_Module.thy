@@ -225,7 +225,8 @@ next
           (\<forall> b \<in> A. above (limit A r) b = {b} \<longrightarrow> b = a)"
       using finite_A above_one
       by simp
-    then obtain w where w_unique_top:
+    then obtain w :: "'a" where
+      w_unique_top:
       "above (limit A r) w = {w} \<and>
         (\<forall> a \<in> A. above (limit A r) a = {a} \<longrightarrow> a = w)"
       using above_one
@@ -315,7 +316,7 @@ next
   moreover have limit_A_order: "linear_order_on A (limit A r)"
     using limit_presv_lin_ord assms
     by auto
-  ultimately obtain a where
+  ultimately obtain a :: "'a" where
     "above (limit A r) a = {a}"
     using above_one min_card_two fin_A prof_A
     by blast
@@ -346,7 +347,7 @@ next
     "linear_order_on (A - {a}) (limit (A - {a}) r)"
     using limit_presv_lin_ord assms top_greatest
     by blast
-  ultimately obtain b where
+  ultimately obtain b :: "'a" where
     top_b: "above (limit (A - {a}) r) b = {b}"
     using above_one
     by metis

@@ -24,11 +24,9 @@ text \<open>
   modularity given as three sets of (potentially tied) alternatives. See
   \<^file>\<open>Social_Choice_Result.thy\<close> for details.
 \<close>
-global_interpretation \<S>\<C>\<F>_result:
-  result "well_formed_\<S>\<C>\<F>" "limit_\<S>\<C>\<F>"
+global_interpretation \<S>\<C>\<F>_result: result "well_formed_\<S>\<C>\<F>" "limit_\<S>\<C>\<F>"
 proof (unfold_locales, safe)
-  fix
-    A e r d :: "'a set"
+  fix A e r d :: "'a set"
   assume
     "set_equals_partition (limit_\<S>\<C>\<F> A UNIV) (e, r, d)" and
     "disjoint3 (e, r, d)"
@@ -41,9 +39,9 @@ text \<open>
   modularity given as three sets of (potentially tied) sets of alternatives or committees.
   \<open>[[Not actually used yet.]]\<close>
 \<close>
-global_interpretation committee_result:
-  result "\<lambda> A r. set_equals_partition (Pow A) r \<and> disjoint3 r"
-          "\<lambda> A rs. {r \<inter> A | r. r \<in> rs}"
+global_interpretation committee_result: result
+        "\<lambda> A r. set_equals_partition (Pow A) r \<and> disjoint3 r"
+        "\<lambda> A rs. {r \<inter> A | r. r \<in> rs}"
 proof (unfold_locales, safe)
   fix
     A :: "'b set" and
@@ -58,8 +56,7 @@ text \<open>
   modularity given as three sets of (potentially tied) linear orders over the alternatives. See
   \<^file>\<open>Social_Welfare_Result.thy\<close> for details.
 \<close>
-global_interpretation \<S>\<W>\<F>_result:
-  result "well_formed_\<S>\<W>\<F>" "limit_\<S>\<W>\<F>"
+global_interpretation \<S>\<W>\<F>_result: result "well_formed_\<S>\<W>\<F>" "limit_\<S>\<W>\<F>"
 proof (unfold_locales, safe)
   fix
     A :: "'a set" and

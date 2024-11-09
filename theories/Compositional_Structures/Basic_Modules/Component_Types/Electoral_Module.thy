@@ -74,8 +74,8 @@ text \<open>
   in multiple structures to create more complex electoral modules.
 \<close>
 
-fun (in result) electoral_module :: "('a, 'v, ('r Result))
-        Electoral_Module \<Rightarrow> bool" where
+fun (in result) electoral_module :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow>
+        bool" where
     "electoral_module m = (\<forall> A V p. profile V A p \<longrightarrow> well_formed A (m V A p))"
 
 fun voters_determine_election :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
@@ -106,11 +106,11 @@ text \<open>
   identical result.
 \<close>
 
-definition (in result) anonymity :: "('a, 'v, ('r Result))
-        Electoral_Module \<Rightarrow> bool" where
+definition (in result) anonymity :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow>
+        bool" where
   "anonymity m \<equiv>
     electoral_module m \<and>
-      (\<forall> A V p \<pi>::('v \<Rightarrow> 'v).
+      (\<forall> A V p \<pi> :: ('v \<Rightarrow> 'v).
         bij \<pi> \<longrightarrow> (let (A', V', q) = (rename \<pi> (A, V, p)) in
             profile V A p \<and> profile V' A' q \<longrightarrow> m V A p = m V' A' q))"
 
@@ -159,7 +159,7 @@ proof (unfold anonymity'.simps is_symmetry.simps, intro allI impI)
     "E' = \<phi>_anon X \<pi> E"
     unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
     by blast
-  moreover from this have bij: "bij \<pi>"
+  moreover from this have "bij \<pi>"
     unfolding anonymity\<^sub>\<G>_def rewrite_carrier
     by simp
   moreover from this have in_election_set: "E \<in> X"
@@ -276,7 +276,8 @@ definition indep_of_alt :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> '
       \<and> (\<forall> p q. equiv_prof_except_a V A p q a \<longrightarrow> m V A p = m V A q)"
 
 definition unique_winner_if_profile_non_empty :: "('a, 'v, 'a Result)
-        Electoral_Module \<Rightarrow> bool" where
+        Electoral_Module \<Rightarrow>
+        bool" where
   "unique_winner_if_profile_non_empty m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
     (\<forall> A V p. (A \<noteq> {} \<and> V \<noteq> {} \<and> profile V A p) \<longrightarrow>
@@ -293,16 +294,16 @@ definition prof_contains_result :: "('a, 'v, 'a Result) Electoral_Module \<Right
     (a \<in> reject m V A p \<longrightarrow> a \<in> reject m V A q) \<and>
     (a \<in> defer m V A p \<longrightarrow> a \<in> defer m V A q)"
 
-definition prof_leq_result :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow>
-        ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
+definition prof_leq_result :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow>
+        'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "prof_leq_result m V A p q a \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
     profile V A p \<and> profile V A q \<and> a \<in> A \<and>
     (a \<in> reject m V A p \<longrightarrow> a \<in> reject m V A q) \<and>
     (a \<in> defer m V A p \<longrightarrow> a \<notin> elect m V A q)"
 
-definition prof_geq_result :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow>
-        ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
+definition prof_geq_result :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set \<Rightarrow>
+        'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "prof_geq_result m V A p q a \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
     profile V A p \<and> profile V A q \<and> a \<in> A \<and>
@@ -373,30 +374,30 @@ lemma result_presv_alts:
 proof (safe)
   fix a :: "'a"
   have
-    partition_1:
+    partition_impl_existence:
     "\<forall> p'. set_equals_partition A p'
       \<longrightarrow> (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)" and
-    partition_2:
+    partition_A:
     "set_equals_partition A (m V A p)"
     using assms
     by (simp, simp)
   {
     assume "a \<in> elect m V A p"
-    with partition_1 partition_2
+    with partition_impl_existence partition_A
     show "a \<in> A"
       using UnI1 fstI
       by (metis (no_types))
   }
   {
     assume "a \<in> reject m V A p"
-    with partition_1 partition_2
+    with partition_impl_existence partition_A
     show "a \<in> A"
       using UnI1 fstI sndI subsetD sup_ge2
       by metis
   }
   {
     assume "a \<in> defer m V A p"
-    with partition_1 partition_2
+    with partition_impl_existence partition_A
     show "a \<in> A"
       using sndI subsetD sup_ge2
       by metis
@@ -406,7 +407,7 @@ proof (safe)
       "a \<in> A" and
       "a \<notin> defer m V A p" and
       "a \<notin> reject m V A p"
-    with partition_1 partition_2
+    with partition_impl_existence partition_A
     show "a \<in> elect m V A p"
       using fst_conv snd_conv Un_iff
       by metis
@@ -924,7 +925,7 @@ proof -
     by metis
 qed
 
-lemma single_elim_decr_def_card_2:
+lemma single_elim_decr_def_card':
   fixes
     m :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
@@ -1252,8 +1253,8 @@ subsection \<open>Social-Choice Properties\<close>
 
 subsubsection \<open>Condorcet Consistency\<close>
 
-definition condorcet_consistency :: "('a, 'v, 'a Result)
-        Electoral_Module \<Rightarrow> bool" where
+definition condorcet_consistency :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        bool" where
   "condorcet_consistency m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
     (\<forall> A V p a. condorcet_winner V A p a \<longrightarrow>

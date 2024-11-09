@@ -135,7 +135,9 @@ next
     equivar: 
       "\<forall> (\<phi>, \<psi>) \<in> {(\<phi> g, id) |g. g \<in> t}. \<forall> x \<in> s. f (\<phi> x) = \<psi> (f x)" and
     rel: "(x, y) \<in> action_induced_rel t s \<phi>"
-  then obtain g :: 'z where img: "\<phi> g x = y" and elt: "g \<in> t"
+  then obtain g :: "'z" where
+    img: "\<phi> g x = y" and
+    elt: "g \<in> t"
     unfolding action_induced_rel.simps
     by blast
   moreover have "x \<in> s"
@@ -393,9 +395,9 @@ next
     carrier_election_y: "\<phi>_img y \<in> carrier (BijGroup (Pow s))"
     by (presburger, presburger)
   hence h_closed: "\<forall> t \<in> Pow s. \<phi>_img y t \<in> Pow s"
-    using bij_betw_apply Int_Collect partial_object.select_convs(1)
-    unfolding BijGroup_def Bij_def
-    by metis
+    using bij_betw_apply Int_Collect
+    unfolding BijGroup_def Bij_def partial_object.select_convs
+    by (metis (no_types))
   from carrier_election_x carrier_election_y
   have "\<phi>_img x \<otimes> \<^bsub>BijGroup (Pow s)\<^esub> \<phi>_img y =
           extensional_continuation (\<phi>_img x \<circ> \<phi>_img y) (Pow s)"
@@ -487,7 +489,8 @@ proof (unfold is_symmetry.simps action_induced_equivariance_def action_induced_r
       by metis
     moreover have "\<forall> x \<in> t. \<phi> g (\<phi> (inv \<^bsub>m\<^esub> g) x) = x"
       using action_\<phi> gen generate.incl group.inv_closed group_action.orbit_sym_aux
-            group.inv_inv group_hom.axioms(1) group_action.group_hom local.inv
+            group.inv_inv group_action.group_hom local.inv
+      unfolding group_hom_def
       by (metis (full_types))
     ultimately have "\<forall> x \<in> t. \<psi> g (f (\<phi> (inv \<^bsub>m\<^esub> g) x)) = f x"
       by simp
@@ -534,11 +537,11 @@ lemma invar_parameterized_fun:
     f :: "'x \<Rightarrow> ('x \<Rightarrow> 'y)" and
     r :: "'x rel"
   assumes
-    param_invar: "\<forall> x. is_symmetry (f x) (Invariance r)" and
-    invar: "is_symmetry f (Invariance r)"
+    "\<forall> x. is_symmetry (f x) (Invariance r)" and
+    "is_symmetry f (Invariance r)"
   shows "is_symmetry (\<lambda> x. f x x) (Invariance r)"
-  using invar param_invar
-  by auto
+  using assms
+  by simp
 
 lemma invar_under_subset_rel:
   fixes
@@ -617,7 +620,8 @@ proof (safe)
     using action_res
     by simp
   have group_elem_inv: "(inv \<^bsub>m\<^esub> x) \<in> carrier m"
-    using group.inv_closed group_hom.axioms(1) action_\<phi>.group_hom group_elem_x
+    using group.inv_closed action_\<phi>.group_hom group_elem_x
+    unfolding group_hom_def
     by metis
   fix
     y :: "'y" and
@@ -660,8 +664,9 @@ proof (safe)
     using a_in_domain
     by simp
   moreover have "z = \<phi> x a"
-    using group_hom.axioms(1) action_\<phi>.group_hom action_\<phi>.orbit_sym_aux
-          img domain a_in_domain group_elem_x group_elem_inv group.inv_inv
+    using action_\<phi>.group_hom action_\<phi>.orbit_sym_aux img domain
+          a_in_domain group_elem_x group_elem_inv group.inv_inv
+    unfolding group_hom_def
     by metis
   ultimately show "z \<in> (\<phi> x) ` (preimg f \<D>\<^sub>f y)"
     by simp

@@ -95,14 +95,13 @@ lemma vote_count_sum:
   fixes E :: "('a, 'v) Election"
   assumes
     "finite (voters_\<E> E)" and
-    "finite (UNIV::('a \<times> 'a) set)"
+    "finite (UNIV :: ('a \<times> 'a) set)"
   shows "sum (\<lambda> p. vote_count p E) UNIV = card (voters_\<E> E)"
 proof (unfold vote_count.simps)
   have "\<forall> p. finite {v \<in> voters_\<E> E. profile_\<E> E v = p}"
     using assms
     by force
-  moreover have
-    "disjoint {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
+  moreover have "disjoint {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
     unfolding disjoint_def
     by blast
   moreover have partition:
@@ -243,7 +242,7 @@ lemma rename_sound:
   assumes
     prof: "profile V A p" and
     renamed: "(A, V', q) = rename \<pi> (A, V, p)" and
-    bij: "bij \<pi>"
+    bij_perm: "bij \<pi>"
   shows "profile V' A q"
 proof (unfold profile_def, safe)
   fix v' :: "'v"
@@ -252,11 +251,11 @@ proof (unfold profile_def, safe)
     using renamed
     by simp
   ultimately have "((the_inv \<pi>) v') \<in> V"
-    using UNIV_I bij bij_is_inj bij_is_surj
+    using UNIV_I bij_perm bij_is_inj bij_is_surj
           f_the_inv_into_f inj_image_mem_iff
     by metis
   thus "linear_order_on A (q v')"
-    using renamed bij prof
+    using renamed bij_perm prof
     unfolding profile_def
     by simp
 qed
@@ -382,19 +381,19 @@ next
     by fastforce
 qed
 
-subsection \<open>List Representation for Ordered Voters\<close>
+subsection \<open>List Representation\<close>
 
 text \<open>
   A profile on a voter set that has a natural order can be viewed as a list of ballots.
 \<close>
 
-fun to_list :: "'v::linorder set \<Rightarrow> ('a, 'v) Profile
-                  \<Rightarrow> ('a Preference_Relation) list" where
+fun to_list :: "'v::linorder set \<Rightarrow> ('a, 'v) Profile \<Rightarrow>
+        ('a Preference_Relation) list" where
   "to_list V p = (if (finite V)
                     then (map p (sorted_list_of_set V))
                     else [])"
 
-lemma map2_helper:
+lemma map_helper:
   fixes
     f :: "'x \<Rightarrow> 'y \<Rightarrow> 'z" and
     g :: "'x \<Rightarrow> 'x" and
@@ -664,7 +663,7 @@ next
   qed
 qed
 
-subsection \<open>Preference Counts and Comparisons\<close>
+subsection \<open>Preference Counts\<close>
 
 text \<open>
   The win count for an alternative a with respect to a finite voter set V in a profile p is
@@ -888,7 +887,7 @@ next
     by presburger
 qed
 
-lemma cond_winner_unique_2:
+lemma cond_winner_unique':
   fixes
     V :: "'v set" and
     A :: "'a set" and
