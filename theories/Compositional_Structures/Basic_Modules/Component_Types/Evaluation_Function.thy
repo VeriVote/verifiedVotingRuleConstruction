@@ -103,8 +103,7 @@ theorem non_cond_winner_not_max_eval:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     rating: "condorcet_rating e" and
     f_prof: "finite_profile V A p" and

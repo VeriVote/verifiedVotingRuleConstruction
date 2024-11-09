@@ -28,7 +28,7 @@ theorem minimax_rule_sound: "\<S>\<C>\<F>_result.electoral_module minimax_rule"
   using elector_sound minimax_sound
   by metis
 
-subsection \<open>Condorcet Consistency Property\<close>
+subsection \<open>Condorcet Consistency\<close>
 
 theorem minimax_condorcet: "condorcet_consistency minimax_rule"
 proof (unfold minimax_rule.simps)

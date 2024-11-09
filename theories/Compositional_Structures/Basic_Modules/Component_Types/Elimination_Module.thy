@@ -27,53 +27,50 @@ type_synonym Threshold_Relation = "enat \<Rightarrow> enat \<Rightarrow> bool"
 type_synonym ('a, 'v) Electoral_Set = "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a set"
 
 fun elimination_set :: "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow>
-                            Threshold_Relation \<Rightarrow> ('a, 'v) Electoral_Set" where
+        Threshold_Relation \<Rightarrow> ('a, 'v) Electoral_Set" where
  "elimination_set e t r V A p = {a \<in> A . r (e V a A p) t}"
 
-fun average :: "('a, 'v) Evaluation_Function \<Rightarrow> 'v set \<Rightarrow>
-  'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> Threshold_Value" where
+fun average :: "('a, 'v) Evaluation_Function \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow>
+        Threshold_Value" where
   "average e V A p = (let sum = (\<Sum> x \<in> A. e V x A p) in
                       (if (sum = infinity) then (infinity)
                        else ((the_enat sum) div (card A))))"
 
-subsection \<open>Social Choice Definitions\<close>
+subsection \<open>Social-Choice Definitions\<close>
 
-fun elimination_module :: "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Value
-                              \<Rightarrow> Threshold_Relation
-                              \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun elimination_module :: "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow>
+        Threshold_Relation \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "elimination_module e t r V A p =
       (if (elimination_set e t r V A p) \<noteq> A
         then ({}, (elimination_set e t r V A p), A - (elimination_set e t r V A p))
         else ({}, {}, A))"
 
-subsection \<open>Common Social Choice Eliminators\<close>
+subsection \<open>Social-Choice Eliminators\<close>
 
-fun less_eliminator :: "('a, 'v) Evaluation_Function
-                           \<Rightarrow> Threshold_Value
-                             \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun less_eliminator :: "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "less_eliminator e t V A p = elimination_module e t (<) V A p"
 
-fun max_eliminator :: "('a, 'v) Evaluation_Function
-                          \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun max_eliminator :: "('a, 'v) Evaluation_Function \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "max_eliminator e V A p =
     less_eliminator e (Max {e V x A p | x. x \<in> A}) V A p"
 
-fun leq_eliminator :: "('a, 'v) Evaluation_Function
-                          \<Rightarrow> Threshold_Value
-                            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun leq_eliminator :: "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "leq_eliminator e t V A p = elimination_module e t (\<le>) V A p"
 
-fun min_eliminator :: "('a, 'v) Evaluation_Function
-                           \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun min_eliminator :: "('a, 'v) Evaluation_Function \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "min_eliminator e V A p =
     leq_eliminator e (Min {e V x A p | x. x \<in> A}) V A p"
 
-fun less_average_eliminator :: "('a, 'v) Evaluation_Function
-                            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun less_average_eliminator :: "('a, 'v) Evaluation_Function \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "less_average_eliminator e V A p = less_eliminator e (average e V A p) V A p"
 
-fun leq_average_eliminator :: "('a, 'v) Evaluation_Function
-         \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun leq_average_eliminator :: "('a, 'v) Evaluation_Function \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "leq_average_eliminator e V A p = leq_eliminator e (average e V A p) V A p"
 
 subsection \<open>Soundness\<close>
@@ -127,7 +124,7 @@ lemma leq_avg_elim_sound[simp]:
   unfolding \<S>\<C>\<F>_result.electoral_module.simps
   by auto
 
-subsection \<open>Only participating voters impact the result\<close>
+subsection \<open>Independence of Non-Voters\<close>
 
 lemma voters_determine_elim_mod[simp]:
   fixes
@@ -140,8 +137,7 @@ proof (unfold voters_determine_election.simps elimination_module.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile"
+    p p' :: "('a, 'v) Profile"
   assume "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> a \<in> A. (e V a A p) = (e V a A p')"
     using assms
@@ -189,8 +185,7 @@ proof (unfold max_eliminator.simps voters_determine_election.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile"
+    p p' :: "('a, 'v) Profile"
   assume coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms
@@ -213,10 +208,8 @@ proof (unfold min_eliminator.simps voters_determine_election.simps, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile"
-  assume
-    coinciding: "\<forall> v \<in> V. p v = p' v"
+    p p' :: "('a, 'v) Profile"
+  assume coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms
     unfolding voters_determine_election.simps
@@ -238,8 +231,7 @@ proof (unfold less_average_eliminator.simps voters_determine_election.simps, saf
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile"
+    p p' :: "('a, 'v) Profile"
   assume coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms
@@ -263,8 +255,7 @@ proof (unfold leq_average_eliminator.simps voters_determine_election.simps, safe
   fix
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile"
+    p p' :: "('a, 'v) Profile"
   assume coinciding: "\<forall> v \<in> V. p v = p' v"
   hence "\<forall> x \<in> A. e V x A p = e V x A p'"
     using assms
@@ -436,8 +427,7 @@ next
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    a :: "'a" and
-    a' :: "'a"
+    a a' :: "'a"
   assume
     "condorcet_winner V A p a" and
     "a \<in> elect (max_eliminator e) V A p"

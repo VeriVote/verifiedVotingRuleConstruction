@@ -22,19 +22,17 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun elector :: "('a, 'v, 'a Result) Electoral_Module
-                  \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun elector :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "elector m = (m \<triangleright> elect_module)"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
 lemma elector_seqcomp_assoc:
-  fixes
-    a :: "('a, 'v, 'a Result) Electoral_Module" and
-    b :: "('a, 'v, 'a Result) Electoral_Module"
+  fixes a b :: "('a, 'v, 'a Result) Electoral_Module"
   shows "(a \<triangleright> (elector b)) = (elector (a \<triangleright> b))"
   unfolding elector.simps elect_module.simps sequential_composition.simps
-  using boolean_algebra_cancel.sup2 fst_eqD snd_eqD sup_commute
+  using boolean_algebra_cancel.sup2 sup_commute fst_conv snd_conv
   by (metis (no_types, opaque_lifting))
 
 subsection \<open>Soundness\<close>
@@ -84,7 +82,7 @@ proof -
     V :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'v set" and
     p :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v) Profile" where
     electing_mod:
-     "\<forall> m'::('a, 'v, 'a Result) Electoral_Module.
+     "\<forall> m' :: ('a, 'v, 'a Result) Electoral_Module.
       (\<not> electing m' \<or> \<S>\<C>\<F>_result.electoral_module m' \<and>
         (\<forall> A' V' p'. (A' \<noteq> {} \<and> finite A' \<and> profile V' A' p')
           \<longrightarrow> elect m' V' A' p' \<noteq> {})) \<and>
@@ -93,7 +91,7 @@ proof -
                     \<and> elect m' (V m') (A m') (p m') = {})"
     by metis
   moreover have non_block:
-    "non_blocking (elect_module::'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a Result)"
+    "non_blocking (elect_module :: 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a Result)"
     by (simp add: electing_imp_non_blocking)
   moreover obtain
     e :: "'a Result \<Rightarrow> 'a set" and
@@ -121,8 +119,8 @@ proof -
           reject (elector m) (V (elector m)) (A (elector m)) (p (elector m)) =
             r (elector m (V (elector m)) (A (elector m)) (p (elector m))) \<longrightarrow>
               electing (elector m)"
-    using Diff_empty elector.simps non_block_m snd_conv non_blocking_def reject_not_elec_or_def
-          non_block seq_comp_presv_non_blocking
+    using Diff_empty elector.simps non_block_m snd_conv non_blocking_def
+          reject_not_elected_or_deferred non_block seq_comp_presv_non_blocking
     by (metis (mono_tags, opaque_lifting))
   ultimately show ?thesis
     using non_block_m
@@ -179,14 +177,14 @@ next
     assume x_in_elect_or_defer: "x \<in> elect m V A p \<union> defer m V A p"
     hence x_eq_w: "x = w"
       using Diff_empty Diff_iff assms cond_winner_unique c_win fin_A fin_V insert_iff
-            snd_conv prod.sel(1) sup_bot.left_neutral
+            snd_conv sup_bot.left_neutral fst_eqD
       unfolding defer_condorcet_consistency_def
       by (metis (mono_tags, lifting))
-    have "\<And> x. x \<in> elect m V A p \<Longrightarrow> x \<in> A"
+    have "\<forall> x. x \<in> elect m V A p \<longrightarrow> x \<in> A"
       using fin_A prof_A fin_V assms elect_in_alts in_mono
       unfolding defer_condorcet_consistency_def
       by metis
-    moreover have "\<And> x. x \<in> defer m V A p \<Longrightarrow> x \<in> A"
+    moreover have "\<forall> x. x \<in> defer m V A p \<longrightarrow> x \<in> A"
       using fin_A prof_A fin_V assms defer_in_alts in_mono
       unfolding defer_condorcet_consistency_def
       by metis

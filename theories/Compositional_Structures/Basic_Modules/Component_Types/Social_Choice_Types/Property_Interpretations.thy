@@ -10,7 +10,7 @@ theory Property_Interpretations
           Result_Interpretations
 begin
 
-subsection \<open>Properties Dependent on the Result Type\<close>
+subsection \<open>Property Definitions\<close>
 
 text \<open>
   The interpretation of equivariance properties generally depends on the result type.
@@ -22,32 +22,33 @@ text \<open>
 \<close>
 
 locale result_properties = result +
-  fixes \<psi>_neutr :: "('a \<Rightarrow> 'a, 'b) binary_fun" and
-        \<E> :: "('a, 'v) Election"
+  fixes \<psi>_neutral :: "('a \<Rightarrow> 'a, 'b) binary_fun" and
+        voter_type :: "'v itself"
   assumes
-    act_neutr: "group_action neutrality\<^sub>\<G> UNIV \<psi>_neutr" and
-    well_formed_res_neutr:
-      "is_symmetry (\<lambda> \<E> :: ('a, 'v) Election. limit_set (alternatives_\<E> \<E>) UNIV)
+    action_neutral: "group_action neutrality\<^sub>\<G> UNIV \<psi>_neutral" and
+    neutrality:
+      "is_symmetry (\<lambda> \<E> :: ('a, 'v) Election. limit (alternatives_\<E> \<E>) UNIV)
                 (action_induced_equivariance (carrier neutrality\<^sub>\<G>)
-                    valid_elections (\<phi>_neutr valid_elections) (set_action \<psi>_neutr))"
+                    well_formed_elections
+                    (\<phi>_neutral well_formed_elections) (set_action \<psi>_neutral))"
 
 sublocale result_properties \<subseteq> result
   using result_axioms
-  by simp
+  by safe
 
 subsection \<open>Interpretations\<close>
 
-global_interpretation \<S>\<C>\<F>_properties:
-  "result_properties" "well_formed_\<S>\<C>\<F>" "limit_set_\<S>\<C>\<F>" "\<psi>_neutr\<^sub>\<c>"
+global_interpretation \<S>\<C>\<F>_properties: "result_properties" "well_formed_\<S>\<C>\<F>"
+        "limit_\<S>\<C>\<F>" "\<psi>_neutral\<^sub>\<c>"
   unfolding result_properties_def result_properties_axioms_def
-  using wf_result_neutrality_\<S>\<C>\<F> \<psi>_neutral\<^sub>\<c>_action.group_action_axioms
+  using neutrality_\<S>\<C>\<F> \<psi>_neutral\<^sub>\<c>_action.group_action_axioms
         \<S>\<C>\<F>_result.result_axioms
   by blast
 
-global_interpretation \<S>\<W>\<F>_properties:
-  "result_properties" "well_formed_\<S>\<W>\<F>" "limit_set_\<S>\<W>\<F>" "\<psi>_neutr\<^sub>\<w>"
+global_interpretation \<S>\<W>\<F>_properties: "result_properties" "well_formed_\<S>\<W>\<F>"
+        "limit_\<S>\<W>\<F>" "\<psi>_neutral\<^sub>\<w>"
   unfolding result_properties_def result_properties_axioms_def
-  using wf_result_neutrality_\<S>\<W>\<F> \<psi>_neutral\<^sub>\<w>_action.group_action_axioms
+  using neutrality_\<S>\<W>\<F> \<psi>_neutral\<^sub>\<w>_action.group_action_axioms
         \<S>\<W>\<F>_result.result_axioms
   by blast
 

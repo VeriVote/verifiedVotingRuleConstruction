@@ -37,15 +37,13 @@ theorem condorcet_sound: "\<S>\<C>\<F>_result.electoral_module condorcet"
 
 subsection \<open>Property\<close>
 
-(* Condorcet score is Condorcet rating. *)
 theorem condorcet_score_is_condorcet_rating: "condorcet_rating condorcet_score"
 proof (unfold condorcet_rating_def, safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
-    w :: "'b" and
-    l :: "'b"
+    w l :: "'b"
   assume
     c_win: "condorcet_winner V A p w" and
     l_neq_w: "l \<noteq> w"
@@ -59,13 +57,13 @@ proof (unfold condorcet_rating_def, safe)
 qed
 
 theorem condorcet_is_dcc: "defer_condorcet_consistency condorcet"
-proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module.simps, safe)
+proof (unfold defer_condorcet_consistency_def \<S>\<C>\<F>_result.electoral_module.simps,
+        safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile"
-  assume
-    "profile V A p"
+  assume "profile V A p"
   hence "well_formed_\<S>\<C>\<F> A (max_eliminator condorcet_score V A p)"
     using max_elim_sound
     unfolding \<S>\<C>\<F>_result.electoral_module.simps
@@ -78,9 +76,8 @@ next
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
     a :: "'b"
-  assume
-    c_win_w: "condorcet_winner V A p a"
-  let ?m = "(max_eliminator condorcet_score)::(('b, 'a, 'b Result) Electoral_Module)"
+  assume c_win_w: "condorcet_winner V A p a"
+  let ?m = "(max_eliminator condorcet_score) :: ('b, 'a, 'b Result) Electoral_Module"
   have "defer_condorcet_consistency ?m"
     using cr_eval_imp_dcc_max_elim condorcet_score_is_condorcet_rating
     by metis

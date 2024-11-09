@@ -50,8 +50,8 @@ proof (unfold \<S>\<C>\<F>_result.electoral_module.simps well_formed_\<S>\<C>\<F
     "disjoint3 (smc x V A p)" and
     "set_equals_partition A (smc x V A p)"
     unfolding iter.simps smc.simps elector.simps
-    using drop_mod_sound elect_mod_sound loop_comp_sound max_par_comp_sound pass_mod_sound
-          plurality_rule_sound rev_comp_sound seq_comp_sound
+    using drop_mod_sound elect_mod_sound loop_comp_sound max_par_comp_sound
+          pass_mod_sound plurality_rule_sound rev_comp_sound seq_comp_sound
     by (metis (no_types) seq_comp_presv_disj, metis (no_types) seq_comp_presv_alts)
 qed
 
@@ -143,7 +143,7 @@ proof -
     by metis
 qed
 
-subsection \<open>(Weak) Monotonicity Property\<close>
+subsection \<open>(Weak) Monotonicity\<close>
 
 text \<open>
   The following proof is a fully modular proof for weak monotonicity of

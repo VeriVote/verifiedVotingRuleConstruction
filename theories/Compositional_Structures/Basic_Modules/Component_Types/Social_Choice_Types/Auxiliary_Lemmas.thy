@@ -37,13 +37,13 @@ next
   case (Suc n)
   assume
     card_X: "Suc n = card X" and
-    bij: "bij_betw g Y X"
+    bij_g: "bij_betw g Y X"
   obtain x :: "'x"
     where x_in_X: "x \<in> X"
     using card_X
     by fastforce
   hence "bij_betw g (Y - {the_inv_into Y g x}) (X - {x})"
-    using bij bij_betw_DiffI bij_betw_apply bij_betw_singletonI empty_subsetI
+    using bij_g bij_betw_DiffI bij_betw_apply bij_betw_singletonI empty_subsetI
           bij_betw_the_inv_into f_the_inv_into_f_bij_betw insert_subsetI
     by (metis (mono_tags, lifting))
   moreover have "n = card (X - {x})"
@@ -55,14 +55,14 @@ next
   moreover from this have
     "sum (f \<circ> g) Y =
         f (g (the_inv_into Y g x)) + sum (f \<circ> g) (Y - {the_inv_into Y g x})"
-    using Suc x_in_X bij card.infinite f_the_inv_into_f_bij_betw
+    using Suc x_in_X bij_g card.infinite f_the_inv_into_f_bij_betw
           nat.discI sum.reindex sum.remove
     unfolding bij_betw_def
     by metis
   moreover have
     "f (g (the_inv_into Y g x)) + sum (f \<circ> g) (Y - {the_inv_into Y g x}) =
       f x + sum (f \<circ> g) (Y - {the_inv_into Y g x})"
-    using x_in_X bij f_the_inv_into_f_bij_betw
+    using x_in_X bij_g f_the_inv_into_f_bij_betw
     by metis
   moreover have "sum f X = f x + sum f (X - {x})"
     using Suc x_in_X Zero_neq_Suc card.infinite sum.remove

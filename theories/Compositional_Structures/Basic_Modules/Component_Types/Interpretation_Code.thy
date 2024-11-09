@@ -3,13 +3,15 @@
 *)
 \<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
 
-section \<open>Result and Property Locale Code Generation\<close>
+section \<open>Code Generation Interpretations for Results and Properties\<close>
 
 theory Interpretation_Code
   imports Electoral_Module
           Distance_Rationalization
 begin
 setup Locale_Code.open_block
+
+subsection \<open>Code Lemmas\<close>
 
 text \<open>
   Lemmas stating the explicit instantiations of interpreted abstract functions from locales.
@@ -30,7 +32,7 @@ lemma \<R>\<^sub>\<W>_\<S>\<C>\<F>_code_lemma:
     A :: "'a set" and
     p :: "('a, 'v) Profile"
   shows "\<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p =
-            arg_min_set (score d K (A, V, p)) (limit_set_\<S>\<C>\<F> A UNIV)"
+            arg_min_set (score d K (A, V, p)) (limit_\<S>\<C>\<F> A UNIV)"
   unfolding \<S>\<C>\<F>_result.\<R>\<^sub>\<W>.simps
   by safe
 
@@ -43,7 +45,7 @@ lemma distance_\<R>_\<S>\<C>\<F>_code_lemma:
     p :: "('a, 'v) Profile"
   shows "\<S>\<C>\<F>_result.distance_\<R> d K V A p =
       (\<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p,
-        (limit_set_\<S>\<C>\<F> A UNIV) - \<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p,
+        (limit_\<S>\<C>\<F> A UNIV) - \<S>\<C>\<F>_result.\<R>\<^sub>\<W> d K V A p,
         {})"
   unfolding \<S>\<C>\<F>_result.distance_\<R>.simps
   by safe
@@ -56,7 +58,7 @@ lemma \<R>\<^sub>\<W>_std_\<S>\<C>\<F>_code_lemma:
     A :: "'a set" and
     p :: "('a, 'v) Profile"
   shows "\<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std d K V A p =
-      arg_min_set (score_std d K (A, V, p)) (limit_set_\<S>\<C>\<F> A UNIV)"
+      arg_min_set (score_std d K (A, V, p)) (limit_\<S>\<C>\<F> A UNIV)"
   unfolding \<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std.simps
   by safe
 
@@ -69,25 +71,25 @@ lemma distance_\<R>_std_\<S>\<C>\<F>_code_lemma:
     p :: "('a, 'v) Profile"
   shows "\<S>\<C>\<F>_result.distance_\<R>_std d K V A p =
       (\<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std d K V A p,
-        (limit_set_\<S>\<C>\<F> A UNIV) - \<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std d K V A p,
+        (limit_\<S>\<C>\<F> A UNIV) - \<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std d K V A p,
         {})"
   unfolding \<S>\<C>\<F>_result.distance_\<R>_std.simps
   by safe
 
-lemma anonymity_\<S>\<C>\<F>_code_lemma:
-  shows "\<S>\<C>\<F>_result.anonymity =
-    (\<lambda> m::(('a, 'v, 'a Result) Electoral_Module).
+lemma anonymity_\<S>\<C>\<F>_code_lemma: "\<S>\<C>\<F>_result.anonymity =
+    (\<lambda> m :: ('a, 'v, 'a Result) Electoral_Module.
       \<S>\<C>\<F>_result.electoral_module m \<and>
-          (\<forall> A V p \<pi>::('v \<Rightarrow> 'v).
+          (\<forall> A V p \<pi> :: ('v \<Rightarrow> 'v).
                 bij \<pi> \<longrightarrow> (let (A', V', q) = (rename \<pi> (A, V, p)) in
-            finite_profile V A p \<and> finite_profile V' A' q \<longrightarrow> m V A p = m V' A' q)))"
+            profile V A p \<and> profile V' A' q \<longrightarrow> m V A p = m V' A' q)))"
   unfolding \<S>\<C>\<F>_result.anonymity_def
   by simp
 
+subsection \<open>Interpretation Declarations and Constants\<close>
 
 text \<open>
   Declarations for replacing interpreted abstract functions from locales
-  by their explicit instantiations for code generation.
+  by their explicit instantiations.
 \<close>
 
 declare [[lc_add "\<S>\<C>\<F>_result.electoral_module" electoral_module_\<S>\<C>\<F>_code_lemma]]
@@ -99,7 +101,7 @@ declare [[lc_add "\<S>\<C>\<F>_result.anonymity" anonymity_\<S>\<C>\<F>_code_lem
 
 
 text \<open>
-  Constant aliases to use when exporting code instead of the interpreted functions
+  Constant aliases to use instead of the interpreted functions.
 \<close>
 
 definition "\<R>\<^sub>\<W>_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.\<R>\<^sub>\<W>"

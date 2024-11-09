@@ -5,7 +5,7 @@
 \<^marker>\<open>contributor "Jonas Kraemer, Karlsruhe Institute of Technology (KIT)"\<close>
 \<^marker>\<open>contributor "Michael Kirsten, Karlsruhe Institute of Technology (KIT)"\<close>
 
-section \<open>Defer One Loop Composition\<close>
+section \<open>Defer-One Loop Composition\<close>
 
 theory Defer_One_Loop_Composition
   imports "Basic_Modules/Component_Types/Defer_Equal_Condition"
@@ -20,20 +20,18 @@ text \<open>
   subsequently elects the remaining alternative.
 \<close>
 
-subsection \<open>Definition\<close>
-
-fun iter :: "('a, 'v, 'a Result) Electoral_Module
-                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun iter :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "iter m =
     (let t = defer_equal_condition 1 in
       (m \<circlearrowleft>\<^sub>t))"
 
-abbreviation defer_one_loop :: "('a, 'v, 'a Result) Electoral_Module
-            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" ("_\<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d" 50) where
+abbreviation defer_one_loop :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" ("_\<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d" 50) where
   "m \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d \<equiv> iter m"
 
-fun iter_elect :: "('a, 'v, 'a Result) Electoral_Module
-                    \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun iter_elect :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "iter_elect m = elector (m \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d)"
 
 end

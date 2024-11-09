@@ -19,8 +19,8 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm
-                            \<Rightarrow> ('a,'v::linorder) Election Distance" where
+fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm \<Rightarrow>
+        ('a,'v::linorder) Election Distance" where
   "votewise_distance d n (A, V, p) (A', V', p') =
     (if (finite V) \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')
     then n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))
@@ -28,15 +28,13 @@ fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm
 
 subsection \<open>Inference Rules\<close>
 
-lemma symmetric_norm_inv_under_map2_permute:
+lemma symmetric_norm_inv_under_map_permute:
   fixes
     d :: "'a Vote Distance" and
     n :: "Norm" and
-    A  :: "'a set" and
-    A' :: "'a set" and
+    A A'  :: "'a set" and
     \<phi> :: "nat \<Rightarrow> nat" and
-    p  :: "('a Preference_Relation) list" and
-    p' :: "('a Preference_Relation) list"
+    p p'  :: "('a Preference_Relation) list"
   assumes
     perm: "\<phi> permutes {0 ..< length p}" and
     len_eq: "length p = length p'" and
@@ -76,19 +74,16 @@ proof -
 qed
 
 lemma permute_invariant_under_map:
-  fixes
-    l :: "'a list" and
-    ls :: "'a list"
-  assumes "l <~~> ls"
-  shows "map f l <~~> map f ls"
+  fixes l l' :: "'a list"
+  assumes "l <~~> l'"
+  shows "map f l <~~> map f l'"
   using assms
   by simp
 
 lemma linorder_rank_injective:
   fixes
     V :: "'v::linorder set" and
-    v :: "'v" and
-    v' :: "'v"
+    v v' :: "'v"
   assumes
     v_in_V: "v \<in> V" and
     v'_in_V: "v' \<in> V" and
@@ -110,10 +105,9 @@ qed
 lemma permute_invariant_under_coinciding_funs:
   fixes
     l :: "'v list" and
-    \<pi>_1 :: "nat \<Rightarrow> nat" and
-    \<pi>_2 :: "nat \<Rightarrow> nat"
-  assumes "\<forall> i < length l. \<pi>_1 i = \<pi>_2 i"
-  shows "permute_list \<pi>_1 l = permute_list \<pi>_2 l"
+    \<pi>\<^sub>1 \<pi>\<^sub>2 :: "nat \<Rightarrow> nat"
+  assumes "\<forall> i < length l. \<pi>\<^sub>1 i = \<pi>\<^sub>2 i"
+  shows "permute_list \<pi>\<^sub>1 l = permute_list \<pi>\<^sub>2 l"
   using assms
   unfolding permute_list_def
   by simp
@@ -126,12 +120,9 @@ lemma symmetric_norm_imp_distance_anonymous:
   shows "distance_anonymity (votewise_distance d n)"
 proof (unfold distance_anonymity_def, safe)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v::linorder set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v::linorder set" and
+    p p' :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   let ?rn1 = "rename \<pi> (A, V, p)" and
       ?rn2 = "rename \<pi> (A', V', p')" and
@@ -147,7 +138,7 @@ proof (unfold distance_anonymity_def, safe)
       ?perm_total = "(\<lambda> i. (if (i < ?len)
                            then card ({v \<in> ?rn_V. v < \<pi> (?sl_V!i)})
                            else i))"
-  assume bij: "bij \<pi>"
+  assume bij_\<pi>: "bij \<pi>"
   show "votewise_distance d n (A, V, p) (A', V', p') =
             votewise_distance d n ?rn1 ?rn2"
   proof -
@@ -169,14 +160,14 @@ proof (unfold distance_anonymity_def, safe)
       \<comment> \<open>Case: Both distances are infinite.\<close>
       hence inf_dist: "votewise_distance d n (A, V, p) (A', V', p') = \<infinity>"
         by auto
-      moreover have "infinite V \<Longrightarrow> infinite ?rn_V"
-        using False bij bij_betw_finite bij_betw_subset False subset_UNIV
+      moreover have "infinite V \<longrightarrow> infinite ?rn_V"
+        using False bij_\<pi> bij_betw_finite bij_betw_subset False subset_UNIV
         by metis
-      moreover have "V \<noteq> V' \<Longrightarrow> ?rn_V \<noteq> ?rn_V'"
-        using bij bij_def inj_image_mem_iff subsetI subset_antisym
+      moreover have "V \<noteq> V' \<longrightarrow> ?rn_V \<noteq> ?rn_V'"
+        using bij_\<pi> bij_def inj_image_mem_iff subsetI subset_antisym
         by metis
-      moreover have "V = {} \<Longrightarrow> ?rn_V = {}"
-        using bij
+      moreover have "V = {} \<longrightarrow> ?rn_V = {}"
+        using bij_\<pi>
         by simp
       ultimately have inf_dist_rename: "votewise_distance d n ?rn1 ?rn2 = \<infinity>"
         using False
@@ -194,7 +185,7 @@ proof (unfold distance_anonymity_def, safe)
         using True
         by simp
       have rn_V_permutes: "(to_list V p) = permute_list ?perm (to_list ?rn_V ?rn_p)"
-        using assms to_list_permutes_under_bij bij to_list_permutes_under_bij
+        using assms to_list_permutes_under_bij bij_\<pi> to_list_permutes_under_bij
         unfolding comp_def
         by (metis (no_types))
       hence len_V_rn_V_eq: "?len = length (to_list ?rn_V ?rn_p)"
@@ -211,7 +202,7 @@ proof (unfold distance_anonymity_def, safe)
       have rn_V'_permutes:
         "(to_list V' p') = permute_list ?perm (to_list ?rn_V' ?rn_p')"
         unfolding comp_def
-        using True bij to_list_permutes_under_bij
+        using True bij_\<pi> to_list_permutes_under_bij
         by (metis (no_types))
       hence "permute_list ?perm (to_list ?rn_V' ?rn_p')
               = permute_list ?perm_total (to_list ?rn_V' ?rn_p')"
@@ -229,13 +220,14 @@ proof (unfold distance_anonymity_def, safe)
       proof -
         have "\<forall> i j. (i < ?len \<and> j < ?len \<and> i \<noteq> j
                      \<longrightarrow> \<pi> ((sorted_list_of_set V)!i) \<noteq> \<pi> ((sorted_list_of_set V)!j))"
-          using bij bij_pointE True nth_eq_iff_index_eq length_map
+          using bij_\<pi> bij_pointE True nth_eq_iff_index_eq length_map
                 sorted_list_of_set.distinct_sorted_key_list_of_set to_list.elims
           by (metis (mono_tags, opaque_lifting))
         moreover have in_bnds_imp_img_el:
           "\<forall> i. i < ?len \<longrightarrow> \<pi> ((sorted_list_of_set V)!i) \<in> \<pi> ` V"
-          using True image_eqI nth_mem sorted_list_of_set(1) to_list.simps length_map
-          by metis
+          using True image_eqI length_map nth_mem to_list.simps
+                sorted_list_of_set.set_sorted_key_list_of_set
+          by (metis (no_types))
         ultimately have
           "\<forall> i < ?len. \<forall> j < ?len. (?perm_total i = ?perm_total j \<longrightarrow> i = j)"
           using linorder_rank_injective Collect_cong True finite_imageI
@@ -256,7 +248,7 @@ proof (unfold distance_anonymity_def, safe)
           using in_bnds_imp_img_el
           by simp
         moreover have "card (\<pi> ` V) = card V"
-          using bij bij_betw_same_card bij_betw_subset top_greatest
+          using bij_\<pi> bij_betw_same_card bij_betw_subset top_greatest
           by metis
         moreover have "card V = ?len"
           by simp
@@ -293,7 +285,7 @@ proof (unfold distance_anonymity_def, safe)
       also have "\<dots> = n (map2 (\<lambda> q q'. d (A, q) (A', q'))
                         (permute_list ?perm_total (to_list ?rn_V ?rn_p))
                         (permute_list ?perm_total (to_list ?rn_V' ?rn_p')))"
-        using symmetric_norm_inv_under_map2_permute[of
+        using symmetric_norm_inv_under_map_permute[of
                 ?perm_total "to_list ?rn_V ?rn_p"]
               assms perm rn_lengths_eq len_V_rn_V_eq
         by simp
@@ -319,35 +311,32 @@ lemma neutral_dist_imp_neutral_votewise_dist:
     n :: "Norm"
   defines "vote_action \<equiv> (\<lambda> \<pi> (A, q). (\<pi> ` A, rel_rename \<pi> q))"
   assumes invar: "invariance\<^sub>\<D> d (carrier neutrality\<^sub>\<G>) UNIV vote_action"
-  shows "distance_neutrality valid_elections (votewise_distance d n)"
+  shows "distance_neutrality well_formed_elections (votewise_distance d n)"
 proof (unfold distance_neutrality.simps rewrite_invariance\<^sub>\<D>, safe)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v::linorder set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v::linorder set" and
+    p p' :: "('a, 'v) Profile" and
     \<pi> :: "'a \<Rightarrow> 'a"
   assume
     carrier: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
-    valid: "(A, V, p) \<in> valid_elections" and
-    valid': "(A', V', p') \<in> valid_elections"
-  hence bij: "bij \<pi>"
+    valid: "(A, V, p) \<in> well_formed_elections" and
+    valid': "(A', V', p') \<in> well_formed_elections"
+  hence bij_\<pi>: "bij \<pi>"
     unfolding neutrality\<^sub>\<G>_def
     using rewrite_carrier
     by blast
   thus "votewise_distance d n (A, V, p) (A', V', p') =
           votewise_distance d n
-            (\<phi>_neutr valid_elections \<pi> (A, V, p))
-              (\<phi>_neutr valid_elections \<pi> (A', V', p'))"
+            (\<phi>_neutral well_formed_elections \<pi> (A, V, p))
+              (\<phi>_neutral well_formed_elections \<pi> (A', V', p'))"
   proof (cases "finite V \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')")
     case True
     hence "finite V \<and> V = V' \<and> (V \<noteq> {} \<or> \<pi> ` A = \<pi> ` A')"
       by metis
     hence "votewise_distance d n
-            (\<phi>_neutr valid_elections \<pi> (A, V, p))
-                (\<phi>_neutr valid_elections \<pi> (A', V', p')) =
+            (\<phi>_neutral well_formed_elections \<pi> (A, V, p))
+                (\<phi>_neutral well_formed_elections \<pi> (A', V', p')) =
         n (map2 (\<lambda> q q'. d (\<pi> ` A, q) (\<pi> ` A', q'))
           (to_list V (rel_rename \<pi> \<circ> p)) (to_list V' (rel_rename \<pi> \<circ> p')))"
       using valid valid'
@@ -365,7 +354,7 @@ proof (unfold distance_neutrality.simps rewrite_invariance\<^sub>\<D>, safe)
                 (map (rel_rename \<pi>) (to_list V' p'))) =
         (map2 (\<lambda> q q'. d (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q'))
             (to_list V p) (to_list V' p'))"
-      using map2_helper
+      using map_helper
       by blast
     also have
       "(\<lambda> q q'. d (\<pi> ` A, rel_rename \<pi> q) (\<pi> ` A', rel_rename \<pi> q')) =
@@ -375,8 +364,8 @@ proof (unfold distance_neutrality.simps rewrite_invariance\<^sub>\<D>, safe)
       unfolding vote_action_def
       by (metis (no_types, lifting))
     finally have "votewise_distance d n
-        (\<phi>_neutr valid_elections \<pi> (A, V, p))
-              (\<phi>_neutr valid_elections \<pi> (A', V', p')) =
+        (\<phi>_neutral well_formed_elections \<pi> (A, V, p))
+              (\<phi>_neutral well_formed_elections \<pi> (A', V', p')) =
         n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))"
       by simp
     also have "votewise_distance d n (A, V, p) (A', V', p') =
@@ -388,11 +377,11 @@ proof (unfold distance_neutrality.simps rewrite_invariance\<^sub>\<D>, safe)
   next
     case False
     hence "\<not> (finite V \<and> V = V' \<and> (V \<noteq> {} \<or> \<pi> ` A = \<pi> ` A'))"
-      using bij bij_is_inj inj_image_eq_iff
+      using bij_\<pi> bij_is_inj inj_image_eq_iff
       by metis
     hence "votewise_distance d n
-        (\<phi>_neutr valid_elections \<pi> (A, V, p))
-            (\<phi>_neutr valid_elections \<pi> (A', V', p')) = \<infinity>"
+        (\<phi>_neutral well_formed_elections \<pi> (A, V, p))
+            (\<phi>_neutral well_formed_elections \<pi> (A', V', p')) = \<infinity>"
       using valid valid'
       by auto
     also have "votewise_distance d n (A, V, p) (A', V', p') = \<infinity>"

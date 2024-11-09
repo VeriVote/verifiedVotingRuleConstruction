@@ -29,7 +29,7 @@ theorem copeland_rule_sound: "\<S>\<C>\<F>_result.electoral_module copeland_rule
   using elector_sound copeland_sound
   by metis
 
-subsection \<open>Condorcet Consistency Property\<close>
+subsection \<open>Condorcet Consistency\<close>
 
 theorem copeland_condorcet: "condorcet_consistency copeland_rule"
 proof (unfold copeland_rule.simps)

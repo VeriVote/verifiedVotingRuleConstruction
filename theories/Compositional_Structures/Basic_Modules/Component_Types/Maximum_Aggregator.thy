@@ -29,13 +29,7 @@ subsection \<open>Auxiliary Lemma\<close>
 
 lemma max_agg_rej_set:
   fixes
-    A :: "'a set" and
-    e :: "'a set" and
-    e' :: "'a set" and
-    d :: "'a set" and
-    d' :: "'a set" and
-    r :: "'a set" and
-    r' :: "'a set" and
+    A e e' d d' r r' :: "'a set" and
     a :: "'a"
   assumes
     wf_first_mod: "well_formed_\<S>\<C>\<F> A (e, r, d)" and
@@ -63,13 +57,7 @@ theorem max_agg_sound[simp]: "aggregator max_aggregator"
 proof (unfold aggregator_def max_aggregator.simps well_formed_\<S>\<C>\<F>.simps disjoint3.simps
               set_equals_partition.simps, safe)
   fix
-    A :: "'a set" and
-    e :: "'a set" and
-    e' :: "'a set" and
-    d :: "'a set" and
-    d' :: "'a set" and
-    r :: "'a set" and
-    r' :: "'a set" and
+    A e e' d d' r r' :: "'a set" and
     a :: "'a"
   assume
     "e' \<union> r' \<union> d' = e \<union> r \<union> d" and
@@ -80,13 +68,7 @@ proof (unfold aggregator_def max_aggregator.simps well_formed_\<S>\<C>\<F>.simps
     by auto
 next
   fix
-    A :: "'a set" and
-    e :: "'a set" and
-    e' :: "'a set" and
-    d :: "'a set" and
-    d' :: "'a set" and
-    r :: "'a set" and
-    r' :: "'a set" and
+    A e e' d d' r r' :: "'a set" and
     a :: "'a"
   assume
     "e' \<union> r' \<union> d' = e \<union> r \<union> d" and
@@ -110,13 +92,7 @@ proof (unfold agg_conservative_def, safe)
     by metis
 next
   fix
-    A :: "'a set" and
-    e :: "'a set" and
-    e' :: "'a set" and
-    d :: "'a set" and
-    d' :: "'a set" and
-    r :: "'a set" and
-    r' :: "'a set" and
+    A e e' d d' r r' :: "'a set" and
     a :: "'a"
   assume
     elect_a: "a \<in> elect_r (max_aggregator A (e, r, d) (e', r', d'))" and
@@ -129,13 +105,7 @@ next
     by simp
 next
   fix
-    A :: "'a set" and
-    e :: "'a set" and
-    e' :: "'a set" and
-    d :: "'a set" and
-    d' :: "'a set" and
-    r :: "'a set" and
-    r' :: "'a set" and
+    A e e' d d' r r' :: "'a set" and
     a :: "'a"
   assume
     wf_result: "well_formed_\<S>\<C>\<F> A (e', r', d')" and
@@ -149,13 +119,7 @@ next
     by simp
 next
   fix
-    A :: "'a set" and
-    e :: "'a set" and
-    e' :: "'a set" and
-    d :: "'a set" and
-    d' :: "'a set" and
-    r :: "'a set" and
-    r' :: "'a set" and
+    A e e' d d' r r' :: "'a set" and
     a :: "'a"
   assume
     defer_a: "a \<in> defer_r (max_aggregator A (e, r, d) (e', r', d'))" and

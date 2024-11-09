@@ -12,13 +12,11 @@ theory Norm
 begin
 
 text \<open>
-  A norm on R to n is a mapping \<open>N: R \<mapsto> n\<close> on R that has the following properties:
-  \<^item> positive scalability:
-    \<open>N(a * u) = |a| * N(u)\<close> for all \<open>u\<close> in \<open>R\<close> to \<open>n\<close> and all \<open>a\<close> in \<open>R\<close>.
-  \<^item> positive semidefiniteness:
-    \<open>N(u) \<ge> 0\<close> for all \<open>u\<close> in \<open>R\<close> to \<open>n\<close>, and \<open>N(u) = 0\<close> if and only if \<open>u = (0, 0, \<dots>, 0)\<close>.
-  \<^item> triangle inequality:
-    \<open>N(u + v) \<le> N(u) + N(v)\<close> for all \<open>u\<close> and \<open>v\<close> in \<open>R\<close> to \<open>n\<close>.
+  A norm on R to n is a mapping \<open>N: R \<mapsto> n\<close> on R that has the following properties
+  for all mappings \<open>u\<close> (and \<open>v\<close>) in \<open>R\<close> to \<open>n\<close>:
+  \<^item> positive scalability: \<open>N(a * u) = |a| * N(u)\<close> for all \<open>a\<close> in \<open>R\<close>.
+  \<^item> positive semidefiniteness: \<open>N(u) \<ge> 0\<close> with \<open>N(u) = 0\<close> if and only if \<open>u = (0, 0, \<dots>, 0)\<close>.
+  \<^item> triangle inequality: \<open>N(u + v) \<le> N(u) + N(v)\<close>.
 \<close>
 
 subsection \<open>Definition\<close>
@@ -118,9 +116,7 @@ subsection \<open>Theorems\<close>
 
 theorem l_one_is_sym: "symmetry l_one"
 proof (unfold symmetry_def, safe)
-  fix
-    l :: "ereal list" and
-    l' :: "ereal list"
+  fix l l' :: "ereal list"
   assume perm: "l <~~> l'"
   then obtain \<pi> :: "nat \<Rightarrow> nat"
     where
@@ -144,7 +140,7 @@ proof (unfold symmetry_def, safe)
     using atLeast0LessThan
     by presburger
   finally have "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!i\<bar>)"
-    by simp
+    by metis
   moreover have "length l = length l'"
     using perm perm_length
     by metis

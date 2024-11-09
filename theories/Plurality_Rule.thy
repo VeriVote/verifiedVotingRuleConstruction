@@ -37,9 +37,7 @@ lemma plurality_revision_equiv:
     p :: "('a, 'v) Profile"
   shows "plurality' V A p = (plurality_rule'\<down>) V A p"
 proof (unfold plurality'.simps revision_composition.simps, safe)
-  fix
-    a :: "'a" and
-    b :: "'a"
+  fix a b :: "'a"
   assume
     "b \<in> A" and
     "win_count V p a < win_count V p b" and
@@ -57,9 +55,7 @@ next
     using linorder_le_less_linear
     by metis
 next
-  fix
-    a :: "'a" and
-    b :: "'a"
+  fix a b :: "'a"
   assume
     "a \<in> A" and
     "\<forall> x \<in> A. win_count V p x \<le> win_count V p a"
@@ -71,9 +67,7 @@ next
   thus "a \<in> A"
     by simp
 next
-  fix
-    a :: "'a"and
-    b :: "'a"
+  fix a b :: "'a"
   assume
     "a \<in> elect plurality_rule' V A p" and
     "b \<in> A"
@@ -140,10 +134,10 @@ lemma plurality_rule_elect_non_empty:
   shows "elect plurality_rule V A p \<noteq> {}"
 proof
   assume plurality_elect_none: "elect plurality_rule V A p = {}"
-  obtain max where
+  obtain max :: "enat" where
     max: "max = Max (win_count V p ` A)"
     by simp
-  then obtain a where
+  then obtain a :: "'a" where
     max_a: "win_count V p a = max \<and> a \<in> A"
     using Max_in A_non_empty fin_A prof_A empty_is_image finite_imageI imageE
     by (metis (no_types, lifting))
@@ -202,14 +196,13 @@ next
     by simp
 qed
 
-subsection \<open>Property\<close>
+subsection \<open>Properties\<close>
 
 lemma plurality_rule_inv_mono_eq:
   fixes
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    q :: "('a, 'v) Profile" and
+    p q :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
     elect_a: "a \<in> elect plurality_rule V A p" and
@@ -250,8 +243,7 @@ next
   fix
     A :: "'b set" and
     V :: "'a set" and
-    p :: "('b, 'a) Profile" and
-    q :: "('b, 'a) Profile" and
+    p q :: "('b, 'a) Profile" and
     a :: "'b"
   assume "a \<in> elect plurality_rule V A p \<and> Profile.lifted V A p q a"
   thus "elect plurality_rule V A q = elect plurality_rule V A p

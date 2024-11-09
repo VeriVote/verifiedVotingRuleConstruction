@@ -3,7 +3,7 @@
 *)
 \<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
 
-section \<open>Specific Electoral Result Types\<close>
+section \<open>Electoral Result Types\<close>
 
 theory Result_Interpretations
   imports Social_Choice_Result
@@ -24,16 +24,11 @@ text \<open>
   modularity given as three sets of (potentially tied) alternatives. See
   \<^file>\<open>Social_Choice_Result.thy\<close> for details.
 \<close>
-global_interpretation \<S>\<C>\<F>_result:
-  result "well_formed_\<S>\<C>\<F>" "limit_set_\<S>\<C>\<F>"
+global_interpretation \<S>\<C>\<F>_result: result "well_formed_\<S>\<C>\<F>" "limit_\<S>\<C>\<F>"
 proof (unfold_locales, safe)
-  fix
-    A :: "'a set" and
-    e :: "'a set" and
-    r :: "'a set" and
-    d :: "'a set"
+  fix A e r d :: "'a set"
   assume
-    "set_equals_partition (limit_set_\<S>\<C>\<F> A UNIV) (e, r, d)" and
+    "set_equals_partition (limit_\<S>\<C>\<F> A UNIV) (e, r, d)" and
     "disjoint3 (e, r, d)"
   thus "well_formed_\<S>\<C>\<F> A (e, r, d)"
     by simp
@@ -44,15 +39,13 @@ text \<open>
   modularity given as three sets of (potentially tied) sets of alternatives or committees.
   \<open>[[Not actually used yet.]]\<close>
 \<close>
-global_interpretation committee_result:
-  result "\<lambda> A r. set_equals_partition (Pow A) r \<and> disjoint3 r"
-          "\<lambda> A rs. {r \<inter> A | r. r \<in> rs}"
+global_interpretation committee_result: result
+        "\<lambda> A r. set_equals_partition (Pow A) r \<and> disjoint3 r"
+        "\<lambda> A rs. {r \<inter> A | r. r \<in> rs}"
 proof (unfold_locales, safe)
   fix
     A :: "'b set" and
-    e :: "'b set set" and
-    r :: "'b set set" and
-    d :: "'b set set"
+    e r d :: "'b set set"
   assume "set_equals_partition {r \<inter> A |r. r \<in> UNIV} (e, r, d)"
   thus "set_equals_partition (Pow A) (e, r, d)"
     by force
@@ -63,19 +56,16 @@ text \<open>
   modularity given as three sets of (potentially tied) linear orders over the alternatives. See
   \<^file>\<open>Social_Welfare_Result.thy\<close> for details.
 \<close>
-global_interpretation \<S>\<W>\<F>_result:
-  result "well_formed_\<S>\<W>\<F>" "limit_set_\<S>\<W>\<F>"
+global_interpretation \<S>\<W>\<F>_result: result "well_formed_\<S>\<W>\<F>" "limit_\<S>\<W>\<F>"
 proof (unfold_locales, safe)
   fix
     A :: "'a set" and
-    e :: "('a Preference_Relation) set" and
-    r :: "('a Preference_Relation) set" and
-    d :: "('a Preference_Relation) set"
+    e r d :: "('a Preference_Relation) set"
   assume
-    "set_equals_partition (limit_set_\<S>\<W>\<F> A UNIV) (e, r, d)" and
+    "set_equals_partition (limit_\<S>\<W>\<F> A UNIV) (e, r, d)" and
     "disjoint3 (e, r, d)"
   moreover have
-    "limit_set_\<S>\<W>\<F> A UNIV = {limit A r' | r'. linear_order_on A (limit A r')}"
+    "limit_\<S>\<W>\<F> A UNIV = {limit A r' | r'. linear_order_on A (limit A r')}"
     by simp
   moreover have "\<dots> = {r'. linear_order_on A r'}"
   proof (safe)

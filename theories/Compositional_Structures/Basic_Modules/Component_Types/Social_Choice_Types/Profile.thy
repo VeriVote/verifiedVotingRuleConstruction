@@ -73,14 +73,14 @@ definition finite_elections_\<V> :: "('a, 'v) Election set" where
 definition finite_elections :: "('a, 'v) Election set" where
   "finite_elections = {E :: ('a, 'v) Election. finite_election E}"
 
-definition valid_elections :: "('a,'v) Election set" where
-  "valid_elections = {E. profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)}"
+definition well_formed_elections :: "('a,'v) Election set" where
+  "well_formed_elections = {E. profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)}"
 
 \<comment> \<open>This function subsumes elections with fixed alternatives, finite voters, and
     a default value for the profile value on non-voters.\<close>
 fun elections_\<A> :: "'a set \<Rightarrow> ('a, 'v) Election set" where
   "elections_\<A> A =
-        valid_elections
+        well_formed_elections
       \<inter> {E. alternatives_\<E> E = A \<and> finite (voters_\<E> E)
             \<and> (\<forall> v. v \<notin> voters_\<E> E \<longrightarrow> profile_\<E> E v = {})}"
 
@@ -95,14 +95,13 @@ lemma vote_count_sum:
   fixes E :: "('a, 'v) Election"
   assumes
     "finite (voters_\<E> E)" and
-    "finite (UNIV::('a \<times> 'a) set)"
+    "finite (UNIV :: ('a \<times> 'a) set)"
   shows "sum (\<lambda> p. vote_count p E) UNIV = card (voters_\<E> E)"
 proof (unfold vote_count.simps)
   have "\<forall> p. finite {v \<in> voters_\<E> E. profile_\<E> E v = p}"
     using assms
     by force
-  moreover have
-    "disjoint {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
+  moreover have "disjoint {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
     unfolding disjoint_def
     by blast
   moreover have partition:
@@ -243,7 +242,7 @@ lemma rename_sound:
   assumes
     prof: "profile V A p" and
     renamed: "(A, V', q) = rename \<pi> (A, V, p)" and
-    bij: "bij \<pi>"
+    bij_perm: "bij \<pi>"
   shows "profile V' A q"
 proof (unfold profile_def, safe)
   fix v' :: "'v"
@@ -252,14 +251,28 @@ proof (unfold profile_def, safe)
     using renamed
     by simp
   ultimately have "((the_inv \<pi>) v') \<in> V"
-    using UNIV_I bij bij_is_inj bij_is_surj
+    using UNIV_I bij_perm bij_is_inj bij_is_surj
           f_the_inv_into_f inj_image_mem_iff
     by metis
   thus "linear_order_on A (q v')"
-    using renamed bij prof
+    using renamed bij_perm prof
     unfolding profile_def
     by simp
 qed
+
+lemma rename_prof:
+  fixes
+    A :: "'a set" and
+    V :: "'v set" and
+    p :: "('a, 'v) Profile" and
+    \<pi> :: "'v \<Rightarrow> 'v"
+  assumes
+    "profile V A p" and
+    "(A, V', q) = rename \<pi> (A, V, p)" and
+    "bij \<pi>"
+  shows "profile V' A q"
+  using assms rename_sound
+  by metis
 
 lemma rename_finite:
   fixes
@@ -268,20 +281,12 @@ lemma rename_finite:
     p :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   assumes
-    "finite_profile V A p" and
+    "finite V" and
     "(A, V', q) = rename \<pi> (A, V, p)" and
     "bij \<pi>"
-  shows "finite_profile V' A q"
-  using assms
-proof (safe)
-  show "finite V'"
-    using assms
-    by simp
-next
-  show "profile V' A q"
-    using assms rename_sound
-    by metis
-qed
+  shows "finite V'"
+  using assms 
+  by simp
 
 lemma rename_inv:
   fixes
@@ -315,12 +320,9 @@ lemma rename_inj:
   shows "inj (rename \<pi>)"
 proof (unfold inj_def split_paired_All rename.simps, safe)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile" and
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p p' :: "('a, 'v) Profile" and
     v :: "'v"
   assume
     "p \<circ> the_inv \<pi> = p' \<circ> the_inv \<pi>" and
@@ -339,40 +341,34 @@ lemma rename_surj:
   fixes \<pi> :: "'v \<Rightarrow> 'v"
   assumes "bij \<pi>"
   shows
-    on_valid_elections: "rename \<pi> ` valid_elections = valid_elections" and
-    on_finite_elections: "rename \<pi> ` finite_elections = finite_elections"
+    "rename \<pi> ` well_formed_elections = well_formed_elections" and
+    "rename \<pi> ` finite_elections = finite_elections"
 proof (safe)
   fix
-    A :: "'a set" and
-    A' :: "'a set" and
-    V :: "'v set" and
-    V' :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile"
-  assume valid: "(A, V, p) \<in> valid_elections"
-  hence "rename (the_inv \<pi>) (A, V, p) \<in> valid_elections"
+    A A' :: "'a set" and
+    V V' :: "'v set" and
+    p p' :: "('a, 'v) Profile"
+  assume wf: "(A, V, p) \<in> well_formed_elections"
+  hence "rename (the_inv \<pi>) (A, V, p) \<in> well_formed_elections"
     using assms bij_betw_the_inv_into rename_sound
-    unfolding valid_elections_def
+    unfolding well_formed_elections_def
     by fastforce
-  thus "(A, V, p) \<in> rename \<pi> ` valid_elections"
+  thus "(A, V, p) \<in> rename \<pi> ` well_formed_elections"
     using assms image_eqI rename_inv
     by metis
   assume "(A', V', p') = rename \<pi> (A, V, p)"
-  thus "(A', V', p') \<in> valid_elections"
-    using rename_sound valid assms
-    unfolding valid_elections_def
+  thus "(A', V', p') \<in> well_formed_elections"
+    using rename_sound wf assms
+    unfolding well_formed_elections_def
     by fastforce
 next
   fix
-    A :: "'b set" and
-    A' :: "'b set" and
-    V :: "'v set" and
-    V' :: "'v set" and
-    p :: "('b, 'v) Profile" and
-    p' :: "('b, 'v) Profile"
+    A A' :: "'b set" and
+    V V' :: "'v set" and
+    p p' :: "('b, 'v) Profile"
   assume finite: "(A, V, p) \<in> finite_elections"
   hence "rename (the_inv \<pi>) (A, V, p) \<in> finite_elections"
-    using assms bij_betw_the_inv_into rename_finite
+    using assms bij_betw_the_inv_into rename_prof rename_finite
     unfolding finite_elections_def
     by fastforce
   thus "(A, V, p) \<in> rename \<pi> ` finite_elections"
@@ -385,19 +381,19 @@ next
     by fastforce
 qed
 
-subsection \<open>List Representation for Ordered Voters\<close>
+subsection \<open>List Representation\<close>
 
 text \<open>
   A profile on a voter set that has a natural order can be viewed as a list of ballots.
 \<close>
 
-fun to_list :: "'v::linorder set \<Rightarrow> ('a, 'v) Profile
-                  \<Rightarrow> ('a Preference_Relation) list" where
+fun to_list :: "'v::linorder set \<Rightarrow> ('a, 'v) Profile \<Rightarrow>
+        ('a Preference_Relation) list" where
   "to_list V p = (if (finite V)
                     then (map p (sorted_list_of_set V))
                     else [])"
 
-lemma map2_helper:
+lemma map_helper:
   fixes
     f :: "'x \<Rightarrow> 'y \<Rightarrow> 'z" and
     g :: "'x \<Rightarrow> 'x" and
@@ -426,11 +422,9 @@ lemma to_list_simp:
 proof -
   have "(to_list V p)!i = (map p (sorted_list_of_set V))!i"
     by simp
-  also have "\<dots> = p ((sorted_list_of_set V)!i)"
+  thus ?thesis
     using assms
     by simp
-  finally show ?thesis
-    by presburger
 qed
 
 lemma to_list_comp:
@@ -455,10 +449,10 @@ proof (cases "V = {}")
     by simp
 next
   case False
-  moreover with fin_V
-  have "Max V \<in> V"
+  hence "Max V \<in> V"
+    using fin_V
     by simp
-  ultimately show ?thesis
+  thus ?thesis
     using assms Suc_leI card_le_Suc_Max order_trans
     by metis
 qed
@@ -669,7 +663,7 @@ next
   qed
 qed
 
-subsection \<open>Preference Counts and Comparisons\<close>
+subsection \<open>Preference Counts\<close>
 
 text \<open>
   The win count for an alternative a with respect to a finite voter set V in a profile p is
@@ -689,8 +683,7 @@ lemma pref_count_voter_set_card:
   fixes
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes "finite V"
   shows "prefer_count V p a b \<le> card V"
   using assms
@@ -718,8 +711,7 @@ lemma pref_count:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     prof: "profile V A p" and
     fin: "finite V" and
@@ -748,9 +740,7 @@ lemma pref_count_sym:
   fixes
     p :: "('a, 'v) Profile" and
     V :: "'v set" and
-    a :: "'a" and
-    b :: "'a" and
-    c :: "'a"
+    a b c :: "'a"
   assumes
     pref_count_ineq: "prefer_count V p a c \<ge> prefer_count V p c b" and
     prof: "profile V A p" and
@@ -763,24 +753,23 @@ lemma pref_count_sym:
 proof (cases "finite V")
   case True
   moreover have
-    nat1: "prefer_count V p c a \<in> \<nat>" and
-    nat2: "prefer_count V p b c \<in> \<nat>"
+    "prefer_count V p c a \<in> \<nat>" and
+    "prefer_count V p b c \<in> \<nat>"
     unfolding Nats_def
     using True of_nat_eq_enat
     by (simp, simp)
-  moreover have smaller: "prefer_count V p c a \<le> card V"
+  moreover have "prefer_count V p c a \<le> card V"
     using True prof pref_count_voter_set_card
     by metis
   moreover have
     "prefer_count V p a c = card V - (prefer_count V p c a)" and
-    pref_count_b_eq:
     "prefer_count V p c b = card V - (prefer_count V p b c)"
     using True pref_count prof c_in_A
     by (metis (no_types, opaque_lifting) a_in_A a_neq_c,
         metis (no_types, opaque_lifting) b_in_A c_neq_b)
   hence "card V - (prefer_count V p b c) + (prefer_count V p c a)
       \<le> card V - (prefer_count V p c a) + (prefer_count V p c a)"
-    using pref_count_b_eq pref_count_ineq
+    using pref_count_ineq
     by simp
   ultimately show ?thesis
     by simp
@@ -794,8 +783,7 @@ lemma empty_prof_imp_zero_pref_count:
   fixes
     p :: "('a, 'v) Profile" and
     V :: "'v set" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes "V = {}"
   shows "prefer_count V p a b = 0"
   unfolding zero_enat_def
@@ -809,8 +797,7 @@ fun wins :: "'v set \<Rightarrow> 'a \<Rightarrow> ('a, 'v) Profile \<Rightarrow
 lemma wins_inf_voters:
   fixes
     p :: "('a, 'v) Profile" and
-    a :: "'a" and
-    b :: "'a" and
+    a b :: "'a" and
     V :: "'v set"
   assumes "infinite V"
   shows "\<not> wins V b p a"
@@ -824,8 +811,7 @@ text \<open>
 lemma wins_antisym:
   fixes
     p :: "('a, 'v) Profile" and
-    a :: "'a" and
-    b :: "'a" and
+    a b :: "'a" and
     V :: "'v set"
   assumes "wins V a p b" \<comment> \<open>This already implies that \<open>V\<close> is finite.\<close>
   shows "\<not> wins V b p a"
@@ -858,8 +844,7 @@ lemma cond_winner_unique_eq:
     V :: "'v set" and
     A :: "'a set" and
     p :: "('a, 'v) Profile" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     "condorcet_winner V A p a" and
     "condorcet_winner V A p b"
@@ -902,13 +887,12 @@ next
     by presburger
 qed
 
-lemma cond_winner_unique_2:
+lemma cond_winner_unique':
   fixes
     V :: "'v set" and
     A :: "'a set" and
     p :: "('a, 'v) Profile" and
-    a :: "'a" and
-    b :: "'a"
+    a b :: "'a"
   assumes
     "condorcet_winner V A p a" and
     "b \<noteq> a"
@@ -930,9 +914,7 @@ fun limit_profile :: "'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, '
 
 lemma limit_prof_trans:
   fixes
-    A :: "'a set" and
-    B :: "'a set" and
-    C :: "'a set" and
+    A B C :: "'a set" and
     p :: "('a, 'v) Profile"
   assumes
     "B \<subseteq> A" and
@@ -943,8 +925,7 @@ lemma limit_prof_trans:
 
 lemma limit_profile_sound:
   fixes
-    A :: "'a set" and
-    B :: "'a set" and
+    A B :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes
@@ -973,7 +954,8 @@ text \<open>
   its ranking increases in at least one ballot, and nothing else changes.
 \<close>
 
-definition lifted :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
+definition lifted :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow>
+        ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> bool" where
   "lifted V A p p' a \<equiv>
     finite_profile V A p \<and> finite_profile V A p' \<and> a \<in> A
       \<and> (\<forall> v \<in> V. \<not> Preference_Relation.lifted A (p v) (p' v) a \<longrightarrow> (p v) = (p' v))
@@ -983,8 +965,7 @@ lemma lifted_imp_equiv_prof_except_a:
   fixes
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile" and
+    p p' :: "('a, 'v) Profile" and
     a :: "'a"
   assumes "lifted V A p p' a"
   shows "equiv_prof_except_a V A p p' a"
@@ -1007,11 +988,9 @@ qed
 
 lemma negl_diff_imp_eq_limit_prof:
   fixes
-    A :: "'a set" and
-    A' :: "'a set" and
+    A A' :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile" and
+    p p' :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
     change: "equiv_prof_except_a V A' p q a" and
@@ -1023,8 +1002,7 @@ lemma negl_diff_imp_eq_limit_prof:
       \<open>limit_prof\<close> may change the profiles everywhere, while \<open>equiv_prof_except_a\<close>
       only makes statements about the voter set.\<close>
 proof (clarify)
-  fix
-    v :: 'v
+  fix v :: 'v
   assume "v \<in> V"
   hence "equiv_rel_except_a A' (p v) (q v) a"
     using change equiv_prof_except_a_def
@@ -1036,11 +1014,9 @@ qed
 
 lemma limit_prof_eq_or_lifted:
   fixes
-    A :: "'a set" and
-    A' :: "'a set" and
+    A A' :: "'a set" and
     V :: "'v set" and
-    p :: "('a, 'v) Profile" and
-    p' :: "('a, 'v) Profile" and
+    p p' :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
     lifted_a: "lifted V A' p p' a" and

@@ -42,7 +42,7 @@ theorem blacks_rule_sound: "\<S>\<C>\<F>_result.electoral_module blacks_rule"
   using blacks_sound elector_sound
   by metis
 
-subsection \<open>Condorcet Consistency Property\<close>
+subsection \<open>Condorcet Consistency\<close>
 
 theorem black_is_dcc: "defer_condorcet_consistency black"
   unfolding black.simps

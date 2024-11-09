@@ -35,15 +35,14 @@ theorem copeland_sound: "\<S>\<C>\<F>_result.electoral_module copeland"
   using max_elim_sound
   by metis
 
-subsection \<open>Only Voters Determine Election Result\<close>
+subsection \<open>Lemmas\<close>
 
 lemma voters_determine_copeland_score: "voters_determine_evaluation copeland_score"
 proof (unfold copeland_score.simps voters_determine_evaluation.simps, safe)
   fix
     A :: "'b set" and
     V :: "'a set" and
-    p :: "('b, 'a) Profile" and
-    p' :: "('b, 'a) Profile" and
+    p p' :: "('b, 'a) Profile" and
     a :: "'b"
   assume
     "\<forall> v \<in> V. p v = p' v" and
@@ -65,11 +64,9 @@ theorem voters_determine_copeland: "voters_determine_election copeland"
         voters_determine_copeland_score
   by blast
 
-subsection \<open>Lemmas\<close>
-
 text \<open>
   For a Condorcet winner w, we have:
-    "\<open>{card y \<in> A . wins x p y} = |A| - 1\<close>".
+    "\<open>|{y \<in> A . wins V w p y}| = |A| - 1\<close>".
 \<close>
 
 lemma cond_winner_imp_win_count:
@@ -129,7 +126,7 @@ qed
 
 text \<open>
   For a Condorcet winner w, we have:
-    "\<open>card {y \<in> A . wins y p x = 0\<close>".
+    "\<open>|{y \<in> A . wins V y p w}| = 0\<close>".
 \<close>
 
 lemma cond_winner_imp_loss_count:
@@ -171,7 +168,7 @@ qed
 
 text \<open>
   For a non-Condorcet winner l, we have:
-  "\<open>card {y \<in> A . wins x p y} = |A| - 2\<close>".
+  "\<open>|{y \<in> A . wins V l p y}| = |A| - 2\<close>".
 \<close>
 
 lemma non_cond_winner_imp_win_count:
@@ -179,8 +176,7 @@ lemma non_cond_winner_imp_win_count:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    w :: "'a" and
-    l :: "'a"
+    w l :: "'a"
   assumes
     winner: "condorcet_winner V A p w" and
     loser: "l \<noteq> w" and
@@ -224,8 +220,7 @@ proof (unfold condorcet_rating_def, unfold copeland_score.simps, safe)
     A :: "'b set" and
     V :: "'v set" and
     p :: "('b, 'v) Profile" and
-    w :: "'b" and
-    l :: "'b"
+    w l :: "'b"
   assume
     winner: "condorcet_winner V A p w" and
     l_in_A: "l \<in> A" and

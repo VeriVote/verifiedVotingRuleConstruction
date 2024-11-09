@@ -3,7 +3,7 @@
 *)
 \<^marker>\<open>creator "Alicia Appelhagen, Karlsruhe Institute of Technology (KIT)"\<close>
 
-section \<open>Quotients of Equivalence Relations on Election Sets\<close>
+section \<open>Quotients of Election Set Equivalences\<close>
 
 theory Election_Quotients
   imports Relation_Quotients
@@ -17,58 +17,58 @@ subsection \<open>Auxiliary Lemmas\<close>
 
 lemma obtain_partition:
   fixes
-    X :: "'x set" and
-    N :: "'y \<Rightarrow> nat" and
-    Y :: "'y set"
+    A :: "'a set" and
+    N :: "'b \<Rightarrow> nat" and
+    B :: "'b set"
   assumes
-    "finite X" and
-    "finite Y" and
-    "sum N Y = card X"
-  shows "\<exists> \<X>. X = \<Union> {\<X> i | i. i \<in> Y} \<and> (\<forall> i \<in> Y. card (\<X> i) = N i) \<and>
-                (\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> Y \<and> j \<in> Y \<longrightarrow> \<X> i \<inter> \<X> j = {})"
+    "finite A" and
+    "finite B" and
+    "sum N B = card A"
+  shows "\<exists> \<X>. A = \<Union> {\<X> i | i. i \<in> B} \<and> (\<forall> i \<in> B. card (\<X> i) = N i) \<and>
+                (\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B \<and> j \<in> B \<longrightarrow> \<X> i \<inter> \<X> j = {})"
   using assms
-proof (induction "card Y" arbitrary: X Y)
+proof (induction "card B" arbitrary: A B)
   case 0
   fix
-    X :: "'x set" and
-    Y :: "'y set"
+    A :: "'a set" and
+    B :: "'b set"
   assume
-    fin_X: "finite X" and
-    card_X: "sum N Y = card X" and
-    fin_Y: "finite Y" and
-    card_Y: "0 = card Y"
+    fin_A: "finite A" and
+    card_A: "sum N B = card A" and
+    fin_B: "finite B" and
+    card_B: "0 = card B"
   let ?\<X> = "\<lambda> y. {}"
-  have Y_empty: "Y = {}"
-    using 0 fin_Y card_Y
+  have Y_empty: "B = {}"
+    using 0 fin_B card_B
     by simp
-  hence "sum N Y = 0"
+  hence "sum N B = 0"
     by simp
-  hence "X = {}"
-    using fin_X card_X
+  hence "A = {}"
+    using fin_A card_A
     by simp
-  hence "X = \<Union> {?\<X> i | i. i \<in> Y}"
+  hence "A = \<Union> {?\<X> i | i. i \<in> B}"
     by blast
-  moreover have "\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> Y \<and> j \<in> Y \<longrightarrow> ?\<X> i \<inter> ?\<X> j = {}"
+  moreover have "\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B \<and> j \<in> B \<longrightarrow> ?\<X> i \<inter> ?\<X> j = {}"
     by blast
   ultimately show
-    "\<exists> \<X>. X = \<Union> {\<X> i | i. i \<in> Y} \<and>
-                (\<forall> i \<in> Y. card (\<X> i) = N i) \<and>
-                (\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> Y \<and> j \<in> Y \<longrightarrow> \<X> i \<inter> \<X> j = {})"
+    "\<exists> \<X>. A = \<Union> {\<X> i | i. i \<in> B} \<and>
+                (\<forall> i \<in> B. card (\<X> i) = N i) \<and>
+                (\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B \<and> j \<in> B \<longrightarrow> \<X> i \<inter> \<X> j = {})"
     using Y_empty
     by simp
 next
   case (Suc x)
   fix
     x :: "nat" and
-    X :: "'x set" and
-    Y :: "'y set"
+    A :: "'a set" and
+    B :: "'b set"
   assume
-    card_Y: "Suc x = card Y" and
-    fin_Y: "finite Y" and
-    fin_X: "finite X" and
-    card_X: "sum N Y = card X" and
+    card_B: "Suc x = card B" and
+    fin_B: "finite B" and
+    fin_A: "finite A" and
+    card_A: "sum N B = card A" and
     hyp:
-      "\<And> Y (X::'x set).
+      "\<And> Y (X :: 'a set).
          x = card Y \<Longrightarrow>
          finite X \<Longrightarrow>
          finite Y \<Longrightarrow>
@@ -78,75 +78,75 @@ next
                   (\<forall> i \<in> Y. card (\<X> i) = N i) \<and>
                   (\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> Y \<and> j \<in> Y \<longrightarrow> \<X> i \<inter> \<X> j = {})"
   then obtain
-    Y' :: "'y set" and
-    y :: "'y" where
-      ins_Y: "Y = insert y Y'" and
-      card_Y': "card Y' = x" and
-      fin_Y': "finite Y'" and
-      y_not_in_Y': "y \<notin> Y'"
+    B' :: "'b set" and
+    y :: "'b" where
+      ins_B: "B = insert y B'" and
+      card_B': "card B' = x" and
+      fin_B': "finite B'" and
+      y_not_in_B': "y \<notin> B'"
     using card_Suc_eq_finite
     by (metis (no_types, lifting))
-  hence "N y \<le> card X"
-    using card_X card_Y fin_Y le_add1 n_not_Suc_n sum.insert
+  hence "N y \<le> card A"
+    using card_A card_B fin_B le_add1 n_not_Suc_n sum.insert
     by metis
-  then obtain X' :: "'x set" where
-    X'_in_X: "X' \<subseteq> X" and
-    card_X': "card X' = N y"
-    using fin_X ex_card
+  then obtain A' :: "'a set" where
+    X'_in_X: "A' \<subseteq> A" and
+    card_X': "card A' = N y"
+    using fin_A ex_card
     by metis
-  hence "finite (X - X') \<and> card (X - X') = sum N Y'"
-    using card_Y card_X fin_X fin_Y ins_Y card_Y' fin_Y'
+  hence "finite (A - A') \<and> card (A - A') = sum N B'"
+    using card_B card_A fin_A fin_B ins_B card_B' fin_B'
           Suc_n_not_n add_diff_cancel_left' card_Diff_subset card_insert_if
           finite_Diff finite_subset sum.insert
     by metis
-  then obtain \<X> :: "'y \<Rightarrow> 'x set" where
-    part: "X - X' = \<Union> {\<X> i | i. i \<in> Y'}" and
-    disj: "\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> Y' \<and> j \<in> Y' \<longrightarrow> \<X> i \<inter> \<X> j = {}" and
-    card: "\<forall> i \<in> Y'. card (\<X> i) = N i"
-    using hyp[of Y' "X - X'"] fin_Y' card_Y'
+  then obtain \<X> :: "'b \<Rightarrow> 'a set" where
+    part: "A - A' = \<Union> {\<X> i | i. i \<in> B'}" and
+    disj: "\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B' \<and> j \<in> B' \<longrightarrow> \<X> i \<inter> \<X> j = {}" and
+    card: "\<forall> i \<in> B'. card (\<X> i) = N i"
+    using hyp[of B' "A - A'"] fin_B' card_B'
     by auto
-  then obtain \<X>' :: "'y \<Rightarrow> 'x set" where
-    map': "\<X>' = (\<lambda> z. if (z = y) then X' else \<X> z)"
+  then obtain \<X>' :: "'b \<Rightarrow> 'a set" where
+    map': "\<X>' = (\<lambda> z. if (z = y) then A' else \<X> z)"
     by simp
-  hence eq_\<X>: "\<forall> i \<in> Y'. \<X>' i = \<X> i"
-    using y_not_in_Y'
+  hence eq_\<X>: "\<forall> i \<in> B'. \<X>' i = \<X> i"
+    using y_not_in_B'
     by simp
-  have "Y = {y} \<union> Y'"
-    using ins_Y
+  have "B = {y} \<union> B'"
+    using ins_B
     by simp
-  hence "\<forall> f. {f i | i. i \<in> Y} = {f y} \<union> {f i | i. i \<in> Y'}"
+  hence "\<forall> f. {f i | i. i \<in> B} = {f y} \<union> {f i | i. i \<in> B'}"
     by blast
-  hence "{\<X>' i | i. i \<in> Y} = {\<X>' y} \<union> {\<X>' i | i. i \<in> Y'}"
+  hence "{\<X>' i | i. i \<in> B} = {\<X>' y} \<union> {\<X>' i | i. i \<in> B'}"
     by metis
-  hence "\<Union> {\<X>' i | i. i \<in> Y} = \<X>' y \<union> \<Union> {\<X>' i | i. i \<in> Y'}"
+  hence "\<Union> {\<X>' i | i. i \<in> B} = \<X>' y \<union> \<Union> {\<X>' i | i. i \<in> B'}"
     by simp
-  also have "\<X>' y = X'"
+  also have "\<X>' y = A'"
     using map'
     by presburger
-  also have "\<Union> {\<X>' i | i. i \<in> Y'} = \<Union> {\<X> i | i. i \<in> Y'}"
+  also have "\<Union> {\<X>' i | i. i \<in> B'} = \<Union> {\<X> i | i. i \<in> B'}"
     using eq_\<X>
     by blast
-  finally have part': "X = \<Union> {\<X>' i | i. i \<in> Y}"
+  finally have part': "A = \<Union> {\<X>' i | i. i \<in> B}"
     using part Diff_partition X'_in_X
     by metis
-  have "\<forall> i \<in> Y'. \<X>' i \<subseteq> X - X'"
+  have "\<forall> i \<in> B'. \<X>' i \<subseteq> A - A'"
     using part eq_\<X> Setcompr_eq_image UN_upper
     by metis
-  hence "\<forall> i \<in> Y'. \<X>' i \<inter> X' = {}"
+  hence "\<forall> i \<in> B'. \<X>' i \<inter> A' = {}"
     by blast
-  hence "\<forall> i \<in> Y'. \<X>' i \<inter> \<X>' y = {}"
+  hence "\<forall> i \<in> B'. \<X>' i \<inter> \<X>' y = {}"
     using map'
     by simp
-  hence "\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> Y \<and> j \<in> Y \<longrightarrow> \<X>' i \<inter> \<X>' j = {}"
-    using map' disj ins_Y inf.commute insertE
+  hence "\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B \<and> j \<in> B \<longrightarrow> \<X>' i \<inter> \<X>' j = {}"
+    using map' disj ins_B inf.commute insertE
     by (metis (no_types, lifting))
-  moreover have "\<forall> i \<in> Y. card (\<X>' i) = N i"
-    using map' card card_X' ins_Y
+  moreover have "\<forall> i \<in> B. card (\<X>' i) = N i"
+    using map' card card_X' ins_B
     by simp
   ultimately show
-    "\<exists> \<X>. X = \<Union> {\<X> i | i. i \<in> Y} \<and>
-                (\<forall> i \<in> Y. card (\<X> i) = N i) \<and>
-                    (\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> Y \<and> j \<in> Y \<longrightarrow> \<X> i \<inter> \<X> j = {})"
+    "\<exists> \<X>. A = \<Union> {\<X> i | i. i \<in> B} \<and>
+                (\<forall> i \<in> B. card (\<X> i) = N i) \<and>
+                    (\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B \<and> j \<in> B \<longrightarrow> \<X> i \<inter> \<X> j = {})"
     using part'
     by blast
 qed
@@ -162,34 +162,152 @@ fun anonymity\<^sub>\<Q> :: "'a set \<Rightarrow> ('a, 'v) Election set set" whe
 fun vote_count\<^sub>\<Q> :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election set \<Rightarrow> nat" where
   "vote_count\<^sub>\<Q> p = \<pi>\<^sub>\<Q> (vote_count p)"
 
-fun anonymity_class :: "('a::finite, 'v) Election set
-                          \<Rightarrow> (nat, 'a Ordered_Preference) vec" where
+fun anonymity_class :: "('a::finite, 'v) Election set \<Rightarrow>
+        (nat, 'a Ordered_Preference) vec" where
   "anonymity_class X = (\<chi> p. vote_count\<^sub>\<Q> (ord2pref p) X)"
 
-lemma anon_rel_equiv:
- "equiv (elections_\<A> UNIV) (anonymity\<^sub>\<R> (elections_\<A> UNIV))"
+lemma anon_rel_equiv: "equiv (elections_\<A> UNIV) (anonymity\<^sub>\<R> (elections_\<A> UNIV))"
 proof -
-  have subset: "elections_\<A> UNIV \<subseteq> valid_elections"
-      by simp
-  have "equiv valid_elections (anonymity\<^sub>\<R> valid_elections)"
-    using rel_ind_by_group_act_equiv[of
-            "anonymity\<^sub>\<G>" "valid_elections" "\<phi>_anon valid_elections"]
-          rel_ind_by_coinciding_action_on_subset_eq_restr
-    by (simp add: anonymous_group_action.group_action_axioms)
-  moreover have
-    "\<forall> \<pi> \<in> carrier anonymity\<^sub>\<G>.
-      \<forall> E \<in> elections_\<A> UNIV.
-        \<phi>_anon (elections_\<A> UNIV) \<pi> E = \<phi>_anon valid_elections \<pi> E"
-    using subset
-    unfolding \<phi>_anon.simps
+  have subset: "elections_\<A> UNIV \<subseteq> well_formed_elections"
     by simp
-  ultimately show ?thesis
-    using subset equiv_rel_restr
-          rel_ind_by_coinciding_action_on_subset_eq_restr[of
-            "elections_\<A> UNIV" "valid_elections"
-            "carrier anonymity\<^sub>\<G>" "\<phi>_anon (elections_\<A> UNIV)"]
-    unfolding anonymity\<^sub>\<R>.simps
-    by (metis (no_types))
+  have equiv: "equiv well_formed_elections (anonymity\<^sub>\<R> well_formed_elections)"
+    using rel_ind_by_group_act_equiv[of
+            "anonymity\<^sub>\<G>" "well_formed_elections" "\<phi>_anon well_formed_elections"]
+          rel_ind_by_coinciding_action_on_subset_eq_restr
+    by (simp add: anonymous_group_action.group_action_axioms) 
+  have closed: 
+    "closed_restricted_rel
+      (anonymity\<^sub>\<R> well_formed_elections) well_formed_elections (elections_\<A> UNIV)"
+  proof (unfold closed_restricted_rel.simps restricted_rel.simps, safe)
+    fix
+      A A' :: "'c set" and
+      V V' :: "'d set" and
+      p p' :: "('c, 'd) Profile"
+    assume elt: "(A, V, p) \<in> elections_\<A> UNIV"
+    hence wf_elections: "(A, V, p) \<in> well_formed_elections"
+      unfolding elections_\<A>.simps
+      by blast
+    assume "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> well_formed_elections"
+    then obtain \<pi> :: "'d \<Rightarrow> 'd" where
+      bij_\<pi>: "bij \<pi>" and
+      img: "(A', V', p') = rename \<pi> (A, V, p)"
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps 
+                anonymity\<^sub>\<G>_def \<phi>_anon.simps rewrite_carrier
+                extensional_continuation.simps 
+      by auto
+    hence "(A', V', p') \<in> well_formed_elections"
+      using wf_elections rename_sound 
+      unfolding well_formed_elections_def
+      by fastforce
+    moreover have "A' = A \<and> finite V"
+      using bij_\<pi> elt img rename.simps wf_elections well_formed_elections_def
+      by auto
+    moreover have "\<forall> v. v \<notin> V' \<longrightarrow> (the_inv \<pi> v) \<notin> V"
+      using elt Pair_inject UNIV_I \<open>bij \<pi>\<close> rename.simps
+            f_the_inv_into_f_bij_betw image_eqI img 
+      unfolding elections_\<A>.simps
+      by (metis (mono_tags, opaque_lifting))
+    moreover have "\<forall> v. v \<notin> V' \<longrightarrow> p' v = p (the_inv \<pi> v)"
+      using img
+      by simp
+    ultimately show "(A', V', p') \<in> elections_\<A> UNIV"
+      using elt img
+      unfolding elections_\<A>.simps rename.simps
+      by auto
+  qed
+  have
+    "anonymity\<^sub>\<R> (elections_\<A> UNIV) =
+      restricted_rel (anonymity\<^sub>\<R> well_formed_elections) (elections_\<A> UNIV)
+          well_formed_elections"
+  proof (unfold restricted_rel.simps, safe)
+    fix
+      A A' :: "'c set" and
+      V V' :: "'d set" and
+      p p' :: "('c, 'd) Profile"
+    assume rel: "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV)"
+    hence "(A, V, p) \<in> well_formed_elections"
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps elections_\<A>.simps
+      by blast
+    moreover obtain \<pi> :: "'d \<Rightarrow> 'd" where
+      "bij \<pi>" and
+      "(A', V', p') = rename \<pi> (A, V, p)"
+      using rel
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps 
+                anonymity\<^sub>\<G>_def \<phi>_anon.simps rewrite_carrier
+                extensional_continuation.simps 
+      by auto
+    ultimately show "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> well_formed_elections"
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+                anonymity\<^sub>\<G>_def \<phi>_anon.simps rewrite_carrier
+      by auto
+  next
+    fix
+      A A' :: "'c set" and
+      V V' :: "'d set" and
+      p p' :: "('c, 'd) Profile"
+    assume "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV)"
+    thus "(A, V, p) \<in> elections_\<A> UNIV"
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+      by blast
+  next
+    fix
+      A A' :: "'c set" and
+      V V' :: "'d set" and
+      p p' :: "('c, 'd) Profile"
+    assume
+      rel: "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV)"
+    hence "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> well_formed_elections"
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+      by fastforce
+    moreover have elt: "(A, V, p) \<in> elections_\<A> UNIV"
+      using rel
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+      by blast
+    ultimately have
+      "((A, V, p), A', V', p') \<in> restricted_rel 
+        (anonymity\<^sub>\<R> well_formed_elections) (elections_\<A> UNIV) well_formed_elections"
+      using equiv
+      unfolding restricted_rel.simps equiv_def refl_on_def
+      by blast
+    hence "(A', V', p') \<in> elections_\<A> UNIV"
+      using closed elt
+      unfolding closed_restricted_rel.simps
+      by blast
+    thus "(A', V', p') \<in> well_formed_elections"
+      using subset
+      by blast
+  next
+    fix
+      A A' :: "'c set" and
+      V V' :: "'d set" and
+      p p' :: "('c, 'd) Profile"
+    assume
+      "(A, V, p) \<in> elections_\<A> UNIV" and
+      "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> well_formed_elections"
+    moreover from this
+    obtain \<pi> :: "'d \<Rightarrow> 'd" where
+      "bij \<pi>" and
+      "(A', V', p') = rename \<pi> (A, V, p)"
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps 
+                anonymity\<^sub>\<G>_def \<phi>_anon.simps rewrite_carrier
+                extensional_continuation.simps 
+      by auto
+    ultimately show "((A, V, p), A', V', p') \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV)"
+      unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps 
+                anonymity\<^sub>\<G>_def \<phi>_anon.simps rewrite_carrier
+                extensional_continuation.simps 
+      by auto
+  qed
+  also have "... = Restr (anonymity\<^sub>\<R> well_formed_elections) (elections_\<A> UNIV)"
+    using restr_equals_restricted_rel closed subset
+    by blast
+  finally have
+    "anonymity\<^sub>\<R> (elections_\<A> UNIV) =
+      Restr (anonymity\<^sub>\<R> well_formed_elections) (elections_\<A> UNIV)"
+    by simp
+  thus ?thesis
+    using equiv_rel_restr subset equiv
+    by metis
 qed
 
 text \<open>
@@ -203,14 +321,12 @@ text \<open>
   of voters per election in that class who vote the respective corresponding preference.
 \<close>
 theorem anonymity\<^sub>\<Q>_isomorphism:
-  assumes "infinite (UNIV::('v set))"
-  shows "bij_betw (anonymity_class::('a::finite, 'v) Election set
-            \<Rightarrow> nat^('a Ordered_Preference)) (anonymity\<^sub>\<Q> (UNIV::'a set))
-              (UNIV::(nat^('a Ordered_Preference)) set)"
+  assumes "infinite (UNIV :: 'v set)"
+  shows "bij_betw (anonymity_class :: ('a :: finite, 'v) Election set
+            \<Rightarrow> nat^('a Ordered_Preference)) (anonymity\<^sub>\<Q> (UNIV :: 'a set))
+              (UNIV :: (nat^('a Ordered_Preference)) set)"
 proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
-  fix
-    X :: "('a, 'v) Election set" and
-    Y :: "('a, 'v) Election set"
+  fix X Y :: "('a, 'v) Election set"
   assume
     class_X: "X \<in> anonymity\<^sub>\<Q> UNIV" and
     class_Y: "Y \<in> anonymity\<^sub>\<Q> UNIV" and
@@ -219,7 +335,7 @@ proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
     by simp
   hence "\<forall> (E, E') \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV). finite (voters_\<E> E)"
     by simp
-  moreover have subset: "elections_\<A> UNIV \<subseteq> valid_elections"
+  moreover have subset: "elections_\<A> UNIV \<subseteq> well_formed_elections"
     by simp
   ultimately have
     "\<forall> (E, E') \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV).
@@ -238,8 +354,7 @@ proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
     by metis
   moreover from anon_rel_equiv
   obtain
-    E :: "('a, 'v) Election" and
-    E' :: "('a, 'v) Election" where
+    E E' :: "('a, 'v) Election" where
       E_in_X: "E \<in> X" and
       E'_in_Y: "E' \<in> Y"
     using class_X class_Y equiv_Eps_in
@@ -256,7 +371,7 @@ proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
     by metis
   ultimately have "\<forall> p. vote_count (ord2pref p) E = vote_count (ord2pref p) E'"
     by simp
-  hence eq: "\<forall> p \<in> {p. linear_order_on (UNIV::'a set) p}.
+  hence eq: "\<forall> p \<in> {p. linear_order_on (UNIV :: 'a set) p}.
                 vote_count p E = vote_count p E'"
     using pref2ord_inverse
     by metis
@@ -270,13 +385,13 @@ proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
     unfolding elections_\<A>.simps
     by blast
   with subset_fixed_alts have eq_complement:
-    "\<forall> p \<in> UNIV - {p. linear_order_on (UNIV::'a set) p}.
+    "\<forall> p \<in> UNIV - {p. linear_order_on (UNIV :: 'a set) p}.
       {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}
       \<and> {v \<in> voters_\<E> E'. profile_\<E> E' v = p} = {}"
     using E_in_X E'_in_Y
-    unfolding elections_\<A>.simps valid_elections_def profile_def
+    unfolding elections_\<A>.simps well_formed_elections_def profile_def
     by auto
-  hence "\<forall> p \<in> UNIV - {p. linear_order_on (UNIV::'a set) p}.
+  hence "\<forall> p \<in> UNIV - {p. linear_order_on (UNIV :: 'a set) p}.
           vote_count p E = 0 \<and> vote_count p E' = 0"
     unfolding card_eq_0_iff vote_count.simps
     by simp
@@ -312,12 +427,12 @@ proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
   finally show "X = Y"
     by simp
 next
-  have "(UNIV::((nat, 'a Ordered_Preference) vec set)) \<subseteq>
-      (anonymity_class::('a, 'v) Election set \<Rightarrow> (nat, 'a Ordered_Preference) vec) `
+  have "(UNIV :: (nat, 'a Ordered_Preference) vec set) \<subseteq>
+      (anonymity_class :: ('a, 'v) Election set \<Rightarrow> (nat, 'a Ordered_Preference) vec) `
       anonymity\<^sub>\<Q> UNIV"
   proof (unfold anonymity_class.simps, safe)
     fix x :: "(nat, 'a Ordered_Preference) vec"
-    have "finite (UNIV::('a Ordered_Preference set))"
+    have "finite (UNIV :: 'a Ordered_Preference set)"
       by simp
     hence "finite {x$i | i. i \<in> UNIV}"
       using finite_Atleast_Atmost_nat
@@ -384,23 +499,23 @@ next
       p_disj: "\<forall> v \<in> V. \<forall> i. i \<noteq> p' v \<longrightarrow> v \<notin> X i"
       by metis
     then obtain p :: "'v \<Rightarrow> 'a Preference_Relation" where
-      p_def: "p = (\<lambda> v. if v \<in> V then p' v else {})"
+      p_in_V_then_p': "p = (\<lambda> v. if v \<in> V then p' v else {})"
       by simp
     hence lin_ord: "\<forall> v \<in> V. linear_order (p v)"
       using def_X p_X p_disj
       by fastforce
-    hence valid: "(UNIV, V, p) \<in> elections_\<A> UNIV"
+    hence wf_elections: "(UNIV, V, p) \<in> elections_\<A> UNIV"
       using fin_V
-      unfolding p_def elections_\<A>.simps valid_elections_def profile_def
+      unfolding p_in_V_then_p' elections_\<A>.simps
+                well_formed_elections_def profile_def
       by auto
     hence "\<forall> i. \<forall> E \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, V, p)}.
               vote_count i E = vote_count i (UNIV, V, p)"
-      using anon_rel_vote_count[of "(UNIV, V, p)" _ "elections_\<A> UNIV"]
-            fin_V
+      using fin_V anon_rel_vote_count[of "(UNIV, V, p)" _ "elections_\<A> UNIV"]
       by simp
     moreover have
       "(UNIV, V, p) \<in> anonymity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, V, p)}"
-      using anon_rel_equiv valid
+      using anon_rel_equiv wf_elections
       unfolding Image_def equiv_def refl_on_def
       by blast
     ultimately have eq_vote_count:
@@ -410,7 +525,7 @@ next
       by blast
     have "\<forall> i. \<forall> v \<in> V. p v = i \<longleftrightarrow> v \<in> X i"
       using p_X p_disj
-      unfolding p_def
+      unfolding p_in_V_then_p'
       by metis
     hence "\<forall> i. {v \<in> V. p v = i} = {v \<in> V. v \<in> X i}"
       by blast
@@ -445,19 +560,19 @@ next
       by (metis (no_types, lifting))
     moreover have
       "anonymity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, V, p)} \<in> anonymity\<^sub>\<Q> UNIV"
-      using valid
+      using wf_elections
       unfolding anonymity\<^sub>\<Q>.simps quotient_def
       by blast
     ultimately show
-      "x \<in> (\<lambda> X::(('a, 'v) Election set). \<chi> p. vote_count\<^sub>\<Q> (ord2pref p) X)
+      "x \<in> (\<lambda> X :: ('a, 'v) Election set. \<chi> p. vote_count\<^sub>\<Q> (ord2pref p) X)
               ` anonymity\<^sub>\<Q> UNIV"
       using anonymity_class.elims
       by blast
   qed
-  thus "(anonymity_class::('a, 'v) Election set
+  thus "(anonymity_class :: ('a, 'v) Election set
           \<Rightarrow> (nat, 'a Ordered_Preference) vec) `
           anonymity\<^sub>\<Q> UNIV =
-            (UNIV::((nat, 'a Ordered_Preference) vec set))"
+            (UNIV :: (nat, 'a Ordered_Preference) vec set)"
     by blast
 qed
 
@@ -481,8 +596,8 @@ fun anonymity_homogeneity\<^sub>\<Q> :: "'a set \<Rightarrow> ('a, 'v) Election 
 fun vote_fraction\<^sub>\<Q> :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election set \<Rightarrow> rat" where
   "vote_fraction\<^sub>\<Q> p = \<pi>\<^sub>\<Q> (vote_fraction p)"
 
-fun anonymity_homogeneity_class :: "('a::finite, 'v) Election set
-        \<Rightarrow> (rat, 'a Ordered_Preference) vec" where
+fun anonymity_homogeneity_class :: "('a::finite, 'v) Election set \<Rightarrow>
+        (rat, 'a Ordered_Preference) vec" where
   "anonymity_homogeneity_class \<E> = (\<chi> p. vote_fraction\<^sub>\<Q> (ord2pref p) \<E>)"
 
 text \<open>
@@ -511,7 +626,7 @@ lemma convex_combination_in_convex_hull:
   fixes
     X :: "(real^'b) set" and
     x :: "real^'b"
-  assumes "\<exists> f::(real^'b) \<Rightarrow> real.
+  assumes "\<exists> f :: (real^'b) \<Rightarrow> real.
             sum f X = 1 \<and> (\<forall> x \<in> X. f x \<ge> 0)
               \<and> x = sum (\<lambda> x. (f x) *\<^sub>R x) X"
   shows "x \<in> convex hull X"
@@ -543,7 +658,7 @@ next
   assume
     card: "Suc n = card X" and
     "\<exists> f. sum f X = 1 \<and> (\<forall> x \<in> X. 0 \<le> f x) \<and> x = (\<Sum> x \<in> X. f x *\<^sub>R x)" and
-    hyp: "\<And> (X::(real^'b) set) x. n = card X
+    hyp: "\<And> (X :: (real^'b) set) x. n = card X
             \<Longrightarrow> \<exists> f. sum f X = 1 \<and> (\<forall> x \<in> X. 0 \<le> f x) \<and> x =
                       (\<Sum> x \<in> X. f x *\<^sub>R x)
             \<Longrightarrow> x \<in> convex hull X"
@@ -573,7 +688,7 @@ next
   moreover have "n > 0 \<longrightarrow> x \<in> convex hull X"
   proof (safe)
     assume "0 < n"
-    hence card_X_gt_1: "card X > 1"
+    hence card_X_gt_one: "card X > 1"
       using card
       by simp
     have "(\<forall> y \<in> X. f y \<ge> 1) \<longrightarrow> sum f X \<ge> sum (\<lambda> x. 1) X"
@@ -584,7 +699,7 @@ next
     ultimately have "(\<forall> y \<in> X. f y \<ge> 1) \<longrightarrow> card X \<le> sum f X"
       by force
     hence "(\<forall> y \<in> X. f y \<ge> 1) \<longrightarrow> 1 < sum f X"
-      using card_X_gt_1
+      using card_X_gt_one
       by linarith
     then obtain y :: "real^'b" where
       y_in_X: "y \<in> X" and
@@ -662,22 +777,22 @@ next
 qed
 
 lemma standard_simplex_rewrite: "convex hull standard_basis =
-    {v::(real^'b). (\<forall> i. v$i \<ge> 0) \<and> sum (($) v) UNIV = 1}"
+    {v :: (real^'b). (\<forall> i. v$i \<ge> 0) \<and> sum (($) v) UNIV = 1}"
 proof (unfold convex_def hull_def, intro equalityI)
   let ?simplex = "{v :: (real^'b). (\<forall> i. v$i \<ge> 0) \<and> sum (($) v) UNIV = 1}"
-  have fin_dim: "finite (UNIV::'b set)"
+  have fin_dim: "finite (UNIV :: 'b set)"
     by simp
-  have "\<forall> x::(real^'b). \<forall> y. sum (($) (x + y)) UNIV =
+  have "\<forall> x :: (real^'b). \<forall> y. sum (($) (x + y)) UNIV =
             sum (($) x) UNIV + sum (($) y) UNIV"
     by (simp add: sum.distrib)
-  hence "\<forall> x::(real^'b). \<forall> y. \<forall> u v.
+  hence "\<forall> x :: (real^'b). \<forall> y. \<forall> u v.
     sum (($) (u *\<^sub>R x + v *\<^sub>R y)) UNIV =
         sum (($) (u *\<^sub>R x)) UNIV + sum (($) (v *\<^sub>R y)) UNIV"
     by blast
   moreover have "\<forall> x u. sum (($) (u *\<^sub>R x)) UNIV = u *\<^sub>R (sum (($) x) UNIV)"
     using scaleR_right.sum sum.cong vector_scaleR_component
     by (metis (mono_tags, lifting))
-  ultimately have "\<forall> x::(real^'b). \<forall> y. \<forall> u v.
+  ultimately have "\<forall> x :: (real^'b). \<forall> y. \<forall> u v.
     sum (($) (u *\<^sub>R x + v *\<^sub>R y)) UNIV =
           u *\<^sub>R (sum (($) x) UNIV) + v *\<^sub>R (sum (($) y) UNIV)"
     by (metis (no_types))
@@ -699,19 +814,19 @@ proof (unfold convex_def hull_def, intro equalityI)
       u + v = 1 \<longrightarrow> u *\<^sub>R x + v *\<^sub>R y \<in> ?simplex"
     by simp
   have entries:
-    "\<forall> v::(real^'b) \<in> standard_basis. \<exists> b.
+    "\<forall> v :: (real^'b) \<in> standard_basis. \<exists> b.
         v$b = 1 \<and> (\<forall> c. c \<noteq> b \<longrightarrow> v$c = 0)"
     unfolding standard_basis_def
     by simp
   then obtain one :: "real^'b \<Rightarrow> 'b" where
     def: "\<forall> v \<in> standard_basis. v$(one v) = 1 \<and> (\<forall> i \<noteq> one v. v$i = 0)"
     by metis
-  hence "\<forall> v::(real^'b) \<in> standard_basis. \<forall> b. v$b = 0 \<or> v$b = 1"
+  hence "\<forall> v :: (real^'b) \<in> standard_basis. \<forall> b. v$b = 0 \<or> v$b = 1"
     by metis
-  hence geq_0: "\<forall> v::(real^'b) \<in> standard_basis. \<forall> b. v$b \<ge> 0"
+  hence "\<forall> v :: (real^'b) \<in> standard_basis. \<forall> b. v$b \<ge> 0"
     using dual_order.refl zero_less_one_class.zero_le_one
     by metis
-  moreover have "\<forall> v::(real^'b) \<in> standard_basis.
+  moreover have "\<forall> v :: (real^'b) \<in> standard_basis.
       sum (($) v) UNIV = sum (($) v) (UNIV - {one v}) + v$(one v)"
     unfolding def
     using add.commute finite insert_UNIV sum.insert_remove
@@ -736,7 +851,7 @@ next
   show "{v. (\<forall> i. 0 \<le> v $ i) \<and> sum (($) v) UNIV = 1} \<subseteq>
       \<Inter> {t. (\<forall> x \<in> t. \<forall> y \<in> t. \<forall> u \<ge> 0. \<forall> v \<ge> 0.
                   u + v = 1 \<longrightarrow> u *\<^sub>R x + v *\<^sub>R y \<in> t)
-              \<and> (standard_basis::((real^'b) set)) \<subseteq> t}"
+              \<and> (standard_basis :: (real^'b) set) \<subseteq> t}"
   proof (intro subsetI)
     fix
       x :: "real^'b" and
@@ -747,8 +862,8 @@ next
       unfolding standard_basis_def
       by simp
     then obtain ind :: "(real^'b) \<Rightarrow> 'b" where
-      ind_1: "\<forall> v \<in> standard_basis. v$(ind v) = 1" and
-      ind_0: "\<forall> v \<in> standard_basis. \<forall> b \<noteq> (ind v). v$b = 0"
+      ind_eq_one: "\<forall> v \<in> standard_basis. v$(ind v) = 1" and
+      ind_eq_zero: "\<forall> v \<in> standard_basis. \<forall> b \<noteq> (ind v). v$b = 0"
       by metis
     hence "\<forall> v \<in> standard_basis. \<forall> v' \<in> standard_basis.
               ind v = ind v' \<longrightarrow> (\<forall> b. v$b = v'$b)"
@@ -761,7 +876,7 @@ next
     hence "inj_on ind standard_basis"
       unfolding inj_on_def
       by blast
-    hence bij: "bij_betw ind standard_basis (ind ` standard_basis)"
+    hence bij_ind_std: "bij_betw ind standard_basis (ind ` standard_basis)"
       unfolding bij_betw_def
       by simp
     obtain ind_inv :: "'b \<Rightarrow> (real^'b)" where
@@ -772,14 +887,14 @@ next
       by simp
     moreover from this
     have ind_inv_map: "\<forall> b. ind (ind_inv b) = b"
-      using char_vec ind_0 ind_1 axis_def axis_nth zero_neq_one
+      using char_vec ind_eq_zero ind_eq_one axis_def axis_nth zero_neq_one
       by metis
     ultimately have "\<forall> b. \<exists> v. v \<in> standard_basis \<and> b = ind v"
       by metis
     hence univ: "ind ` standard_basis = UNIV"
       by blast
     have bij_inv: "bij_betw ind_inv UNIV standard_basis"
-      using ind_inv_map bij bij_betw_byWitness[of UNIV ind] in_basis inj_ind
+      using ind_inv_map bij_ind_std bij_betw_byWitness[of UNIV ind] in_basis inj_ind
       unfolding image_subset_iff
       by simp
     obtain f :: "(real^'b) \<Rightarrow> real" where
@@ -792,8 +907,8 @@ next
       unfolding comp_def
       by simp
     also have "\<dots> = sum (($) x) (ind ` standard_basis)"
-      using bij sum_comp[of "ind" "standard_basis"
-                            "ind ` standard_basis" "($) x"]
+      using bij_ind_std sum_comp[of "ind" "standard_basis"
+                                    "ind ` standard_basis" "($) x"]
       by simp
     also have "\<dots> = sum (($) x) UNIV"
       using univ
@@ -801,7 +916,7 @@ next
     finally have "sum f standard_basis = sum (($) x) UNIV"
       using univ
       by simp
-    hence sum_1: "sum f standard_basis = 1"
+    hence sum_eq_one: "sum f standard_basis = 1"
       using convex_comb
       by simp
     have nonneg: "\<forall> v \<in> standard_basis. f v \<ge> 0"
@@ -809,7 +924,7 @@ next
       by simp
     have "\<forall> v \<in> standard_basis. \<forall> i.
             v$i = (if i = ind v then 1 else 0)"
-      using ind_1 ind_0
+      using ind_eq_one ind_eq_zero
       by fastforce
     hence "\<forall> v \<in> standard_basis. \<forall> i.
         x$(ind v) * v$i = (if i = ind v then x$(ind v) else 0)"
@@ -861,27 +976,24 @@ next
     hence "sum (\<lambda> x. (f x) *\<^sub>R x) standard_basis = x"
       unfolding vec_eq_iff
       by simp
-    hence "\<exists> f::(real^'b) \<Rightarrow> real.
+    hence "\<exists> f :: (real^'b) \<Rightarrow> real.
               sum f standard_basis = 1 \<and> (\<forall> x \<in> standard_basis. f x \<ge> 0)
             \<and> x = sum (\<lambda> x. (f x) *\<^sub>R x) standard_basis"
-      using sum_1 nonneg
+      using sum_eq_one nonneg
       by blast
-    hence "x \<in> convex hull (standard_basis::((real^'b) set))"
+    hence "x \<in> convex hull (standard_basis :: (real^'b) set)"
       using convex_combination_in_convex_hull
       by blast
     thus "x \<in> \<Inter> {t. (\<forall> x \<in> t. \<forall> y \<in> t. \<forall> u \<ge> 0. \<forall> v \<ge> 0.
                           u + v = 1 \<longrightarrow> u *\<^sub>R x + v *\<^sub>R y \<in> t)
-                  \<and> (standard_basis::((real^'b) set)) \<subseteq> t}"
+                  \<and> (standard_basis :: (real^'b) set) \<subseteq> t}"
       unfolding convex_def hull_def
       by blast
   qed
 qed
 
 lemma fract_distr_helper:
-  fixes
-     a :: "int" and
-     b :: "int" and
-     c :: "int"
+  fixes a b c :: "int"
   assumes "c \<noteq> 0"
   shows "Fract a c + Fract b c = Fract (a + b) c"
   using add_rat assms mult.commute mult_rat_cancel distrib_right
@@ -903,10 +1015,7 @@ next
 next
   show "Relation.trans (anonymity_homogeneity\<^sub>\<R> X)"
   proof
-    fix
-      E :: "('a, 'v) Election" and
-      E' :: "('a, 'v) Election" and
-      F :: "('a, 'v) Election"
+    fix E E' F :: "('a, 'v) Election"
     assume
       rel: "(E, E') \<in> anonymity_homogeneity\<^sub>\<R> X" and
       rel': "(E', F) \<in> anonymity_homogeneity\<^sub>\<R> X"
@@ -965,7 +1074,7 @@ next
     fin_A: "finite A" and
     b_non_zero: "b \<noteq> 0" and
     hyp: "\<And> A f b.
-           n = card (A::'x set) \<Longrightarrow>
+           n = card (A :: 'x set) \<Longrightarrow>
            finite A \<Longrightarrow> b \<noteq> 0 \<Longrightarrow> (\<Sum> a \<in> A. Fract (f a) b) = Fract (sum f A) b"
   hence "A \<noteq> {}"
     by auto
@@ -1003,29 +1112,28 @@ text \<open>
   of voters per election in that class who vote the respective corresponding preference.
 \<close>
 theorem anonymity_homogeneity\<^sub>\<Q>_isomorphism:
-  assumes "infinite (UNIV::('v set))"
+  assumes "infinite (UNIV :: 'v set)"
   shows
-    "bij_betw (anonymity_homogeneity_class::('a::finite, 'v) Election set \<Rightarrow>
-        rat^('a Ordered_Preference)) (anonymity_homogeneity\<^sub>\<Q> (UNIV::'a set))
+    "bij_betw (anonymity_homogeneity_class :: ('a :: finite, 'v) Election set \<Rightarrow>
+        rat^('a Ordered_Preference)) (anonymity_homogeneity\<^sub>\<Q> (UNIV :: 'a set))
           (vote_simplex :: (rat^('a Ordered_Preference)) set)"
 proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
-  fix
-    X :: "('a, 'v) Election set" and
-    Y :: "('a, 'v) Election set"
+  fix X Y :: "('a, 'v) Election set"
   assume
     class_X: "X \<in> anonymity_homogeneity\<^sub>\<Q> UNIV" and
     class_Y: "Y \<in> anonymity_homogeneity\<^sub>\<Q> UNIV" and
     eq_vec: "anonymity_homogeneity_class X = anonymity_homogeneity_class Y"
-  have equiv: "equiv (elections_\<A> UNIV) (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV))"
+  have equiv:
+    "equiv (elections_\<A> UNIV) (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV))"
     using anonymity_homogeneity_is_equivalence CollectD IntD1 inf_commute
     unfolding elections_\<A>.simps
     by (metis (no_types, lifting))
-  hence subset: "X \<noteq> {} \<and> X \<subseteq> elections_\<A> UNIV \<and> Y \<noteq> {} \<and> Y \<subseteq> elections_\<A> UNIV"
+  hence subset:
+    "X \<noteq> {} \<and> X \<subseteq> elections_\<A> UNIV \<and> Y \<noteq> {} \<and> Y \<subseteq> elections_\<A> UNIV"
     using class_X class_Y in_quotient_imp_non_empty in_quotient_imp_subset
     unfolding anonymity_homogeneity\<^sub>\<Q>.simps
     by blast
-  then obtain E :: "('a, 'v) Election" and
-              E' :: "('a, 'v) Election" where
+  then obtain E E' :: "('a, 'v) Election" where
     E_in_X: "E \<in> X" and
     E'_in_Y: "E' \<in> Y"
     by blast
@@ -1082,7 +1190,7 @@ proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
   have "(\<forall> v. v \<in> voters_\<E> E \<longrightarrow> linear_order (profile_\<E> E v)) \<and>
       (\<forall> v. v \<in> voters_\<E> E' \<longrightarrow> linear_order (profile_\<E> E' v))"
     using subset E_in_X E'_in_Y
-    unfolding elections_\<A>.simps valid_elections_def profile_def
+    unfolding elections_\<A>.simps well_formed_elections_def profile_def
     by fastforce
   hence "\<forall> p. \<not> linear_order p \<longrightarrow> vote_count p E = 0 \<and> vote_count p E' = 0"
     unfolding vote_count.simps
@@ -1101,7 +1209,7 @@ proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
     using class_X_E class_Y_E' equiv equiv_class_eq
     by (metis (no_types, lifting))
 next
-  show "(anonymity_homogeneity_class::('a, 'v) Election set
+  show "(anonymity_homogeneity_class :: ('a, 'v) Election set
             \<Rightarrow> rat^('a Ordered_Preference))
         ` anonymity_homogeneity\<^sub>\<Q> UNIV = vote_simplex"
   proof (unfold vote_simplex_def, safe)
@@ -1146,7 +1254,7 @@ next
     hence "\<forall> p. vote_fraction\<^sub>\<Q> (ord2pref p) X \<ge> 0"
       using repr
       by simp
-    hence geq_0: "\<forall> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X) \<ge> 0"
+    hence geq_zero: "\<forall> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X) \<ge> 0"
       using zero_le_of_rat_iff
       by blast
     have "voters_\<E> E = {} \<or> infinite (voters_\<E> E) \<longrightarrow>
@@ -1159,7 +1267,7 @@ next
       unfolding zero_vec_def
       by simp
     let ?sum = "sum (\<lambda> p. vote_count p E) UNIV"
-    have "finite (UNIV::('a \<times> 'a) set)"
+    have "finite (UNIV :: ('a \<times> 'a) set)"
       by simp
     hence eq_card: "finite (voters_\<E> E) \<longrightarrow> card (voters_\<E> E) = ?sum"
       using vote_count_sum
@@ -1169,7 +1277,8 @@ next
           sum (\<lambda> p. Fract (vote_count p E) ?sum) UNIV"
       unfolding vote_fraction.simps
       by presburger
-    moreover have gt_0: "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {} \<longrightarrow> ?sum > 0"
+    moreover have fin_impl_sum_gt_zero:
+      "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {} \<longrightarrow> ?sum > 0"
       using eq_card
       by fastforce
     hence "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {} \<longrightarrow>
@@ -1180,9 +1289,10 @@ next
       by (metis (no_types, lifting))
     moreover have
       "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {} \<longrightarrow> Fract ?sum ?sum = 1"
-      using gt_0 One_rat_def eq_rat(1)[of ?sum 1 ?sum 1]
-      by linarith
-    ultimately have sum_1:
+      using fin_impl_sum_gt_zero Fract_le_one_iff Fract_less_one_iff
+            of_nat_0_less_iff order_le_less order_less_irrefl
+      by metis
+    ultimately have fin_impl_sum_eq_one:
       "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {}
         \<longrightarrow> sum (\<lambda> p. vote_fraction p E) UNIV = 1"
       by presburger
@@ -1195,7 +1305,7 @@ next
       unfolding anonymity_homogeneity\<^sub>\<Q>.simps quotient_def
       by fastforce
     hence "\<forall> v \<in> voters_\<E> E. linear_order (profile_\<E> E v)"
-      unfolding elections_\<A>.simps valid_elections_def profile_def
+      unfolding elections_\<A>.simps well_formed_elections_def profile_def
       by fastforce
     hence "\<forall> p. \<not> linear_order p \<longrightarrow> vote_count p E = 0"
       unfolding vote_count.simps
@@ -1225,7 +1335,7 @@ next
       by auto
     hence "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {}
         \<longrightarrow> sum (\<lambda> p. vote_fraction (ord2pref p) E) UNIV = 1"
-      using sum_1
+      using fin_impl_sum_eq_one
       by presburger
     hence "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {}
         \<longrightarrow> sum (\<lambda> p. real_of_rat (vote_fraction (ord2pref p) E)) UNIV = 1"
@@ -1239,7 +1349,7 @@ next
     hence "(\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X)) = 0 \<or>
         ((\<forall> p. (\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))$p \<ge> 0)
         \<and> sum (($) (\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))) UNIV = 1)"
-      using geq_0
+      using geq_zero
       by force
     moreover have rat_entries:
       "\<forall> p. (\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))$p \<in> \<rat>"
@@ -1293,12 +1403,12 @@ next
       "(UNIV, {}, \<lambda> v. {})
           \<in> (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, {}, \<lambda> v. {})})"
       unfolding anonymity_homogeneity\<^sub>\<R>.simps Image_def elections_\<A>.simps
-                valid_elections_def profile_def
+                well_formed_elections_def profile_def
       by simp
     have in_els: "(UNIV, {}, \<lambda> v. {}) \<in> elections_\<A> UNIV"
-      unfolding elections_\<A>.simps valid_elections_def profile_def
+      unfolding elections_\<A>.simps well_formed_elections_def profile_def
       by simp
-    have "\<forall> r::('a Preference_Relation).
+    have "\<forall> r :: 'a Preference_Relation.
             vote_fraction r (UNIV, {}, (\<lambda> v. {})) = 0"
       by simp
     hence
@@ -1350,28 +1460,26 @@ next
             `` {(UNIV, {}, \<lambda> v. {})}) = 0"
       unfolding vote_fraction\<^sub>\<Q>.simps \<pi>\<^sub>\<Q>.simps singleton_set.simps
       by metis
-    hence "\<forall> r::('a Ordered_Preference). vote_fraction\<^sub>\<Q> (ord2pref r)
+    hence "\<forall> r :: 'a Ordered_Preference. vote_fraction\<^sub>\<Q> (ord2pref r)
           (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)
             `` {(UNIV, {}, \<lambda> v. {})}) = 0"
       by metis
-    hence "\<forall> r::('a Ordered_Preference).
+    hence "\<forall> r :: 'a Ordered_Preference.
         (anonymity_homogeneity_class ((anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)
             `` {(UNIV, {}, \<lambda> v. {})})))$r = 0"
       unfolding anonymity_homogeneity_class.simps
       using vec_lambda_beta
       by (metis (no_types))
-    moreover have "\<forall> r::('a Ordered_Preference). 0$r = 0"
+    moreover have "\<forall> r :: 'a Ordered_Preference. 0$r = 0"
       by simp
-    ultimately have "\<forall> r::('a Ordered_Preference).
+    ultimately have "\<forall> r :: 'a Ordered_Preference.
         (anonymity_homogeneity_class
           ((anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)
-          `` {(UNIV, {}, \<lambda> v. {})})))$r =
-        (0::(rat^('a Ordered_Preference)))$r"
+          `` {(UNIV, {}, \<lambda> v. {})})))$r = 0$r"
       by (metis (no_types))
     hence "anonymity_homogeneity_class
       ((anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)
-          `` {(UNIV, {}, \<lambda> v. {})})) =
-        (0::(rat^('a Ordered_Preference)))"
+          `` {(UNIV, {}, \<lambda> v. {})})) = (0 :: (rat^('a Ordered_Preference)))"
       using vec_eq_iff
       by blast
     moreover have
@@ -1380,8 +1488,7 @@ next
       unfolding anonymity_homogeneity\<^sub>\<Q>.simps quotient_def
       using in_els
       by blast
-    ultimately show "(0::(rat^('a Ordered_Preference)))
-          \<in> anonymity_homogeneity_class ` anonymity_homogeneity\<^sub>\<Q> UNIV"
+    ultimately show "0 \<in> anonymity_homogeneity_class ` anonymity_homogeneity\<^sub>\<Q> UNIV"
       using image_eqI
       by (metis (no_types))
   next
@@ -1441,7 +1548,7 @@ next
     have pos: "\<forall> p. 0 < snd (fraction p)"
       by simp
     let ?prod = "prod (\<lambda> p. snd (fraction p)) UNIV"
-    have fin: "finite (UNIV::('a Ordered_Preference set))"
+    have fin: "finite (UNIV :: 'a Ordered_Preference set)"
       by simp
     hence "finite {snd (fraction p) | p. p \<in> UNIV}"
       using finite_Atleast_Atmost_nat
@@ -1494,7 +1601,7 @@ next
       prof: "prof = (\<lambda> v. if v \<in> V then ord2pref (prof' v) else {})"
       by blast
     hence election: "(UNIV, V, prof) \<in> elections_\<A> UNIV"
-      unfolding elections_\<A>.simps valid_elections_def profile_def
+      unfolding elections_\<A>.simps well_formed_elections_def profile_def
       using fin_V ord2pref
       by auto
     have "\<forall> p. {v \<in> V. prof' v = p} = {v \<in> V. v \<in> part p}"
@@ -1512,7 +1619,7 @@ next
       by (simp add: ord2pref_inject)
     ultimately have "\<forall> p. card {v \<in> V. prof v = (ord2pref p)} = voter_amount p"
       by simp
-    hence "\<forall> p::'a Ordered_Preference.
+    hence "\<forall> p :: 'a Ordered_Preference.
       vote_fraction (ord2pref p) (UNIV, V, prof) =
           Fract (voter_amount p) (card V)"
       using rat_number_collapse fin_V

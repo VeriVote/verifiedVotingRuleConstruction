@@ -40,8 +40,7 @@ lemma non_cond_winner_minimax_score:
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile" and
-    w :: "'a" and
-    l :: "'a"
+    w l :: "'a"
   assumes
     prof: "profile V A p" and
     winner: "condorcet_winner V A p w" and
@@ -76,8 +75,7 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
     A :: "'b set" and
     V :: "'a set" and
     p :: "('b, 'a) Profile" and
-    w :: "'b" and
-    l :: "'b"
+    w l :: "'b"
   assume
     winner: "condorcet_winner V A p w" and
     l_in_A: "l \<in> A" and
@@ -112,7 +110,8 @@ proof (unfold condorcet_rating_def minimax_score.simps prefer_count.simps,
             Min {prefer_count V p w y | y . y \<in> A - {w}}"
     using pref_counts_non_empty Min_in
     by fastforce
-  then obtain n where pref_count_eq_min:
+  then obtain n :: "'b" where
+    pref_count_eq_min:
     "prefer_count V p w n =
         Min {prefer_count V p w y | y . y \<in> A - {w}}" and
     n_not_w: "n \<in> A - {w}"
@@ -171,7 +170,7 @@ next
   assume cwin_w: "condorcet_winner V A p w"
   have max_mmaxscore_dcc:
     "defer_condorcet_consistency ((max_eliminator minimax_score)
-                                    ::('b, 'a, 'b Result) Electoral_Module)"
+                                    :: ('b, 'a, 'b Result) Electoral_Module)"
     using cr_eval_imp_dcc_max_elim minimax_score_cond_rating
     by metis
   hence

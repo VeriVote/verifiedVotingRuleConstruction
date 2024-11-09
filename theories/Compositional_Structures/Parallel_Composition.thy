@@ -21,24 +21,21 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun parallel_composition :: "('a, 'v, 'a Result) Electoral_Module
-                                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
-                                  \<Rightarrow> 'a Aggregator
-                                \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
+fun parallel_composition :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Aggregator \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module" where
   "parallel_composition m n agg V A p = agg A (m V A p) (n V A p)"
 
-abbreviation parallel :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Aggregator
-                            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module
-                            \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
+abbreviation parallel :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> 'a Aggregator \<Rightarrow>
+        ('a, 'v, 'a Result) Electoral_Module \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
       ("_ \<parallel>\<^sub>_ _" [50, 1000, 51] 50) where
-  "m \<parallel>\<^sub>a n == parallel_composition m n a"
+  "m \<parallel>\<^sub>a n \<equiv> parallel_composition m n a"
 
 subsection \<open>Soundness\<close>
 
 theorem par_comp_sound[simp]:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     a :: "'a Aggregator"
   assumes
     "\<S>\<C>\<F>_result.electoral_module m" and
@@ -54,15 +51,15 @@ proof (unfold \<S>\<C>\<F>_result.electoral_module.simps, safe)
   moreover have
     "\<forall> a'. aggregator a' =
       (\<forall> A' e r d e' r' d'.
-        (well_formed_\<S>\<C>\<F> (A'::'a set) (e, r', d)
+        (well_formed_\<S>\<C>\<F> (A' :: 'a set) (e, r', d)
         \<and> well_formed_\<S>\<C>\<F> A' (r, d', e'))
             \<longrightarrow> well_formed_\<S>\<C>\<F> A' (a' A' (e, r', d) (r, d', e')))"
     unfolding aggregator_def
     by blast
   moreover have
     "\<forall> m' V' A' p'.
-      (\<S>\<C>\<F>_result.electoral_module m' \<and> finite (A'::'a set)
-        \<and> finite (V'::'v set) \<and> profile V' A' p')
+      (\<S>\<C>\<F>_result.electoral_module m' \<and> finite (A' :: 'a set)
+        \<and> finite (V' :: 'v set) \<and> profile V' A' p')
       \<longrightarrow> well_formed_\<S>\<C>\<F> A' (m' V' A' p')"
     using par_comp_result_sound
     by (metis (no_types))
@@ -82,8 +79,7 @@ text \<open>
 
 theorem conserv_agg_presv_non_electing[simp]:
   fixes
-    m :: "('a, 'v, 'a Result) Electoral_Module" and
-    n :: "('a, 'v, 'a Result) Electoral_Module" and
+    m n :: "('a, 'v, 'a Result) Electoral_Module" and
     a :: "'a Aggregator"
   assumes
     non_electing_m: "non_electing m" and
@@ -124,7 +120,7 @@ next
     unfolding non_electing_def
     by simp
   have "\<forall> r r' d d' e e' A' f.
-          ((well_formed_\<S>\<C>\<F> (A'::'a set) (e', r', d') \<and>
+          ((well_formed_\<S>\<C>\<F> (A' :: 'a set) (e', r', d') \<and>
             well_formed_\<S>\<C>\<F> A' (e, r, d)) \<longrightarrow>
             elect_r (f A' (e', r', d') (e, r, d)) \<subseteq> e' \<union> e \<and>
               reject_r (f A' (e', r', d') (e, r, d)) \<subseteq> r' \<union> r \<and>
@@ -138,7 +134,7 @@ next
   hence "\<forall> a'. agg_conservative a' =
           (aggregator a' \<and>
             (\<forall> A' e e' d d' r r'.
-              (well_formed_\<S>\<C>\<F> (A'::'a set) (e, r, d) \<and>
+              (well_formed_\<S>\<C>\<F> (A' :: 'a set) (e, r, d) \<and>
                well_formed_\<S>\<C>\<F> A' (e', r', d')) \<longrightarrow>
                 elect_r (a' A' (e, r, d) (e', r', d')) \<subseteq> e \<union> e' \<and>
                   reject_r (a' A' (e, r, d) (e', r', d')) \<subseteq> r \<union> r' \<and>
