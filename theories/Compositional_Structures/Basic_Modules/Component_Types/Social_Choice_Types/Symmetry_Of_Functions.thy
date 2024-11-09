@@ -271,7 +271,7 @@ lemma rel_ind_by_coinciding_action_on_subset_eq_restr:
     "u \<subseteq> t" and
     "\<forall> x \<in> s. \<forall> y \<in> u. \<psi> x y = \<phi> x y"
   shows "action_induced_rel s u \<psi> = restricted_rel (action_induced_rel s t \<phi>) u UNIV"
-proof (simp, safe)
+proof (unfold action_induced_rel.simps restricted_rel.simps, safe)
   fix x :: "'b"
   assume "x \<in> u"
   thus "x \<in> t"

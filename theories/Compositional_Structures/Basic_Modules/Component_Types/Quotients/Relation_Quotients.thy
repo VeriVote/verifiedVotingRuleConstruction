@@ -155,7 +155,7 @@ lemma restr_equals_restricted_rel:
     "closed_restricted_rel r s t" and
     "t \<subseteq> s"
   shows "restricted_rel r t s = Restr r t"
-proof(simp, safe)
+proof (unfold restricted_rel.simps, safe)
   fix a b :: "'a"
   assume
     "(a, b) \<in> r" and

@@ -249,14 +249,18 @@ proof (clarify)
       def_dist: "distance\<^sub>\<Q> d A B = d a b"
     using dist_pass_to_quotient assms in_quotient_imp_non_empty ex_in_conv
     by (metis (full_types))
-  hence equiv_class: "A = r `` {a} \<and> B = r `` {b}"
-    using A_in_quot_X B_in_quot_X assms equiv_class_eq_iff equiv_class_self
-          quotientI quotient_eq_iff
-    by meson
-  have subset_X: "r \<subseteq> X \<times> X \<and> A \<subseteq> X \<and> B \<subseteq> X"
-    using assms A_in_quot_X B_in_quot_X equiv_def refl_on_def
-          Union_quotient Union_upper
+  have "b \<in> X"
+    using B_in_quot_X el equiv quotient_eq_iff equiv equiv_class_eq_iff
     by metis
+  hence "B = r `` {b}"
+    using equiv_class_self B_in_quot_X el equiv quotientI quotient_eq_iff
+    by metis
+  moreover have "a \<in> X"
+    using A_in_quot_X el equiv quotient_eq_iff equiv equiv_class_eq_iff
+    by metis
+  ultimately have equiv_class: "A = r `` {a} \<and> B = r `` {b}"
+    using A_in_quot_X el equiv quotientI quotient_eq_iff
+    by slow
   have "\<forall> p \<in> admissible_paths r A B.
           (\<exists> p' x y. x \<in> A \<and> y \<in> B \<and> p' \<in> relation_paths r \<and> p = x#p'@[y])"
     unfolding admissible_paths.simps
@@ -265,27 +269,31 @@ proof (clarify)
     using invar equiv_class
     by auto
   moreover have "refl_on X r"
-    using equiv equiv_def
+    using equiv
+    unfolding equiv_def
     by blast
+  moreover have "r \<subseteq> X \<times> X \<and> A \<subseteq> X \<and> B \<subseteq> X"
+    using assms A_in_quot_X B_in_quot_X Union_quotient Union_upper
+    unfolding equiv_def refl_on_def
+    by metis
   ultimately have "\<forall> p. p \<in> admissible_paths r A B \<longrightarrow> path_length p d \<ge> d a b"
-    using admissible_path_len[of X r d] tri subset_X el invar in_mono
+    using admissible_path_len[of X r d] tri el invar in_mono
     by metis
   hence "\<forall> l. l \<in> \<Union> {{path_length p d | p. p \<in> admissible_paths r A B}}
                     \<longrightarrow> l \<ge> d a b"
     by blast
-  hence geq: "quotient_dist r d A B \<ge> d a b"
-    unfolding quotient_dist.simps[of r d A B] le_Inf_iff
+  hence geq: "quotient_dist r d A B \<ge> distance\<^sub>\<Q> d A B"
+    unfolding quotient_dist.simps le_Inf_iff
+    using def_dist
     by simp
-  with el def_dist
-  have geq: "quotient_dist r d A B \<ge> distance\<^sub>\<Q> d A B"
-    by presburger
   have "[a, b] \<in> admissible_paths r A B"
     using el
     by simp
   moreover have "path_length [a, b] d = d a b"
     by simp
   ultimately have "quotient_dist r d A B \<le> d a b"
-    using quotient_dist.simps[of r d A B] CollectI Inf_lower ccpo_Sup_singleton
+    unfolding quotient_dist.simps
+    using CollectI Inf_lower ccpo_Sup_singleton
     by (metis (mono_tags, lifting))
   thus "quotient_dist r d A B = distance\<^sub>\<Q> d A B"
     using geq def_dist nle_le
@@ -390,10 +398,11 @@ lemma invar_dist_simple:
 proof (unfold simple.simps, safe)
   fix A :: "'y set"
   assume class\<^sub>Y: "A \<in> Y // action_induced_rel (carrier G) Y \<phi>"
-  have equiv_rel: "equiv Y (action_induced_rel (carrier G) Y \<phi>)"
+  moreover have equiv_rel:
+    "equiv Y (action_induced_rel (carrier G) Y \<phi>)"
     using assms rel_ind_by_group_act_equiv
     by blast
-  with class\<^sub>Y obtain a :: "'y" where
+  ultimately obtain a :: "'y" where
     a_in_A: "a \<in> A"
     using equiv_Eps_in
     by blast
@@ -424,7 +433,8 @@ proof (unfold simple.simps, safe)
   moreover have equiv_class:
     "\<forall> B. B \<in> Y // action_induced_rel (carrier G) Y \<phi> \<longrightarrow>
       (\<forall> b \<in> B. B = action_induced_rel (carrier G) Y \<phi> `` {b})"
-    using equiv_class_eq_iff equiv_rel insertI1 quotientI quotient_eq_iff rev_ImageI
+    using Image_singleton_iff equiv_class_eq_iff equiv_rel
+          quotientI quotient_eq_iff
     by meson
   ultimately have closed_class:
     "\<forall> B \<in> Y // action_induced_rel (carrier G) Y \<phi>.
