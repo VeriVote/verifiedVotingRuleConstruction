@@ -170,7 +170,7 @@ next
   hence limit_is_connex: "connex A (limit A r)"
     using lin_ord_imp_connex
     by simp
-  have "\<forall> n. (n::nat) \<le> 0 \<longrightarrow> n = 0"
+  have "\<forall> n. (n :: nat) \<le> 0 \<longrightarrow> n = 0"
     by blast
   hence "\<forall> a A'. a \<in> A' \<and> a \<in> A \<longrightarrow> connex A' (limit A r) \<longrightarrow>
           \<not> rank (limit A r) a \<le> 0"

@@ -25,7 +25,7 @@ subsection \<open>Definition\<close>
 type_synonym Norm = "ereal list \<Rightarrow> ereal"
 
 definition norm :: "Norm \<Rightarrow> bool" where
-  "norm n \<equiv> \<forall> (x::ereal list). n x \<ge> 0 \<and> (\<forall> i < length x. (x!i = 0) \<longrightarrow> n x = 0)"
+  "norm n \<equiv> \<forall> (x :: ereal list). n x \<ge> 0 \<and> (\<forall> i < length x. (x!i = 0) \<longrightarrow> n x = 0)"
 
 subsection \<open>Auxiliary Lemmas\<close>
 

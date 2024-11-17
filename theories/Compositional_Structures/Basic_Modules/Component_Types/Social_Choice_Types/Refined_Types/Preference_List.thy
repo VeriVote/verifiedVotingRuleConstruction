@@ -113,7 +113,7 @@ qed
 
 lemma listset_finiteness:
   fixes l :: "'a set list"
-  assumes "\<forall> i::nat. i < length l \<longrightarrow> finite (l!i)"
+  assumes "\<forall> i :: nat. i < length l \<longrightarrow> finite (l!i)"
   shows "finite (listset l)"
   using assms
 proof (induct l)
@@ -125,13 +125,13 @@ next
   fix
     a :: "'a set" and
     l :: "'a set list"
-  assume "\<forall> i::nat < length (a#l). finite ((a#l)!i)"
+  assume "\<forall> i :: nat < length (a#l). finite ((a#l)!i)"
   hence
     "finite a" and
     "\<forall> i < length l. finite (l!i)"
     by auto
   moreover assume
-    "\<forall> i::nat < length l. finite (l!i) \<Longrightarrow> finite (listset l)"
+    "\<forall> i :: nat < length l. finite (l!i) \<Longrightarrow> finite (listset l)"
   ultimately have
     "finite (listset l)" and
     "finite {a'#l' | a' l'. a' \<in> a \<and> l' \<in> (listset l)}"
@@ -169,7 +169,7 @@ qed
 
 lemma all_ls_elems_in_ls_set:
   fixes l :: "'a set list"
-  shows "\<forall> l' \<in> listset l. \<forall> i::nat < length l'. l'!i \<in> l!i"
+  shows "\<forall> l' \<in> listset l. \<forall> i :: nat < length l'. l'!i \<in> l!i"
 proof (induct l, safe)
   case Nil
   fix
@@ -188,7 +188,7 @@ next
     l' :: "'a list" and
     i :: "nat"
   assume
-    "\<forall> l' \<in> listset l. \<forall> i::nat < length l'. l'!i \<in> l!i" and
+    "\<forall> l' \<in> listset l. \<forall> i :: nat < length l'. l'!i \<in> l!i" and
     "l' \<in> listset (a#l)" and
     "i < length l'"
   moreover from this have "l' \<in> set_Cons a (listset l)"
@@ -1072,7 +1072,7 @@ lemma pos_in_list_yields_rank:
     a :: "'a" and
     n :: "nat"
   assumes
-    "\<forall> (j::nat) \<le> n. l!j \<noteq> a" and
+    "\<forall> (j :: nat) \<le> n. l!j \<noteq> a" and
     "l!(n - 1) = a"
   shows "rank_l l a = n"
   using assms

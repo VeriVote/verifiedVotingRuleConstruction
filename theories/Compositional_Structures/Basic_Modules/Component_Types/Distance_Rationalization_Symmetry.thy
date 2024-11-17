@@ -712,7 +712,7 @@ theorem (in result) anon_dist_and_cons_imp_anon_dr:
     anon_C: "consensus_rule_anonymity' (elections_\<K> C) C" and
     closed_C: "closed_restricted_rel (anonymity\<^sub>\<R> well_formed_elections)
                   well_formed_elections (elections_\<K> C)"
-    shows "anonymity' well_formed_elections (distance_\<R> d C)"
+    shows "anonymity' (distance_\<R> d C)"
 proof -
   have "\<forall> \<pi>. \<forall> E \<in> elections_\<K> C.
       \<phi>_anon (elections_\<K> C) \<pi> E = \<phi>_anon well_formed_elections \<pi> E"
@@ -735,7 +735,7 @@ proof -
     using cons_domain_valid assms anonymous_group_action.group_action_axioms
           anonymity invar_dist_cons_imp_invar_dr_rule
     unfolding distance_anonymity'.simps anonymity\<^sub>\<R>.simps anonymity'.simps
-              consensus_rule_anonymity'.simps
+              anonymity_in.simps consensus_rule_anonymity'.simps
     by blast
 qed
 
@@ -748,7 +748,7 @@ theorem (in result_properties) neutr_dist_and_cons_imp_neutr_dr:
     neutral_C: "consensus_rule_neutrality (elections_\<K> C) C" and
     closed_C: "closed_restricted_rel (neutrality\<^sub>\<R> well_formed_elections)
                   well_formed_elections (elections_\<K> C)"
-  shows "neutrality well_formed_elections (distance_\<R> d C)"
+  shows "neutrality (distance_\<R> d C)"
 proof -
   have "\<forall> \<pi>. \<forall> E \<in> elections_\<K> C.
       \<phi>_neutral well_formed_elections \<pi> E = \<phi>_neutral (elections_\<K> C) \<pi> E"
@@ -778,7 +778,7 @@ theorem reversal_sym_dist_and_cons_imp_reversal_sym_dr:
     reverse_sym_C: "consensus_rule_reversal_symmetry (elections_\<K> C) C" and
     closed_C: "closed_restricted_rel (reversal\<^sub>\<R> well_formed_elections)
                   well_formed_elections (elections_\<K> C)"
-  shows "reversal_symmetry well_formed_elections (\<S>\<W>\<F>_result.distance_\<R> d C)"
+  shows "reversal_symmetry (\<S>\<W>\<F>_result.distance_\<R> d C)"
 proof -
   have "\<forall> \<pi>. \<forall> E \<in> elections_\<K> C.
       \<phi>_reverse well_formed_elections \<pi> E = \<phi>_reverse (elections_\<K> C) \<pi> E"
@@ -796,8 +796,8 @@ proof -
           reversal_symmetry cons_domain_valid reverse_sym_d closed_C
           \<phi>_reverse_action.group_action_axioms
           \<psi>_reverse_action.group_action_axioms
-    unfolding reversal_symmetry_def reversal\<^sub>\<R>.simps
-              distance_reversal_symmetry.simps
+    unfolding reversal_symmetry.simps reversal_symmetry_in_def
+              reversal\<^sub>\<R>.simps distance_reversal_symmetry.simps
     by metis
 qed
 
@@ -806,7 +806,7 @@ theorem (in result) tot_hom_dist_imp_hom_dr:
     d :: "('a, nat) Election Distance" and
     C :: "('a, nat, 'r Result) Consensus_Class"
   assumes "distance_homogeneity finite_elections_\<V> d"
-  shows "homogeneity finite_elections_\<V> (distance_\<R> d C)"
+  shows "homogeneity (distance_\<R> d C)"
 proof -
   have "Restrp (homogeneity\<^sub>\<R> finite_elections_\<V>) (elections_\<K> C) =
           homogeneity\<^sub>\<R> (elections_\<K> C)"
@@ -824,7 +824,7 @@ proof -
     by simp
   ultimately show ?thesis
     using assms tot_invar_dist_imp_invar_dr_rule
-    unfolding distance_homogeneity_def homogeneity.simps
+    unfolding distance_homogeneity_def homogeneity.simps homogeneity_in.simps
     by blast
 qed
 
@@ -833,8 +833,8 @@ theorem (in result) tot_hom_dist_imp_hom_dr':
     d :: "('a, 'v :: linorder) Election Distance" and
     C :: "('a, 'v, 'r Result) Consensus_Class"
   assumes "distance_homogeneity' finite_elections_\<V> d"
-  shows "homogeneity' finite_elections_\<V> (distance_\<R> d C)"
-proof (unfold homogeneity'.simps)
+  shows "homogeneity' (distance_\<R> d C)"
+proof (unfold homogeneity'.simps homogeneity'_in.simps)
   have "Restrp (homogeneity\<^sub>\<R>' finite_elections_\<V>) (elections_\<K> C) =
           homogeneity\<^sub>\<R>' (elections_\<K> C)"
     using cons_domain_finite
@@ -855,13 +855,5 @@ proof (unfold homogeneity'.simps)
     unfolding distance_homogeneity'_def
     by blast
 qed
-
-subsection \<open>Properties\<close>
-
-fun decisiveness :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow>
-        ('a, 'v, 'r Result) Electoral_Module \<Rightarrow> bool" where
-  "decisiveness X d m =
-    (\<nexists> E. E \<in> X
-    \<and> (\<exists> \<delta> > 0. \<forall> E' \<in> X. d E E' < \<delta> \<longrightarrow> card (elect_r (fun\<^sub>\<E> m E')) > 1))"
 
 end
