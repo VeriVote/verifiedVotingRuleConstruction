@@ -416,4 +416,25 @@ proof -
     by (metis (full_types))
 qed
 
+subsubsection \<open>(Weak) Monotonicity\<close>
+
+theorem plurality_rule_monotone: "monotonicity plurality_rule"
+proof (unfold monotonicity_def, safe)
+  show "\<S>\<C>\<F>_result.electoral_module plurality_rule"
+    using plurality_rule_sound
+    by (metis (no_types))
+next
+  fix
+    A :: "'b set" and
+    V :: "'a set" and
+    p q :: "('b, 'a) Profile" and
+    a :: "'b"
+  assume
+    "a \<in> elect plurality_rule V A p" and
+    "Profile.lifted V A p q a"
+  thus "a \<in> elect plurality_rule V A q"
+    using insertI1 plurality_rule_inv_mono_eq
+    by (metis (no_types))
+qed
+
 end

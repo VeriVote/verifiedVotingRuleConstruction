@@ -162,7 +162,7 @@ fun anonymity\<^sub>\<Q> :: "'a set \<Rightarrow> ('a, 'v) Election set set" whe
 fun vote_count\<^sub>\<Q> :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election set \<Rightarrow> nat" where
   "vote_count\<^sub>\<Q> p = \<pi>\<^sub>\<Q> (vote_count p)"
 
-fun anonymity_class :: "('a::finite, 'v) Election set \<Rightarrow>
+fun anonymity_class :: "('a :: finite, 'v) Election set \<Rightarrow>
         (nat, 'a Ordered_Preference) vec" where
   "anonymity_class X = (\<chi> p. vote_count\<^sub>\<Q> (ord2pref p) X)"
 
@@ -596,7 +596,7 @@ fun anonymity_homogeneity\<^sub>\<Q> :: "'a set \<Rightarrow> ('a, 'v) Election 
 fun vote_fraction\<^sub>\<Q> :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election set \<Rightarrow> rat" where
   "vote_fraction\<^sub>\<Q> p = \<pi>\<^sub>\<Q> (vote_fraction p)"
 
-fun anonymity_homogeneity_class :: "('a::finite, 'v) Election set \<Rightarrow>
+fun anonymity_homogeneity_class :: "('a :: finite, 'v) Election set \<Rightarrow>
         (rat, 'a Ordered_Preference) vec" where
   "anonymity_homogeneity_class \<E> = (\<chi> p. vote_fraction\<^sub>\<Q> (ord2pref p) \<E>)"
 
@@ -1531,10 +1531,11 @@ next
       have "\<forall> p. fst (fraction' p) \<in> \<nat> \<and> snd (fraction' p) \<in> \<nat>"
       using nonneg_int_cases of_nat_in_Nats order_less_le
       by metis
-    hence "\<forall> p. \<exists> (n::nat) (m::nat). fst (fraction' p) = n \<and> snd (fraction' p) = m"
+    hence "\<forall> p. \<exists> (n :: nat) (m :: nat).
+      fst (fraction' p) = n \<and> snd (fraction' p) = m"
       using Nats_cases
       by metis
-    hence "\<forall> p. \<exists> m::nat \<times> nat. fst (fraction' p) = int (fst m)
+    hence "\<forall> p. \<exists> m :: nat \<times> nat. fst (fraction' p) = int (fst m)
             \<and> snd (fraction' p) = int (snd m)"
       by simp
     then obtain fraction :: "'a Ordered_Preference \<Rightarrow> (nat \<times> nat)" where

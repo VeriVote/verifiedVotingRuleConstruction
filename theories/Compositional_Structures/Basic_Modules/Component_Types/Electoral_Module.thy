@@ -120,8 +120,12 @@ text \<open>
   via the rename function.
 \<close>
 
-fun anonymity' :: "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'r) Electoral_Module \<Rightarrow> bool" where
-  "anonymity' X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (anonymity\<^sub>\<R> X))"
+fun anonymity_in :: "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'r) Electoral_Module \<Rightarrow>
+        bool" where
+  "anonymity_in X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (anonymity\<^sub>\<R> X))"
+
+fun anonymity' :: "('a, 'v, 'r) Electoral_Module \<Rightarrow> bool" where
+  "anonymity' m = anonymity_in well_formed_elections m"
 
 subsubsection \<open>Homogeneity\<close>
 
@@ -133,25 +137,31 @@ text \<open>
   implies anonymity.
 \<close>
 
-fun (in result) homogeneity :: "('a, 'v) Election set \<Rightarrow>
-        ('a, 'v, ('r Result)) Electoral_Module \<Rightarrow> bool" where
-  "homogeneity X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R> X))"
+fun homogeneity_in :: "('a, 'v) Election set \<Rightarrow>
+        ('a, 'v, 'r Result) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity_in X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R> X))"
 \<comment> \<open>This does not require any specific behaviour on infinite voter sets \<open>\<dots>\<close>
     It might make sense to extend the definition to that case somehow.\<close>
 
-fun homogeneity' :: "('a, 'v :: linorder) Election set \<Rightarrow>
-        ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
-  "homogeneity' X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R>' X))"
+fun homogeneity :: "('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity m = homogeneity_in finite_elections_\<V> m"
 
-lemma (in result) hom_imp_anon:
+fun homogeneity'_in :: "('a, 'v :: linorder) Election set \<Rightarrow>
+        ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity'_in X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R>' X))"
+
+fun homogeneity' :: "('a, 'v :: linorder, 'b Result) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity' m = homogeneity'_in finite_elections_\<V> m"
+
+lemma hom_imp_anon:
   fixes
     X :: "('a, 'v) Election set" and
     m :: "('a, 'v, ('r Result)) Electoral_Module"
   assumes
-    "homogeneity X m" and
+    "homogeneity_in X m" and
     "\<forall> E \<in> X. finite (voters_\<E> E)"
-  shows "anonymity' X m"
-proof (unfold anonymity'.simps is_symmetry.simps, intro allI impI)
+  shows "anonymity_in X m"
+proof (unfold anonymity_in.simps is_symmetry.simps, intro allI impI)
   fix E E' :: "('a, 'v) Election"
   assume rel: "(E, E') \<in> anonymity\<^sub>\<R> X"
   then obtain \<pi> :: "'v \<Rightarrow> 'v" where
@@ -182,7 +192,7 @@ proof (unfold anonymity'.simps is_symmetry.simps, intro allI impI)
     by metis
   ultimately show "fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
     using assms in_election_set
-    unfolding homogeneity.simps is_symmetry.simps homogeneity\<^sub>\<R>.simps
+    unfolding homogeneity_in.simps is_symmetry.simps homogeneity\<^sub>\<R>.simps
     by blast
 qed
 
@@ -193,11 +203,15 @@ text \<open>
   candidates in the candidate set and election results.
 \<close>
 
-fun (in result_properties) neutrality :: "('a, 'v) Election set \<Rightarrow>
+fun (in result_properties) neutrality_in :: "('a, 'v) Election set \<Rightarrow>
         ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
-  "neutrality X m =
+  "neutrality_in X m =
     is_symmetry (fun\<^sub>\<E> m) (action_induced_equivariance (carrier neutrality\<^sub>\<G>) X
           (\<phi>_neutral X) (result_action \<psi>_neutral))"
+
+fun (in result_properties) neutrality :: "('a, 'v, 'b Result) Electoral_Module \<Rightarrow>
+        bool" where
+  "neutrality m = neutrality_in well_formed_elections m"
 
 subsection \<open>Social-Welfare Properties\<close>
 
@@ -208,11 +222,14 @@ text \<open>
   reverses the result rankings as well.
 \<close>
 
-definition reversal_symmetry :: "('a, 'v) Election set \<Rightarrow>
+definition reversal_symmetry_in :: "('a, 'v) Election set \<Rightarrow>
         ('a, 'v, 'a rel Result) Electoral_Module \<Rightarrow> bool" where
-  "reversal_symmetry X m \<equiv>
+  "reversal_symmetry_in X m \<equiv>
     is_symmetry (fun\<^sub>\<E> m) (action_induced_equivariance (carrier reversal\<^sub>\<G>) X
           (\<phi>_reverse X) (result_action \<psi>_reverse))"
+
+fun reversal_symmetry :: "('a, 'v, 'a rel Result) Electoral_Module \<Rightarrow> bool" where
+  "reversal_symmetry m = reversal_symmetry_in well_formed_elections m"
 
 subsection \<open>Social-Choice Modules\<close>
 

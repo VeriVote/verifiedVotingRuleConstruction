@@ -156,7 +156,7 @@ qed
 
 lemma listset_finiteness:
   fixes l :: "'a set list"
-  assumes "\<forall> i::nat. i < length l \<longrightarrow> finite (l!i)"
+  assumes "\<forall> i :: nat. i < length l \<longrightarrow> finite (l!i)"
   shows "finite (listset l)"
   using assms
 proof (induct l)
@@ -168,13 +168,13 @@ next
   fix
     a :: "'a set" and
     l :: "'a set list"
-  assume "\<forall> i::nat < length (a#l). finite ((a#l)!i)"
+  assume "\<forall> i :: nat < length (a#l). finite ((a#l)!i)"
   hence
     "finite a" and
     "\<forall> i < length l. finite (l!i)"
     by auto
   moreover assume
-    "\<forall> i::nat < length l. finite (l!i) \<Longrightarrow> finite (listset l)"
+    "\<forall> i :: nat < length l. finite (l!i) \<Longrightarrow> finite (listset l)"
   ultimately have "finite {a'#l' | a' l'. a' \<in> a \<and> l' \<in> (listset l)}"
     using list_cons_presv_finiteness
     by blast
@@ -186,7 +186,7 @@ lemma ls_entries_empty_imp_ls_set_empty:
   fixes l :: "'a set list"
   assumes
     "0 < length l" and
-    "\<forall> i ::nat. i < length l \<longrightarrow> l!i = {}"
+    "\<forall> i :: nat. i < length l \<longrightarrow> l!i = {}"
   shows "listset l = {}"
   using assms
 proof (induct l)
@@ -199,7 +199,7 @@ next
     a :: "'a set" and
     l :: "'a set list" and
     l' :: "'a list"
-  assume all_elems_empty: "\<forall> i::nat < length (a#l). (a#l)!i = {}"
+  assume all_elems_empty: "\<forall> i :: nat < length (a#l). (a#l)!i = {}"
   hence "a = {}"
     by auto
   moreover from all_elems_empty
@@ -475,6 +475,14 @@ proof (unfold electoral_module.simps, safe)
     unfolding result_def
     by simp
 qed
+
+subsection \<open>Properties\<close>
+
+fun distance_decisiveness :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election Distance \<Rightarrow>
+        ('a, 'v, 'r Result) Electoral_Module \<Rightarrow> bool" where
+  "distance_decisiveness X d m =
+    (\<nexists> E. E \<in> X
+    \<and> (\<exists> \<delta> > 0. \<forall> E' \<in> X. d E E' < \<delta> \<longrightarrow> card (elect_r (fun\<^sub>\<E> m E')) > 1))"
 
 subsection \<open>Inference Rules\<close>
 
