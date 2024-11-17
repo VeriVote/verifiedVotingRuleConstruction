@@ -1277,7 +1277,7 @@ next
           sum (\<lambda> p. Fract (vote_count p E) ?sum) UNIV"
       unfolding vote_fraction.simps
       by presburger
-    moreover have fin_impl_sum_gt_zero:
+    moreover have fin_imp_sum_gt_zero:
       "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {} \<longrightarrow> ?sum > 0"
       using eq_card
       by fastforce
@@ -1289,10 +1289,10 @@ next
       by (metis (no_types, lifting))
     moreover have
       "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {} \<longrightarrow> Fract ?sum ?sum = 1"
-      using fin_impl_sum_gt_zero Fract_le_one_iff Fract_less_one_iff
+      using fin_imp_sum_gt_zero Fract_le_one_iff Fract_less_one_iff
             of_nat_0_less_iff order_le_less order_less_irrefl
       by metis
-    ultimately have fin_impl_sum_eq_one:
+    ultimately have fin_imp_sum_eq_one:
       "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {}
         \<longrightarrow> sum (\<lambda> p. vote_fraction p E) UNIV = 1"
       by presburger
@@ -1335,7 +1335,7 @@ next
       by auto
     hence "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {}
         \<longrightarrow> sum (\<lambda> p. vote_fraction (ord2pref p) E) UNIV = 1"
-      using fin_impl_sum_eq_one
+      using fin_imp_sum_eq_one
       by presburger
     hence "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {}
         \<longrightarrow> sum (\<lambda> p. real_of_rat (vote_fraction (ord2pref p) E)) UNIV = 1"

@@ -64,17 +64,17 @@ definition profile :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profil
 abbreviation finite_profile :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> bool" where
   "finite_profile V A p \<equiv> finite A \<and> finite V \<and> profile V A p"
 
-abbreviation finite_election :: "('a,'v) Election \<Rightarrow> bool" where
+abbreviation finite_election :: "('a, 'v) Election \<Rightarrow> bool" where
   "finite_election E \<equiv> finite_profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)"
 
 definition finite_elections_\<V> :: "('a, 'v) Election set" where
-  "finite_elections_\<V> = {E :: ('a, 'v) Election. finite (voters_\<E> E)}"
+  "finite_elections_\<V> \<equiv> {E :: ('a, 'v) Election. finite (voters_\<E> E)}"
 
 definition finite_elections :: "('a, 'v) Election set" where
-  "finite_elections = {E :: ('a, 'v) Election. finite_election E}"
+  "finite_elections \<equiv> {E :: ('a, 'v) Election. finite_election E}"
 
-definition well_formed_elections :: "('a,'v) Election set" where
-  "well_formed_elections = {E. profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)}"
+definition well_formed_elections :: "('a, 'v) Election set" where
+  "well_formed_elections \<equiv> {E. profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)}"
 
 \<comment> \<open>This function subsumes elections with fixed alternatives, finite voters, and
     a default value for the profile value on non-voters.\<close>
@@ -387,7 +387,7 @@ text \<open>
   A profile on a voter set that has a natural order can be viewed as a list of ballots.
 \<close>
 
-fun to_list :: "'v::linorder set \<Rightarrow> ('a, 'v) Profile \<Rightarrow>
+fun to_list :: "'v :: linorder set \<Rightarrow> ('a, 'v) Profile \<Rightarrow>
         ('a Preference_Relation) list" where
   "to_list V p = (if (finite V)
                     then (map p (sorted_list_of_set V))
@@ -415,7 +415,7 @@ qed
 lemma to_list_simp:
   fixes
     i :: "nat" and
-    V :: "'v::linorder set" and
+    V :: "'v :: linorder set" and
     p :: "('a, 'v) Profile"
   assumes "i < card V"
   shows "(to_list V p)!i = p ((sorted_list_of_set V)!i)"
@@ -429,7 +429,7 @@ qed
 
 lemma to_list_comp:
   fixes
-    V :: "'v::linorder set" and
+    V :: "'v :: linorder set" and
     p :: "('a, 'v) Profile" and
     f :: "'a rel \<Rightarrow> 'a rel"
   shows "to_list V (f \<circ> p) = map f (to_list V p)"
@@ -559,7 +559,7 @@ qed
 
 lemma to_list_permutes_under_bij:
   fixes
-    \<pi> :: "'v::linorder \<Rightarrow> 'v" and
+    \<pi> :: "'v :: linorder \<Rightarrow> 'v" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   assumes "bij \<pi>"
@@ -673,11 +673,11 @@ text \<open>
 
 fun win_count :: "'v set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> enat" where
   "win_count V p a = (if (finite V)
-    then card {v \<in> V. above (p v) a = {a}} else infinity)"
+    then card {v \<in> V. above (p v) a = {a}} else \<infinity>)"
 
 fun prefer_count :: "'v set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> enat" where
   "prefer_count V p x y = (if (finite V)
-      then card {v \<in> V. (let r = (p v) in (y \<preceq>\<^sub>r x))} else infinity)"
+      then card {v \<in> V. (let r = (p v) in (y \<preceq>\<^sub>r x))} else \<infinity>)"
 
 lemma pref_count_voter_set_card:
   fixes

@@ -19,7 +19,7 @@ text \<open>
 
 subsection \<open>Common Rationalizations\<close>
 
-fun swap_\<R> :: "('a, 'v::linorder, 'a Result) Consensus_Class \<Rightarrow>
+fun swap_\<R> :: "('a, 'v :: linorder, 'a Result) Consensus_Class \<Rightarrow>
         ('a, 'v, 'a Result) Electoral_Module" where
   "swap_\<R> K = \<S>\<C>\<F>_result.distance_\<R> (votewise_distance swap l_one) K"
 
@@ -33,7 +33,7 @@ lemma votewise_non_voters_irrelevant:
 proof (unfold voters_determine_distance_def, clarify)
   fix
     A A' :: "'a set" and
-    V V' :: "'v::linorder set" and
+    V V' :: "'v :: linorder set" and
     p p' q :: "('a, 'v) Profile"
   assume coincide: "\<forall> v \<in> V. p v = q v"
   have "\<forall> i < length (sorted_list_of_set V). (sorted_list_of_set V)!i \<in> V"
@@ -56,7 +56,7 @@ lemma swap_standard: "standard (votewise_distance swap l_one)"
 proof (unfold standard_def, clarify)
   fix
     A A' :: "'a set" and
-    V V' :: "'v::linorder set" and
+    V V' :: "'v :: linorder set" and
     p p' :: "('a, 'v) Profile"
   assume assms: "V \<noteq> V' \<or> A \<noteq> A'"
   let ?l = "(\<lambda> l1 l2. (map2 (\<lambda> q q'. swap (A, q) (A', q')) l1 l2))"
@@ -120,7 +120,7 @@ type_synonym ('a, 'v) dist_rat_std_type = "('a, 'v) Election Distance \<Rightarr
 type_synonym ('a, 'v) dist_type = "('a, 'v) Election Distance \<Rightarrow>
   ('a, 'v, 'a Result) Consensus_Class \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module"
 
-lemma equal_score_swap: "(score :: ('a, 'v::linorder) score_type)
+lemma equal_score_swap: "(score :: ('a, 'v :: linorder) score_type)
         (votewise_distance swap l_one) = score_std (votewise_distance swap l_one)"
   using votewise_non_voters_irrelevant swap_standard
         \<S>\<C>\<F>_result.standard_distance_imp_equal_score

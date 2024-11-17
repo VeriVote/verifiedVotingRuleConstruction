@@ -25,7 +25,7 @@ fun result_action :: "('x, 'r) binary_fun \<Rightarrow> ('x, 'r Result) binary_f
 subsubsection \<open>Anonymity\<close>
 
 definition anonymity\<^sub>\<G> :: "('v \<Rightarrow> 'v) monoid" where
-  "anonymity\<^sub>\<G> = BijGroup (UNIV :: 'v set)"
+  "anonymity\<^sub>\<G> \<equiv> BijGroup (UNIV :: 'v set)"
 
 fun \<phi>_anon :: "('a, 'v) Election set \<Rightarrow> ('v \<Rightarrow> 'v) \<Rightarrow>
         (('a, 'v) Election \<Rightarrow> ('a, 'v) Election)" where
@@ -44,7 +44,7 @@ fun alternatives_rename :: "('a \<Rightarrow> 'a, ('a, 'v) Election) binary_fun"
       (\<pi> ` (alternatives_\<E> \<E>), voters_\<E> \<E>, (rel_rename \<pi>) \<circ> (profile_\<E> \<E>))"
 
 definition neutrality\<^sub>\<G> :: "('a \<Rightarrow> 'a) monoid" where
-  "neutrality\<^sub>\<G> = BijGroup (UNIV :: 'a set)"
+  "neutrality\<^sub>\<G> \<equiv> BijGroup (UNIV :: 'a set)"
 
 fun \<phi>_neutral :: "('a, 'v) Election set \<Rightarrow>
         ('a \<Rightarrow> 'a, ('a, 'v) Election) binary_fun" where
@@ -73,7 +73,7 @@ fun copy_list :: "nat \<Rightarrow> 'x list \<Rightarrow> 'x list" where
   "copy_list 0 l = []" |
   "copy_list (Suc n) l = copy_list n l @ l"
 
-fun homogeneity\<^sub>\<R>' :: "('a, 'v::linorder) Election set \<Rightarrow> ('a, 'v) Election rel" where
+fun homogeneity\<^sub>\<R>' :: "('a, 'v :: linorder) Election set \<Rightarrow> ('a, 'v) Election rel" where
   "homogeneity\<^sub>\<R>' \<E> =
       {(E, E'). E \<in> \<E>
         \<and>  alternatives_\<E> E = alternatives_\<E> E'
@@ -91,7 +91,7 @@ fun rel_app :: "('a rel \<Rightarrow> 'a rel) \<Rightarrow> ('a, 'v) Election \<
   "rel_app f (A, V, p) = (A, V, f \<circ> p)"
 
 definition reversal\<^sub>\<G> :: "('a rel \<Rightarrow> 'a rel) monoid" where
-  "reversal\<^sub>\<G> = \<lparr>carrier = {reverse_rel, id}, monoid.mult = comp, one = id\<rparr>"
+  "reversal\<^sub>\<G> \<equiv> \<lparr>carrier = {reverse_rel, id}, monoid.mult = comp, one = id\<rparr>"
 
 fun \<phi>_reverse :: "('a, 'v) Election set
                 \<Rightarrow> ('a rel \<Rightarrow> 'a rel, ('a, 'v) Election) binary_fun" where
@@ -1621,7 +1621,7 @@ qed
 subsection \<open>Homogeneity Lemmas\<close>
 
 definition reflp_on' :: "'a set \<Rightarrow> 'a rel \<Rightarrow> bool" where
-    "reflp_on' A r \<longleftrightarrow> reflp_on A (\<lambda> x y. (x, y) \<in> r)"
+    "reflp_on' A r \<equiv> reflp_on A (\<lambda> x y. (x, y) \<in> r)"
 
 lemma refl_homogeneity\<^sub>\<R>:
   fixes \<E> :: "('a, 'v) Election set"
@@ -1637,7 +1637,7 @@ lemma (in result) homogeneity:
   by simp
 
 lemma refl_homogeneity\<^sub>\<R>':
-  fixes \<E> :: "('a, 'v::linorder) Election set"
+  fixes \<E> :: "('a, 'v :: linorder) Election set"
   assumes "\<E> \<subseteq> finite_elections_\<V>"
   shows "reflp_on' \<E> (homogeneity\<^sub>\<R>' \<E>)"
   using assms

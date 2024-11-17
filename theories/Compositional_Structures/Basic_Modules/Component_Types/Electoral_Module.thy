@@ -139,7 +139,7 @@ fun (in result) homogeneity :: "('a, 'v) Election set \<Rightarrow>
 \<comment> \<open>This does not require any specific behaviour on infinite voter sets \<open>\<dots>\<close>
     It might make sense to extend the definition to that case somehow.\<close>
 
-fun homogeneity' :: "('a, 'v::linorder) Election set \<Rightarrow>
+fun homogeneity' :: "('a, 'v :: linorder) Election set \<Rightarrow>
         ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
   "homogeneity' X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R>' X))"
 
@@ -210,7 +210,7 @@ text \<open>
 
 definition reversal_symmetry :: "('a, 'v) Election set \<Rightarrow>
         ('a, 'v, 'a rel Result) Electoral_Module \<Rightarrow> bool" where
-  "reversal_symmetry X m =
+  "reversal_symmetry X m \<equiv>
     is_symmetry (fun\<^sub>\<E> m) (action_induced_equivariance (carrier reversal\<^sub>\<G>) X
           (\<phi>_reverse X) (result_action \<psi>_reverse))"
 
@@ -276,8 +276,7 @@ definition indep_of_alt :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> '
       \<and> (\<forall> p q. equiv_prof_except_a V A p q a \<longrightarrow> m V A p = m V A q)"
 
 definition unique_winner_if_profile_non_empty :: "('a, 'v, 'a Result)
-        Electoral_Module \<Rightarrow>
-        bool" where
+        Electoral_Module \<Rightarrow> bool" where
   "unique_winner_if_profile_non_empty m \<equiv>
     \<S>\<C>\<F>_result.electoral_module m \<and>
     (\<forall> A V p. (A \<noteq> {} \<and> V \<noteq> {} \<and> profile V A p) \<longrightarrow>
@@ -374,7 +373,7 @@ lemma result_presv_alts:
 proof (safe)
   fix a :: "'a"
   have
-    partition_impl_existence:
+    partition_imp_exist:
     "\<forall> p'. set_equals_partition A p'
       \<longrightarrow> (\<exists> E R D. p' = (E, R, D) \<and> E \<union> R \<union> D = A)" and
     partition_A:
@@ -383,21 +382,21 @@ proof (safe)
     by (simp, simp)
   {
     assume "a \<in> elect m V A p"
-    with partition_impl_existence partition_A
+    with partition_imp_exist partition_A
     show "a \<in> A"
       using UnI1 fstI
       by (metis (no_types))
   }
   {
     assume "a \<in> reject m V A p"
-    with partition_impl_existence partition_A
+    with partition_imp_exist partition_A
     show "a \<in> A"
       using UnI1 fstI sndI subsetD sup_ge2
       by metis
   }
   {
     assume "a \<in> defer m V A p"
-    with partition_impl_existence partition_A
+    with partition_imp_exist partition_A
     show "a \<in> A"
       using sndI subsetD sup_ge2
       by metis
@@ -407,7 +406,7 @@ proof (safe)
       "a \<in> A" and
       "a \<notin> defer m V A p" and
       "a \<notin> reject m V A p"
-    with partition_impl_existence partition_A
+    with partition_imp_exist partition_A
     show "a \<in> elect m V A p"
       using fst_conv snd_conv Un_iff
       by metis

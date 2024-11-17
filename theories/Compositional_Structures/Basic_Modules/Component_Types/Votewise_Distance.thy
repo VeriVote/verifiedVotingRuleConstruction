@@ -20,7 +20,7 @@ text \<open>
 subsection \<open>Definition\<close>
 
 fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm \<Rightarrow>
-        ('a,'v::linorder) Election Distance" where
+        ('a, 'v :: linorder) Election Distance" where
   "votewise_distance d n (A, V, p) (A', V', p') =
     (if (finite V) \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')
     then n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))
@@ -82,7 +82,7 @@ lemma permute_invariant_under_map:
 
 lemma linorder_rank_injective:
   fixes
-    V :: "'v::linorder set" and
+    V :: "'v :: linorder set" and
     v v' :: "'v"
   assumes
     v_in_V: "v \<in> V" and
@@ -121,7 +121,7 @@ lemma symmetric_norm_imp_distance_anonymous:
 proof (unfold distance_anonymity_def, safe)
   fix
     A A' :: "'a set" and
-    V V' :: "'v::linorder set" and
+    V V' :: "'v :: linorder set" and
     p p' :: "('a, 'v) Profile" and
     \<pi> :: "'v \<Rightarrow> 'v"
   let ?rn1 = "rename \<pi> (A, V, p)" and
@@ -315,7 +315,7 @@ lemma neutral_dist_imp_neutral_votewise_dist:
 proof (unfold distance_neutrality.simps rewrite_invariance\<^sub>\<D>, safe)
   fix
     A A' :: "'a set" and
-    V V' :: "'v::linorder set" and
+    V V' :: "'v :: linorder set" and
     p p' :: "('a, 'v) Profile" and
     \<pi> :: "'a \<Rightarrow> 'a"
   assume

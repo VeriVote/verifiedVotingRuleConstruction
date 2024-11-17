@@ -27,7 +27,7 @@ subsubsection \<open>Auxiliary Lemmas\<close>
 
 lemma rewrite_arg_min_set:
   fixes
-    f :: "'a \<Rightarrow> 'b::linorder" and
+    f :: "'a \<Rightarrow> 'b :: linorder" and
     A :: "'a set"
   shows "arg_min_set f A = \<Union> (preimg f A ` {y \<in> (f ` A). \<forall> z \<in> f ` A. y \<le> z})"
 proof (safe)
@@ -830,7 +830,7 @@ qed
 
 theorem (in result) tot_hom_dist_imp_hom_dr':
   fixes
-    d :: "('a, 'v::linorder) Election Distance" and
+    d :: "('a, 'v :: linorder) Election Distance" and
     C :: "('a, 'v, 'r Result) Consensus_Class"
   assumes "distance_homogeneity' finite_elections_\<V> d"
   shows "homogeneity' finite_elections_\<V> (distance_\<R> d C)"

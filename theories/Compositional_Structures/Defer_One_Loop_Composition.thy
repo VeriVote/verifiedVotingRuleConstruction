@@ -34,4 +34,17 @@ fun iter_elect :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow>
         ('a, 'v, 'a Result) Electoral_Module" where
   "iter_elect m = elector (m \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d)"
 
+
+subsection \<open>Soundness\<close>
+
+theorem defer_one_loop_comp_sound:
+  fixes
+    m :: "('a, 'v, 'a Result) Electoral_Module" and
+    t :: "'a Termination_Condition"
+  assumes "\<S>\<C>\<F>_result.electoral_module m"
+  shows "\<S>\<C>\<F>_result.electoral_module (m \<circlearrowleft>\<^sub>\<exists>\<^sub>!\<^sub>d)"
+  using assms loop_comp_sound
+  unfolding Defer_One_Loop_Composition.iter.simps
+  by metis
+
 end

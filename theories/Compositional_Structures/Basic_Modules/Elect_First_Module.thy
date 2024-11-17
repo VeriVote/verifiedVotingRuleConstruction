@@ -16,10 +16,10 @@ text \<open>
 
 subsection \<open>Definition\<close>
 
-fun least :: "'v::wellorder set \<Rightarrow> 'v" where
+fun least :: "'v :: wellorder set \<Rightarrow> 'v" where
   "least V = (Least (\<lambda> v. v \<in> V))"
 
-fun elect_first_module :: "('a, 'v::wellorder, 'a Result) Electoral_Module" where
+fun elect_first_module :: "('a, 'v :: wellorder, 'a Result) Electoral_Module" where
   "elect_first_module V A p =
     ({a \<in> A. above (p (least V)) a = {a}},
     {a \<in> A. above (p (least V)) a \<noteq> {a}},
@@ -31,7 +31,7 @@ theorem elect_first_mod_sound: "\<S>\<C>\<F>_result.electoral_module elect_first
 proof (intro \<S>\<C>\<F>_result.electoral_modI allI impI)
   fix
     A :: "'a set" and
-    V :: "'v::wellorder set" and
+    V :: "'v :: wellorder set" and
     p :: "('a, 'v) Profile"
   have "{a \<in> A. above (p (least V)) a = {a}}
           \<union> {a \<in> A. above (p (least V)) a \<noteq> {a}} = A"

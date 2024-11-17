@@ -12,7 +12,7 @@ begin
 
 text \<open>
   A social welfare result contains three sets of relations:
-  elected, rejected, and deferred
+  elected, rejected, and deferred.
   A well-formed social welfare result consists only of linear
   orders on the alternatives.
 \<close>

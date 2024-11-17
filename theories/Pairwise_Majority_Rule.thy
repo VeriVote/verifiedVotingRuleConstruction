@@ -35,14 +35,14 @@ theorem pairwise_majority_rule_sound: "\<S>\<C>\<F>_result.electoral_module pair
   using condorcet_sound elector_sound
   by metis
 
-theorem condorcet'_rule_sound: "\<S>\<C>\<F>_result.electoral_module condorcet'"
+theorem condorcet'_sound: "\<S>\<C>\<F>_result.electoral_module condorcet'"
   using Defer_One_Loop_Composition.iter.elims loop_comp_sound min_elim_sound
   unfolding condorcet'.simps loop_comp_sound
   by metis
 
 theorem pairwise_majority_rule'_sound: "\<S>\<C>\<F>_result.electoral_module pairwise_majority_rule'"
   unfolding pairwise_majority_rule'.simps
-  using condorcet'_rule_sound elector_sound iter.simps iter_elect.simps loop_comp_sound
+  using condorcet'_sound elector_sound iter.simps iter_elect.simps loop_comp_sound
   by metis
 
 subsection \<open>Condorcet Consistency\<close>

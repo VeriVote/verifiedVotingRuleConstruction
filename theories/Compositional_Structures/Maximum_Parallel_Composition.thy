@@ -268,7 +268,7 @@ lemma max_agg_rej_iff_both_reject:
     m n :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a,'v) Profile" and
+    p :: "('a, 'v) Profile" and
     a :: "'a"
   assumes
     "finite_profile V A p" and

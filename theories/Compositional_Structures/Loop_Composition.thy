@@ -215,7 +215,7 @@ lemma loop_comp_code[code]:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   shows "loop_composition m t V A p =
-          (if (t ({},{},A))
+          (if (t ({}, {}, A))
             then (defer_module V A p) else (loop_comp_helper m m t) V A p)"
   by simp
 
@@ -475,7 +475,7 @@ proof (induct n arbitrary: acc rule: less_induct)
           q :: "('a, 'v) Profile" and
           a :: "'a"
         assume
-          a_in_def_impl_def_subset:
+          a_in_def_imp_def_subset:
           "\<forall> q' a'. a' \<in> defer (acc \<triangleright> m) V A p \<and> lifted V A p q' a' \<longrightarrow>
             defer (acc \<triangleright> m) V A q' \<subset> defer acc V A q'" and
           dli_acc: "defer_lift_invariance acc" and
@@ -964,7 +964,7 @@ next
     using def_mod_non_electing loop_comp_presv_non_electing_helper
           assms empty_iff loop_comp_code
     unfolding non_electing_def
-    by (metis (no_types))
+    by (metis (no_types, lifting))
 qed
 
 theorem iter_elim_def_n[simp]:
@@ -990,7 +990,6 @@ next
     p :: "('a, 'v) Profile"
   assume
     "n \<le> card A" and
-    "finite A" and
     "profile V A p"
   thus "card (defer (m \<circlearrowleft>\<^sub>t) V A p) = n"
     using iter_elim_def_n_helper assms

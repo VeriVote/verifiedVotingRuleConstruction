@@ -82,7 +82,7 @@ proof (unfold well_formed_def, safe)
   fix
     a :: "'a" and
     A :: "'a set" and
-    V V' :: "'v::wellorder set" and
+    V V' :: "'v :: wellorder set" and
     p p' :: "('a, 'v) Profile"
   let ?cond = "\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C>' a c"
   assume
@@ -152,7 +152,7 @@ proof (unfold well_formed_def, clarify)
  fix
     a :: "'a" and
     A :: "'a set" and
-    V V' :: "'v::wellorder set" and
+    V V' :: "'v :: wellorder set" and
     p p' :: "('a, 'v) Profile"
   let ?cond = "\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C>' r c"
   assume
@@ -190,7 +190,7 @@ lemma cons_domain_valid:
   fixes C :: "('a, 'v, 'r Result) Consensus_Class"
   shows "elections_\<K> C \<subseteq> well_formed_elections"
 proof
-  fix E :: "('a,'v) Election"
+  fix E :: "('a, 'v) Election"
   assume "E \<in> elections_\<K> C"
   hence "fun\<^sub>\<E> profile E"
     unfolding \<K>\<^sub>\<E>.simps
@@ -227,15 +227,15 @@ text \<open>
   Unanimity condition.
 \<close>
 
-definition unanimity :: "('a, 'v::wellorder, 'a Result) Consensus_Class" where
-  "unanimity = consensus_choice unanimity\<^sub>\<C> elect_first_module"
+definition unanimity :: "('a, 'v :: wellorder, 'a Result) Consensus_Class" where
+  "unanimity \<equiv> consensus_choice unanimity\<^sub>\<C> elect_first_module"
 
 text \<open>
   Strong unanimity condition.
 \<close>
 
-definition strong_unanimity :: "('a, 'v::wellorder, 'a Result) Consensus_Class" where
-  "strong_unanimity = consensus_choice strong_unanimity\<^sub>\<C> elect_first_module"
+definition strong_unanimity :: "('a, 'v :: wellorder, 'a Result) Consensus_Class" where
+  "strong_unanimity \<equiv> consensus_choice strong_unanimity\<^sub>\<C> elect_first_module"
 
 subsection \<open>Properties\<close>
 
@@ -479,7 +479,7 @@ lemma elect_first_winners_neutral: "is_symmetry (elect_r \<circ> fun\<^sub>\<E> 
 proof (unfold rewrite_equivariance, clarify)
   fix
     A :: "'a set" and
-    V :: "'v::wellorder set" and
+    V :: "'v :: wellorder set" and
     p :: "('a, 'v) Profile" and
     \<pi> :: "'a \<Rightarrow> 'a"
   assume

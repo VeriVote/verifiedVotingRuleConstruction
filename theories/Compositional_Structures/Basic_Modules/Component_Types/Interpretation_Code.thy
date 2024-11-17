@@ -104,12 +104,12 @@ text \<open>
   Constant aliases to use instead of the interpreted functions.
 \<close>
 
-definition "\<R>\<^sub>\<W>_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.\<R>\<^sub>\<W>"
-definition "\<R>\<^sub>\<W>_std_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std"
-definition "distance_\<R>_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.distance_\<R>"
-definition "distance_\<R>_std_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.distance_\<R>_std"
-definition "electoral_module_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.electoral_module"
-definition "anonymity_\<S>\<C>\<F>_code = \<S>\<C>\<F>_result.anonymity"
+definition "\<R>\<^sub>\<W>_\<S>\<C>\<F>_code \<equiv> \<S>\<C>\<F>_result.\<R>\<^sub>\<W>"
+definition "\<R>\<^sub>\<W>_std_\<S>\<C>\<F>_code \<equiv> \<S>\<C>\<F>_result.\<R>\<^sub>\<W>_std"
+definition "distance_\<R>_\<S>\<C>\<F>_code \<equiv> \<S>\<C>\<F>_result.distance_\<R>"
+definition "distance_\<R>_std_\<S>\<C>\<F>_code \<equiv> \<S>\<C>\<F>_result.distance_\<R>_std"
+definition "electoral_module_\<S>\<C>\<F>_code \<equiv> \<S>\<C>\<F>_result.electoral_module"
+definition "anonymity_\<S>\<C>\<F>_code \<equiv> \<S>\<C>\<F>_result.anonymity"
 
 setup Locale_Code.close_block
 
