@@ -121,8 +121,8 @@ theorem cons_conjunction_invariant:
   assumes "\<forall> C'. C' \<in> \<CC> \<longrightarrow> is_symmetry C' (Invariance rel)"
   shows "is_symmetry C (Invariance rel)"
 proof (unfold is_symmetry.simps, intro allI impI)
-  fix E E' :: "('a,'v) Election"
-  assume "(E,E') \<in> rel"
+  fix E E' :: "('a, 'v) Election"
+  assume "(E, E') \<in> rel"
   hence "\<forall> C' \<in> \<CC>. C' E = C' E'"
     using assms
     unfolding is_symmetry.simps

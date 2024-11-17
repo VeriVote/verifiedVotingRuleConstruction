@@ -340,7 +340,7 @@ lemma seq_comp_decrease_only_defer:
     m n :: "('a, 'v, 'a Result) Electoral_Module" and
     A :: "'a set" and
     V :: "'v set" and
-    p :: "('a,'v) Profile"
+    p :: "('a, 'v) Profile"
   assumes
     module_m: "\<S>\<C>\<F>_result.electoral_module m" and
     module_n: "\<S>\<C>\<F>_result.electoral_module n" and

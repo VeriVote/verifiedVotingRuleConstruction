@@ -101,7 +101,7 @@ lemma fin_\<K>\<^sub>\<E>:
   fixes C :: "('a, 'v, 'r Result) Consensus_Class"
   shows "elections_\<K> C \<subseteq> finite_elections"
 proof
-  fix E :: "('a,'v) Election"
+  fix E :: "('a, 'v) Election"
   assume "E \<in> elections_\<K> C"
   hence "finite_election E"
     unfolding \<K>\<^sub>\<E>.simps

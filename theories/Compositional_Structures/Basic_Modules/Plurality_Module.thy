@@ -29,9 +29,11 @@ fun plurality :: "('a, 'v, 'a Result) Electoral_Module" where
 
 fun plurality' :: "('a, 'v, 'a Result) Electoral_Module" where
   "plurality' V A p =
-    ({},
-     {a \<in> A. \<exists> x \<in> A. win_count V p x > win_count V p a},
-     {a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a})"
+      (if finite A
+        then ({},
+              {a \<in> A. \<exists> x \<in> A. win_count V p x > win_count V p a},
+              {a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a})
+        else ({}, {}, A))"
 
 lemma enat_leq_enat_set_max:
   fixes
@@ -44,205 +46,93 @@ lemma enat_leq_enat_set_max:
   using assms
   by simp
 
-lemma plurality_mod_elim_equiv:
+lemma plurality_mod_equiv:
   fixes
     A :: "'a set" and
     V :: "'v set" and
     p :: "('a, 'v) Profile"
-  assumes
-    non_empty_A: "A \<noteq> {}" and
-    fin_A: "finite A" and
-    prof: "profile V A p"
   shows "plurality V A p = plurality' V A p"
-proof (unfold plurality.simps plurality'.simps plurality_score.simps, standard)
-  have "fst (max_eliminator (\<lambda> V x A p. win_count V p x) V A p) = {}"
-    by simp
-  also have "\<dots> = fst ({},
-             {a \<in> A. \<exists> b \<in> A. win_count V p a < win_count V p b},
-             {a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a})"
-    by simp
-  finally show
-    "fst (max_eliminator (\<lambda> V x A p. win_count V p x) V A p) =
-      fst ({},
-            {a \<in> A. \<exists> b \<in> A. win_count V p a < win_count V p b},
-            {a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a})"
-    by simp
-next
-  let ?no_max =
-    "{a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} = A"
-  have "?no_max \<longrightarrow> {win_count V p x | x. x \<in> A} \<noteq> {}"
-    using non_empty_A
-    by blast
-  moreover have finite_winners: "finite {win_count V p x | x. x \<in> A}"
-    using fin_A
-    by simp
-  ultimately have exists_max: "?no_max \<longrightarrow> False"
+proof (unfold plurality'.simps)
+  have no_winners_or_in_domain:
+    "finite {win_count V p a | a. a \<in> A} \<longrightarrow>
+      {win_count V p a | a. a \<in> A} = {} \<or>
+        Max {win_count V p a | a. a \<in> A} \<in> {win_count V p a | a. a \<in> A}"
     using Max_in
-    by fastforce
-  have rej_eq:
-    "reject_r (max_eliminator (\<lambda> V b A p. win_count V p b) V A p) =
-      {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x}"
-  proof (unfold max_eliminator.simps less_eliminator.simps elimination_module.simps
-                elimination_set.simps, safe)
-    fix a :: "'a"
-    assume
-      "a \<in> reject_r
-        (if {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}} \<noteq> A
-        then ({},
-            {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}},
-            A - {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}})
-        else ({}, {}, A))"
-    moreover have
-      "A \<noteq> {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}}"
-      using exists_max
-      by metis
-    ultimately have
-      "a \<in> {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}}"
-      by force
-    thus "a \<in> A"
-      by fastforce
-  next
-    fix a :: "'a"
-    assume
-      reject_a:
-      "a \<in> reject_r
-          (if {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}} \<noteq> A
-          then ({},
-                {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}},
-                A - {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}})
-          else ({}, {}, A))"
-    hence elect_nonempty:
-      "{b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}} \<noteq> A"
-      by fastforce
-    obtain f :: "enat \<Rightarrow> bool" where
-      all_winners_possible: "\<forall> x. f x = (\<exists> y. x = win_count V p y \<and> y \<in> A)"
-      by fastforce
-    hence "finite (Collect f)"
-      using finite_winners
-      by presburger
-    hence max_winner_possible: "f (Max (Collect f))"
-      using all_winners_possible Max_in elect_nonempty
-      by blast
-    obtain g :: "'a \<Rightarrow> bool" where
-      all_losers_possible: "\<forall> x. g x = (x \<in> A \<and> win_count V p x < Max (Collect f))"
-      by moura
-    hence "a \<in> {a \<in> A. win_count V p a < Max {win_count V p a | a. a \<in> A}}
-            \<longrightarrow> a \<in> Collect g"
-      using all_winners_possible
-      by presburger
+    by blast
+  moreover have only_one_max:
+    "finite A \<longrightarrow>
+      {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x} =
+        {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}}"
+  proof
+    assume fin_A: "finite A"
+    hence "finite {win_count V p x | x. x \<in> A}"
+      by simp
     hence
-      "a \<in> {a \<in> A. win_count V p a < Max {win_count V p a | a. a \<in> A}}
-          \<longrightarrow> (\<exists> x \<in> A. win_count V p a < win_count V p x)"
-      using max_winner_possible all_losers_possible all_winners_possible mem_Collect_eq
-      by (metis (no_types))
-    thus "\<exists> x \<in> A. win_count V p a < win_count V p x"
-      using reject_a elect_nonempty
-      by simp
-  next
-    fix a b :: "'a"
-    assume
-      "b \<in> A" and
-      "win_count V p a < win_count V p b"
-    moreover from this have "\<exists> a. win_count V p b = win_count V p a \<and> a \<in> A"
+      "\<forall> a \<in> A. \<forall> b \<in> A. win_count V p a < win_count V p b \<longrightarrow>
+        win_count V p a < Max {win_count V p x | x. x \<in> A}"
+      using CollectI Max_gr_iff empty_Collect_eq
+      by (metis (mono_tags, lifting))
+    hence
+      "{a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x}
+        \<subseteq> {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}}"
       by blast
-    ultimately have "win_count V p a < Max {win_count V p a |a. a \<in> A}"
-      using finite_winners Max_gr_iff
-      by fastforce
-    moreover assume "a \<in> A"
-    ultimately have
-      "{a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} \<noteq> A
-          \<longrightarrow> a \<in> {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}}"
-      by force
     moreover have
-      "{a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} = A
-          \<longrightarrow> a \<in> {}"
-      using exists_max
-      by metis
+      "{a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}}
+        \<subseteq> {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x}"
+      using fin_A no_winners_or_in_domain
+      by fastforce
     ultimately show
-      "a \<in> reject_r
-          (if {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} \<noteq> A
-          then ({},
-              {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}},
-              A - {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}})
-          else ({}, {}, A))"
-      by simp
-  qed
-  have "defer_r (max_eliminator (\<lambda> V b A p. win_count V p b) V A p) =
-          {a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a}"
-  proof (unfold max_eliminator.simps less_eliminator.simps elimination_module.simps
-                elimination_set.simps, safe)
-    fix a :: "'a"
-    assume
-      "a \<in> defer_r
-        (if {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}} \<noteq> A
-        then ({},
-                {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}},
-                A - {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}})
-        else ({}, {}, A))"
-    moreover have
-      "A \<noteq> {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}}"
-      using exists_max
-      by metis
-    ultimately have
-      "a \<in> A - {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}}"
-      by force
-    thus "a \<in> A"
+      "{a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x} =
+        {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}}"
       by fastforce
-  next
-    fix a b :: "'a"
-    assume "b \<in> A"
-    hence "win_count V p b \<in> {win_count V p x | x. x \<in> A}"
-      by blast
-    hence "win_count V p b \<le> Max {win_count V p x | x. x \<in> A}"
+  qed
+  ultimately have
+    "finite A \<longrightarrow>
+      reject plurality V A p = {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x}"
+    by force
+  moreover have
+    "finite A \<longrightarrow>
+      defer plurality V A p = {a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a}"
+  proof
+    assume fin_A: "finite A"
+    have "{a \<in> A. \<exists> x \<in> A. win_count V p x > win_count V p a}
+          \<inter> {a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a} = {}"
+      by force
+    moreover have
+      "{a \<in> A. \<exists> x \<in> A. win_count V p x > win_count V p a}
+        \<union> {a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a} = A"
+      by force
+    ultimately have
+      "{a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a} =
+          A - {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}}"
+      using fin_A only_one_max Diff_cancel Int_Diff_Un Un_Diff inf_commute
+      by (metis (no_types, lifting))
+    moreover have
+      "{a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} = A \<longrightarrow>
+      {a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a} = A"
+      using fin_A no_winners_or_in_domain
+      by fastforce
+    ultimately show
+      "defer plurality V A p = {a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a}"
       using fin_A
-      by simp
-    moreover assume
-        "a \<in> defer_r
-          (if {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}} \<noteq> A
-          then ({},
-              {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}},
-              A - {b \<in> A. win_count V p b < Max {win_count V p x | x. x \<in> A}})
-          else ({}, {}, A))"
-    moreover have
-      "{a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}} \<noteq> A"
-      using exists_max
-      by metis
-    ultimately have "\<not> win_count V p a < win_count V p b"
-      using dual_order.strict_trans1
-      by force
-    thus "win_count V p b \<le> win_count V p a"
-      using linorder_le_less_linear
-      by metis
-  next
-    fix a :: "'a"
-    assume
-      a_in_A: "a \<in> A" and
-      win_count_lt_b: "\<forall> b \<in> A. win_count V p b \<le> win_count V p a"
-    then obtain f :: "enat \<Rightarrow> 'a" where
-      "\<forall> x. a \<in> A \<and> f x \<in> A
-          \<and> (\<not> (\<forall> b. x = win_count V p b \<longrightarrow> b \<notin> A) \<longrightarrow> win_count V p (f x) = x)"
-      by moura
-    moreover from this have
-      "f (Max {win_count V p x | x. x \<in> A}) \<in> A
-        \<longrightarrow> Max {win_count V p x | x. x \<in> A} \<le> win_count V p a"
-      using Max_in finite_winners win_count_lt_b
-      by fastforce
-    ultimately show
-      "a \<in> defer_r
-          (if {a \<in> A.
-            win_count V p a < Max {win_count V p x | x. x \<in> A}} \<noteq> A
-          then ({},
-                {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}},
-                A - {a \<in> A. win_count V p a < Max {win_count V p x | x. x \<in> A}})
-          else ({}, {}, A))"
       by force
   qed
-  thus "snd (max_eliminator (\<lambda> V b A p. win_count V p b) V A p) =
-    snd ({},
-         {a \<in> A. \<exists> b \<in> A. win_count V p a < win_count V p b},
-         {a \<in> A. \<forall> b \<in> A. win_count V p b \<le> win_count V p a})"
-    using snd_conv rej_eq prod.exhaust_sel
+  moreover have "elect plurality V A p = {}"
+    unfolding max_eliminator.simps less_eliminator.simps elimination_module.simps
+    by force
+  ultimately have
+    "finite A \<longrightarrow>
+      plurality V A p =
+        ({}, {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x},
+          {a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a})"
+    using split_pairs
     by (metis (no_types, lifting))
+  thus "plurality V A p =
+    (if finite A
+     then ({}, {a \<in> A. \<exists> x \<in> A. win_count V p a < win_count V p x},
+           {a \<in> A. \<forall> x \<in> A. win_count V p x \<le> win_count V p a})
+     else ({}, {}, A))"
+    by force
 qed
 
 subsection \<open>Soundness\<close>
@@ -296,6 +186,19 @@ lemma voters_determine_plurality: "voters_determine_election plurality"
   using voters_determine_max_elim voters_determine_plurality_score
   by blast
 
+lemma voters_determine_plurality': "voters_determine_election plurality'"
+proof (unfold voters_determine_election.simps, safe)
+  fix
+    A :: "'k set" and
+    V :: "'v set" and
+    p p' :: "('k, 'v) Profile"
+  assume "\<forall> v \<in> V. p v = p' v"
+  thus "plurality' V A p = plurality' V A p'"
+    using voters_determine_plurality plurality_mod_equiv
+    unfolding voters_determine_election.simps
+    by (metis (full_types))
+qed
+
 subsection \<open>Non-Blocking\<close>
 
 text \<open>
@@ -305,6 +208,11 @@ text \<open>
 theorem plurality_mod_non_blocking[simp]: "non_blocking plurality"
   unfolding plurality.simps
   using max_elim_non_blocking
+  by metis
+
+theorem plurality'_mod_non_blocking[simp]: "non_blocking plurality'"
+  using plurality_mod_non_blocking plurality_mod_equiv plurality'_sound
+  unfolding non_blocking_def
   by metis
 
 subsection \<open>Non-Electing\<close>
@@ -443,7 +351,7 @@ proof -
       by simp
     hence "defer plurality V A q = defer plurality V A p
             \<or> defer plurality V A q = {a}"
-      using plurality_mod_elim_equiv empty_not_insert insert_absorb lift_a
+      using plurality_mod_equiv lift_a
       unfolding Profile.lifted_def
       by (metis (no_types, opaque_lifting))
     thus ?thesis
@@ -465,10 +373,11 @@ proof -
       unfolding Profile.lifted_def
       by simp
     ultimately have "a \<in> defer plurality' V A p"
-      using plurality_mod_elim_equiv
+      using plurality_mod_equiv
       by metis
     hence a_in_win_p:
       "a \<in> {b \<in> A. \<forall> c \<in> A. win_count V p c \<le> win_count V p b}"
+      using fin_A
       by simp
     hence "\<forall> b \<in> A. win_count V p b \<le> win_count V p a"
       by simp
@@ -484,9 +393,10 @@ proof -
             b \<notin> {c \<in> A. \<forall> b \<in> A. win_count V q b \<le> win_count V q c}"
       by blast
     hence "\<forall> b \<in> A - {a}. b \<notin> defer plurality' V A q"
+      using fin_A
       by simp
     hence "\<forall> b \<in> A - {a}. b \<notin> defer plurality V A q"
-      using lift_a non_empty_A plurality_mod_elim_equiv
+      using lift_a non_empty_A plurality_mod_equiv
       unfolding Profile.lifted_def
       by (metis (no_types, lifting))
     hence "\<forall> b \<in> A - {a}. b \<notin> defer plurality V A q"
@@ -509,7 +419,7 @@ proof -
       hence "a \<in> defer plurality' V A q"
         by simp
       hence "a \<in> defer plurality V A q"
-        using plurality_mod_elim_equiv non_empty_A fin_A lift_a non_empty_A
+        using plurality_mod_equiv non_empty_A fin_A lift_a non_empty_A
         unfolding Profile.lifted_def
         by (metis (no_types))
       thus ?thesis
@@ -521,6 +431,20 @@ proof -
       by blast
   qed
 qed
+
+lemma plurality'_def_inv_mono_alts:
+  fixes
+    A :: "'a set" and
+    V :: "'v set" and
+    p q :: "('a, 'v) Profile" and
+    a :: "'a"
+  assumes
+    "a \<in> defer plurality' V A p" and
+    "lifted V A p q a"
+  shows "defer plurality' V A q = defer plurality' V A p
+          \<or> defer plurality' V A q = {a}"
+  using assms plurality_def_inv_mono_alts plurality_mod_equiv
+  by (metis (no_types))
 
 text \<open>
   The plurality rule is invariant-monotone.
@@ -549,5 +473,11 @@ next
           \<or> defer plurality V A q = {a}"
     by simp
 qed
+
+theorem plurality'_mod_def_inv_mono[simp]: "defer_invariant_monotonicity plurality'"
+  using plurality_mod_def_inv_mono plurality_mod_equiv
+        plurality'_non_electing plurality'_sound
+  unfolding defer_invariant_monotonicity_def
+  by metis
 
 end

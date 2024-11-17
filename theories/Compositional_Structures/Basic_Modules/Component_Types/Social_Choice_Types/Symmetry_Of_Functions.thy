@@ -34,7 +34,7 @@ fun action_induced_rel :: "'x set \<Rightarrow> 'y set \<Rightarrow> ('x, 'y) bi
 fun product :: "'x rel \<Rightarrow> ('x * 'x) rel" where
   "product r = {(p, p'). (fst p, fst p') \<in> r \<and> (snd p, snd p') \<in> r}"
 
-fun equivariance :: "'x set \<Rightarrow> 'y set \<Rightarrow> ('x,'y) binary_fun \<Rightarrow> ('y * 'y) rel" where
+fun equivariance :: "'x set \<Rightarrow> 'y set \<Rightarrow> ('x, 'y) binary_fun \<Rightarrow> ('y * 'y) rel" where
   "equivariance s t \<phi> =
       {((u, v), (x, y)). (u, v) \<in> t \<times> t \<and> (\<exists> z \<in> s. x = \<phi> z u \<and> y = \<phi> z v)}"
 
@@ -64,8 +64,8 @@ fun is_symmetry :: "('x \<Rightarrow> 'y) \<Rightarrow> ('x, 'y) symmetry \<Righ
   "is_symmetry f (Equivariance s \<tau>) = (\<forall> (\<phi>, \<psi>) \<in> \<tau>. \<forall> x \<in> s. f (\<phi> x) = \<psi> (f x))"
 
 definition action_induced_equivariance :: "'z set \<Rightarrow> 'x set \<Rightarrow> ('z, 'x) binary_fun \<Rightarrow>
-        ('z, 'y) binary_fun \<Rightarrow> ('x,'y) symmetry" where
-  "action_induced_equivariance t s \<phi> \<psi> = Equivariance s {(\<phi> z, \<psi> z) | z. z \<in> t}"
+        ('z, 'y) binary_fun \<Rightarrow> ('x, 'y) symmetry" where
+  "action_induced_equivariance t s \<phi> \<psi> \<equiv> Equivariance s {(\<phi> z, \<psi> z) | z. z \<in> t}"
 
 subsection \<open>Auxiliary Lemmas\<close>
 

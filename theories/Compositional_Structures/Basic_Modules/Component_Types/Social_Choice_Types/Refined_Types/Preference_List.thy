@@ -29,7 +29,7 @@ subsection \<open>Auxiliary Lemmas About Lists\<close>
 
 lemma is_arg_min_equal:
   fixes
-    f g :: "'a \<Rightarrow> 'b::ord" and
+    f g :: "'a \<Rightarrow> 'b :: ord" and
     S :: "'a set" and
     x :: "'a"
   assumes "\<forall> x \<in> S. f x = g x"

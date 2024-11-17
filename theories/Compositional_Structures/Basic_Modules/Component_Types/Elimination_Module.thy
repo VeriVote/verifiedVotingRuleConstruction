@@ -28,13 +28,12 @@ type_synonym ('a, 'v) Electoral_Set = "'v set \<Rightarrow> 'a set \<Rightarrow>
 
 fun elimination_set :: "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow>
         Threshold_Relation \<Rightarrow> ('a, 'v) Electoral_Set" where
- "elimination_set e t r V A p = {a \<in> A . r (e V a A p) t}"
+ "elimination_set e t r V A p = (if finite A then {a \<in> A . r (e V a A p) t} else {})"
 
 fun average :: "('a, 'v) Evaluation_Function \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow>
         Threshold_Value" where
   "average e V A p = (let sum = (\<Sum> x \<in> A. e V x A p) in
-                      (if (sum = infinity) then (infinity)
-                       else ((the_enat sum) div (card A))))"
+                      (if sum = \<infinity> then \<infinity> else (the_enat sum div (card A))))"
 
 subsection \<open>Social-Choice Definitions\<close>
 
@@ -476,7 +475,8 @@ next
       by (metis (mono_tags, lifting))
     hence elim_set: "(elimination_set e ?trsh (<) V A p) = A - {a}"
       unfolding elimination_set.simps
-      by blast
+      using f_prof
+      by fastforce
     case True
     hence
       "max_eliminator e V A p =
@@ -484,7 +484,7 @@ next
           (elimination_set e ?trsh (<) V A p),
           A - (elimination_set e ?trsh (<) V A p))"
       by simp
-    also have "\<dots> = ({},A - defer (max_eliminator e) V A p, {a})"
+    also have "\<dots> = ({}, A - defer (max_eliminator e) V A p, {a})"
       using elim_set winner
       by auto
     also have

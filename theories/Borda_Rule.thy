@@ -24,7 +24,7 @@ subsection \<open>Definition\<close>
 fun borda_rule :: "('a, 'v, 'a Result) Electoral_Module" where
   "borda_rule V A p = elector borda V A p"
 
-fun borda_rule\<^sub>\<R> :: "('a, 'v::wellorder, 'a Result) Electoral_Module" where
+fun borda_rule\<^sub>\<R> :: "('a, 'v :: wellorder, 'a Result) Electoral_Module" where
   "borda_rule\<^sub>\<R> V A p = swap_\<R> unanimity V A p"
 
 subsection \<open>Soundness\<close>

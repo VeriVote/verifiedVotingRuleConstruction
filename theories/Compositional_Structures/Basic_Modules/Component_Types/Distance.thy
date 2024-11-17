@@ -232,13 +232,13 @@ fun distance_reversal_symmetry :: "('a, 'v) Election set \<Rightarrow>
   "distance_reversal_symmetry X d =
         invariance\<^sub>\<D> d (carrier reversal\<^sub>\<G>) X (\<phi>_reverse X)"
 
-definition distance_homogeneity' :: "('a, 'v::linorder) Election set \<Rightarrow>
+definition distance_homogeneity' :: "('a, 'v :: linorder) Election set \<Rightarrow>
         ('a, 'v) Election Distance \<Rightarrow> bool" where
-  "distance_homogeneity' X d = total_invariance\<^sub>\<D> d (homogeneity\<^sub>\<R>' X)"
+  "distance_homogeneity' X d \<equiv> total_invariance\<^sub>\<D> d (homogeneity\<^sub>\<R>' X)"
 
 definition distance_homogeneity :: "('a, 'v) Election set \<Rightarrow>
         ('a, 'v) Election Distance \<Rightarrow> bool" where
-  "distance_homogeneity X d = total_invariance\<^sub>\<D> d (homogeneity\<^sub>\<R> X)"
+  "distance_homogeneity X d \<equiv> total_invariance\<^sub>\<D> d (homogeneity\<^sub>\<R> X)"
 
 subsubsection \<open>Auxiliary Lemmas\<close>
 
