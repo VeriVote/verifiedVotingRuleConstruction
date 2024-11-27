@@ -15,22 +15,39 @@ lemma election_equality_equiv:
   "election_equality E E' \<longrightarrow> election_equality E' F
       \<longrightarrow> election_equality E F"
 proof (safe)
-  have "\<forall> E. E = (fst E, fst (snd E), snd (snd E))"
+  have "election_equality
+    (fst E, fst (snd E), snd (snd E)) (fst E, fst (snd E), snd (snd E))"
+    unfolding election_equality.simps
+    by safe
+  thus "election_equality E E"
+    by clarsimp
+next
+  assume "election_equality E E'"
+  hence "election_equality
+    (fst E, fst (snd E), snd (snd E)) (fst E', fst (snd E'), snd (snd E'))"
     by simp
-  thus
-    "election_equality E E" and
-    "election_equality E E' \<Longrightarrow> election_equality E' E" and
-    "election_equality E E' \<Longrightarrow> election_equality E' F
-        \<Longrightarrow> election_equality E F"
-    using election_equality.simps[of
-            "fst E" "fst (snd E)" "snd (snd E)"]
-          election_equality.simps[of
-            "fst E'" "fst (snd E')" "snd (snd E')"
-            "fst E" "fst (snd E)" "snd (snd E)"]
-          election_equality.simps[of
-            "fst E'" "fst (snd E')" "snd (snd E')"
-            "fst F" "fst (snd F)" "snd (snd F)"]
-    by (metis, metis, metis)
+  hence "election_equality
+    (fst E', fst (snd E'), snd (snd E')) (fst E, fst (snd E), snd (snd E))"
+    unfolding election_equality.simps
+    by (metis (mono_tags, lifting))
+  thus "election_equality E' E"
+    by clarsimp
+next
+  assume
+    "election_equality E E'" and
+    "election_equality E' F"
+  hence
+    "election_equality
+      (fst E, fst (snd E), snd (snd E)) (fst E', fst (snd E'), snd (snd E'))" and
+    "election_equality
+      (fst E', fst (snd E'), snd (snd E')) (fst F, fst (snd F), snd (snd F))"
+    by (simp, simp)
+  hence "election_equality
+    (fst E, fst (snd E), snd (snd E)) (fst F, fst (snd F), snd (snd F))"
+    unfolding election_equality.simps
+    by (metis (no_types, lifting))
+  thus "election_equality E F"
+    by clarsimp
 qed
 
 quotient_type ('a, 'v) Election\<^sub>\<Q> =
@@ -40,18 +57,18 @@ quotient_type ('a, 'v) Election\<^sub>\<Q> =
   by simp
 
 fun fst\<^sub>\<Q> :: "('a, 'v) Election\<^sub>\<Q> \<Rightarrow> 'a set" where
-  "fst\<^sub>\<Q> E = Product_Type.fst (rep_Election\<^sub>\<Q> E)"
+  "fst\<^sub>\<Q> E = fst (rep_Election\<^sub>\<Q> E)"
 
 fun snd\<^sub>\<Q> :: "('a, 'v) Election\<^sub>\<Q> \<Rightarrow> 'v set \<times> ('a, 'v) Profile" where
-  "snd\<^sub>\<Q> E = Product_Type.snd (rep_Election\<^sub>\<Q> E)"
+  "snd\<^sub>\<Q> E = snd (rep_Election\<^sub>\<Q> E)"
 
 abbreviation alternatives_\<E>\<^sub>\<Q> :: "('a, 'v) Election\<^sub>\<Q> \<Rightarrow> 'a set" where
   "alternatives_\<E>\<^sub>\<Q> E \<equiv> fst\<^sub>\<Q> E"
 
 abbreviation voters_\<E>\<^sub>\<Q> :: "('a, 'v) Election\<^sub>\<Q> \<Rightarrow> 'v set" where
-  "voters_\<E>\<^sub>\<Q> E \<equiv> Product_Type.fst (snd\<^sub>\<Q> E)"
+  "voters_\<E>\<^sub>\<Q> E \<equiv> fst (snd\<^sub>\<Q> E)"
 
 abbreviation profile_\<E>\<^sub>\<Q> :: "('a, 'v) Election\<^sub>\<Q> \<Rightarrow> ('a, 'v) Profile" where
-  "profile_\<E>\<^sub>\<Q> E \<equiv> Product_Type.snd (snd\<^sub>\<Q> E)"
+  "profile_\<E>\<^sub>\<Q> E \<equiv> snd (snd\<^sub>\<Q> E)"
 
 end

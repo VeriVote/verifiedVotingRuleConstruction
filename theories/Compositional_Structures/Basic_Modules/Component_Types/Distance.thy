@@ -117,8 +117,8 @@ lemma distrib_ereal:
     f g :: "'a \<Rightarrow> int"
   shows "ereal (real_of_int ((\<Sum> a \<in> A. (f :: 'a \<Rightarrow> int) a) + (\<Sum> a \<in> A. g a))) =
     ereal (real_of_int ((\<Sum> a \<in> A. (f a) + (g a))))"
-  using distrib[of f]
-  by simp
+  using distrib
+  by metis
 
 lemma uneq_ereal:
   fixes x y :: "int"
@@ -221,11 +221,11 @@ definition distance_anonymity :: "('a, 'v) Election Distance \<Rightarrow> bool"
 
 fun distance_anonymity' :: "('a, 'v) Election set \<Rightarrow>
         ('a, 'v) Election Distance \<Rightarrow> bool" where
-  "distance_anonymity' X d = invariance\<^sub>\<D> d (carrier anonymity\<^sub>\<G>) X (\<phi>_anon X)"
+  "distance_anonymity' X d = invariance\<^sub>\<D> d (carrier bijection\<^sub>\<V>\<^sub>\<G>) X (\<phi>_anon X)"
 
 fun distance_neutrality :: "('a, 'v) Election set \<Rightarrow>
         ('a, 'v) Election Distance \<Rightarrow> bool" where
-  "distance_neutrality X d = invariance\<^sub>\<D> d (carrier neutrality\<^sub>\<G>) X (\<phi>_neutral X)"
+  "distance_neutrality X d = invariance\<^sub>\<D> d (carrier bijection\<^sub>\<A>\<^sub>\<G>) X (\<phi>_neutral X)"
 
 fun distance_reversal_symmetry :: "('a, 'v) Election set \<Rightarrow>
         ('a, 'v) Election Distance \<Rightarrow> bool" where
@@ -343,16 +343,16 @@ proof (safe)
     by (simp add: rev_image_eqI)
 qed
 
-lemma swap_neutral: "invariance\<^sub>\<D> swap (carrier neutrality\<^sub>\<G>)
+lemma swap_neutral: "invariance\<^sub>\<D> swap (carrier bijection\<^sub>\<A>\<^sub>\<G>)
                         UNIV (\<lambda> \<pi> (A, q). (\<pi> ` A, rel_rename \<pi> q))"
 proof (unfold rewrite_invariance\<^sub>\<D>, safe)
   fix
     \<pi> :: "'a \<Rightarrow> 'a" and
     A A' :: "'a set" and
     q q' :: "'a rel"
-  assume "\<pi> \<in> carrier neutrality\<^sub>\<G>"
+  assume "\<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G>"
   hence bij_\<pi>: "bij \<pi>"
-    unfolding neutrality\<^sub>\<G>_def
+    unfolding bijection\<^sub>\<A>\<^sub>\<G>_def
     using rewrite_carrier
     by blast
   show "swap (A, q) (A', q') =

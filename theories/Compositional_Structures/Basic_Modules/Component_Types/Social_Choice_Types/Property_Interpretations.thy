@@ -22,15 +22,15 @@ text \<open>
 \<close>
 
 locale result_properties = result +
-  fixes \<psi>_neutral :: "('a \<Rightarrow> 'a, 'b) binary_fun" and
-        voter_type :: "'v itself"
+  fixes \<psi> :: "('a \<Rightarrow> 'a, 'b) binary_fun" and
+        \<nu> :: "'v itself"
   assumes
-    action_neutral: "group_action neutrality\<^sub>\<G> UNIV \<psi>_neutral" and
+    action_neutral: "group_action bijection\<^sub>\<A>\<^sub>\<G> UNIV \<psi>" and
     neutrality:
       "is_symmetry (\<lambda> \<E> :: ('a, 'v) Election. limit (alternatives_\<E> \<E>) UNIV)
-                (action_induced_equivariance (carrier neutrality\<^sub>\<G>)
+                (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>)
                     well_formed_elections
-                    (\<phi>_neutral well_formed_elections) (set_action \<psi>_neutral))"
+                    (\<phi>_neutral well_formed_elections) (set_action \<psi>))"
 
 sublocale result_properties \<subseteq> result
   using result_axioms
@@ -41,14 +41,14 @@ subsection \<open>Interpretations\<close>
 global_interpretation \<S>\<C>\<F>_properties: "result_properties" "well_formed_\<S>\<C>\<F>"
         "limit_\<S>\<C>\<F>" "\<psi>_neutral\<^sub>\<c>"
   unfolding result_properties_def result_properties_axioms_def
-  using neutrality_\<S>\<C>\<F> \<psi>_neutral\<^sub>\<c>_action.group_action_axioms
+  using neutrality_action_presv_\<S>\<C>\<F>_symmetry \<psi>_neutral\<^sub>\<c>_action.group_action_axioms
         \<S>\<C>\<F>_result.result_axioms
   by blast
 
 global_interpretation \<S>\<W>\<F>_properties: "result_properties" "well_formed_\<S>\<W>\<F>"
         "limit_\<S>\<W>\<F>" "\<psi>_neutral\<^sub>\<w>"
   unfolding result_properties_def result_properties_axioms_def
-  using neutrality_\<S>\<W>\<F> \<psi>_neutral\<^sub>\<w>_action.group_action_axioms
+  using neutrality_action_presv_\<S>\<W>\<F>_symmetry \<psi>_neutral\<^sub>\<w>_action.group_action_axioms
         \<S>\<W>\<F>_result.result_axioms
   by blast
 

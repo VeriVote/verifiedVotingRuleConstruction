@@ -117,7 +117,7 @@ theorem cons_conjunction_invariant:
   fixes
     \<CC> :: "('a, 'v) Consensus set" and
     rel :: "('a, 'v) Election rel"
-  defines "C \<equiv> (\<lambda> E. (\<forall> C' \<in> \<CC>. C' E))"
+  defines "C \<equiv> \<lambda> E. \<forall> C' \<in> \<CC>. C' E"
   assumes "\<forall> C'. C' \<in> \<CC> \<longrightarrow> is_symmetry C' (Invariance rel)"
   shows "is_symmetry C (Invariance rel)"
 proof (unfold is_symmetry.simps, intro allI impI)
@@ -264,7 +264,7 @@ qed
 
 lemma eq_top_cons_anon: "consensus_anonymity equal_top\<^sub>\<C>"
   using equal_top_cons'_anonymous
-        ex_anon_cons_imp_cons_anonymous[of equal_top\<^sub>\<C> equal_top\<^sub>\<C>']
+        ex_anon_cons_imp_cons_anonymous[of "equal_top\<^sub>\<C>" "equal_top\<^sub>\<C>'"]
   by fastforce
 
 lemma eq_vote_cons'_anonymous:
@@ -278,24 +278,15 @@ proof (unfold consensus_anonymity_def Let_def, clarify)
     \<pi> :: "'v \<Rightarrow> 'v"
   assume
     bij_\<pi>: "bij \<pi>" and
-    prof_p: "profile V A p" and
-    renamed: "rename \<pi> (A, V, p) = (A', V', q)" and
-    eq_vote: "equal_vote\<^sub>\<C>' r (A, V, p)"
-  have "\<forall> v' \<in> V'. q v' = p ((the_inv \<pi>) v')"
-    using renamed
-    by auto
-  moreover have "\<forall> v' \<in> V'. (the_inv \<pi>) v' \<in> V"
-    using bij_\<pi> renamed rename.simps bij_is_inj
-          f_the_inv_into_f_bij_betw inj_image_mem_iff
+    renamed: "rename \<pi> (A, V, p) = (A', V', q)"
+  have "\<forall> v' \<in> V'. (the_inv \<pi>) v' \<in> V"
+    using bij_\<pi> renamed bij_is_inj inj_image_mem_iff
+          f_the_inv_into_f_bij_betw
     by fastforce
-  moreover have winner: "\<forall> v \<in> V. p v = r"
-    using eq_vote
-    by simp
-  ultimately have "\<forall> v' \<in> V'. q v' = r"
-    by simp
-  thus "equal_vote\<^sub>\<C>' r (A', V', q)"
-    unfolding equal_vote\<^sub>\<C>'.simps
-    by metis
+  moreover assume "equal_vote\<^sub>\<C>' r (A, V, p)"
+  ultimately show "equal_vote\<^sub>\<C>' r (A', V', q)"
+    using renamed
+    by force
 qed
 
 lemma eq_vote_cons_anonymous: "consensus_anonymity equal_vote\<^sub>\<C>"
@@ -347,10 +338,10 @@ proof (unfold well_formed_elections_def consensus_neutrality.simps is_symmetry.s
       using equal_voters perm_profile
       by metis
   }
-  assume "\<pi> \<in> carrier neutrality\<^sub>\<G>"
+  assume "\<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G>"
   hence "bij \<pi>"
     using rewrite_carrier
-    unfolding neutrality\<^sub>\<G>_def
+    unfolding bijection\<^sub>\<A>\<^sub>\<G>_def
     by blast
   hence "\<forall> a. the_inv \<pi> (\<pi> a) = a"
     using bij_is_inj the_inv_f_f

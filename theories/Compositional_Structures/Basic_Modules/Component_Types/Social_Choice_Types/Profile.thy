@@ -96,7 +96,7 @@ lemma vote_count_sum:
   assumes
     "finite (voters_\<E> E)" and
     "finite (UNIV :: ('a \<times> 'a) set)"
-  shows "sum (\<lambda> p. vote_count p E) UNIV = card (voters_\<E> E)"
+  shows "(\<Sum> p \<in> UNIV. vote_count p E) = card (voters_\<E> E)"
 proof (unfold vote_count.simps)
   have "\<forall> p. finite {v \<in> voters_\<E> E. profile_\<E> E v = p}"
     using assms
@@ -106,7 +106,7 @@ proof (unfold vote_count.simps)
     by blast
   moreover have partition:
     "voters_\<E> E = \<Union> {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
-    using Union_eq[of "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"]
+    using Union_eq
     by blast
   ultimately have card_eq_sum':
     "card (voters_\<E> E) =
@@ -185,11 +185,7 @@ proof (unfold vote_count.simps)
         sum card {{v \<in> voters_\<E> E. profile_\<E> E v = p}
             | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
     using sum_comp[of
-            "\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p}"
-            "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
-            "{{v \<in> voters_\<E> E. profile_\<E> E v = p}
-                | p. p \<in> UNIV \<and> {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"
-            "card"]
+            "\<lambda> p. {v \<in> voters_\<E> E. profile_\<E> E v = p}" _ _ "card"]
     unfolding comp_def
     by simp
   have "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}
@@ -406,10 +402,8 @@ proof -
           map (\<lambda> (x, y). f x y) (map (\<lambda> (x, y). (g x, h y)) (zip l l'))"
     using zip_map_map
     by metis
-  also have "\<dots> = map2 (\<lambda> x y. f (g x) (h y)) l l'"
-    by auto
-  finally show ?thesis
-    by presburger
+  thus ?thesis
+    by force
 qed
 
 lemma to_list_simp:
@@ -419,13 +413,8 @@ lemma to_list_simp:
     p :: "('a, 'v) Profile"
   assumes "i < card V"
   shows "(to_list V p)!i = p ((sorted_list_of_set V)!i)"
-proof -
-  have "(to_list V p)!i = (map p (sorted_list_of_set V))!i"
-    by simp
-  thus ?thesis
-    using assms
-    by simp
-qed
+  using assms
+  by force
 
 lemma to_list_comp:
   fixes
@@ -492,11 +481,9 @@ proof -
   ultimately have "?i \<ge> card {\<phi> v | v. v \<in> ?set}"
     using set_card_upper_bound
     by simp
-  also have "card {\<phi> v | v. v \<in> ?set} = ?c"
+  hence geq: "?c \<le> ?i"
     using inj_\<phi>
     by (simp add: card_image inj_on_subset setcompr_eq_image)
-  finally have geq: "?c \<le> ?i"
-    by simp
   have sorted_\<phi>:
     "\<forall> i < card V. \<forall> j < card V. i < j
         \<longrightarrow> (sorted_list_of_set V!i) < (sorted_list_of_set V!j)"
@@ -518,8 +505,7 @@ proof -
                   {sorted_list_of_set V!j | j. j \<in> {0 ..< (?c + 1)}}"
       using add.commute
       by auto
-    also have "{sorted_list_of_set V!j | j. j \<in> {0 ..< (?c + 1)}} =
-                  (\<Union> j \<in> {0 ..< (?c + 1)}. {sorted_list_of_set V!j})"
+    also have "\<dots> = (\<Union> j \<in> {0 ..< (?c + 1)}. {sorted_list_of_set V!j})"
       by blast
     finally have subset: "(\<Union> j \<in> {0 ..< (?c + 1)}. ?A j) \<subseteq> {v \<in> V. v < x}"
       by simp
@@ -564,7 +550,7 @@ lemma to_list_permutes_under_bij:
     p :: "('a, 'v) Profile"
   assumes "bij \<pi>"
   shows
-    "let \<phi> = (\<lambda> i. card {v \<in> \<pi> ` V. v < \<pi> ((sorted_list_of_set V)!i)})
+    "let \<phi> = \<lambda> i. card {v \<in> \<pi> ` V. v < \<pi> ((sorted_list_of_set V)!i)}
       in (to_list V p) = permute_list \<phi> (to_list (\<pi> ` V) (\<lambda> x. p (the_inv \<pi> x)))"
 proof (cases "finite V")
   case False
@@ -589,7 +575,7 @@ next
   have card_eq: "card ?img = card V"
     using assms bij_betw_same_card bij_betw_subset top_greatest
     by metis
-  also have card_length_V: "?n = card V"
+  also have card_length_V: "?n = \<dots>"
     by simp
   also have card_length_img: "length (to_list ?img ?q) = card ?img"
     using True
@@ -639,13 +625,13 @@ next
         using in_bnds
         by simp
       also have img_list_card_eq_inv_img_list:
-        "to_list ?img ?q!?c = ?q ((sorted_list_of_set ?img)!?c)"
+        "\<dots> = ?q ((sorted_list_of_set ?img)!?c)"
         using in_bnds to_list_simp in_bnds img_card_eq_V_length card_in_bnds
         by (metis (no_types, lifting))
       also have img_card_eq_img_list_i:
-        "(sorted_list_of_set ?img)!?c = \<pi> (sorted_list_of_set V!i)"
-        using True elem_of_img sorted_list_of_set_nth_equals_card
-        by blast
+        "\<dots> = ?q (\<pi> (sorted_list_of_set V!i))"
+        using True elem_of_img
+        by (simp add: sorted_list_of_set_nth_equals_card)
       finally show ?thesis
         using assms bij_betw_imp_inj_on the_inv_f_f
               img_list_map img_card_eq_img_list_i
@@ -720,11 +706,11 @@ lemma pref_count:
     neq: "a \<noteq> b"
   shows "prefer_count V p a b = card V - (prefer_count V p b a)"
 proof -
-  have "\<forall> v \<in> V. \<not> (let r = (p v) in (b \<preceq>\<^sub>r a)) \<longrightarrow> (let r = (p v) in (a \<preceq>\<^sub>r b))"
+  have "\<forall> v \<in> V. let r = (p v) in (\<not> b \<preceq>\<^sub>r a \<longrightarrow> a \<preceq>\<^sub>r b)"
     using a_in_A b_in_A prof lin_ord_imp_connex
     unfolding profile_def connex_def
     by metis
-  moreover have "\<forall> v \<in> V. ((b, a) \<in> (p v) \<longrightarrow> (a, b) \<notin> (p v))"
+  moreover have "\<forall> v \<in> V. (b, a) \<in> (p v) \<longrightarrow> (a, b) \<notin> (p v)"
     using antisymD neq lin_imp_antisym prof
     unfolding profile_def
     by metis

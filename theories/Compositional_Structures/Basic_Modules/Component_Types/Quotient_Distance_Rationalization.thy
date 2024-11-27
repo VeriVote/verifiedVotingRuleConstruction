@@ -672,7 +672,7 @@ next
     using equiv_rel cons_subset Image_subset equiv_type quotientE
     by metis
   hence A_in_dom: "A \<subseteq> domain\<^sub>f"
-    using closed_under_equiv_rel_subset[of X r domain\<^sub>f A]
+    using closed_under_equiv_rel_subset
           closed_domain cons_subset A_in_dom_rel_r equiv_rel
     by blast
   moreover obtain x :: "'x" where
@@ -954,7 +954,7 @@ proof -
   moreover have "\<forall> x. x \<in> fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) a \<longleftrightarrow> x \<in> \<R>\<^sub>\<Q> r d C A"
   proof
     fix x :: "'r"
-    have "(x \<in> fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) a) =
+    have "x \<in> fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) a =
        (x \<in> \<Union> (minimizer (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d
               (singleton_set_system (limit (alternatives_\<E> a) UNIV)) a))"
       using \<R>\<^sub>\<W>_is_minimizer
@@ -994,7 +994,7 @@ proof -
       using singleton_set_union
       unfolding minimizer.simps arg_min_set.simps is_arg_min_def
       by auto
-    finally show "(x \<in> fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) a) = (x \<in> \<R>\<^sub>\<Q> r d C A)"
+    finally show "x \<in> fun\<^sub>\<E> (\<R>\<^sub>\<W> d C) a = (x \<in> \<R>\<^sub>\<Q> r d C A)"
       unfolding \<R>\<^sub>\<Q>.simps
       by safe
   qed
@@ -1071,9 +1071,7 @@ proof -
     using singleton_insert_inj_eq singleton_set.elims singleton_set_def_if_card_one
     by (metis (no_types))
   ultimately show ?thesis
-    unfolding distance_\<R>\<^sub>\<Q>.simps
-    using \<pi>\<^sub>\<Q>.simps[of "fun\<^sub>\<E> (distance_\<R> d C)"]
-          singleton_set.simps[of "fun\<^sub>\<E> (distance_\<R> d C) ` A"]
+    unfolding distance_\<R>\<^sub>\<Q>.simps \<pi>\<^sub>\<Q>.simps singleton_set.simps
     by presburger
 qed
 

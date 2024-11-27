@@ -99,14 +99,10 @@ proof -
     moreover have "finite {a#l | l. l \<in> S}"
       using fin_B
       by simp
-    ultimately have "finite {a'#l | a' l. a' \<in> insert a A' \<and> l \<in> S}"
-      by simp
-    thus "?P (insert a A')"
+    ultimately show "?P (insert a A')"
       by simp
   qed
-  moreover have "?P {}"
-    by simp
-  ultimately show "?P A"
+  thus "?P A"
     using finite_induct[of _ ?P] fin_A
     by simp
 qed

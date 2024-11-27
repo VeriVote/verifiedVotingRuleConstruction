@@ -257,8 +257,7 @@ fun (in result_properties) consensus_rule_neutrality :: "('a, 'v) Election set \
         ('a, 'v, 'b Result) Consensus_Class \<Rightarrow> bool" where
   "consensus_rule_neutrality X C =
     is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
-      (action_induced_equivariance
-          (carrier neutrality\<^sub>\<G>) X (\<phi>_neutral X) (set_action \<psi>_neutral))"
+      (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>) X (\<phi>_neutral X) (set_action \<psi>))"
 
 fun consensus_rule_reversal_symmetry :: "('a, 'v) Election set \<Rightarrow>
         ('a, 'v, 'a rel Result) Consensus_Class \<Rightarrow> bool" where
@@ -374,7 +373,7 @@ proof (unfold consensus_rule_anonymity_def Let_def, safe)
     by fastforce
   moreover have "\<beta> (A', V', q)"
     using beta'_anon beta_Ap beta_sat
-          ex_anon_cons_imp_cons_anonymous[of \<beta> \<beta>'] bij_\<pi>
+          ex_anon_cons_imp_cons_anonymous[of _ \<beta>'] bij_\<pi>
           prof_p renamed beta'_anon cons_anon_invariant[of \<beta>]
     unfolding consensus_anonymity_def
     by blast
@@ -420,8 +419,8 @@ proof (unfold unanimity_def)
   ultimately have "consensus_rule_anonymity
      (consensus_choice
         (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C> c) elect_first_module)"
-    using consensus_choice_anonymous[of equal_top\<^sub>\<C>]
-          equal_top_cons'_anonymous unanimity'_consensus_imp_elect_fst_mod_well_formed
+    using consensus_choice_anonymous[of equal_top\<^sub>\<C>] equal_top_cons'_anonymous
+          unanimity'_consensus_imp_elect_fst_mod_well_formed
     by fastforce
   moreover have "consensus_choice
     (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_top\<^sub>\<C> c)
@@ -444,8 +443,8 @@ proof (unfold strong_unanimity_def)
   ultimately have "consensus_rule_anonymity
       (consensus_choice
         (\<lambda> c. nonempty_set\<^sub>\<C> c \<and> nonempty_profile\<^sub>\<C> c \<and> equal_vote\<^sub>\<C> c) elect_first_module)"
-    using consensus_choice_anonymous[of equal_vote\<^sub>\<C>]
-          nonempty_set_cons_anonymous nonempty_profile_cons_anonymous eq_vote_cons'_anonymous
+    using consensus_choice_anonymous[of equal_vote\<^sub>\<C>] nonempty_set_cons_anonymous
+          nonempty_profile_cons_anonymous eq_vote_cons'_anonymous
           strong_unanimity'consensus_imp_elect_fst_mod_well_formed
     by fastforce
   moreover have
@@ -473,7 +472,7 @@ lemma defer_winners_equivariant:
   by fastforce
 
 lemma elect_first_winners_neutral: "is_symmetry (elect_r \<circ> fun\<^sub>\<E> elect_first_module)
-                (action_induced_equivariance (carrier neutrality\<^sub>\<G>)
+                (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>)
                   well_formed_elections (\<phi>_neutral well_formed_elections)
                       (set_action \<psi>_neutral\<^sub>\<c>))"
 proof (unfold rewrite_equivariance, clarify)
@@ -483,10 +482,10 @@ proof (unfold rewrite_equivariance, clarify)
     p :: "('a, 'v) Profile" and
     \<pi> :: "'a \<Rightarrow> 'a"
   assume
-    bij_carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
+    bij_carrier_\<pi>: "\<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G>" and
     valid: "(A, V, p) \<in> well_formed_elections"
   hence bijective_\<pi>: "bij \<pi>"
-    unfolding neutrality\<^sub>\<G>_def
+    unfolding bijection\<^sub>\<A>\<^sub>\<G>_def
     using rewrite_carrier
     by blast
   hence inv: "\<forall> a. a = \<pi> (the_inv \<pi> a)"
@@ -528,22 +527,15 @@ proof (unfold rewrite_equivariance, clarify)
   hence "{a \<in> \<pi> ` A.
     {b. (a, b) \<in> {(\<pi> a, \<pi> b) | a b. (a, b) \<in> p (least V)}} = {a}} =
       {a \<in> \<pi> ` A. {\<pi> b | b. (the_inv \<pi> a, b) \<in> p (least V)} = {a}}"
-    by auto
+    by blast
   hence "(elect_r \<circ> fun\<^sub>\<E> elect_first_module)
       (\<phi>_neutral well_formed_elections \<pi> (A, V, p)) =
           {a \<in> \<pi> ` A. {\<pi> b | b. (the_inv \<pi> a, b) \<in> p (least V)} = {a}}"
     using elect_simp
     by simp
-  also have "{a \<in> \<pi> ` A. {\<pi> b | b. (the_inv \<pi> a, b) \<in> p (least V)} = {a}} =
-    {\<pi> a | a. a \<in> A \<and> {\<pi> b | b. (a, b) \<in> p (least V)} = {\<pi> a}}"
+  also have "\<dots> = \<pi> ` {a \<in> A. \<pi> ` {b | b. (a, b) \<in> p (least V)} = \<pi> ` {a}}"
     using bijective_\<pi> inv bij_is_inj the_inv_f_f
     by fastforce
-  also have "{\<pi> a | a. a \<in> A \<and> {\<pi> b | b. (a, b) \<in> p (least V)} = {\<pi> a}} =
-    \<pi> ` {a \<in> A. {\<pi> b | b. (a, b) \<in> p (least V)} = {\<pi> a}}"
-    by blast
-  also have "\<pi> ` {a \<in> A. {\<pi> b | b. (a, b) \<in> p (least V)} = {\<pi> a}} =
-    \<pi> ` {a \<in> A. \<pi> ` {b | b. (a, b) \<in> p (least V)} = \<pi> ` {a}}"
-    by blast
   finally have
     "(elect_r \<circ> fun\<^sub>\<E> elect_first_module)
       (\<phi>_neutral well_formed_elections \<pi> (A, V, p)) =
@@ -600,27 +592,23 @@ proof -
     unfolding consensus_neutrality.simps
     by blast
   hence "is_symmetry strong_unanimity\<^sub>\<C>
-     (Invariance (action_induced_rel (carrier neutrality\<^sub>\<G>)
+     (Invariance (action_induced_rel (carrier bijection\<^sub>\<A>\<^sub>\<G>)
                     domain (\<phi>_neutral well_formed_elections)))"
     unfolding consensus_neutrality.simps neutrality\<^sub>\<R>.simps
     using coincides coinciding_actions_ind_equal_rel
     by metis
   moreover have "is_symmetry (elect_r \<circ> fun\<^sub>\<E> elect_first_module)
-                (action_induced_equivariance (carrier neutrality\<^sub>\<G>)
+                (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>)
                   domain (\<phi>_neutral well_formed_elections) (set_action \<psi>_neutral\<^sub>\<c>))"
     using elect_first_winners_neutral
     unfolding domain_def action_induced_equivariance_def
     using equivar_under_subset
     by blast
   ultimately have "is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity))
-      (action_induced_equivariance (carrier neutrality\<^sub>\<G>) domain
+      (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>) domain
                           (\<phi>_neutral well_formed_elections) (set_action \<psi>_neutral\<^sub>\<c>))"
-    using defer_winners_equivariant[of
-            "carrier neutrality\<^sub>\<G>" domain "\<phi>_neutral well_formed_elections" "\<psi>_neutral\<^sub>\<c>"]
-          if_else_cons_equivar[of
-            "elect_r" "elect_first_module" "carrier neutrality\<^sub>\<G>" 
-            domain "\<phi>_neutral well_formed_elections" "\<psi>_neutral\<^sub>\<c>" "defer_module" 
-            "strong_unanimity\<^sub>\<C>"]
+    using defer_winners_equivariant[of _ domain _ "\<psi>_neutral\<^sub>\<c>"]
+          if_else_cons_equivar[of _ _ _ domain _ "\<psi>_neutral\<^sub>\<c>" _ "strong_unanimity\<^sub>\<C>"]
     unfolding strong_unanimity_def
     by fastforce
   thus ?thesis
@@ -644,26 +632,15 @@ proof -
     by (metis (no_types, lifting))
   ultimately have
     "is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity))
-     (action_induced_equivariance (carrier neutrality\<^sub>\<G>) (elections_\<K> strong_unanimity)
+     (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>) (elections_\<K> strong_unanimity)
        (\<phi>_neutral (well_formed_elections \<inter> Collect strong_unanimity\<^sub>\<C>))
         (set_action \<psi>_neutral\<^sub>\<c>))"
-    using strong_unanimity_neutral
-          equivar_under_subset[of
-            "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)"
-            "well_formed_elections \<inter> Collect strong_unanimity\<^sub>\<C>"
-            "{(\<phi>_neutral (well_formed_elections \<inter> Collect strong_unanimity\<^sub>\<C>) g,
-                set_action \<psi>_neutral\<^sub>\<c> g) | g. g \<in> carrier neutrality\<^sub>\<G>}"
-            "elections_\<K> strong_unanimity"]
+    using strong_unanimity_neutral equivar_under_subset
     unfolding action_induced_equivariance_def \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
     by blast
   thus ?thesis
     unfolding \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
-    using coincide
-          equivar_ind_by_act_coincide[of
-            "carrier neutrality\<^sub>\<G>" "elections_\<K> strong_unanimity"
-            "\<phi>_neutral (elections_\<K> strong_unanimity)"
-            "\<phi>_neutral (well_formed_elections \<inter> Collect strong_unanimity\<^sub>\<C>)"
-            "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)" "set_action \<psi>_neutral\<^sub>\<c>"]
+    using coincide equivar_ind_by_act_coincide
     by (metis (no_types))
 qed
 
@@ -681,7 +658,7 @@ proof (unfold closed_restricted_rel.simps restricted_rel.simps neutrality\<^sub>
   assume
     prof: "(A, V, p) \<in> well_formed_elections" and
     cons: "(A, V, p) \<in> \<K>\<^sub>\<E> strong_unanimity a" and
-    bij_carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
+    bij_carrier_\<pi>: "\<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G>" and
     img: "\<phi>_neutral well_formed_elections \<pi> (A, V, p) = (A', V', p')"
   hence fin: "(A, V, p) \<in> finite_elections"
     unfolding \<K>\<^sub>\<E>.simps finite_elections_def
@@ -715,17 +692,14 @@ proof (unfold closed_restricted_rel.simps restricted_rel.simps neutrality\<^sub>
     using strong_unanimity\<^sub>\<C>_neutral valid' 
     unfolding consensus_neutrality.simps
     by force
-  have rewrite: "\<forall> \<pi> \<in> carrier neutrality\<^sub>\<G>.
+  have rewrite: "\<forall> \<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G>.
       \<phi>_neutral ?domain \<pi> (A, V, p) \<in> ?domain
         \<longrightarrow> (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity))
                 (\<phi>_neutral ?domain \<pi> (A, V, p)) =
           set_action \<psi>_neutral\<^sub>\<c> \<pi>
             ((elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (A, V, p))"
     using strong_unanimity_neutral unanimous
-          rewrite_equivariance[of
-            "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)"
-            "carrier neutrality\<^sub>\<G>" ?domain
-            "\<phi>_neutral ?domain" "set_action \<psi>_neutral\<^sub>\<c>"]
+          rewrite_equivariance[of "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)" "carrier bijection\<^sub>\<A>\<^sub>\<G>"]
     unfolding \<S>\<C>\<F>_properties.consensus_rule_neutrality.simps
     by metis
   have img': "\<phi>_neutral ?domain \<pi> (A, V, p) = (A', V', p')"
@@ -736,22 +710,17 @@ proof (unfold closed_restricted_rel.simps restricted_rel.simps neutrality\<^sub>
             (\<phi>_neutral ?domain \<pi> (A, V, p))"
     by simp
   also have
-    "(elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (\<phi>_neutral ?domain \<pi> (A, V, p)) =
-        set_action \<psi>_neutral\<^sub>\<c> \<pi>
-          ((elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (A, V, p))"
+    "\<dots> = set_action \<psi>_neutral\<^sub>\<c> \<pi>
+            ((elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (A, V, p))"
     using bij_carrier_\<pi> img' unanimous' rewrite
     by metis
-  also have "(elect_r \<circ> fun\<^sub>\<E> (rule_\<K> strong_unanimity)) (A, V, p) = {a}"
+  also have "\<dots> = set_action \<psi>_neutral\<^sub>\<c> \<pi> {a}"
     using cons
     unfolding \<K>\<^sub>\<E>.simps
     by simp
-  finally have "elect (rule_\<K> strong_unanimity) V' A' p' = {\<psi>_neutral\<^sub>\<c> \<pi> a}"
-    by simp
-  hence "(A', V', p') \<in> \<K>\<^sub>\<E> strong_unanimity (\<psi>_neutral\<^sub>\<c> \<pi> a)"
+  finally have "(A', V', p') \<in> elections_\<K> strong_unanimity"
     unfolding \<K>\<^sub>\<E>.simps strong_unanimity_def consensus_choice.simps
     using unanimous' prof'
-    by simp
-  hence "(A', V', p') \<in> elections_\<K> strong_unanimity"
     by simp
   hence "((A, V, p), (A', V', p'))
           \<in> \<Union> (range (\<K>\<^sub>\<E> strong_unanimity)) \<times> \<Union> (range (\<K>\<^sub>\<E> strong_unanimity))"
@@ -759,10 +728,10 @@ proof (unfold closed_restricted_rel.simps restricted_rel.simps neutrality\<^sub>
     using cons
     by blast
   moreover have
-    "\<exists> \<pi> \<in> carrier neutrality\<^sub>\<G>.
+    "\<exists> \<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G>.
         \<phi>_neutral well_formed_elections \<pi> (A, V, p) = (A', V', p')"
     using img bij_carrier_\<pi>
-    unfolding neutrality\<^sub>\<G>_def
+    unfolding bijection\<^sub>\<A>\<^sub>\<G>_def
     by blast
   ultimately show "(A', V', p') \<in> \<Union> (range (\<K>\<^sub>\<E> strong_unanimity))"
     by blast
