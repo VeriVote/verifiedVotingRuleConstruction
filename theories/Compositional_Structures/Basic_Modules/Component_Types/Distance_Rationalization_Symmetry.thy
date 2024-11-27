@@ -16,12 +16,10 @@ fun distance_infimum :: "'a Distance \<Rightarrow> 'a set \<Rightarrow> 'a \<Rig
 
 fun closest_preimg_distance :: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'a Distance \<Rightarrow>
         'a \<Rightarrow> 'b \<Rightarrow> ereal" where
-  "closest_preimg_distance f domain\<^sub>f d a b =
-      distance_infimum d (preimg f domain\<^sub>f b) a"
+  "closest_preimg_distance f domain\<^sub>f d a b = distance_infimum d (preimg f domain\<^sub>f b) a"
 
 fun minimizer :: "('a \<Rightarrow> 'b) \<Rightarrow> 'a set \<Rightarrow> 'a Distance \<Rightarrow> 'b set \<Rightarrow> 'a \<Rightarrow> 'b set" where
-  "minimizer f domain\<^sub>f d A a =
-      arg_min_set (closest_preimg_distance f domain\<^sub>f d a) A"
+  "minimizer f domain\<^sub>f d A a = arg_min_set (closest_preimg_distance f domain\<^sub>f d a) A"
 
 subsubsection \<open>Auxiliary Lemmas\<close>
 
@@ -29,40 +27,18 @@ lemma rewrite_arg_min_set:
   fixes
     f :: "'a \<Rightarrow> 'b :: linorder" and
     A :: "'a set"
-  shows "arg_min_set f A = \<Union> (preimg f A ` {y \<in> (f ` A). \<forall> z \<in> f ` A. y \<le> z})"
+  shows "arg_min_set f A = \<Union> (preimg f A ` {y \<in> f ` A. \<forall> z \<in> f ` A. y \<le> z})"
 proof (safe)
   fix x :: "'a"
-  assume arg_min: "x \<in> arg_min_set f A"
-  hence "is_arg_min f (\<lambda> a. a \<in> A) x"
-    by simp
-  hence "\<forall> x' \<in> A. f x' \<ge> f x"
+  assume "x \<in> arg_min_set f A"
+  thus "x \<in> \<Union> (preimg f A ` {y \<in> f ` A. \<forall> z \<in> f ` A. y \<le> z})"
     by (simp add: is_arg_min_linorder)
-  hence "\<forall> z \<in> f ` A. f x \<le> z"
-    by blast
-  moreover have "f x \<in> f ` A"
-    using arg_min
-    by (simp add: is_arg_min_linorder)
-  ultimately have "f x \<in> {y \<in> f ` A. \<forall> z \<in> f ` A. y \<le> z}"
-    by blast
-  moreover have "x \<in> preimg f A (f x)"
-    using arg_min
-    by (simp add: is_arg_min_linorder)
-  ultimately show "x \<in> \<Union> (preimg f A ` {y \<in> (f ` A). \<forall> z \<in> f ` A. y \<le> z})"
-    by blast
 next
-  fix x x' b :: "'a"
+  fix x y :: "'a"
   assume
-    same_img: "x \<in> preimg f A (f x')" and
-    min: "\<forall> z \<in> f ` A. f x' \<le> z"
-  hence "f x = f x'"
-    by simp
-  hence "\<forall> z \<in> f ` A. f x \<le> z"
-    using min
-    by simp
-  moreover have "x \<in> A"
-    using same_img
-    by simp
-  ultimately show "x \<in> arg_min_set f A"
+    "x \<in> preimg f A (f y)" and
+    "\<forall> z \<in> f ` A. f y \<le> z"
+  thus "x \<in> arg_min_set f A"
     by (simp add: is_arg_min_linorder)
 qed
 
@@ -79,7 +55,7 @@ lemma restr_induced_rel:
   assumes "B' \<subseteq> B"
   shows "Restrp (action_induced_rel A B \<phi>) B' = action_induced_rel A B' \<phi>"
   using assms
-  by auto
+  by force
 
 theorem group_action_invar_dist_and_equivar_f_imp_equivar_minimizer:
   fixes
@@ -120,37 +96,21 @@ proof (unfold action_induced_equivariance_def equivar_prop_set_valued_def is_sym
   have "\<forall> y. preimg f domain\<^sub>f y \<subseteq> X"
     using dom_in_X
     by fastforce
-  hence invar_dist_img:
-    "\<forall> y. d x ` (preimg f domain\<^sub>f y) = d ?x' ` (\<phi> g ` (preimg f domain\<^sub>f y))"
+  hence "\<forall> y. d x ` (preimg f domain\<^sub>f y) = d ?x' ` (\<phi> g ` (preimg f domain\<^sub>f y))"
     using x_in_X group_elem invar_dist_image invar_d action_\<phi>
     by metis
-  have "\<forall> y. preimg f domain\<^sub>f (\<psi> g y) = (\<phi> g) ` (preimg f domain\<^sub>f y)"
-    using group_action_equivar_f_imp_equivar_preimg[of G X \<phi> \<psi> domain\<^sub>f f g]
-          assms group_elem
-    by blast
-  hence "\<forall> y. d ?x' ` preimg f domain\<^sub>f (\<psi> g y) =
-      d ?x' ` (\<phi> g) ` (preimg f domain\<^sub>f y)"
-    by presburger
   hence "\<forall> y. Inf (d ?x' ` preimg f domain\<^sub>f (\<psi> g y)) =
       Inf (d x ` preimg f domain\<^sub>f y)"
-    using invar_dist_img
+    using assms group_action_equivar_f_imp_equivar_preimg[of G] group_elem
     by metis
-  hence "\<forall> y. distance_infimum d (preimg f domain\<^sub>f (\<psi> g y)) ?x' =
-      distance_infimum d (preimg f domain\<^sub>f y) x"
-    by simp
-  hence "\<forall> y. closest_preimg_distance f domain\<^sub>f d ?x' (\<psi> g y) =
-                closest_preimg_distance f domain\<^sub>f d x y"
-    by simp
   hence comp:
     "closest_preimg_distance f domain\<^sub>f d x =
           (closest_preimg_distance f domain\<^sub>f d ?x') \<circ> (\<psi> g)"
     by auto
-  hence "\<forall> Y \<alpha>. preimg ?c' (\<psi> g ` Y) \<alpha> = \<psi> g ` preimg ?c Y \<alpha>"
-    using preimg_comp
-    by auto
   hence "\<forall> Y A. {preimg ?c' (\<psi> g ` Y) \<alpha> | \<alpha>. \<alpha> \<in> A} =
       {\<psi> g ` preimg ?c Y \<alpha> | \<alpha>. \<alpha> \<in> A}"
-    by simp
+    using preimg_comp
+    by auto
   moreover have
     "\<forall> Y A. {\<psi> g ` preimg ?c Y \<alpha> | \<alpha>. \<alpha> \<in> A} = {\<psi> g ` \<beta> | \<beta>. \<beta> \<in> preimg ?c Y ` A}"
     by blast
@@ -158,28 +118,15 @@ proof (unfold action_induced_equivariance_def equivar_prop_set_valued_def is_sym
     "\<forall> Y A. preimg ?c' (\<psi> g ` Y) ` A = {preimg ?c' (\<psi> g ` Y) \<alpha> | \<alpha>. \<alpha> \<in> A}"
     by blast
   ultimately have
-    "\<forall> Y A. preimg ?c' (\<psi> g ` Y) ` A = {\<psi> g ` \<alpha> | \<alpha>. \<alpha> \<in> preimg ?c Y ` A}"
-    by simp
-  hence "\<forall> Y A. \<Union> (preimg ?c' (\<psi> g ` Y) ` A) =
-              \<Union> {\<psi> g ` \<alpha> | \<alpha>. \<alpha> \<in> preimg ?c Y ` A}"
+    "\<forall> Y A. \<Union> (preimg ?c' (\<psi> g ` Y) ` A) = \<Union> {\<psi> g ` \<alpha> | \<alpha>. \<alpha> \<in> preimg ?c Y ` A}"
     by simp
   moreover have
     "\<forall> Y A. \<Union> {\<psi> g ` \<alpha> | \<alpha>. \<alpha> \<in> preimg ?c Y ` A} = \<psi> g ` \<Union> (preimg ?c Y ` A)"
     by blast
-  ultimately have eq_preimg_unions:
-    "\<forall> Y A. \<Union> (preimg ?c' (\<psi> g ` Y) ` A) = \<psi> g ` \<Union> (preimg ?c Y ` A)"
-    by simp
-  have "\<forall> Y. ?c' ` \<psi> g ` Y = ?c ` Y"
-    using comp
-    unfolding image_comp
-    by simp
-  hence "\<forall> Y. {\<alpha> \<in> ?c ` Y. \<forall> \<beta> \<in> ?c ` Y. \<alpha> \<le> \<beta>} =
-            {\<alpha> \<in> ?c' ` \<psi> g ` Y. \<forall> \<beta> \<in> ?c' ` \<psi> g ` Y. \<alpha> \<le> \<beta>}"
-    by simp
-  hence "\<forall> Y. arg_min_set (closest_preimg_distance f domain\<^sub>f d ?x') (\<psi> g ` Y) =
+  ultimately have "\<forall> Y. arg_min_set (closest_preimg_distance f domain\<^sub>f d ?x') (\<psi> g ` Y) =
             (\<psi> g) ` (arg_min_set (closest_preimg_distance f domain\<^sub>f d x) Y)"
-    using rewrite_arg_min_set[of ?c'] rewrite_arg_min_set[of ?c] eq_preimg_unions
-    by presburger
+    using rewrite_arg_min_set[of ?c'] rewrite_arg_min_set[of ?c] comp
+    by auto
   moreover have "well_formed_img (\<phi> g x) = \<psi> g ` well_formed_img x"
     using equivar_img x_in_X group_elem img_X rewrite_equivariance
     unfolding equivar_prop_set_valued_def set_action.simps
@@ -201,21 +148,17 @@ lemma closest_dist_invar_under_refl_rel_and_tot_invar_dist:
     d :: "'a Distance" and
     rel :: "'a rel"
   assumes
-    r_refl: "reflp_on' domain\<^sub>f (Restrp rel domain\<^sub>f)" and
-    tot_invar_d: "total_invariance\<^sub>\<D> d rel"
+    "reflp_on' domain\<^sub>f (Restrp rel domain\<^sub>f)" and
+    "total_invariance\<^sub>\<D> d rel"
   shows "is_symmetry (closest_preimg_distance f domain\<^sub>f d) (Invariance rel)"
 proof (unfold is_symmetry.simps, intro allI impI ext)
   fix
     a b :: "'a" and
     y :: "'b"
-  assume rel: "(a, b) \<in> rel"
-  have "\<forall> c \<in> domain\<^sub>f. (c, c) \<in> rel"
-    using r_refl
-    unfolding reflp_on'_def reflp_on_def
-    by simp
+  assume "(a, b) \<in> rel"
   hence "\<forall> c \<in> domain\<^sub>f. d a c = d b c"
-    using rel tot_invar_d
-    unfolding rewrite_total_invariance\<^sub>\<D>
+    using assms
+    unfolding reflp_on'_def reflp_on_def rewrite_total_invariance\<^sub>\<D>
     by blast
   thus "closest_preimg_distance f domain\<^sub>f d a y =
           closest_preimg_distance f domain\<^sub>f d b y"
@@ -230,12 +173,12 @@ lemma refl_rel_and_tot_invar_dist_imp_invar_minimizer:
     rel :: "'a rel" and
     img :: "'b set"
   assumes
-    r_refl: "reflp_on' domain\<^sub>f (Restrp rel domain\<^sub>f)" and
-    tot_invar_d: "total_invariance\<^sub>\<D> d rel"
+    "reflp_on' domain\<^sub>f (Restrp rel domain\<^sub>f)" and
+    "total_invariance\<^sub>\<D> d rel"
   shows "is_symmetry (minimizer f domain\<^sub>f d img) (Invariance rel)"
 proof -
   have "is_symmetry (closest_preimg_distance f domain\<^sub>f d) (Invariance rel)"
-    using r_refl tot_invar_d closest_dist_invar_under_refl_rel_and_tot_invar_dist
+    using assms closest_dist_invar_under_refl_rel_and_tot_invar_dist
     by metis
   thus ?thesis
     by simp
@@ -254,7 +197,7 @@ theorem group_act_invar_dist_and_invar_f_imp_invar_minimizer:
     "rel' \<equiv> action_induced_rel (carrier G) domain\<^sub>f \<phi>"
   assumes
     action_\<phi>: "group_action G A \<phi>" and
-    "domain\<^sub>f \<subseteq> A" and
+    dom_in_A: "domain\<^sub>f \<subseteq> A" and
     closed_domain: "closed_restricted_rel rel A domain\<^sub>f" and (* Could this be weakened? *)
     invar_d: "invariance\<^sub>\<D> d (carrier G) A \<phi>" and
     invar_f: "is_symmetry f (Invariance rel')"
@@ -278,12 +221,8 @@ proof -
   ultimately have
     "is_symmetry (\<lambda> x. minimizer f domain\<^sub>f d (?img x) x)
               (action_induced_equivariance (carrier G) A \<phi> (set_action ?\<psi>))"
-    using assms
-          group_action_invar_dist_and_equivar_f_imp_equivar_minimizer[of
-            G A \<phi> ?\<psi> domain\<^sub>f ?img d f]
-    by blast
-  hence "is_symmetry (minimizer f domain\<^sub>f d img)
-                  (action_induced_equivariance (carrier G) A \<phi> (set_action ?\<psi>))"
+    using group_action_invar_dist_and_equivar_f_imp_equivar_minimizer[of
+            _ _ _ _ _ ?img] assms
     by blast
   thus ?thesis
     unfolding rel_def set_action.simps
@@ -302,43 +241,15 @@ lemma \<K>\<^sub>\<E>_is_preimg:
   shows "preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w} = \<K>\<^sub>\<E> C w"
 proof -
   have "preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w} =
-    {E \<in> elections_\<K> C. (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) E = {w}}"
-    by simp
-  also have "{E \<in> elections_\<K> C. (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) E = {w}} =
-        {E \<in> elections_\<K> C.
+    {E \<in> elections_\<K> C.
           elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}"
     by simp
-  also have "{E \<in> elections_\<K> C.
-        elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}} =
+  also have "\<dots> =
       elections_\<K> C
         \<inter> {E. elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}"
     by blast
-  also have "elections_\<K> C
-      \<inter> {E. elect (rule_\<K> C)
-          (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}} =
-      \<K>\<^sub>\<E> C w"
-  proof
-    show "elections_\<K> C
-        \<inter> {E. elect (rule_\<K> C) (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}
-          \<subseteq> \<K>\<^sub>\<E> C w"
-      unfolding \<K>\<^sub>\<E>.simps
-      by force
-  next
-    have "\<forall> E \<in> \<K>\<^sub>\<E> C w. E \<in> {E. elect (rule_\<K> C) (voters_\<E> E)
-            (alternatives_\<E> E) (profile_\<E> E) = {w}}"
-      unfolding \<K>\<^sub>\<E>.simps
-      by force
-    hence "\<forall> E \<in> \<K>\<^sub>\<E> C w.
-        E \<in> elections_\<K> C
-          \<inter> {E. elect (rule_\<K> C)
-              (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E) = {w}}"
-      by simp
-    thus "\<K>\<^sub>\<E> C w \<subseteq> elections_\<K> C \<inter> {E. elect (rule_\<K> C) (voters_\<E> E)
-            (alternatives_\<E> E) (profile_\<E> E) = {w}}"
-      by blast
-  qed
   finally show "preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w} = \<K>\<^sub>\<E> C w"
-    by simp
+    by force
 qed
 
 lemma score_is_closest_preimg_dist:
@@ -352,14 +263,14 @@ lemma score_is_closest_preimg_dist:
 proof -
   have "score d C E w = Inf (d E ` (\<K>\<^sub>\<E> C w))"
     by simp
-  also have "\<K>\<^sub>\<E> C w = preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w}"
+  moreover have "\<K>\<^sub>\<E> C w = preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w}"
     using \<K>\<^sub>\<E>_is_preimg
     by metis
-  also have
+  moreover have
     "Inf (d E ` (preimg (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) {w})) =
         closest_preimg_distance (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E {w}"
     by simp
-  finally show ?thesis
+  ultimately show ?thesis
     by simp
 qed
 
@@ -410,13 +321,9 @@ proof
               (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)) (elections_\<K> C) d E {r}"
       using res_singleton
       by auto
-    hence
-      "\<nexists> r'. r' \<in> limit (alternatives_\<E> E) UNIV
-            \<and> score d C E r' < score d C E r"
-      using score_is_closest_preimg_dist
-      by metis
     hence "r \<in> arg_min_set (score d C E) (limit (alternatives_\<E> E) UNIV)"
-      using r_in_lim_set arg_min_set.simps is_arg_min_def CollectI
+      using score_is_closest_preimg_dist r_in_lim_set CollectI
+            arg_min_set.simps is_arg_min_def
       by metis
     thus "R \<in> singleton_set_system
                 (arg_min_set (score d C E) (limit (alternatives_\<E> E) UNIV))"
@@ -498,14 +405,13 @@ proof -
             (singleton_set_system (limit (alternatives_\<E> E) UNIV)))"
   have "\<forall> E. is_symmetry (?min E) (Invariance rel)"
     using r_refl tot_invar_d invar_comp
-          refl_rel_and_tot_invar_dist_imp_invar_minimizer[of
-            "elections_\<K> C" rel d "elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C)"]
+          refl_rel_and_tot_invar_dist_imp_invar_minimizer
     by blast
   moreover have "is_symmetry ?min (Invariance rel)"
     using invar_res
     by auto
   ultimately have "is_symmetry (\<lambda> E. ?min E E) (Invariance rel)"
-    using invar_parameterized_fun[of ?min rel]
+    using invar_parameterized_fun[of ?min]
     by blast
   also have "(\<lambda> E. ?min E E) = fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)"
     using \<R>\<^sub>\<W>_is_minimizer
@@ -555,9 +461,8 @@ proof -
   moreover have "is_symmetry ?min (Invariance rel)"
     using invar_res
     by auto
-  ultimately have
-    "is_symmetry (\<lambda> E. ?min E E) (Invariance rel)"
-    using invar_parameterized_fun[of ?min _]
+  ultimately have "is_symmetry (\<lambda> E. ?min E E) (Invariance rel)"
+    using invar_parameterized_fun[of ?min]
     by blast
   also have "(\<lambda> E. ?min E E) = fun\<^sub>\<E> (\<R>\<^sub>\<W> d C)"
     using \<R>\<^sub>\<W>_is_minimizer
@@ -649,7 +554,7 @@ proof -
     by force
   moreover have "group_action G UNIV (set_action \<psi>)"
     unfolding set_action.simps
-    using group_act_induces_set_group_act[of _ UNIV _] group_act_res
+    using group_act_induces_set_group_act[of _ UNIV] group_act_res
     by simp
   ultimately have "is_symmetry ?min_E ?equivar_prop_global_set_valued'"
     using action_\<phi> invar_d cons_elect_set closed_domain equivar_C_winners
@@ -719,23 +624,23 @@ proof -
     using cons_domain_valid extensional_continuation_subset
     unfolding \<phi>_anon.simps
     by metis
-  hence "action_induced_rel (carrier anonymity\<^sub>\<G>) (elections_\<K> C)
+  hence "action_induced_rel (carrier bijection\<^sub>\<V>\<^sub>\<G>) (elections_\<K> C)
             (\<phi>_anon well_formed_elections) =
-      action_induced_rel (carrier anonymity\<^sub>\<G>) (elections_\<K> C)
+      action_induced_rel (carrier bijection\<^sub>\<V>\<^sub>\<G>) (elections_\<K> C)
           (\<phi>_anon (elections_\<K> C))"
     using coinciding_actions_ind_equal_rel
     by metis
   hence "is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
           (Invariance (action_induced_rel
-            (carrier anonymity\<^sub>\<G>) (elections_\<K> C) (\<phi>_anon well_formed_elections)))"
+            (carrier bijection\<^sub>\<V>\<^sub>\<G>) (elections_\<K> C) (\<phi>_anon well_formed_elections)))"
     using anon_C
     unfolding consensus_rule_anonymity'.simps anonymity\<^sub>\<R>.simps
     by presburger
   thus ?thesis
-    using cons_domain_valid assms anonymous_group_action.group_action_axioms
-          anonymity invar_dist_cons_imp_invar_dr_rule
+    using anon_d closed_C cons_domain_valid anonymous_group_action.group_action_axioms
+          anonymity_action_presv_symmetry invar_dist_cons_imp_invar_dr_rule
     unfolding distance_anonymity'.simps anonymity\<^sub>\<R>.simps anonymity'.simps
-              anonymity_in.simps consensus_rule_anonymity'.simps
+              anonymity_in.simps
     by blast
 qed
 
@@ -756,8 +661,8 @@ proof -
     unfolding \<phi>_neutral.simps
     by metis
   hence "is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
-          (action_induced_equivariance (carrier neutrality\<^sub>\<G>) (elections_\<K> C)
-            (\<phi>_neutral well_formed_elections) (set_action \<psi>_neutral))"
+          (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>) (elections_\<K> C)
+            (\<phi>_neutral well_formed_elections) (set_action \<psi>))"
     using neutral_C equivar_ind_by_act_coincide
     unfolding consensus_rule_neutrality.simps
     by (metis (no_types, lifting))
@@ -792,9 +697,9 @@ proof -
     unfolding consensus_rule_reversal_symmetry.simps
     by (metis (no_types, lifting))
   thus ?thesis
-    using \<S>\<W>\<F>_result.invar_dist_equivar_cons_imp_equivar_dr_rule
-          reversal_symmetry cons_domain_valid reverse_sym_d closed_C
-          \<phi>_reverse_action.group_action_axioms
+    using reverse_sym_d closed_C reversal_symmetry_action_presv_symmetry
+          \<S>\<W>\<F>_result.invar_dist_equivar_cons_imp_equivar_dr_rule
+          \<phi>_reverse_action.group_action_axioms cons_domain_valid
           \<psi>_reverse_action.group_action_axioms
     unfolding reversal_symmetry.simps reversal_symmetry_in_def
               reversal\<^sub>\<R>.simps distance_reversal_symmetry.simps
@@ -820,7 +725,7 @@ proof -
   moreover have
     "is_symmetry (\<lambda> E. limit (alternatives_\<E> E) UNIV)
         (Invariance (homogeneity\<^sub>\<R> finite_elections_\<V>))"
-    using homogeneity
+    using homogeneity_action_presv_symmetry
     by simp
   ultimately show ?thesis
     using assms tot_invar_dist_imp_invar_dr_rule
@@ -847,7 +752,7 @@ proof (unfold homogeneity'.simps homogeneity'_in.simps)
   moreover have
     "is_symmetry (\<lambda> E. limit (alternatives_\<E> E) UNIV)
         (Invariance (homogeneity\<^sub>\<R>' finite_elections_\<V>))"
-    using homogeneity'
+    using homogeneity'_action_presv_symmetry
     by simp
   ultimately show
     "is_symmetry (fun\<^sub>\<E> (distance_\<R> d C)) (Invariance (homogeneity\<^sub>\<R>' finite_elections_\<V>))"

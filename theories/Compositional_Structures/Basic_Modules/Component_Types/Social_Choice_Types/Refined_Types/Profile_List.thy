@@ -25,8 +25,8 @@ text \<open>
 \<close>
 
 fun pl_to_pr_\<alpha> :: "'a Profile_List \<Rightarrow> ('a, nat) Profile" where
-  "pl_to_pr_\<alpha> pl = (\<lambda> n. if (n < length pl \<and> n \<ge> 0)
-                         then (map (Preference_List.pl_\<alpha>) pl)!n
+  "pl_to_pr_\<alpha> pl = (\<lambda> n. if n < length pl \<and> n \<ge> 0
+                         then (map pl_\<alpha> pl)!n
                          else {})"
 
 lemma prof_abstr_presv_size:
@@ -44,7 +44,7 @@ text \<open>
 definition profile_l :: "'a set \<Rightarrow> 'a Profile_List \<Rightarrow> bool" where
   "profile_l A p \<equiv> \<forall> i < length p. ballot_on A (p!i)"
 
-lemma refinement:
+lemma profile_list_refines_profile:
   fixes
     A :: "'a set" and
     p :: "'a Profile_List"

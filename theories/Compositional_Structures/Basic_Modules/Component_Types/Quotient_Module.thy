@@ -14,7 +14,7 @@ lemma invariance_is_congruence:
   fixes
     m :: "('a, 'v, 'r) Electoral_Module" and
     r :: "('a, 'v) Election rel"
-  shows "(is_symmetry (fun\<^sub>\<E> m) (Invariance r)) = (fun\<^sub>\<E> m respects r)"
+  shows "is_symmetry (fun\<^sub>\<E> m) (Invariance r) = fun\<^sub>\<E> m respects r"
   unfolding is_symmetry.simps congruent_def
   by blast
 
@@ -22,7 +22,7 @@ lemma invariance_is_congruence':
   fixes
     f :: "'x \<Rightarrow> 'y" and
     r :: "'x rel"
-  shows "(is_symmetry f (Invariance r)) = (f respects r)"
+  shows "is_symmetry f (Invariance r) = f respects r"
   unfolding is_symmetry.simps congruent_def
   by blast
 

@@ -25,7 +25,7 @@ subsection \<open>Definition\<close>
 type_synonym Norm = "ereal list \<Rightarrow> ereal"
 
 definition norm :: "Norm \<Rightarrow> bool" where
-  "norm n \<equiv> \<forall> (x :: ereal list). n x \<ge> 0 \<and> (\<forall> i < length x. (x!i = 0) \<longrightarrow> n x = 0)"
+  "norm n \<equiv> \<forall> x :: ereal list. n x \<ge> 0 \<and> (\<forall> i < length x. x!i = 0 \<longrightarrow> n x = 0)"
 
 subsection \<open>Auxiliary Lemmas\<close>
 
@@ -87,12 +87,12 @@ next
   ultimately have card_A'_sub_f_eq_x: "card (A' - {f a}) = x"
     using bij_betw_same_card
     by metis
-  have "(\<Sum> a \<in> A. g a) = (\<Sum> a \<in> (A - {a}). g a) + g a"
+  have "(\<Sum> a \<in> A. g a) = (\<Sum> a \<in> A - {a}. g a) + g a"
     using x_lt_card_A add.commute card_Diff1_less_iff card_without_a
           insert_Diff insert_Diff_single sum.insert_remove
     by (metis (no_types))
-  also have "\<dots> = (\<Sum> a' \<in> (A' - {f a}).
-                    g (the_inv_into A f a')) + g (the_inv_into A f (f a))"
+  also have "\<dots> = (\<Sum> a' \<in> A' - {f a}. g (the_inv_into A f a'))
+                  + g (the_inv_into A f (f a))"
     using bij_without_a a_in_A bij_A_A' bij_betw_imp_inj_on the_inv_into_f_f
           A'_sub_fa DiffD1 sum.reindex_cong
     by (metis (mono_tags, lifting))
@@ -127,13 +127,13 @@ proof (unfold symmetry_def, safe)
   hence "(\<Sum> i < length l. \<bar>l'!i\<bar>) = (\<Sum> i < length l. \<bar>l!(\<pi> i)\<bar>)"
     using permute_list_nth
     by fastforce
-  also have "\<dots> = sum (\<lambda>i. \<bar>l!(\<pi> i)\<bar>) {0 ..< length l}"
+  also have "\<dots> = (\<Sum> i = 0 ..< length l. \<bar>l!(\<pi> i)\<bar>)"
     using lessThan_atLeast0 
     by presburger
   also have "(\<lambda> i. \<bar>l!(\<pi> i)\<bar>) = ((\<lambda> i. \<bar>l!i\<bar>) \<circ> \<pi>)"
     by fastforce
-  also have "sum ((\<lambda> i. \<bar>l!i\<bar>) \<circ> \<pi>) {0 ..< length l} =
-              sum (\<lambda> i. \<bar>l!i\<bar>) {0 ..< length l}"
+  also have "(\<Sum> y = 0 ..< length l. ((\<lambda> i. \<bar>l!i\<bar>) \<circ> \<pi>) y) =
+              (\<Sum> i = 0 ..< length l. \<bar>l!i\<bar>)"
     using perm\<^sub>\<pi> atLeast_upt set_upt sum.permute
     by metis
   also have "\<dots> = (\<Sum> i < length l. \<bar>l!i\<bar>)"

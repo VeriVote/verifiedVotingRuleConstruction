@@ -459,7 +459,7 @@ next
   assume "a \<in> elect n V A p"
   thus "a \<in> elect (m \<parallel>\<^sub>\<up> n) V A p"
     using max_aggregator.simps[of
-            "A" "elect m V A p" "reject m V A p" "defer m V A p"
+            _ "elect m V A p" "reject m V A p" "defer m V A p"
             "elect n V A p" "reject n V A p" "defer n V A p"]
     by simp
 next

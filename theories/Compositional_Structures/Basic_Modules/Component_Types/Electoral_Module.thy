@@ -165,12 +165,12 @@ proof (unfold anonymity_in.simps is_symmetry.simps, intro allI impI)
   fix E E' :: "('a, 'v) Election"
   assume rel: "(E, E') \<in> anonymity\<^sub>\<R> X"
   then obtain \<pi> :: "'v \<Rightarrow> 'v" where
-    "\<pi> \<in> carrier anonymity\<^sub>\<G>" and
+    "\<pi> \<in> carrier bijection\<^sub>\<V>\<^sub>\<G>" and
     "E' = \<phi>_anon X \<pi> E"
     unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
     by blast
   moreover from this have "bij \<pi>"
-    unfolding anonymity\<^sub>\<G>_def rewrite_carrier
+    unfolding bijection\<^sub>\<V>\<^sub>\<G>_def rewrite_carrier
     by simp
   moreover from this have in_election_set: "E \<in> X"
     using rel
@@ -206,8 +206,8 @@ text \<open>
 fun (in result_properties) neutrality_in :: "('a, 'v) Election set \<Rightarrow>
         ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
   "neutrality_in X m =
-    is_symmetry (fun\<^sub>\<E> m) (action_induced_equivariance (carrier neutrality\<^sub>\<G>) X
-          (\<phi>_neutral X) (result_action \<psi>_neutral))"
+    is_symmetry (fun\<^sub>\<E> m) (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>) X
+          (\<phi>_neutral X) (result_action \<psi>))"
 
 fun (in result_properties) neutrality :: "('a, 'v, 'b Result) Electoral_Module \<Rightarrow>
         bool" where
@@ -1276,7 +1276,7 @@ definition condorcet_consistency :: "('a, 'v, 'a Result) Electoral_Module \<Righ
     (\<forall> A V p a. condorcet_winner V A p a \<longrightarrow>
       (m V A p = ({e \<in> A. condorcet_winner V A p e}, A - (elect m V A p), {})))"
 
-lemma condorcet_consistency':
+lemma condorcet_consistency_equiv:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   shows "condorcet_consistency m =
            (\<S>\<C>\<F>_result.electoral_module m \<and>
@@ -1311,13 +1311,13 @@ next
     by (metis (mono_tags, lifting))
 qed
 
-lemma condorcet_consistency'':
+lemma condorcet_consistency_equiv':
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   shows "condorcet_consistency m =
            (\<S>\<C>\<F>_result.electoral_module m \<and>
               (\<forall> A V p a.
                 condorcet_winner V A p a \<longrightarrow> m V A p = ({a}, A - {a}, {})))"
-proof (unfold condorcet_consistency', safe)
+proof (unfold condorcet_consistency_equiv, safe)
   fix
     A :: "'a set" and
     V :: "'v set" and

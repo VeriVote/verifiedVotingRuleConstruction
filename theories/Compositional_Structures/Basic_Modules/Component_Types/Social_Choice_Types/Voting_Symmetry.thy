@@ -14,25 +14,27 @@ begin
 
 subsection \<open>Definitions\<close>
 
-fun (in result) closed_elections :: "('a, 'v) Election rel \<Rightarrow> bool" where
-  "closed_elections r =
-    (\<forall> (e, e') \<in> r.
-      limit (alternatives_\<E> e) UNIV = limit (alternatives_\<E> e') UNIV)"
-
 fun result_action :: "('x, 'r) binary_fun \<Rightarrow> ('x, 'r Result) binary_fun" where
   "result_action \<psi> x = (\<lambda> r. (\<psi> x ` elect_r r, \<psi> x ` reject_r r, \<psi> x ` defer_r r))"
 
 subsubsection \<open>Anonymity\<close>
 
-definition anonymity\<^sub>\<G> :: "('v \<Rightarrow> 'v) monoid" where
-  "anonymity\<^sub>\<G> \<equiv> BijGroup (UNIV :: 'v set)"
+text \<open>Bijection group on the set of voters.\<close>
+
+definition bijection\<^sub>\<V>\<^sub>\<G> :: "('v \<Rightarrow> 'v) monoid" where
+  "bijection\<^sub>\<V>\<^sub>\<G> \<equiv> BijGroup (UNIV :: 'v set)"
+
+text \<open>
+  Permutation action on the set of voters.
+  Invariance under this action implies anonymity.
+\<close>
 
 fun \<phi>_anon :: "('a, 'v) Election set \<Rightarrow> ('v \<Rightarrow> 'v) \<Rightarrow>
         (('a, 'v) Election \<Rightarrow> ('a, 'v) Election)" where
   "\<phi>_anon \<E> \<pi> = extensional_continuation (rename \<pi>) \<E>"
 
 fun anonymity\<^sub>\<R> :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election rel" where
-  "anonymity\<^sub>\<R> \<E> = action_induced_rel (carrier anonymity\<^sub>\<G>) \<E> (\<phi>_anon \<E>)"
+  "anonymity\<^sub>\<R> \<E> = action_induced_rel (carrier bijection\<^sub>\<V>\<^sub>\<G>) \<E> (\<phi>_anon \<E>)"
 
 subsubsection \<open>Neutrality\<close>
 
@@ -43,15 +45,22 @@ fun alternatives_rename :: "('a \<Rightarrow> 'a, ('a, 'v) Election) binary_fun"
   "alternatives_rename \<pi> \<E> =
       (\<pi> ` (alternatives_\<E> \<E>), voters_\<E> \<E>, (rel_rename \<pi>) \<circ> (profile_\<E> \<E>))"
 
-definition neutrality\<^sub>\<G> :: "('a \<Rightarrow> 'a) monoid" where
-  "neutrality\<^sub>\<G> \<equiv> BijGroup (UNIV :: 'a set)"
+text \<open>
+  Bijection group on the set of alternatives.
+  Invariance under this action implies neutrality.
+\<close>
+
+definition bijection\<^sub>\<A>\<^sub>\<G> :: "('a \<Rightarrow> 'a) monoid" where
+  "bijection\<^sub>\<A>\<^sub>\<G> \<equiv> BijGroup (UNIV :: 'a set)"
+
+text \<open>Permutation action on the set of alternatives.\<close>
 
 fun \<phi>_neutral :: "('a, 'v) Election set \<Rightarrow>
         ('a \<Rightarrow> 'a, ('a, 'v) Election) binary_fun" where
   "\<phi>_neutral \<E> \<pi> = extensional_continuation (alternatives_rename \<pi>) \<E>"
 
 fun neutrality\<^sub>\<R> :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election rel" where
-  "neutrality\<^sub>\<R> \<E> = action_induced_rel (carrier neutrality\<^sub>\<G>) \<E> (\<phi>_neutral \<E>)"
+  "neutrality\<^sub>\<R> \<E> = action_induced_rel (carrier bijection\<^sub>\<A>\<^sub>\<G>) \<E> (\<phi>_neutral \<E>)"
 
 fun \<psi>_neutral\<^sub>\<c> :: "('a \<Rightarrow> 'a, 'a) binary_fun" where
   "\<psi>_neutral\<^sub>\<c> \<pi> r = \<pi> r"
@@ -207,11 +216,9 @@ proof -
         by metis
       moreover have "(\<lambda> n. n_app n f x) ` {n. n > 0} = {n_app n f x | n. n > 0}"
         by auto
-      ultimately have "\<not> inj_on (\<lambda> n. n_app n f x) {n. n > 0}"
-        by metis
-      hence "\<exists> n > 0 . \<exists> m > n. n_app n f x = n_app m f x"
+      ultimately have "\<exists> n > 0 . \<exists> m > n. n_app n f x = n_app m f x"
         using linorder_inj_onI' mem_Collect_eq
-        by metis
+        by (metis (no_types, lifting))
       hence "\<exists> n_min > 0.
           (\<exists> m > n_min. n_app n_min f x = n_app m f x)
         \<and> (\<forall> n < n_min. \<not> (0 < n \<and> (\<exists> m > n. n_app n f x = n_app m f x)))"
@@ -220,12 +227,12 @@ proof -
         by presburger
       then obtain n_min :: "nat" where
         n_min_pos: "n_min > 0" and
-        "\<exists> m > n_min. n_app n_min f x = n_app m f x" and
+        ex_gt_n_min: "\<exists> m > n_min. n_app n_min f x = n_app m f x" and
         neq: "\<forall> n < n_min. \<not> (n > 0 \<and> (\<exists> m > n. n_app n f x = n_app m f x))"
         by blast
       then obtain m :: "nat" where
         m_gt_n_min: "m > n_min" and
-        "n_app n_min f x = f (n_app (m - 1) f x)"
+        n_app_n_min_eq: "n_app n_min f x = f (n_app (m - 1) f x)"
         using comp_apply diff_Suc_1 less_nat_zero_code n_app.elims
         by (metis (mono_tags, lifting))
       moreover have "n_app n_min f x = f (n_app (n_min - 1) f x)"
@@ -236,38 +243,29 @@ proof -
         using in_int x_el n_min_pos m_gt_n_min Diff_iff IntD1 diff_le_self id_apply
               nless_le cancel_comm_monoid_add_class.diff_cancel n_app_id
         by metis
-      ultimately have eq: "n_app (m - 1) f x = n_app (n_min - 1) f x"
+      ultimately have "n_app (m - 1) f x = n_app (n_min - 1) f x"
         using bij_f
         unfolding bij_betw_def inj_def inj_on_def
         by simp
       moreover have "m - 1 > n_min - 1"
         using m_gt_n_min n_min_pos
         by simp
-      ultimately have "n_min - 1 > 0 \<longrightarrow> False"
-        using neq n_min_pos diff_less zero_less_one
-        by metis
       moreover have "n_app (m - 1) f x \<in> B"
         using in_int m_gt_n_min n_min_pos
         by simp
       ultimately show False
-        using x_el eq
-        by simp
+        using x_el neq n_min_pos diff_less zero_less_one Diff_iff
+              bot_nat_0.not_eq_extremum id_apply n_app_id
+        by metis
     qed
-    ultimately have "\<exists> n > 0. \<exists> m > 0. m < n \<and> n_app m f x \<notin> A"
-      by blast
-    hence "\<exists> n > 0. n_app n f x \<notin> A \<and> (\<forall> m < n. \<not> (m > 0 \<and> n_app m f x \<notin> A))"
-      using exists_least_iff[of "\<lambda> n. n > 0 \<and> n_app n f x \<notin> A"]
-      by blast
-    then obtain n :: "nat" where
+    ultimately obtain n :: "nat" where
       n_pos: "n > 0" and
       not_in_A: "n_app n f x \<notin> A" and
       less_in_A: "\<forall> m. (0 < m \<and> m < n) \<longrightarrow> n_app m f x \<in> A"
+      using exists_least_iff[of "\<lambda> n. n > 0 \<and> n_app n f x \<notin> A"]
       by blast
-    moreover have "n_app 0 f x \<in> A"
-      using x_el
-      by simp
-    ultimately have "n_app (n - 1) f x \<in> A"
-      using bot_nat_0.not_eq_extremum diff_less zero_less_one
+    hence "n_app (n - 1) f x \<in> A"
+      using n_app_f_x_in_A bot_nat_0.not_eq_extremum diff_less zero_less_one
       by metis
     moreover have "n_app n f x = f (n_app (n - 1) f x)"
       using n_app_suc Suc_pred' n_pos comp_eq_id_dest fun.map_id
@@ -285,20 +283,10 @@ proof -
   moreover have "\<forall> m > 0. n_app m f x = f (n_app (m - 1) f x)"
     using bot_nat_0.not_eq_extremum comp_apply diff_Suc_1 n_app.elims
     by (metis (mono_tags, lifting))
-  ultimately have
-    "\<forall> n. (\<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A)
-            \<longrightarrow> (\<forall> m > 0. m \<le> n \<longrightarrow> n_app m f x \<in> B)"
-    using bij_f n_app_id n_app_f_x_in_A diff_Suc_1 gr0_conv_Suc imageI
-          linorder_not_le nless_le not_less_eq_eq
+  ultimately show ?thesis
+    using that bij_f imageI IntI ex_A
     unfolding bij_betw_def
     by metis
-  hence "\<exists> n > 0. n_app n f x \<in> B - A
-              \<and> (\<forall> m > 0. m < n \<longrightarrow> n_app m f x \<in> A \<inter> B)"
-    using IntI nless_le ex_A
-    by metis
-  thus ?thesis
-    using that
-    by blast
 qed
 
 lemma n_app_rev:
@@ -374,14 +362,9 @@ next
           bij_f calculation less_SucI
     unfolding One_nat_def
     by metis
-  hence "m > 0 \<longrightarrow> n_app (Suc n - m) f x = y"
-    using Suc_diff_eq_diff_pred
-    by presburger
-  moreover have "m = 0 \<longrightarrow> n_app (Suc n - m) f x = y"
+  thus "n_app (Suc n - m) f x = y"
     using eq
-    by simp
-  ultimately show "n_app (Suc n - m) f x = y"
-    by blast
+    by force
 qed
 
 lemma n_app_inv:
@@ -534,7 +517,7 @@ proof -
       "n_app (g' x - g' y) (the_inv_into A f) x = y
         \<or> n_app (g' y - g' x) (the_inv_into A f) y = x"
       using x_in_B y_in_B bij_inv fin_A fin_B
-            n_app_rev[of "x"] n_app_rev[of "y" "B" "x" "g' x" "g' y"]
+            n_app_rev[of x] n_app_rev[of y B x "g' x" "g' y"]
       by fastforce
     hence "g' x \<noteq> g' y \<longrightarrow>
       ((\<exists> n > 0. n < g' x \<and> n_app n (the_inv_into A f) x \<in> B - A) \<or>
@@ -605,7 +588,7 @@ proof -
   obtain \<pi> :: "'v \<Rightarrow> 'v" where
     bijection_\<pi>: "bij \<pi>" and
     renamed: "E' = rename \<pi> E"
-    unfolding anonymity\<^sub>\<R>.simps anonymity\<^sub>\<G>_def
+    unfolding anonymity\<^sub>\<R>.simps bijection\<^sub>\<V>\<^sub>\<G>_def
     using universal_set_carrier_imp_bij_group
     by auto
   have eq_alts: "alternatives_\<E> E' = alternatives_\<E> E"
@@ -814,7 +797,7 @@ proof -
     by metis
   thus ?thesis
     unfolding extensional_continuation.simps anonymity\<^sub>\<R>.simps
-              action_induced_rel.simps \<phi>_anon.simps anonymity\<^sub>\<G>_def
+              action_induced_rel.simps \<phi>_anon.simps bijection\<^sub>\<V>\<^sub>\<G>_def
     using eq bijection_\<pi>\<^sub>g case_prodI rewrite_carrier
     by auto
 qed
@@ -854,8 +837,8 @@ proof
 qed
 
 interpretation anonymous_group_action:
-  "group_action" "anonymity\<^sub>\<G>" "well_formed_elections" "\<phi>_anon well_formed_elections"
-proof (unfold group_action_def group_hom_def anonymity\<^sub>\<G>_def
+  "group_action" "bijection\<^sub>\<V>\<^sub>\<G>" "well_formed_elections" "\<phi>_anon well_formed_elections"
+proof (unfold group_action_def group_hom_def bijection\<^sub>\<V>\<^sub>\<G>_def
         group_hom_axioms_def hom_def, intro conjI group_BijGroup, safe)
   fix \<pi> :: "'v \<Rightarrow> 'v"
   assume bij_carrier: "\<pi> \<in> carrier (BijGroup UNIV)"
@@ -965,9 +948,8 @@ proof (unfold group_action_def group_hom_def anonymity\<^sub>\<G>_def
     by blast
 qed
 
-lemma (in result) anonymity:
-  "is_symmetry (\<lambda> E. limit (alternatives_\<E> E) UNIV)
-          (Invariance (anonymity\<^sub>\<R> well_formed_elections))"
+lemma (in result) anonymity_action_presv_symmetry: "is_symmetry (\<lambda> E. limit
+  (alternatives_\<E> E) UNIV) (Invariance (anonymity\<^sub>\<R> well_formed_elections))"
   unfolding anonymity\<^sub>\<R>.simps
   by clarsimp
 
@@ -1189,7 +1171,7 @@ proof
     by blast
 qed
 
-lemma well_formed_elects_closed:
+lemma alternatives_rename_sound:
   fixes
     A A' :: "'a set" and
     V V' :: "'v set" and
@@ -1303,17 +1285,17 @@ next
     unfolding rel_rename.simps
     by auto
   moreover have "alternatives_rename (the_inv \<pi>) (A, V, p) \<in> well_formed_elections"
-    using rename_inv wf_elects well_formed_elects_closed bij_\<pi> bij_betw_the_inv_into
+    using rename_inv wf_elects alternatives_rename_sound bij_\<pi> bij_betw_the_inv_into
     by (metis (no_types))
   ultimately show "(A, V, p) \<in> alternatives_rename \<pi> ` well_formed_elections"
     using image_eqI
     by metis
 qed
 
-interpretation \<phi>_neutral_action: group_action "neutrality\<^sub>\<G>" "well_formed_elections"
+interpretation \<phi>_neutral_action: group_action "bijection\<^sub>\<A>\<^sub>\<G>" "well_formed_elections"
         "\<phi>_neutral well_formed_elections"
 proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def
-              neutrality\<^sub>\<G>_def, intro conjI group_BijGroup, safe)
+              bijection\<^sub>\<A>\<^sub>\<G>_def, intro conjI group_BijGroup, safe)
   fix \<pi> :: "'a \<Rightarrow> 'a"
   assume bij_carrier: "\<pi> \<in> carrier (BijGroup UNIV)"
   hence
@@ -1402,8 +1384,8 @@ proof (unfold group_action_def group_hom_def group_hom_axioms_def hom_def
     by blast
 qed
 
-interpretation \<psi>_neutral\<^sub>\<c>_action: "group_action" "neutrality\<^sub>\<G>" "UNIV" "\<psi>_neutral\<^sub>\<c>"
-proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def
+interpretation \<psi>_neutral\<^sub>\<c>_action: "group_action" "bijection\<^sub>\<A>\<^sub>\<G>" "UNIV" "\<psi>_neutral\<^sub>\<c>"
+proof (unfold group_action_def group_hom_def hom_def bijection\<^sub>\<A>\<^sub>\<G>_def
               group_hom_axioms_def, intro conjI group_BijGroup, safe)
   fix \<pi> :: "'a \<Rightarrow> 'a"
   assume "\<pi> \<in> carrier (BijGroup UNIV)"
@@ -1421,16 +1403,16 @@ proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def
     by safe
 qed
 
-interpretation \<psi>_neutral\<^sub>\<w>_action: group_action "neutrality\<^sub>\<G>" "UNIV" "\<psi>_neutral\<^sub>\<w>"
-proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def
+interpretation \<psi>_neutral\<^sub>\<w>_action: group_action "bijection\<^sub>\<A>\<^sub>\<G>" "UNIV" "\<psi>_neutral\<^sub>\<w>"
+proof (unfold group_action_def group_hom_def hom_def bijection\<^sub>\<A>\<^sub>\<G>_def
               group_hom_axioms_def, intro conjI group_BijGroup, safe)
   fix \<pi> :: "'a \<Rightarrow> 'a"
   assume bij_carrier: "\<pi> \<in> carrier (BijGroup UNIV)"
   hence "bij \<pi>"
-    unfolding neutrality\<^sub>\<G>_def BijGroup_def Bij_def
+    unfolding bijection\<^sub>\<A>\<^sub>\<G>_def BijGroup_def Bij_def
     by simp
   hence "bij (\<psi>_neutral\<^sub>\<w> \<pi>)"
-    unfolding neutrality\<^sub>\<G>_def BijGroup_def Bij_def \<psi>_neutral\<^sub>\<w>.simps
+    unfolding bijection\<^sub>\<A>\<^sub>\<G>_def BijGroup_def Bij_def \<psi>_neutral\<^sub>\<w>.simps
     using rel_rename_bij
     by blast
   thus group_elem: "\<psi>_neutral\<^sub>\<w> \<pi> \<in> carrier (BijGroup UNIV)"
@@ -1439,10 +1421,10 @@ proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def
   moreover fix \<pi>' :: "'a \<Rightarrow> 'a"
   assume bij_carrier': "\<pi>' \<in> carrier (BijGroup UNIV)"
   hence "bij \<pi>'"
-    unfolding neutrality\<^sub>\<G>_def BijGroup_def Bij_def
+    unfolding bijection\<^sub>\<A>\<^sub>\<G>_def BijGroup_def Bij_def
     by simp
   hence "bij (\<psi>_neutral\<^sub>\<w> \<pi>')"
-    unfolding neutrality\<^sub>\<G>_def BijGroup_def Bij_def \<psi>_neutral\<^sub>\<w>.simps
+    unfolding bijection\<^sub>\<A>\<^sub>\<G>_def BijGroup_def Bij_def \<psi>_neutral\<^sub>\<w>.simps
     using rel_rename_bij
     by blast
   hence group_elem': "\<psi>_neutral\<^sub>\<w> \<pi>' \<in> carrier (BijGroup UNIV)"
@@ -1458,8 +1440,8 @@ proof (unfold group_action_def group_hom_def hom_def neutrality\<^sub>\<G>_def
     by fastforce
 qed
 
-lemma neutrality_\<S>\<C>\<F>: "is_symmetry (\<lambda> \<E>. limit_\<S>\<C>\<F> (alternatives_\<E> \<E>) UNIV)
-            (action_induced_equivariance (carrier neutrality\<^sub>\<G>) well_formed_elections
+lemma neutrality_action_presv_\<S>\<C>\<F>_symmetry: "is_symmetry (\<lambda> \<E>. limit_\<S>\<C>\<F> (alternatives_\<E> \<E>) UNIV)
+            (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>) well_formed_elections
                                 (\<phi>_neutral well_formed_elections) (set_action \<psi>_neutral\<^sub>\<c>))"
 proof (unfold rewrite_equivariance, safe)
   fix
@@ -1469,7 +1451,7 @@ proof (unfold rewrite_equivariance, safe)
     p :: "'v \<Rightarrow> ('a \<times> 'a) set" and
     r :: "'a"
   assume
-    carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
+    carrier_\<pi>: "\<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G>" and
     prof: "(A, V, p) \<in> well_formed_elections"
   {
     moreover assume
@@ -1490,13 +1472,13 @@ proof (unfold rewrite_equivariance, safe)
   }
 qed
 
-lemma neutrality_\<S>\<W>\<F>: "is_symmetry (\<lambda> \<E>. limit_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)
-            (action_induced_equivariance (carrier neutrality\<^sub>\<G>) well_formed_elections
+lemma neutrality_action_presv_\<S>\<W>\<F>_symmetry: "is_symmetry (\<lambda> \<E>. limit_\<S>\<W>\<F>
+  (alternatives_\<E> \<E>) UNIV) (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>) well_formed_elections
                                 (\<phi>_neutral well_formed_elections) (set_action \<psi>_neutral\<^sub>\<w>))"
 proof (unfold rewrite_equivariance voters_\<E>.simps profile_\<E>.simps set_action.simps,
         safe)
   show "\<And> \<pi> A V p r.
-          \<pi> \<in> carrier neutrality\<^sub>\<G> \<Longrightarrow> (A, V, p) \<in> well_formed_elections
+          \<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G> \<Longrightarrow> (A, V, p) \<in> well_formed_elections
         \<Longrightarrow> r \<in> limit_\<S>\<W>\<F>
           (alternatives_\<E> (\<phi>_neutral well_formed_elections \<pi> (A, V , p))) UNIV
         \<Longrightarrow> r \<in> \<psi>_neutral\<^sub>\<w> \<pi> ` limit_\<S>\<W>\<F> (alternatives_\<E> (A, V, p)) UNIV"
@@ -1509,40 +1491,40 @@ proof (unfold rewrite_equivariance voters_\<E>.simps profile_\<E>.simps set_acti
       r :: "'c rel"
     let ?r_inv = "\<psi>_neutral\<^sub>\<w> (the_inv \<pi>) r"
     assume
-      carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
+      carrier_\<pi>: "\<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G>" and
       prof: "(A, V, p) \<in> well_formed_elections"
-    have inv_carrier: "the_inv \<pi> \<in> carrier neutrality\<^sub>\<G>"
+    have inv_carrier: "the_inv \<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G>"
       using carrier_\<pi> bij_betw_the_inv_into
-      unfolding neutrality\<^sub>\<G>_def rewrite_carrier
+      unfolding bijection\<^sub>\<A>\<^sub>\<G>_def rewrite_carrier
       by simp
     moreover have "the_inv \<pi> \<circ> \<pi> = id"
       using carrier_\<pi> universal_set_carrier_imp_bij_group bij_is_inj the_inv_f_f
-      unfolding neutrality\<^sub>\<G>_def
+      unfolding bijection\<^sub>\<A>\<^sub>\<G>_def
       by fastforce
-    moreover have "\<one> \<^bsub>neutrality\<^sub>\<G>\<^esub> = id"
-      unfolding neutrality\<^sub>\<G>_def BijGroup_def
+    moreover have "\<one> \<^bsub>bijection\<^sub>\<A>\<^sub>\<G>\<^esub> = id"
+      unfolding bijection\<^sub>\<A>\<^sub>\<G>_def BijGroup_def
       by auto
-    ultimately have "the_inv \<pi> \<otimes> \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> = \<one> \<^bsub>neutrality\<^sub>\<G>\<^esub>"
+    ultimately have "the_inv \<pi> \<otimes> \<^bsub>bijection\<^sub>\<A>\<^sub>\<G>\<^esub> \<pi> = \<one> \<^bsub>bijection\<^sub>\<A>\<^sub>\<G>\<^esub>"
       using carrier_\<pi> rewrite_mult_univ
-      unfolding neutrality\<^sub>\<G>_def
+      unfolding bijection\<^sub>\<A>\<^sub>\<G>_def
       by metis
-    hence "inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> = the_inv \<pi>"
+    hence "inv \<^bsub>bijection\<^sub>\<A>\<^sub>\<G>\<^esub> \<pi> = the_inv \<pi>"
       using carrier_\<pi> inv_carrier \<psi>_neutral\<^sub>\<c>_action.group_hom group.inv_closed
             group.inv_solve_right group.l_inv group_BijGroup group_hom.hom_one
             group_hom.one_closed
-      unfolding neutrality\<^sub>\<G>_def
+      unfolding bijection\<^sub>\<A>\<^sub>\<G>_def
       by metis
     hence neutral_r: "r = \<psi>_neutral\<^sub>\<w> \<pi> ?r_inv"
       using carrier_\<pi> inv_carrier iso_tuple_UNIV_I \<psi>_neutral\<^sub>\<w>_action.orbit_sym_aux
       by metis
     have bij_inv: "bij (the_inv \<pi>)"
       using carrier_\<pi> bij_betw_the_inv_into universal_set_carrier_imp_bij_group
-      unfolding neutrality\<^sub>\<G>_def
+      unfolding bijection\<^sub>\<A>\<^sub>\<G>_def
       by blast
     hence the_inv_\<pi>: "(the_inv \<pi>) ` \<pi> ` A = A"
       using carrier_\<pi> UNIV_I bij_betw_imp_surj universal_set_carrier_imp_bij_group
             f_the_inv_into_f_bij_betw image_f_inv_f surj_imp_inv_eq
-      unfolding neutrality\<^sub>\<G>_def
+      unfolding bijection\<^sub>\<A>\<^sub>\<G>_def
       by metis
     assume
       "r \<in> limit_\<S>\<W>\<F>
@@ -1584,28 +1566,28 @@ proof (unfold rewrite_equivariance voters_\<E>.simps profile_\<E>.simps set_acti
     p :: "('a, 'v) Profile" and
     r :: "'a rel"
   assume
-    carrier_\<pi>: "\<pi> \<in> carrier neutrality\<^sub>\<G>" and
+    carrier_\<pi>: "\<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G>" and
     prof: "(A, V, p) \<in> well_formed_elections"
   hence prof_\<pi>: 
     "\<phi>_neutral well_formed_elections \<pi> (A, V, p) \<in> well_formed_elections"
     using \<phi>_neutral_action.element_image
     by blast
-  moreover have inv_group_elem: "inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi> \<in> carrier neutrality\<^sub>\<G>"
+  moreover have inv_group_elem: "inv \<^bsub>bijection\<^sub>\<A>\<^sub>\<G>\<^esub> \<pi> \<in> carrier bijection\<^sub>\<A>\<^sub>\<G>"
     using carrier_\<pi> \<psi>_neutral\<^sub>\<c>_action.group_hom group.inv_closed
     unfolding group_hom_def
     by metis
-  moreover have "\<phi>_neutral well_formed_elections (inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>)
+  moreover have "\<phi>_neutral well_formed_elections (inv \<^bsub>bijection\<^sub>\<A>\<^sub>\<G>\<^esub> \<pi>)
         (\<phi>_neutral well_formed_elections \<pi> (A, V, p)) \<in> well_formed_elections"
     using prof \<phi>_neutral_action.element_image inv_group_elem prof_\<pi>
     by metis
   moreover assume "r \<in> limit_\<S>\<W>\<F> (alternatives_\<E> (A, V, p)) UNIV"
   hence "r \<in> limit_\<S>\<W>\<F>
-      (alternatives_\<E> (\<phi>_neutral well_formed_elections (inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>)
+      (alternatives_\<E> (\<phi>_neutral well_formed_elections (inv \<^bsub>bijection\<^sub>\<A>\<^sub>\<G>\<^esub> \<pi>)
         (\<phi>_neutral well_formed_elections \<pi> (A, V, p)))) UNIV"
     using \<phi>_neutral_action.orbit_sym_aux carrier_\<pi> prof
     by metis
   ultimately have
-    "r \<in> \<psi>_neutral\<^sub>\<w> (inv \<^bsub>neutrality\<^sub>\<G>\<^esub> \<pi>) `
+    "r \<in> \<psi>_neutral\<^sub>\<w> (inv \<^bsub>bijection\<^sub>\<A>\<^sub>\<G>\<^esub> \<pi>) `
       limit_\<S>\<W>\<F>
         (alternatives_\<E> (\<phi>_neutral well_formed_elections \<pi> (A, V, p))) UNIV"
     using prod.collapse
@@ -1631,7 +1613,7 @@ lemma refl_homogeneity\<^sub>\<R>:
   unfolding reflp_on'_def reflp_on_def finite_elections_\<V>_def
   by auto
 
-lemma (in result) homogeneity:
+lemma (in result) homogeneity_action_presv_symmetry:
   "is_symmetry (\<lambda> \<E>. limit (alternatives_\<E> \<E>) UNIV)
         (Invariance (homogeneity\<^sub>\<R> UNIV))"
   by simp
@@ -1644,7 +1626,7 @@ lemma refl_homogeneity\<^sub>\<R>':
   unfolding homogeneity\<^sub>\<R>'.simps reflp_on'_def reflp_on_def finite_elections_\<V>_def
   by auto
 
-lemma (in result) homogeneity':
+lemma (in result) homogeneity'_action_presv_symmetry:
   "is_symmetry (\<lambda> \<E>. limit (alternatives_\<E> \<E>) UNIV)
         (Invariance (homogeneity\<^sub>\<R>' UNIV))"
   by simp
@@ -1828,7 +1810,7 @@ next
     by presburger
 qed
 
-lemma reversal_symmetry: "is_symmetry (\<lambda> \<E>. limit_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)
+lemma reversal_symmetry_action_presv_symmetry: "is_symmetry (\<lambda> \<E>. limit_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)
         (action_induced_equivariance (carrier reversal\<^sub>\<G>) well_formed_elections
             (\<phi>_reverse well_formed_elections) (set_action \<psi>_reverse))"
 proof (unfold rewrite_equivariance, clarify)

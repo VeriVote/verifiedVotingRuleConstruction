@@ -166,7 +166,7 @@ next
         by auto
     qed
   qed
-  finally have "card {a \<in> A. rank (limit A r) a \<in> {1..n}} = n"
+  finally have "card {a \<in> A. rank (limit A r) a \<in> {1 .. n}} = n"
     by blast
   also have "{a \<in> A. rank (limit A r) a \<in> {1 .. n}} =
                 {a \<in> A. rank (limit A r) a \<le> n}"
@@ -203,7 +203,7 @@ next
   have "linear_order_on A (limit A r)"
     using assms limit_presv_lin_ord
     by blast
-  hence "profile V A (\<lambda> v. (limit A r))"
+  hence "profile V A (\<lambda> v. limit A r)"
     using profile_def
     by blast
   then obtain p :: "('a, 'b) Profile" where

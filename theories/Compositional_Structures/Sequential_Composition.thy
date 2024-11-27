@@ -361,7 +361,7 @@ proof -
     have "(elect m V A p)
       \<union> (elect n V (defer m V A p) (limit_profile (defer m V A p) p)) =
           elect m V A p"
-      using elect_in_alts[of "n" "V" "defer m V A p" "(limit_profile (defer m V A p) p)"]
+      using elect_in_alts[of _ _ _ "limit_profile (defer m V A p) p"]
             empty_defer module_n prof prof_no_alt
       by auto
     thus "elect (m \<triangleright> n) V A p = elect m V A p"
@@ -1042,8 +1042,8 @@ next
         using rej_A
         unfolding indep_of_alt_def
         by metis
-      from lifting_equiv_p_q
       have profiles: "profile V S p \<and> profile V S q"
+        using lifting_equiv_p_q
         unfolding equiv_prof_except_a_def
         by simp
       hence "(defer m V S p) \<subseteq> S"
@@ -1051,20 +1051,18 @@ next
         unfolding disjoint_compatibility_def
         by metis
       moreover have "a \<notin> defer m V S q"
-        using a_in_A compatible defer_not_elec_or_rej[of m V A p]
-              profiles rej_A IntI emptyE result_disj
+        using a_in_A compatible profiles rej_A IntI emptyE result_disj
         unfolding disjoint_compatibility_def
         by metis
       ultimately have
         "\<forall> v \<in> V. limit_profile (defer m V S p) p v =
                       limit_profile (defer m V S q) q v"
-        using lifting_equiv_p_q negl_diff_imp_eq_limit_prof[of V S]
+        using lifting_equiv_p_q negl_diff_imp_eq_limit_prof[of _ S]
         unfolding eq_defer limit_profile.simps
         by blast
-      with eq_defer
-      have "m' V (defer m V S p) (limit_profile (defer m V S p) p) =
+      hence "m' V (defer m V S p) (limit_profile (defer m V S p) p) =
               m' V (defer m V S q) (limit_profile (defer m V S q) q)"
-        using voters_determine_m'
+        using eq_defer voters_determine_m'
         by simp
       moreover have "m V S p = m V S q"
         using rej_A a_in_A lifting_equiv_p_q

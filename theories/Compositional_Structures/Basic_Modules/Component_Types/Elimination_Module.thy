@@ -32,8 +32,8 @@ fun elimination_set :: "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Val
 
 fun average :: "('a, 'v) Evaluation_Function \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow>
         Threshold_Value" where
-  "average e V A p = (let sum = (\<Sum> x \<in> A. e V x A p) in
-                      (if sum = \<infinity> then \<infinity> else (the_enat sum div (card A))))"
+  "average e V A p = (let sum_eval = (\<Sum> x \<in> A. e V x A p) in
+                      (if sum_eval = \<infinity> then \<infinity> else the_enat sum_eval div card A))"
 
 subsection \<open>Social-Choice Definitions\<close>
 

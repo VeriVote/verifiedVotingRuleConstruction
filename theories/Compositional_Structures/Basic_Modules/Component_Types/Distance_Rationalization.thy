@@ -116,44 +116,6 @@ lemma univ_\<K>\<^sub>\<E>:
   shows "elections_\<K> C \<subseteq> UNIV"
   by simp
 
-lemma list_cons_presv_finiteness:
-  fixes
-    A :: "'a set" and
-    S :: "'a list set"
-  assumes
-    fin_A: "finite A" and
-    fin_B: "finite S"
-  shows "finite {a#l | a l. a \<in> A \<and> l \<in> S}"
-proof -
-  let ?P = "\<lambda> A. finite {a#l | a l. a \<in> A \<and> l \<in> S}"
-  have "\<forall> a A'. finite A' \<longrightarrow> a \<notin> A' \<longrightarrow> ?P A' \<longrightarrow> ?P (insert a A')"
-  proof (clarify)
-    fix
-      a :: "'a" and
-      A' :: "'a set"
-    assume
-      fin: "finite A'" and
-      not_in: "a \<notin> A'" and
-      fin_set: "finite {a#l | a l. a \<in> A' \<and> l \<in> S}"
-    have "{a'#l | a' l. a' \<in> insert a A' \<and> l \<in> S}
-            = {a#l | a l. a \<in> A' \<and> l \<in> S} \<union> {a#l | l. l \<in> S}"
-      by auto
-    moreover have "finite {a#l | l. l \<in> S}"
-      using fin_B
-      by simp
-    ultimately have "finite {a'#l | a' l. a' \<in> insert a A' \<and> l \<in> S}"
-      using fin_set
-      by simp
-    thus "?P (insert a A')"
-      by simp
-  qed
-  moreover have "?P {}"
-    by simp
-  ultimately show "?P A"
-    using finite_induct[of A ?P] fin_A
-    by simp
-qed
-
 lemma listset_finiteness:
   fixes l :: "'a set list"
   assumes "\<forall> i :: nat. i < length l \<longrightarrow> finite (l!i)"
@@ -570,15 +532,13 @@ proof -
             (\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` {p'. finite_profile V A p'}))"
     using order_antisym
     by simp
-  also have inf_eq_min_for_std_cons:
-    "\<dots> = score_std d K (A, V, p) w"
+  also have inf_eq_min_for_std_cons: "\<dots> = score_std d K (A, V, p) w"
   proof (cases "\<K>\<^sub>\<E>_std K w A V = {}")
     case True
     hence "Inf (d (A, V, p) `
           (\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V `
             {p'. finite_profile V A p'})) = \<infinity>"
-      using eq_intersect
-      using top_ereal_def
+      using eq_intersect top_ereal_def
       by simp
     also have "score_std d K (A, V, p) w = \<infinity>"
       using True
