@@ -22,8 +22,7 @@ text \<open>
 subsection \<open>Definition\<close>
 
 fun condorcet_score :: "('a, 'v) Evaluation_Function" where
-  "condorcet_score V x A p =
-    (if (condorcet_winner V A p x) then 1 else 0)"
+  "condorcet_score V x A p = (if condorcet_winner V A p x then 1 else 0)"
 
 fun condorcet :: "('a, 'v, 'a Result) Electoral_Module" where
   "condorcet V A p = (max_eliminator condorcet_score) V A p"

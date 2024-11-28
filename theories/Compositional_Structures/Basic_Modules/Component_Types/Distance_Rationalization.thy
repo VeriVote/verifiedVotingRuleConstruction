@@ -62,15 +62,15 @@ text \<open>
 
 fun profiles :: "'v set \<Rightarrow> 'a set \<Rightarrow> (('a, 'v) Profile) set" where
   "profiles V A =
-    (if (infinite A \<or> infinite V)
-      then {} else {p. p ` V \<subseteq> (pl_\<alpha> ` permutations_of_set A)})"
+    (if infinite A \<or> infinite V
+      then {} else {p. p ` V \<subseteq> pl_\<alpha> ` permutations_of_set A})"
 
 fun \<K>\<^sub>\<E>_std :: "('a, 'v, 'r Result) Consensus_Class \<Rightarrow> 'r \<Rightarrow> 'a set \<Rightarrow> 'v set \<Rightarrow>
         ('a, 'v) Election set" where
   "\<K>\<^sub>\<E>_std K w A V =
-      (\<lambda> p. (A, V, p)) ` (Set.filter
-          (\<lambda> p. (consensus_\<K> K) (A, V, p) \<and> elect (rule_\<K> K) V A p = {w})
-          (profiles V A))"
+      (\<lambda> p. (A, V, p)) ` Set.filter
+          (\<lambda> p. consensus_\<K> K (A, V, p) \<and> elect (rule_\<K> K) V A p = {w})
+          (profiles V A)"
 
 text \<open>
   Returns those consensus elections on a given alternative and voter set
@@ -230,7 +230,7 @@ proof (cases "A = {}")
     using finite.emptyI finite_insert finite_subset
     by (metis (no_types, lifting))
 next
-  let ?profs = "(profiles V A \<inter> {p. \<forall> v. v \<notin> V \<longrightarrow> p v = x})"
+  let ?profs = "profiles V A \<inter> {p. \<forall> v. v \<notin> V \<longrightarrow> p v = x}"
   case False
   from fin_V obtain ord :: "'v rel" where
     "linear_order_on V ord"
@@ -394,7 +394,7 @@ next
     using lin_ord_not_empty
     by auto
   hence "finite A \<and> finite V \<and> A = {}
-    \<longrightarrow> ({p. finite_profile V A p} = {p. \<forall> v \<in> V. p v = {}})"
+    \<longrightarrow> {p. finite_profile V A p} = {p. \<forall> v \<in> V. p v = {}}"
     using non_voters
     by blast
   hence "finite A \<and> finite V \<and> A = {}
@@ -469,8 +469,8 @@ proof -
   hence eq_intersect: "\<K>\<^sub>\<E>_std K w A V =
            \<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` {p' :: ('a, 'v) Profile. finite_profile V A p'}"
     by force
-  have "(\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` {p' :: ('a, 'v) Profile. finite_profile V A p'})
-          \<subseteq> (\<K>\<^sub>\<E> K w)"
+  have "\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` {p' :: ('a, 'v) Profile. finite_profile V A p'}
+          \<subseteq> \<K>\<^sub>\<E> K w"
     by simp
   hence "Inf (d (A, V, p) ` (\<K>\<^sub>\<E> K w)) \<le>
                  Inf (d (A, V, p) ` (\<K>\<^sub>\<E> K w \<inter>
@@ -483,8 +483,8 @@ proof -
   proof (rule INF_greatest)
     let ?inf = "Inf (d (A, V, p) `
       (\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` {p'. finite_profile V A p'}))"
-    let ?compl = "(\<K>\<^sub>\<E> K w) -
-      (\<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` {p'. finite_profile V A p'})"
+    let ?compl = "\<K>\<^sub>\<E> K w -
+      \<K>\<^sub>\<E> K w \<inter> Pair A ` Pair V ` {p'. finite_profile V A p'}"
     fix i :: "('a, 'v) Election"
     assume el: "i \<in> \<K>\<^sub>\<E> K w"
     have in_intersect:
@@ -559,7 +559,7 @@ proof -
         "d (A, V, p) `(\<K>\<^sub>\<E>_std K w A V) \<subseteq>
             d (A, V, p) ` {(A, V, p') | p'. finite_profile V A p'}"
       by blast
-    let ?finite_prof = "\<lambda> p' v. (if (v \<in> V) then p' v else {})"
+    let ?finite_prof = "\<lambda> p' v. if v \<in> V then p' v else {}"
     have "\<forall> p'. finite_profile V A p' \<longrightarrow>
                   finite_profile V A (?finite_prof p')"
       unfolding If_def profile_def
@@ -754,7 +754,7 @@ next
       by (metis (no_types, opaque_lifting))
     hence "?inv = (A, ((the_inv \<pi>) ` V), p \<circ> (the_inv (the_inv \<pi>)))"
       by simp
-    moreover have "(p \<circ> (the_inv (the_inv \<pi>))) \<circ> (the_inv \<pi>) = p"
+    moreover have "p \<circ> the_inv (the_inv \<pi>) \<circ> the_inv \<pi> = p"
       using bijective inv_inv_id
       unfolding bij_betw_def comp_def
       by (simp add: f_the_inv_into_f)

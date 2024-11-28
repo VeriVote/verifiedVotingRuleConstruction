@@ -116,7 +116,7 @@ lemma distrib_ereal:
     A :: "'a set" and
     f g :: "'a \<Rightarrow> int"
   shows "ereal (real_of_int ((\<Sum> a \<in> A. (f :: 'a \<Rightarrow> int) a) + (\<Sum> a \<in> A. g a))) =
-    ereal (real_of_int ((\<Sum> a \<in> A. (f a) + (g a))))"
+    ereal (real_of_int (\<Sum> a \<in> A. f a + g a))"
   using distrib
   by metis
 

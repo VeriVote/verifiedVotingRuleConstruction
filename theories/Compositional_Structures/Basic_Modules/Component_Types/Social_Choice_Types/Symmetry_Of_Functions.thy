@@ -15,7 +15,7 @@ subsection \<open>Functions\<close>
 type_synonym ('x, 'y) binary_fun = "'x \<Rightarrow> 'y \<Rightarrow> 'y"
 
 fun extensional_continuation :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightarrow> ('x \<Rightarrow> 'y)" where
-  "extensional_continuation f S = (\<lambda> x. if (x \<in> S) then (f x) else undefined)"
+  "extensional_continuation f S = (\<lambda> x. if x \<in> S then f x else undefined)"
 
 fun preimg :: "('x \<Rightarrow> 'y) \<Rightarrow> 'x set \<Rightarrow> 'y \<Rightarrow> 'x set" where
   "preimg f S y = {x \<in> S. f x = y}"

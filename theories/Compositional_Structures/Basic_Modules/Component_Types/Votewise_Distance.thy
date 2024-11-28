@@ -22,7 +22,7 @@ subsection \<open>Definition\<close>
 fun votewise_distance :: "'a Vote Distance \<Rightarrow> Norm \<Rightarrow>
         ('a, 'v :: linorder) Election Distance" where
   "votewise_distance d n (A, V, p) (A', V', p') =
-    (if (finite V) \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')
+    (if finite V \<and> V = V' \<and> (V \<noteq> {} \<or> A = A')
     then n (map2 (\<lambda> q q'. d (A, q) (A', q')) (to_list V p) (to_list V' p'))
     else \<infinity>)"
 
@@ -34,7 +34,7 @@ lemma symmetric_norm_inv_under_map_permute:
     n :: "Norm" and
     A A'  :: "'a set" and
     \<phi> :: "nat \<Rightarrow> nat" and
-    p p'  :: "('a Preference_Relation) list"
+    p p'  :: "'a Preference_Relation list"
   assumes
     perm: "\<phi> permutes {0 ..< length p}" and
     len_eq: "length p = length p'" and
@@ -164,7 +164,7 @@ proof (unfold distance_anonymity_def, safe)
       using True bij_\<pi> to_list_permutes_under_bij
       by (metis (no_types))
     hence rn_list_perm_list_V':
-      "(to_list V' p') = permute_list ?perm_total (to_list ?rn_V' ?rn_p')"
+      "to_list V' p' = permute_list ?perm_total (to_list ?rn_V' ?rn_p')"
       using lengths_eq permute_invariant_under_coinciding_funs[of "to_list ?rn_V' ?rn_p'"]
       by fastforce
     have "?perm_total permutes {0 ..< ?len}"

@@ -14,7 +14,7 @@ begin
 subsection \<open>Definitions\<close>
 
 fun singleton_set :: "'x set \<Rightarrow> 'x" where
-  "singleton_set s = (if (card s = 1) then (the_inv (\<lambda> x. {x}) s) else undefined)"
+  "singleton_set s = (if card s = 1 then the_inv (\<lambda> x. {x}) s else undefined)"
 \<comment> \<open>This is undefined if \<open>card s \<noteq> 1\<close>.
     Note that "\<open>undefined = undefined\<close>" is the only provable equality for \<open>undefined\<close>.\<close>
 

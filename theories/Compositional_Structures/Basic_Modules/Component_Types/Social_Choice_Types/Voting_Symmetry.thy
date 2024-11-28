@@ -441,7 +441,7 @@ proof -
   obtain g :: "'x \<Rightarrow> 'x" where
     def_g:
       "g = (\<lambda> x. if x \<in> A then f x else
-                (if x \<in> B - A then n_app (g' x) (the_inv_into A f) x else x))"
+                if x \<in> B - A then n_app (g' x) (the_inv_into A f) x else x)"
     by simp
   hence coincide: "\<forall> a \<in> A. g a = f a"
     by simp
