@@ -185,9 +185,9 @@ lemma loop_comp_code_helper[code]:
     p :: "('a, 'v) Profile"
   shows
     "loop_comp_helper acc m t V A p =
-      (if (t (acc V A p) \<or> \<not> ((defer (acc \<triangleright> m) V A p) \<subset> (defer acc V A p))
-      \<or> infinite (defer acc V A p))
-      then (acc V A p) else (loop_comp_helper (acc \<triangleright> m) m t V A p))"
+      (if t (acc V A p) \<or> \<not> defer (acc \<triangleright> m) V A p \<subset> defer acc V A p
+      \<or> infinite (defer acc V A p)
+      then acc V A p else loop_comp_helper (acc \<triangleright> m) m t V A p)"
   using loop_comp_helper.simps
   by (metis (no_types))
 
@@ -215,8 +215,8 @@ lemma loop_comp_code[code]:
     V :: "'v set" and
     p :: "('a, 'v) Profile"
   shows "loop_composition m t V A p =
-          (if (t ({}, {}, A))
-            then (defer_module V A p) else (loop_comp_helper m m t) V A p)"
+          (if t ({}, {}, A)
+            then defer_module V A p else (loop_comp_helper m m t) V A p)"
   by simp
 
 lemma loop_comp_helper_imp_partit:
@@ -674,9 +674,9 @@ proof (induct n arbitrary: acc rule: less_induct)
     fix x :: "'a"
     assume
       acc_no_elect:
-      "(\<And> i acc'. i < card (defer acc V A p) \<Longrightarrow>
+      "\<And> i acc'. i < card (defer acc V A p) \<Longrightarrow>
         i = card (defer acc' V A p) \<Longrightarrow> non_electing acc' \<Longrightarrow>
-          elect (loop_comp_helper acc' m t) V A p = {})" and
+          elect (loop_comp_helper acc' m t) V A p = {}" and
       acc_non_elect: "non_electing acc" and
       x_in_acc_elect: "x \<in> elect (loop_comp_helper acc m t) V A p"
     have "\<forall> m' n'. non_electing m' \<and> non_electing n' \<longrightarrow> non_electing (m' \<triangleright> n')"

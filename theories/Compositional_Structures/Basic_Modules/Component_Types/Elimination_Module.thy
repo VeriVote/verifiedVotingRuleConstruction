@@ -33,15 +33,15 @@ fun elimination_set :: "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Val
 fun average :: "('a, 'v) Evaluation_Function \<Rightarrow> 'v set \<Rightarrow> 'a set \<Rightarrow> ('a, 'v) Profile \<Rightarrow>
         Threshold_Value" where
   "average e V A p = (let sum_eval = (\<Sum> x \<in> A. e V x A p) in
-                      (if sum_eval = \<infinity> then \<infinity> else the_enat sum_eval div card A))"
+                      if sum_eval = \<infinity> then \<infinity> else the_enat sum_eval div card A)"
 
 subsection \<open>Social-Choice Definitions\<close>
 
 fun elimination_module :: "('a, 'v) Evaluation_Function \<Rightarrow> Threshold_Value \<Rightarrow>
         Threshold_Relation \<Rightarrow> ('a, 'v, 'a Result) Electoral_Module" where
   "elimination_module e t r V A p =
-      (if (elimination_set e t r V A p) \<noteq> A
-        then ({}, (elimination_set e t r V A p), A - (elimination_set e t r V A p))
+      (if elimination_set e t r V A p \<noteq> A
+        then ({}, elimination_set e t r V A p, A - elimination_set e t r V A p)
         else ({}, {}, A))"
 
 subsection \<open>Social-Choice Eliminators\<close>
@@ -473,7 +473,7 @@ next
       using winner assms mem_Collect_eq linorder_neq_iff
       unfolding condorcet_rating_def
       by (metis (mono_tags, lifting))
-    hence elim_set: "(elimination_set e ?trsh (<) V A p) = A - {a}"
+    hence elim_set: "elimination_set e ?trsh (<) V A p = A - {a}"
       unfolding elimination_set.simps
       using f_prof
       by fastforce
@@ -481,8 +481,8 @@ next
     hence
       "max_eliminator e V A p =
         ({},
-          (elimination_set e ?trsh (<) V A p),
-          A - (elimination_set e ?trsh (<) V A p))"
+          elimination_set e ?trsh (<) V A p,
+          A - elimination_set e ?trsh (<) V A p)"
       by simp
     also have "\<dots> = ({}, A - defer (max_eliminator e) V A p, {a})"
       using elim_set winner

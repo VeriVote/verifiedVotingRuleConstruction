@@ -385,8 +385,8 @@ text \<open>
 
 fun to_list :: "'v :: linorder set \<Rightarrow> ('a, 'v) Profile \<Rightarrow>
         ('a Preference_Relation) list" where
-  "to_list V p = (if (finite V)
-                    then (map p (sorted_list_of_set V))
+  "to_list V p = (if finite V
+                    then map p (sorted_list_of_set V)
                     else [])"
 
 lemma map_helper:
@@ -658,12 +658,12 @@ text \<open>
 \<close>
 
 fun win_count :: "'v set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> enat" where
-  "win_count V p a = (if (finite V)
+  "win_count V p a = (if finite V
     then card {v \<in> V. above (p v) a = {a}} else \<infinity>)"
 
 fun prefer_count :: "'v set \<Rightarrow> ('a, 'v) Profile \<Rightarrow> 'a \<Rightarrow> 'a \<Rightarrow> enat" where
-  "prefer_count V p x y = (if (finite V)
-      then card {v \<in> V. (let r = (p v) in (y \<preceq>\<^sub>r x))} else \<infinity>)"
+  "prefer_count V p x y = (if finite V
+      then card {v \<in> V. let r = (p v) in (y \<preceq>\<^sub>r x)} else \<infinity>)"
 
 lemma pref_count_voter_set_card:
   fixes

@@ -652,18 +652,18 @@ proof (rule ccontr)
     y_in_set_l: "y \<in> set l" and
     y_neq_x: "y \<noteq> x" and
     neq_indices:
-      "(index l y < index l x \<and> index l' y > index l' x)
-      \<or> (index l' y < index l' x \<and> index l y > index l x)"
+      "index l y < index l x \<and> index l' y > index l' x
+      \<or> index l' y < index l' x \<and> index l y > index l x"
     using index_eq_index_conv not_less_iff_gr_or_eq set_eq
     by (metis (mono_tags, lifting))
   hence
-    "(is_less_preferred_than_l x l y \<and> is_less_preferred_than_l y l' x)
-    \<or> (is_less_preferred_than_l x l' y \<and> is_less_preferred_than_l y l x)"
+    "is_less_preferred_than_l x l y \<and> is_less_preferred_than_l y l' x
+    \<or> is_less_preferred_than_l x l' y \<and> is_less_preferred_than_l y l x"
     unfolding is_less_preferred_than_l.simps
     using y_in_set_l less_imp_le_nat set_eq x_in_l
     by blast
-  hence "((x, y) \<in> pl_\<alpha> l \<and> (x, y) \<notin> pl_\<alpha> l')
-        \<or> ((x, y) \<in> pl_\<alpha> l' \<and> (x, y) \<notin> pl_\<alpha> l)"
+  hence "(x, y) \<in> pl_\<alpha> l \<and> (x, y) \<notin> pl_\<alpha> l'
+        \<or> (x, y) \<in> pl_\<alpha> l' \<and> (x, y) \<notin> pl_\<alpha> l"
     unfolding pl_\<alpha>_def
     using is_less_preferred_than_l.simps y_neq_x neq_indices
           case_prod_conv linorder_not_less mem_Collect_eq
@@ -1133,7 +1133,7 @@ lemma rel_of_pref_pred_for_set_eq_list_to_rel:
 proof (unfold relation_of_def, safe)
   fix a b :: "'a"
   assume "a \<lesssim>\<^sub>l b"
-  moreover have "(a \<lesssim>\<^sub>l b) = (a \<preceq>\<^sub>(pl_\<alpha> l) b)"
+  moreover have "a \<lesssim>\<^sub>l b = (a \<preceq>\<^sub>(pl_\<alpha> l) b)"
     using less_preferred_l_rel_equiv
     by (metis (no_types))
   ultimately show "(a, b) \<in> pl_\<alpha> l"

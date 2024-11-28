@@ -572,13 +572,13 @@ subsection \<open>Homogeneity Quotient: Simplex\<close>
 
 fun vote_fraction :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election \<Rightarrow> rat" where
   "vote_fraction r E =
-    (if (finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {})
-      then (Fract (vote_count r E) (card (voters_\<E> E))) else 0)"
+    (if finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {}
+      then Fract (vote_count r E) (card (voters_\<E> E)) else 0)"
 
 fun anonymity_homogeneity\<^sub>\<R> :: "('a, 'v) Election set \<Rightarrow> ('a, 'v) Election rel" where
   "anonymity_homogeneity\<^sub>\<R> \<E> =
     {(E, E') | E E'. E \<in> \<E> \<and> E' \<in> \<E>
-                  \<and> (finite (voters_\<E> E) = finite (voters_\<E> E'))
+                  \<and> finite (voters_\<E> E) = finite (voters_\<E> E')
                   \<and> (\<forall> r. vote_fraction r E = vote_fraction r E')}"
 
 fun anonymity_homogeneity\<^sub>\<Q> :: "'a set \<Rightarrow> ('a, 'v) Election set set" where
@@ -610,7 +610,7 @@ text \<open>
 \<close>
 definition vote_simplex :: "(rat^'b) set" where
   "vote_simplex \<equiv>
-    insert 0 (rat_vector_set (convex hull (standard_basis :: (real^'b) set)))"
+    insert 0 (rat_vector_set (convex hull standard_basis :: (real^'b) set))"
 
 subsubsection \<open>Auxiliary Lemmas\<close>
 
@@ -618,9 +618,9 @@ lemma convex_combination_in_convex_hull:
   fixes
     X :: "(real^'b) set" and
     x :: "real^'b"
-  assumes "\<exists> f :: (real^'b) \<Rightarrow> real.
+  assumes "\<exists> f :: real^'b \<Rightarrow> real.
             (\<Sum> y \<in> X. f y) = 1 \<and> (\<forall> x \<in> X. f x \<ge> 0)
-              \<and> x = (\<Sum> x \<in> X. (f x) *\<^sub>R x)"
+              \<and> x = (\<Sum> x \<in> X. f x *\<^sub>R x)"
   shows "x \<in> convex hull X"
   using assms
 proof (induction "card X" arbitrary: X x)
@@ -654,7 +654,7 @@ next
             \<Longrightarrow> \<exists> f. (\<Sum> y \<in> X. f y) = 1 \<and> (\<forall> x \<in> X. 0 \<le> f x) \<and> x =
                       (\<Sum> x \<in> X. f x *\<^sub>R x)
             \<Longrightarrow> x \<in> convex hull X"
-  then obtain f :: "(real^'b) \<Rightarrow> real" where
+  then obtain f :: "real^'b \<Rightarrow> real" where
     sum: "(\<Sum> y \<in> X. f y) = 1" and
     nonneg: "\<forall> x \<in> X. 0 \<le> f x" and
     x_sum: "x = (\<Sum> x \<in> X. f x *\<^sub>R x)"
@@ -769,20 +769,20 @@ next
 qed
 
 lemma standard_simplex_rewrite: "convex hull standard_basis =
-    {v :: (real^'b). (\<forall> i. v$i \<ge> 0) \<and> (\<Sum> y \<in> UNIV. v$y) = 1}"
+    {v :: real^'b. (\<forall> i. v$i \<ge> 0) \<and> (\<Sum> y \<in> UNIV. v$y) = 1}"
 proof (unfold convex_def hull_def, intro equalityI)
-  let ?simplex = "{v :: (real^'b). (\<forall> i. v$i \<ge> 0) \<and> (\<Sum> y \<in> UNIV. v$y) = 1}"
-  have "\<forall> v :: (real^'b) \<in> standard_basis. \<exists> b.
+  let ?simplex = "{v :: real^'b. (\<forall> i. v$i \<ge> 0) \<and> (\<Sum> y \<in> UNIV. v$y) = 1}"
+  have "\<forall> v :: real^'b \<in> standard_basis. \<exists> b.
         v$b = 1 \<and> (\<forall> c. c \<noteq> b \<longrightarrow> v$c = 0)"
     unfolding standard_basis_def
     by simp
   then obtain one :: "real^'b \<Rightarrow> 'b" where
     def_map: "\<forall> v \<in> standard_basis. v$(one v) = 1 \<and> (\<forall> i \<noteq> one v. v$i = 0)"
     by metis
-  hence "\<forall> v :: (real^'b) \<in> standard_basis. \<forall> b. v$b \<ge> 0"
+  hence "\<forall> v :: real^'b \<in> standard_basis. \<forall> b. v$b \<ge> 0"
     using dual_order.refl zero_less_one_class.zero_le_one
     by metis
-  moreover have "\<forall> v :: (real^'b) \<in> standard_basis.
+  moreover have "\<forall> v :: real^'b \<in> standard_basis.
       (\<Sum> z \<in> UNIV. v$z) = (\<Sum> z \<in> UNIV - {one v}. v$z) + v$(one v)"
     unfolding def_map
     using add.commute finite insert_UNIV sum.insert_remove
@@ -793,10 +793,10 @@ proof (unfold convex_def hull_def, intro equalityI)
     by simp
   ultimately have "standard_basis \<subseteq> ?simplex"
     by force
-  moreover have "\<forall> x :: (real^'b). \<forall> y. (\<Sum> z \<in> UNIV. (x + y)$z) =
+  moreover have "\<forall> x :: real^'b. \<forall> y. (\<Sum> z \<in> UNIV. (x + y)$z) =
             (\<Sum> z \<in> UNIV. x$z) + (\<Sum> z \<in> UNIV. y$z)"
     by (simp add: sum.distrib)
-  hence "\<forall> x :: (real^'b). \<forall> y. \<forall> u v.
+  hence "\<forall> x :: real^'b. \<forall> y. \<forall> u v.
     (\<Sum> z \<in> UNIV. (u *\<^sub>R x + v *\<^sub>R y)$z) =
           u *\<^sub>R (\<Sum> z \<in> UNIV. x$z) + v *\<^sub>R (\<Sum> z \<in> UNIV. y$z)"
     using scaleR_right.sum sum.cong vector_scaleR_component
@@ -820,13 +820,13 @@ next
   proof (intro subsetI)
     fix
       x :: "real^'b" and
-      X :: "(real^'b) set"
+      X :: "real^'b set"
     assume convex_comb:
       "x \<in> {v. (\<forall> i. 0 \<le> v$i) \<and> (\<Sum> y \<in> UNIV. v$y) = 1}"
     have "\<forall> v \<in> standard_basis. \<exists> b. v$b = 1 \<and> (\<forall> b' \<noteq> b. v$b' = 0)"
       unfolding standard_basis_def
       by simp
-    then obtain ind :: "(real^'b) \<Rightarrow> 'b" where
+    then obtain ind :: "real^'b \<Rightarrow> 'b" where
       ind_eq_one: "\<forall> v \<in> standard_basis. v$(ind v) = 1" and
       ind_eq_zero: "\<forall> v \<in> standard_basis. \<forall> b \<noteq> (ind v). v$b = 0"
       by metis
@@ -844,7 +844,7 @@ next
     hence bij_ind_std: "bij_betw ind standard_basis (ind ` standard_basis)"
       unfolding bij_betw_def
       by simp
-    obtain ind_inv :: "'b \<Rightarrow> (real^'b)" where
+    obtain ind_inv :: "'b \<Rightarrow> real^'b" where
       char_vec: "ind_inv = (\<lambda> b. \<chi> i. if i = b then 1 else 0)"
       by blast
     hence in_basis: "\<forall> b. ind_inv b \<in> standard_basis"
@@ -862,7 +862,7 @@ next
       using ind_inv_map bij_ind_std bij_betw_byWitness[of _ ind] in_basis inj_ind
       unfolding image_subset_iff
       by simp
-    obtain f :: "(real^'b) \<Rightarrow> real" where
+    obtain f :: "real^'b \<Rightarrow> real" where
       func: "f = (\<lambda> v. if v \<in> standard_basis then x$(ind v) else 0)"
       by blast
     hence "(\<Sum> y \<in> standard_basis. f y) = (\<Sum> v \<in> standard_basis. x$(ind v))"
@@ -882,14 +882,14 @@ next
       by fastforce
     hence
       "\<forall> v \<in> standard_basis.
-          (x$(ind v)) *\<^sub>R v = (\<chi> i. if i = ind v then x$(ind v) else 0)"
+          x$(ind v) *\<^sub>R v = (\<chi> i. if i = ind v then x$(ind v) else 0)"
       unfolding scaleR_vec_def
       by simp
-    moreover have "(\<Sum> x \<in> standard_basis. (f x) *\<^sub>R x) =
-        (\<Sum> v \<in> standard_basis. (x$(ind v)) *\<^sub>R v)"
+    moreover have "(\<Sum> x \<in> standard_basis. f x *\<^sub>R x) =
+        (\<Sum> v \<in> standard_basis. x$(ind v) *\<^sub>R v)"
       unfolding func
       by simp
-    ultimately have "(\<Sum> x \<in> standard_basis. (f x) *\<^sub>R x)
+    ultimately have "(\<Sum> x \<in> standard_basis. f x *\<^sub>R x)
           = (\<Sum> v \<in> standard_basis. \<chi> i. if i = ind v then x$(ind v) else 0)"
       by force
     also have "\<dots> = (\<Sum> b \<in> UNIV. \<chi> i. if i = ind (ind_inv b)
@@ -900,15 +900,15 @@ next
     also have "\<dots> = (\<Sum> b \<in> UNIV. \<chi> i. if i = b then x$b else 0)"
       using ind_inv_map
       by presburger
-    finally have "(\<Sum> x \<in> standard_basis. (f x) *\<^sub>R x) =
+    finally have "(\<Sum> x \<in> standard_basis. f x *\<^sub>R x) =
         (\<Sum> b \<in> UNIV. \<chi> i. if i = b then x$b else 0)"
       by simp
-    hence "(\<Sum> x \<in> standard_basis. (f x) *\<^sub>R x) = x"
+    hence "(\<Sum> x \<in> standard_basis. f x *\<^sub>R x) = x"
       unfolding vec_eq_iff
       by simp
-    hence "\<exists> f :: (real^'b) \<Rightarrow> real.
+    hence "\<exists> f :: real^'b \<Rightarrow> real.
               (\<Sum> y \<in> standard_basis. f y) = 1 \<and> (\<forall> x \<in> standard_basis. f x \<ge> 0)
-            \<and> x = (\<Sum> x \<in> standard_basis. (f x) *\<^sub>R x)"
+            \<and> x = (\<Sum> x \<in> standard_basis. f x *\<^sub>R x)"
       using sum_eq_one nonneg
       by blast
     thus "x \<in> \<Inter> {t. (\<forall> x \<in> t. \<forall> y \<in> t. \<forall> u \<ge> 0. \<forall> v \<ge> 0.
@@ -1040,8 +1040,8 @@ theorem anonymity_homogeneity\<^sub>\<Q>_isomorphism:
   assumes "infinite (UNIV :: 'v set)"
   shows
     "bij_betw (anonymity_homogeneity_class :: ('a :: finite, 'v) Election set \<Rightarrow>
-        rat^('a Ordered_Preference)) (anonymity_homogeneity\<^sub>\<Q> (UNIV :: 'a set))
-          (vote_simplex :: (rat^('a Ordered_Preference)) set)"
+        rat^'a Ordered_Preference) (anonymity_homogeneity\<^sub>\<Q> (UNIV :: 'a set))
+          (vote_simplex :: (rat^'a Ordered_Preference) set)"
 proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
   fix X Y :: "('a, 'v) Election set"
   assume
@@ -1136,7 +1136,7 @@ proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
     by (metis (no_types, lifting))
 next
   show "(anonymity_homogeneity_class :: ('a, 'v) Election set
-            \<Rightarrow> rat^('a Ordered_Preference))
+            \<Rightarrow> rat^'a Ordered_Preference)
         ` anonymity_homogeneity\<^sub>\<Q> UNIV = vote_simplex"
   proof (unfold vote_simplex_def, safe)
     fix X :: "('a, 'v) Election set"
@@ -1351,7 +1351,7 @@ next
       by simp
     ultimately have "anonymity_homogeneity_class
       (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)
-          `` {(UNIV, {}, \<lambda> v. {})}) = (0 :: (rat^('a Ordered_Preference)))"
+          `` {(UNIV, {}, \<lambda> v. {})}) = (0 :: rat^'a Ordered_Preference)"
       using vec_eq_iff
       by (metis (no_types))
     moreover have "(UNIV, {}, \<lambda> v. {}) \<in> elections_\<A> UNIV"
@@ -1365,10 +1365,10 @@ next
       using image_eqI
       by (metis (no_types))
   next
-    fix x :: "rat^('a Ordered_Preference)"
+    fix x :: "rat^'a Ordered_Preference"
     assume "x \<in> rat_vector_set (convex hull standard_basis)"
     \<comment> \<open>The following converts a rational vector \<open>x\<close> to real vector \<open>x'\<close>.\<close>
-    then obtain x' :: "real^('a Ordered_Preference)" where
+    then obtain x' :: "real^'a Ordered_Preference" where
       conv: "x' \<in> convex hull standard_basis" and
       inv: "\<forall> p. x$p = the_inv real_of_rat (x'$p)" and
       rat: "\<forall> p. x'$p \<in> \<rat>"
@@ -1544,7 +1544,7 @@ next
                 vote_fraction\<^sub>\<Q>.simps \<pi>\<^sub>\<Q>.simps
       by (metis (no_types, lifting))
     thus "x \<in> (anonymity_homogeneity_class
-              :: ('a, 'v) Election set \<Rightarrow> rat^('a Ordered_Preference))
+              :: ('a, 'v) Election set \<Rightarrow> rat^'a Ordered_Preference)
             ` anonymity_homogeneity\<^sub>\<Q> UNIV"
       unfolding anonymity_homogeneity\<^sub>\<Q>.simps quotient_def
       using election
