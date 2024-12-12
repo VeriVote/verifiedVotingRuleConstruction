@@ -14,7 +14,7 @@ text \<open>
   Votewise distances are a natural class of distances on elections
   which depend on the submitted votes in a simple and transparent manner.
   They are formed by using any distance d on individual orders and combining
-  the components with a norm on $\mathbb{R}^n$.
+  the components with a norm on \<open>\<real>\<^sup>n\<close>.
 \<close>
 
 subsection \<open>Definition\<close>

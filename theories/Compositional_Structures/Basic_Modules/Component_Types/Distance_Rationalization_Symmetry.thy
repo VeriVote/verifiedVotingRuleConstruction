@@ -621,7 +621,7 @@ theorem (in result) anon_dist_and_cons_imp_anon_dr:
 proof -
   have "\<forall> \<pi>. \<forall> E \<in> elections_\<K> C.
       \<phi>_anon (elections_\<K> C) \<pi> E = \<phi>_anon well_formed_elections \<pi> E"
-    using cons_domain_valid extensional_continuation_subset
+    using cons_domain_well_formed extensional_continuation_subset
     unfolding \<phi>_anon.simps
     by metis
   hence "action_induced_rel (carrier bijection\<^sub>\<V>\<^sub>\<G>) (elections_\<K> C)
@@ -637,8 +637,8 @@ proof -
     unfolding consensus_rule_anonymity'.simps anonymity\<^sub>\<R>.simps
     by presburger
   thus ?thesis
-    using anon_d closed_C cons_domain_valid anonymous_group_action.group_action_axioms
-          anonymity_action_presv_symmetry invar_dist_cons_imp_invar_dr_rule
+    using anon_d closed_C cons_domain_well_formed anonymity_action_presv_symmetry
+          anonymous_group_action.group_action_axioms invar_dist_cons_imp_invar_dr_rule
     unfolding distance_anonymity'.simps anonymity\<^sub>\<R>.simps anonymity'.simps
               anonymity_in.simps
     by blast
@@ -657,7 +657,7 @@ theorem (in result_properties) neutr_dist_and_cons_imp_neutr_dr:
 proof -
   have "\<forall> \<pi>. \<forall> E \<in> elections_\<K> C.
       \<phi>_neutral well_formed_elections \<pi> E = \<phi>_neutral (elections_\<K> C) \<pi> E"
-    using cons_domain_valid extensional_continuation_subset
+    using cons_domain_well_formed extensional_continuation_subset
     unfolding \<phi>_neutral.simps
     by metis
   hence "is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
@@ -668,7 +668,7 @@ proof -
     by (metis (no_types, lifting))
   thus ?thesis
     using neutral_d closed_C \<phi>_neutral_action.group_action_axioms
-          neutrality action_neutral cons_domain_valid[of C]
+          neutrality action_neutral cons_domain_well_formed[of C]
           invar_dist_equivar_cons_imp_equivar_dr_rule[of
             _ _ "\<phi>_neutral well_formed_elections"]
     by simp
@@ -687,7 +687,7 @@ theorem reversal_sym_dist_and_cons_imp_reversal_sym_dr:
 proof -
   have "\<forall> \<pi>. \<forall> E \<in> elections_\<K> C.
       \<phi>_reverse well_formed_elections \<pi> E = \<phi>_reverse (elections_\<K> C) \<pi> E"
-    using cons_domain_valid extensional_continuation_subset
+    using cons_domain_well_formed extensional_continuation_subset
     unfolding \<phi>_reverse.simps
     by metis
   hence "is_symmetry (elect_r \<circ> fun\<^sub>\<E> (rule_\<K> C))
@@ -697,34 +697,34 @@ proof -
     unfolding consensus_rule_reversal_symmetry.simps
     by (metis (no_types, lifting))
   thus ?thesis
-    using reverse_sym_d closed_C reversal_symmetry_action_presv_symmetry
+    using reverse_sym_d closed_C reversal_symm_act_presv_symmetry
           \<S>\<W>\<F>_result.invar_dist_equivar_cons_imp_equivar_dr_rule
-          \<phi>_reverse_action.group_action_axioms cons_domain_valid
+          \<phi>_reverse_action.group_action_axioms cons_domain_well_formed
           \<psi>_reverse_action.group_action_axioms
     unfolding reversal_symmetry.simps reversal_symmetry_in_def
               reversal\<^sub>\<R>.simps distance_reversal_symmetry.simps
     by metis
 qed
 
-theorem (in result) tot_hom_dist_imp_hom_dr:
+theorem (in result) distance_homogeneity_imp_distance_\<R>_homogeneity:
   fixes
     d :: "('a, nat) Election Distance" and
     C :: "('a, nat, 'r Result) Consensus_Class"
-  assumes "distance_homogeneity finite_elections_\<V> d"
+  assumes "distance_homogeneity well_formed_finite_\<V>_elections d"
   shows "homogeneity (distance_\<R> d C)"
 proof -
-  have "Restrp (homogeneity\<^sub>\<R> finite_elections_\<V>) (elections_\<K> C) =
+  have "Restrp (homogeneity\<^sub>\<R> well_formed_finite_\<V>_elections) (elections_\<K> C) =
           homogeneity\<^sub>\<R> (elections_\<K> C)"
-    using cons_domain_finite
-    unfolding homogeneity\<^sub>\<R>.simps finite_elections_\<V>_def
+    using cons_domain_finite cons_domain_well_formed well_formed_and_finite_\<V>_elections
+    unfolding homogeneity\<^sub>\<R>.simps
     by blast
   hence "reflp_on' (elections_\<K> C)
-      (Restrp (homogeneity\<^sub>\<R> finite_elections_\<V>) (elections_\<K> C))"
+      (Restrp (homogeneity\<^sub>\<R> well_formed_finite_\<V>_elections) (elections_\<K> C))"
     using refl_homogeneity\<^sub>\<R>[of "elections_\<K> C"] cons_domain_finite[of C]
     by presburger
   moreover have
     "is_symmetry (\<lambda> E. limit (alternatives_\<E> E) UNIV)
-        (Invariance (homogeneity\<^sub>\<R> finite_elections_\<V>))"
+        (Invariance (homogeneity\<^sub>\<R> well_formed_finite_\<V>_elections))"
     using homogeneity_action_presv_symmetry
     by simp
   ultimately show ?thesis
@@ -733,29 +733,30 @@ proof -
     by blast
 qed
 
-theorem (in result) tot_hom_dist_imp_hom_dr':
+theorem (in result) distance_homogeneity'_imp_distance_\<R>_homogeneity':
   fixes
     d :: "('a, 'v :: linorder) Election Distance" and
     C :: "('a, 'v, 'r Result) Consensus_Class"
-  assumes "distance_homogeneity' finite_elections_\<V> d"
+  assumes "distance_homogeneity' well_formed_finite_\<V>_elections d"
   shows "homogeneity' (distance_\<R> d C)"
 proof (unfold homogeneity'.simps homogeneity'_in.simps)
-  have "Restrp (homogeneity\<^sub>\<R>' finite_elections_\<V>) (elections_\<K> C) =
+  have "Restrp (homogeneity\<^sub>\<R>' well_formed_finite_\<V>_elections) (elections_\<K> C) =
           homogeneity\<^sub>\<R>' (elections_\<K> C)"
-    using cons_domain_finite
-    unfolding homogeneity\<^sub>\<R>'.simps finite_elections_\<V>_def
+    using cons_domain_finite cons_domain_well_formed well_formed_and_finite_\<V>_elections
+    unfolding homogeneity\<^sub>\<R>'.simps
     by blast
   hence "reflp_on' (elections_\<K> C)
-      (Restrp (homogeneity\<^sub>\<R>' finite_elections_\<V>) (elections_\<K> C))"
+      (Restrp (homogeneity\<^sub>\<R>' well_formed_finite_\<V>_elections) (elections_\<K> C))"
     using refl_homogeneity\<^sub>\<R>'[of "elections_\<K> C"] cons_domain_finite[of C]
     by presburger
   moreover have
     "is_symmetry (\<lambda> E. limit (alternatives_\<E> E) UNIV)
-        (Invariance (homogeneity\<^sub>\<R>' finite_elections_\<V>))"
+        (Invariance (homogeneity\<^sub>\<R>' well_formed_finite_\<V>_elections))"
     using homogeneity'_action_presv_symmetry
     by simp
   ultimately show
-    "is_symmetry (fun\<^sub>\<E> (distance_\<R> d C)) (Invariance (homogeneity\<^sub>\<R>' finite_elections_\<V>))"
+    "is_symmetry (fun\<^sub>\<E> (distance_\<R> d C))
+      (Invariance (homogeneity\<^sub>\<R>' well_formed_finite_\<V>_elections))"
     using assms tot_invar_dist_imp_invar_dr_rule
     unfolding distance_homogeneity'_def
     by blast

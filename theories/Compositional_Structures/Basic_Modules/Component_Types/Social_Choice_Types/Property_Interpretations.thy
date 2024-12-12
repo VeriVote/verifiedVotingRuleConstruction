@@ -41,14 +41,14 @@ subsection \<open>Interpretations\<close>
 global_interpretation \<S>\<C>\<F>_properties: "result_properties" "well_formed_\<S>\<C>\<F>"
         "limit_\<S>\<C>\<F>" "\<psi>_neutral\<^sub>\<c>"
   unfolding result_properties_def result_properties_axioms_def
-  using neutrality_action_presv_\<S>\<C>\<F>_symmetry \<psi>_neutral\<^sub>\<c>_action.group_action_axioms
+  using neutral_act_presv_\<S>\<C>\<F>_symmetry \<psi>_neutral\<^sub>\<c>_action.group_action_axioms
         \<S>\<C>\<F>_result.result_axioms
   by blast
 
 global_interpretation \<S>\<W>\<F>_properties: "result_properties" "well_formed_\<S>\<W>\<F>"
         "limit_\<S>\<W>\<F>" "\<psi>_neutral\<^sub>\<w>"
   unfolding result_properties_def result_properties_axioms_def
-  using neutrality_action_presv_\<S>\<W>\<F>_symmetry \<psi>_neutral\<^sub>\<w>_action.group_action_axioms
+  using neutral_act_presv_\<S>\<W>\<F>_symmetry \<psi>_neutral\<^sub>\<w>_action.group_action_axioms
         \<S>\<W>\<F>_result.result_axioms
   by blast
 

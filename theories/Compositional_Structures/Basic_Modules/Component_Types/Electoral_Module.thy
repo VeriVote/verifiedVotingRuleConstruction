@@ -90,52 +90,17 @@ lemma (in result) electoral_modI:
   using assms
   by simp
 
-subsection \<open>Properties\<close>
+subsection \<open>Auxiliary Properties\<close>
 
 text \<open>
   We only require voting rules to behave a specific way on admissible elections,
   i.e., elections that are valid profiles (= votes are linear orders on the alternatives).
-  Note that we do not assume finiteness of voter or alternative sets by default.
-\<close>
-
-subsubsection \<open>Anonymity\<close>
-
-text \<open>
-  An electoral module is anonymous iff the result is invariant under renamings of voters,
-  i.e., any permutation of the voter set that does not change the preferences leads to an
-  identical result.
-\<close>
-
-definition (in result) anonymity :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow>
-        bool" where
-  "anonymity m \<equiv>
-    electoral_module m \<and>
-      (\<forall> A V p \<pi> :: ('v \<Rightarrow> 'v).
-        bij \<pi> \<longrightarrow> (let (A', V', q) = (rename \<pi> (A, V, p)) in
-            profile V A p \<and> profile V' A' q \<longrightarrow> m V A p = m V' A' q))"
-
-text \<open>
-  Anonymity can alternatively be described as invariance
-  under the voter permutation group acting on elections
-  via the rename function.
+  Note that we do not assume finiteness for the sets of voters or alternatives by default.
 \<close>
 
 fun anonymity_in :: "('a, 'v) Election set \<Rightarrow> ('a, 'v, 'r) Electoral_Module \<Rightarrow>
         bool" where
   "anonymity_in X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (anonymity\<^sub>\<R> X))"
-
-fun anonymity' :: "('a, 'v, 'r) Electoral_Module \<Rightarrow> bool" where
-  "anonymity' m = anonymity_in well_formed_elections m"
-
-subsubsection \<open>Homogeneity\<close>
-
-text \<open>
-  A voting rule is homogeneous if copying an election does not change the result.
-  For ordered voter types and finite elections, we use the notion of copying ballot
-  lists to define copying an election.
-  The more general definition of homogeneity for unordered voter types already
-  implies anonymity.
-\<close>
 
 fun homogeneity_in :: "('a, 'v) Election set \<Rightarrow>
         ('a, 'v, 'r Result) Electoral_Module \<Rightarrow> bool" where
@@ -143,93 +108,15 @@ fun homogeneity_in :: "('a, 'v) Election set \<Rightarrow>
 \<comment> \<open>This does not require any specific behaviour on infinite voter sets \<open>\<dots>\<close>
     It might make sense to extend the definition to that case somehow.\<close>
 
-fun homogeneity :: "('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
-  "homogeneity m = homogeneity_in finite_elections_\<V> m"
-
 fun homogeneity'_in :: "('a, 'v :: linorder) Election set \<Rightarrow>
         ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
   "homogeneity'_in X m = is_symmetry (fun\<^sub>\<E> m) (Invariance (homogeneity\<^sub>\<R>' X))"
-
-fun homogeneity' :: "('a, 'v :: linorder, 'b Result) Electoral_Module \<Rightarrow> bool" where
-  "homogeneity' m = homogeneity'_in finite_elections_\<V> m"
-
-lemma hom_imp_anon:
-  fixes
-    X :: "('a, 'v) Election set" and
-    m :: "('a, 'v, ('r Result)) Electoral_Module"
-  assumes
-    "homogeneity_in X m" and
-    "\<forall> E \<in> X. finite (voters_\<E> E)"
-  shows "anonymity_in X m"
-proof (unfold anonymity_in.simps is_symmetry.simps, intro allI impI)
-  fix E E' :: "('a, 'v) Election"
-  assume rel: "(E, E') \<in> anonymity\<^sub>\<R> X"
-  then obtain \<pi> :: "'v \<Rightarrow> 'v" where
-    "\<pi> \<in> carrier bijection\<^sub>\<V>\<^sub>\<G>" and
-    "E' = \<phi>_anon X \<pi> E"
-    unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
-    by blast
-  moreover from this have "bij \<pi>"
-    unfolding bijection\<^sub>\<V>\<^sub>\<G>_def rewrite_carrier
-    by simp
-  moreover from this have in_election_set: "E \<in> X"
-    using rel
-    unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
-    by blast
-  ultimately have "finite (voters_\<E> E')"
-    using assms rename.simps rename_finite split_pairs
-    unfolding \<phi>_anon.simps extensional_continuation.simps voters_\<E>.simps
-    by metis
-  moreover have fin_E: "finite (voters_\<E> E)"
-    using in_election_set assms
-    unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
-    by blast
-  moreover have "\<forall> r. vote_count r E = 1 * (vote_count r E')"
-    using fin_E anon_rel_vote_count rel mult_1
-    by metis
-  moreover have "alternatives_\<E> E = alternatives_\<E> E'"
-    using fin_E anon_rel_vote_count rel
-    by metis
-  ultimately show "fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
-    using assms in_election_set
-    unfolding homogeneity_in.simps is_symmetry.simps homogeneity\<^sub>\<R>.simps
-    by blast
-qed
-
-subsubsection \<open>Neutrality\<close>
-
-text \<open>
-  Neutrality is equivariance under consistent renaming of
-  candidates in the candidate set and election results.
-\<close>
 
 fun (in result_properties) neutrality_in :: "('a, 'v) Election set \<Rightarrow>
         ('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
   "neutrality_in X m =
     is_symmetry (fun\<^sub>\<E> m) (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>) X
           (\<phi>_neutral X) (result_action \<psi>))"
-
-fun (in result_properties) neutrality :: "('a, 'v, 'b Result) Electoral_Module \<Rightarrow>
-        bool" where
-  "neutrality m = neutrality_in well_formed_elections m"
-
-subsection \<open>Social-Welfare Properties\<close>
-
-subsubsection \<open>Reversal Symmetry\<close>
-
-text \<open>
-  A social welfare rule is reversal symmetric if reversing all voters' preferences
-  reverses the result rankings as well.
-\<close>
-
-definition reversal_symmetry_in :: "('a, 'v) Election set \<Rightarrow>
-        ('a, 'v, 'a rel Result) Electoral_Module \<Rightarrow> bool" where
-  "reversal_symmetry_in X m \<equiv>
-    is_symmetry (fun\<^sub>\<E> m) (action_induced_equivariance (carrier reversal\<^sub>\<G>) X
-          (\<phi>_reverse X) (result_action \<psi>_reverse))"
-
-fun reversal_symmetry :: "('a, 'v, 'a rel Result) Electoral_Module \<Rightarrow> bool" where
-  "reversal_symmetry m = reversal_symmetry_in well_formed_elections m"
 
 subsection \<open>Social-Choice Modules\<close>
 
@@ -814,6 +701,50 @@ proof -
     by metis
 qed
 
+lemma homogeneity_in_imp_anonymity_in:
+  fixes
+    X :: "('a, 'v) Election set" and
+    m :: "('a, 'v, ('r Result)) Electoral_Module"
+  assumes
+    homogeneous_X_m: "homogeneity_in X m" and
+    finite_elems_X: "\<forall> E \<in> X. finite (voters_\<E> E)"
+  shows "anonymity_in X m"
+proof (unfold anonymity_in.simps is_symmetry.simps, intro allI impI)
+  fix E E' :: "('a, 'v) Election"
+  assume rel: "(E, E') \<in> anonymity\<^sub>\<R> X"
+  then obtain \<pi> :: "'v \<Rightarrow> 'v" where
+    bij_carrier_\<pi>: "\<pi> \<in> carrier bijection\<^sub>\<V>\<^sub>\<G>" and
+    anon_action_E': "E' = \<phi>_anon X \<pi> E"
+    unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+    by blast
+  moreover have "bij \<pi>"
+    using bij_carrier_\<pi>
+    unfolding bijection\<^sub>\<V>\<^sub>\<G>_def rewrite_carrier
+    by simp
+  moreover have in_election_set: "E \<in> X"
+    using anon_action_E' rel
+    unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+    by blast
+  ultimately have "finite (voters_\<E> E')"
+    using finite_elems_X rename.simps rename_finite split_pairs
+    unfolding \<phi>_anon.simps extensional_continuation.simps voters_\<E>.simps
+    by metis
+  moreover have fin_E: "finite (voters_\<E> E)"
+    using in_election_set finite_elems_X
+    unfolding anonymity\<^sub>\<R>.simps action_induced_rel.simps
+    by blast
+  moreover have "\<forall> r. vote_count r E = 1 * (vote_count r E')"
+    using fin_E anon_rel_vote_count rel mult_1
+    by metis
+  moreover have "alternatives_\<E> E = alternatives_\<E> E'"
+    using fin_E anon_rel_vote_count rel
+    by metis
+  ultimately show "fun\<^sub>\<E> m E = fun\<^sub>\<E> m E'"
+    using homogeneous_X_m in_election_set
+    unfolding homogeneity_in.simps is_symmetry.simps homogeneity\<^sub>\<R>.simps
+    by blast
+qed
+
 subsection \<open>Non-Blocking\<close>
 
 text \<open>
@@ -871,8 +802,8 @@ theorem electing_imp_non_blocking:
   assumes "electing m"
   shows "non_blocking m"
 proof (unfold non_blocking_def, safe)
-  from assms
   show "\<S>\<C>\<F>_result.electoral_module m"
+    using assms
     unfolding electing_def
     by simp
 next
@@ -1276,6 +1207,99 @@ definition condorcet_consistency :: "('a, 'v, 'a Result) Electoral_Module \<Righ
     (\<forall> A V p a. condorcet_winner V A p a \<longrightarrow>
       (m V A p = ({e \<in> A. condorcet_winner V A p e}, A - (elect m V A p), {})))"
 
+subsubsection \<open>Anonymity\<close>
+
+text \<open>
+  An electoral module is anonymous iff the result is invariant under renamings of voters,
+  i.e., any permutation of the voter set that does not change the preferences leads to an
+  identical result.
+\<close>
+
+definition (in result) anonymity :: "('a, 'v, ('r Result)) Electoral_Module \<Rightarrow>
+        bool" where
+  "anonymity m \<equiv>
+    electoral_module m \<and>
+      (\<forall> A V p \<pi> :: ('v \<Rightarrow> 'v).
+        bij \<pi> \<longrightarrow> (let (A', V', q) = (rename \<pi> (A, V, p)) in
+            profile V A p \<and> profile V' A' q \<longrightarrow> m V A p = m V' A' q))"
+
+text \<open>
+  Anonymity can alternatively be described as invariance
+  under the voter permutation group acting on elections
+  via the rename function.
+\<close>
+
+fun anonymity_finite' :: "('a, 'v, 'r) Electoral_Module \<Rightarrow> bool" where
+  "anonymity_finite' m = anonymity_in well_formed_finite_\<V>_elections m"
+
+fun anonymity' :: "('a, 'v, 'r) Electoral_Module \<Rightarrow> bool" where
+  "anonymity' m = anonymity_in well_formed_elections m"
+
+subsubsection \<open>Homogeneity\<close>
+
+text \<open>
+  A voting rule is homogeneous if copying an election does not change the result.
+  For ordered voter types and finite elections, we use the notion of copying ballot
+  lists to define copying an election.
+  The more general definition of homogeneity for unordered voter types already
+  implies anonymity.
+\<close>
+
+fun homogeneity :: "('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity m = homogeneity_in well_formed_finite_\<V>_elections m"
+
+fun homogeneity' :: "('a, 'v :: linorder, 'b Result) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity' m = homogeneity'_in well_formed_finite_\<V>_elections m"
+
+fun homogeneity_inf :: "('a, 'v, 'b Result) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity_inf m = homogeneity_in well_formed_elections m"
+
+fun homogeneity_inf' :: "('a, 'v :: linorder, 'b Result) Electoral_Module \<Rightarrow> bool" where
+  "homogeneity_inf' m = homogeneity'_in well_formed_elections m"
+
+subsubsection \<open>Neutrality\<close>
+
+text \<open>
+  Neutrality is equivariance under consistent renaming of
+  candidates in the candidate set and election results.
+\<close>
+
+fun (in result_properties) neutrality :: "('a, 'v, 'b Result) Electoral_Module \<Rightarrow>
+        bool" where
+  "neutrality m = neutrality_in well_formed_elections m"
+
+subsubsection \<open>(Weak) Monotonicity\<close>
+
+text \<open>
+  An electoral module is monotone iff
+  when an elected alternative is lifted, this alternative remains elected.
+\<close>
+
+definition monotonicity :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
+  "monotonicity m \<equiv>
+    \<S>\<C>\<F>_result.electoral_module m \<and>
+      (\<forall> A V p q a. a \<in> elect m V A p \<and> lifted V A p q a \<longrightarrow> a \<in> elect m V A q)"
+
+subsection \<open>Social-Welfare Properties\<close>
+
+subsubsection \<open>Reversal Symmetry\<close>
+
+text \<open>
+  A social welfare rule is reversal symmetric if reversing all voters' preferences
+  reverses the result rankings as well.
+\<close>
+
+definition reversal_symmetry_in :: "('a, 'v) Election set \<Rightarrow>
+        ('a, 'v, 'a rel Result) Electoral_Module \<Rightarrow> bool" where
+  "reversal_symmetry_in X m \<equiv>
+    is_symmetry (fun\<^sub>\<E> m) (action_induced_equivariance (carrier reversal\<^sub>\<G>) X
+          (\<phi>_reverse X) (result_action \<psi>_reverse))"
+
+fun reversal_symmetry :: "('a, 'v, 'a rel Result) Electoral_Module \<Rightarrow> bool" where
+  "reversal_symmetry m = reversal_symmetry_in well_formed_elections m"
+
+subsection \<open>Property Relations\<close>
+
 lemma condorcet_consistency_equiv:
   fixes m :: "('a, 'v, 'a Result) Electoral_Module"
   shows "condorcet_consistency m =
@@ -1342,16 +1366,28 @@ proof (unfold condorcet_consistency_equiv, safe)
   }
 qed
 
-subsubsection \<open>(Weak) Monotonicity\<close>
-
-text \<open>
-  An electoral module is monotone iff
-  when an elected alternative is lifted, this alternative remains elected.
-\<close>
-
-definition monotonicity :: "('a, 'v, 'a Result) Electoral_Module \<Rightarrow> bool" where
-  "monotonicity m \<equiv>
-    \<S>\<C>\<F>_result.electoral_module m \<and>
-      (\<forall> A V p q a. a \<in> elect m V A p \<and> lifted V A p q a \<longrightarrow> a \<in> elect m V A q)"
+lemma (in result) homogeneity_imp_anonymity_finite:
+  fixes m :: "('a, 'v, ('r Result)) Electoral_Module"
+  assumes "homogeneity m"
+  shows "anonymity_finite' m"
+proof (unfold homogeneity.simps anonymity_finite'.simps)
+  obtain Y :: "('a, 'v) Election set" where
+    homogeneous_Y_imp_anonymous_Y:
+    "homogeneity_in Y m \<longrightarrow> (\<forall> E \<in> Y. finite (voters_\<E> E)) \<longrightarrow> anonymity_in Y m" and
+    wf_and_finite_Y: "Y = well_formed_finite_\<V>_elections"
+    using homogeneity_in_imp_anonymity_in
+    by metis
+  have "homogeneity_in Y m"
+    using assms wf_and_finite_Y
+    unfolding homogeneity.simps
+    by safe
+  moreover have "\<forall> E \<in> Y. finite (voters_\<E> E)"
+    using wf_and_finite_Y
+    unfolding finite_\<V>_elections_def well_formed_finite_\<V>_elections_def
+    by safe
+  ultimately show "anonymity_in well_formed_finite_\<V>_elections m"
+    using homogeneous_Y_imp_anonymous_Y wf_and_finite_Y
+    by safe
+qed
 
 end

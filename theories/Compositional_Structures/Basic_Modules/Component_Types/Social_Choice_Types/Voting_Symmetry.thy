@@ -1440,9 +1440,9 @@ proof (unfold group_action_def group_hom_def hom_def bijection\<^sub>\<A>\<^sub>
     by fastforce
 qed
 
-lemma neutrality_action_presv_\<S>\<C>\<F>_symmetry: "is_symmetry (\<lambda> \<E>. limit_\<S>\<C>\<F> (alternatives_\<E> \<E>) UNIV)
-            (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>) well_formed_elections
-                                (\<phi>_neutral well_formed_elections) (set_action \<psi>_neutral\<^sub>\<c>))"
+lemma neutral_act_presv_\<S>\<C>\<F>_symmetry: "is_symmetry (\<lambda> \<E>. limit_\<S>\<C>\<F>
+  (alternatives_\<E> \<E>) UNIV) (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>)
+        well_formed_elections (\<phi>_neutral well_formed_elections) (set_action \<psi>_neutral\<^sub>\<c>))"
 proof (unfold rewrite_equivariance, safe)
   fix
     \<pi> :: "'a \<Rightarrow> 'a" and
@@ -1472,9 +1472,9 @@ proof (unfold rewrite_equivariance, safe)
   }
 qed
 
-lemma neutrality_action_presv_\<S>\<W>\<F>_symmetry: "is_symmetry (\<lambda> \<E>. limit_\<S>\<W>\<F>
-  (alternatives_\<E> \<E>) UNIV) (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>) well_formed_elections
-                                (\<phi>_neutral well_formed_elections) (set_action \<psi>_neutral\<^sub>\<w>))"
+lemma neutral_act_presv_\<S>\<W>\<F>_symmetry: "is_symmetry (\<lambda> \<E>. limit_\<S>\<W>\<F>
+  (alternatives_\<E> \<E>) UNIV) (action_induced_equivariance (carrier bijection\<^sub>\<A>\<^sub>\<G>)
+        well_formed_elections (\<phi>_neutral well_formed_elections) (set_action \<psi>_neutral\<^sub>\<w>))"
 proof (unfold rewrite_equivariance voters_\<E>.simps profile_\<E>.simps set_action.simps,
         safe)
   show "\<And> \<pi> A V p r.
@@ -1549,9 +1549,12 @@ proof (unfold rewrite_equivariance voters_\<E>.simps profile_\<E>.simps set_acti
       by blast
     finally have "\<dots> = limit A ?r_inv"
       by blast
+    hence "\<exists> r' \<in> UNIV. \<psi>_neutral\<^sub>\<w> (the_inv \<pi>) r = limit A r' \<and> linear_order_on A (limit A r')"
+      using UNIV_I lin_inv
+      by (metis (no_types))
     hence "?r_inv \<in> limit_\<S>\<W>\<F> (alternatives_\<E> (A, V, p)) UNIV"
       unfolding limit_\<S>\<W>\<F>.simps alternatives_\<E>.simps
-      using lin_inv UNIV_I fst_conv mem_Collect_eq iso_tuple_UNIV_I CollectI
+      using fst_conv mem_Collect_eq
       by (metis (mono_tags, lifting))
     thus lim_el_\<pi>:
       "r \<in> \<psi>_neutral\<^sub>\<w> \<pi> ` limit_\<S>\<W>\<F> (alternatives_\<E> (A, V, p)) UNIV"
@@ -1607,10 +1610,10 @@ definition reflp_on' :: "'a set \<Rightarrow> 'a rel \<Rightarrow> bool" where
 
 lemma refl_homogeneity\<^sub>\<R>:
   fixes \<E> :: "('a, 'v) Election set"
-  assumes "\<E> \<subseteq> finite_elections_\<V>"
+  assumes "\<E> \<subseteq> finite_\<V>_elections"
   shows "reflp_on' \<E> (homogeneity\<^sub>\<R> \<E>)"
   using assms
-  unfolding reflp_on'_def reflp_on_def finite_elections_\<V>_def
+  unfolding reflp_on'_def reflp_on_def finite_\<V>_elections_def
   by auto
 
 lemma (in result) homogeneity_action_presv_symmetry:
@@ -1620,10 +1623,10 @@ lemma (in result) homogeneity_action_presv_symmetry:
 
 lemma refl_homogeneity\<^sub>\<R>':
   fixes \<E> :: "('a, 'v :: linorder) Election set"
-  assumes "\<E> \<subseteq> finite_elections_\<V>"
+  assumes "\<E> \<subseteq> finite_\<V>_elections"
   shows "reflp_on' \<E> (homogeneity\<^sub>\<R>' \<E>)"
   using assms
-  unfolding homogeneity\<^sub>\<R>'.simps reflp_on'_def reflp_on_def finite_elections_\<V>_def
+  unfolding homogeneity\<^sub>\<R>'.simps reflp_on'_def reflp_on_def finite_\<V>_elections_def
   by auto
 
 lemma (in result) homogeneity'_action_presv_symmetry:
@@ -1810,7 +1813,7 @@ next
     by presburger
 qed
 
-lemma reversal_symmetry_action_presv_symmetry: "is_symmetry (\<lambda> \<E>. limit_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)
+lemma reversal_symm_act_presv_symmetry: "is_symmetry (\<lambda> \<E>. limit_\<S>\<W>\<F> (alternatives_\<E> \<E>) UNIV)
         (action_induced_equivariance (carrier reversal\<^sub>\<G>) well_formed_elections
             (\<phi>_reverse well_formed_elections) (set_action \<psi>_reverse))"
 proof (unfold rewrite_equivariance, clarify)
