@@ -32,9 +32,9 @@ fun smc :: "'a Preference_Relation \<Rightarrow> ('a, 'v, 'a Result) Electoral_M
 subsection \<open>Soundness\<close>
 
 text \<open>
-  As all base components are electoral modules (, aggregators, or termination
-  conditions), and all used compositional structures create electoral modules,
-  sequential majority comparison unsurprisingly is an electoral module.
+  As all basic modules are electoral modules (, aggregators, termination
+  conditions, \<open>\<dots>\<close>), and all used compositional structures create electoral modules,
+  sequential majority comparison is also an electoral module.
 \<close>
 
 theorem smc_sound:
@@ -59,7 +59,7 @@ subsection \<open>Electing\<close>
 
 text \<open>
   The sequential majority comparison electoral module is electing.
-  This property is needed to convert electoral modules to a social choice
+  This property is needed to convert electoral modules to a social-choice
   function. Apart from the very last proof step, it is a part of the
   monotonicity proof below.
 \<close>
@@ -146,7 +146,7 @@ qed
 subsection \<open>(Weak) Monotonicity\<close>
 
 text \<open>
-  The following proof is a fully modular proof for weak monotonicity of
+  The following proof is a fully-modular proof for weak monotonicity of
   sequential majority comparison. It is composed of many small steps.
 \<close>
 

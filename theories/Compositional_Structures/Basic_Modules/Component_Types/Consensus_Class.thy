@@ -186,7 +186,7 @@ lemma strong_unanimity'consensus_imp_elect_fst_mod_well_formed:
   using strong_unanimity'consensus_imp_elect_fst_mod_completely_determined
   by blast
 
-lemma cons_domain_valid:
+lemma cons_domain_well_formed:
   fixes C :: "('a, 'v, 'r Result) Consensus_Class"
   shows "elections_\<K> C \<subseteq> well_formed_elections"
 proof
@@ -204,7 +204,7 @@ lemma cons_domain_finite:
   fixes C :: "('a, 'v, 'r Result) Consensus_Class"
   shows
     finite: "elections_\<K> C \<subseteq> finite_elections" and
-    finite_voters: "elections_\<K> C \<subseteq> finite_elections_\<V>"
+    finite_voters: "elections_\<K> C \<subseteq> finite_\<V>_elections"
 proof -
   have "\<forall> E \<in> elections_\<K> C.
       fun\<^sub>\<E> profile E \<and> finite (alternatives_\<E> E) \<and> finite (voters_\<E> E)"
@@ -213,8 +213,8 @@ proof -
   thus "elections_\<K> C \<subseteq> finite_elections"
     unfolding finite_elections_def fun\<^sub>\<E>.simps
     by blast
-  thus "elections_\<K> C \<subseteq> finite_elections_\<V>"
-    unfolding finite_elections_def finite_elections_\<V>_def
+  thus "elections_\<K> C \<subseteq> finite_\<V>_elections"
+    unfolding finite_elections_def finite_\<V>_elections_def
     by blast
 qed
 

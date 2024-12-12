@@ -198,14 +198,12 @@ next
   fix a b :: "'a"
   assume
     "a \<in> A" and
-    "b \<in> A" and
-    "(b, a) \<notin> r"
-  moreover with connex_r
-  have "a \<preceq>\<^sub>r b \<or> b \<preceq>\<^sub>r a"
-    unfolding connex_def
-    by metis
+    "b \<in> A"
   hence "(a, b) \<in> r \<or> (b, a) \<in> r"
+    using connex_r
+    unfolding connex_def
     by simp
+  moreover assume "(b, a) \<notin> r"
   ultimately show "(a, b) \<in> r"
     by metis
 qed
@@ -829,10 +827,8 @@ lemma lifted_imp_switched:
 proof (safe)
   fix b :: "'a"
   assume
-    b_in_A: "b \<in> A" and
-    b_neq_a: "b \<noteq> a" and
-    b_pref_a: "b \<preceq>\<^sub>r a" and
-    a_pref_b: "a \<preceq>\<^sub>r' b"
+    "b \<preceq>\<^sub>r a" and
+    "a \<preceq>\<^sub>r' b"
   hence
     a_pref_b_rel: "(a, b) \<in> r'" and
     b_pref_a_rel: "(b, a) \<in> r"
@@ -865,13 +861,16 @@ proof (safe)
     unfolding equiv_rel_except_a_def linear_order_on_def partial_order_on_def
               preorder_on_def trans_def
     by metis
+  moreover assume
+    "b \<in> A" and
+    "b \<noteq> a"
   ultimately have "(b, c) \<in> r'"
-    using b_in_A b_neq_a b_pref_a_rel c_eq_r_s_exc_a equiv_r_s_exc_a
+    using b_pref_a_rel c_eq_r_s_exc_a equiv_r_s_exc_a
           insertE insert_Diff
     unfolding equiv_rel_except_a_def
     by metis
   hence "(a, c) \<in> r'"
-    using a_pref_b_rel b_pref_a_rel imp_b_eq_a b_neq_a equiv_r_s_exc_a
+    using a_pref_b_rel equiv_r_s_exc_a
           lin_imp_trans transE
     unfolding equiv_rel_except_a_def
     by metis

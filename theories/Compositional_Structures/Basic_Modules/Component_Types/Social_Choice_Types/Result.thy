@@ -29,7 +29,7 @@ type_synonym 'r Result = "'r set * 'r set * 'r set"
 text \<open>
   A partition of a set A are pairwise disjoint sets that "set equals
   partition" A. For this specific predicate, we have three disjoint sets
-  in a three-tuple.
+  in a triple.
 \<close>
 
 fun disjoint3 :: "'r Result \<Rightarrow> bool" where

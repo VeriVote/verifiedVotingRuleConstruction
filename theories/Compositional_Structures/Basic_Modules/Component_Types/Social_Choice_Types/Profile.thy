@@ -67,14 +67,31 @@ abbreviation finite_profile :: "'v set \<Rightarrow> 'a set \<Rightarrow> ('a, '
 abbreviation finite_election :: "('a, 'v) Election \<Rightarrow> bool" where
   "finite_election E \<equiv> finite_profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)"
 
-definition finite_elections_\<V> :: "('a, 'v) Election set" where
-  "finite_elections_\<V> \<equiv> {E :: ('a, 'v) Election. finite (voters_\<E> E)}"
+abbreviation finite_\<V>_election :: "('a, 'v) Election \<Rightarrow> bool" where
+  "finite_\<V>_election E \<equiv> finite (voters_\<E> E)"
+
+abbreviation well_formed_election :: "('a, 'v) Election \<Rightarrow> bool" where
+  "well_formed_election E \<equiv> profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)"
+
+definition finite_\<V>_elections :: "('a, 'v) Election set" where
+  "finite_\<V>_elections \<equiv> {E :: ('a, 'v) Election. finite_\<V>_election E}"
 
 definition finite_elections :: "('a, 'v) Election set" where
   "finite_elections \<equiv> {E :: ('a, 'v) Election. finite_election E}"
 
 definition well_formed_elections :: "('a, 'v) Election set" where
-  "well_formed_elections \<equiv> {E. profile (voters_\<E> E) (alternatives_\<E> E) (profile_\<E> E)}"
+  "well_formed_elections \<equiv> {E :: ('a, 'v) Election. well_formed_election E}"
+
+definition well_formed_finite_\<V>_elections :: "('a, 'v) Election set" where
+  "well_formed_finite_\<V>_elections \<equiv>
+      {E :: ('a, 'v) Election. finite_\<V>_election E \<and> well_formed_election E}"
+
+lemma well_formed_and_finite_\<V>_elections:
+  "well_formed_finite_\<V>_elections = well_formed_elections \<inter> finite_\<V>_elections"
+  unfolding finite_\<V>_elections_def well_formed_elections_def
+            well_formed_finite_\<V>_elections_def
+  using Collect_conj_eq Int_commute
+  by metis
 
 \<comment> \<open>This function subsumes elections with fixed alternatives, finite voters, and
     a default value for the profile value on non-voters.\<close>
@@ -94,17 +111,17 @@ subsection \<open>Vote Count\<close>
 lemma vote_count_sum:
   fixes E :: "('a, 'v) Election"
   assumes
-    "finite (voters_\<E> E)" and
-    "finite (UNIV :: ('a \<times> 'a) set)"
+    fin_voters: "finite (voters_\<E> E)" and
+    fin_UNIV: "finite (UNIV :: ('a \<times> 'a) set)"
   shows "(\<Sum> p \<in> UNIV. vote_count p E) = card (voters_\<E> E)"
 proof (unfold vote_count.simps)
   have "\<forall> p. finite {v \<in> voters_\<E> E. profile_\<E> E v = p}"
-    using assms
+    using fin_voters
     by force
   moreover have "disjoint {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
     unfolding disjoint_def
     by blast
-  moreover have partition:
+  moreover have partition_voters:
     "voters_\<E> E = \<Union> {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
     using Union_eq
     by blast
@@ -115,7 +132,7 @@ proof (unfold vote_count.simps)
             "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"]
     by auto
   have "finite {{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV}"
-    using partition assms
+    using partition_voters fin_voters
     by (simp add: finite_UnionD)
   moreover have
     "{{v \<in> voters_\<E> E. profile_\<E> E v = p} | p. p \<in> UNIV} =
@@ -201,11 +218,10 @@ proof (unfold vote_count.simps)
           card {v \<in> voters_\<E> E. profile_\<E> E v = x})
       + (\<Sum> x \<in> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}.
           card {v \<in> voters_\<E> E. profile_\<E> E v = x})"
-    using assms
-          sum.union_disjoint[of
+    using sum.union_disjoint[of
             "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}"
             "{p. {v \<in> voters_\<E> E. profile_\<E> E v = p} \<noteq> {}}"]
-    using Finite_Set.finite_set add.commute finite_Un
+          Finite_Set.finite_set add.commute finite_Un fin_UNIV
     by (metis (mono_tags, lifting))
   moreover have
     "\<forall> x \<in> {p. {v \<in> voters_\<E> E. profile_\<E> E v = p} = {}}.
@@ -706,7 +722,7 @@ lemma pref_count:
     neq: "a \<noteq> b"
   shows "prefer_count V p a b = card V - (prefer_count V p b a)"
 proof -
-  have "\<forall> v \<in> V. let r = (p v) in (\<not> b \<preceq>\<^sub>r a \<longrightarrow> a \<preceq>\<^sub>r b)"
+  have "\<forall> v \<in> V. let r = (p v) in \<not> b \<preceq>\<^sub>r a \<longrightarrow> a \<preceq>\<^sub>r b"
     using a_in_A b_in_A prof lin_ord_imp_connex
     unfolding profile_def connex_def
     by metis
@@ -715,11 +731,12 @@ proof -
     unfolding profile_def
     by metis
   ultimately have
-    "{v \<in> V. (let r = (p v) in (b \<preceq>\<^sub>r a))} =
-        V - {v \<in> V. (let r = (p v) in (a \<preceq>\<^sub>r b))}"
+    "{v \<in> V. let r = p v in b \<preceq>\<^sub>r a} =
+        V - {v \<in> V. let r = p v in a \<preceq>\<^sub>r b}"
     by auto
   thus ?thesis
-    by (simp add: card_Diff_subset Collect_mono fin)
+    using fin
+    by (simp add: card_Diff_subset)
 qed
 
 lemma pref_count_sym:
@@ -753,11 +770,8 @@ proof (cases "finite V")
     using True pref_count prof c_in_A
     by (metis (no_types, opaque_lifting) a_in_A a_neq_c,
         metis (no_types, opaque_lifting) b_in_A c_neq_b)
-  hence "card V - (prefer_count V p b c) + (prefer_count V p c a)
-      \<le> card V - (prefer_count V p c a) + (prefer_count V p c a)"
-    using pref_count_ineq
-    by simp
   ultimately show ?thesis
+    using pref_count_ineq
     by simp
 next
   case False

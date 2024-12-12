@@ -18,128 +18,129 @@ subsection \<open>Auxiliary Lemmas\<close>
 lemma obtain_partition:
   fixes
     A :: "'a set" and
-    B :: "'b set" and
-    f :: "'b \<Rightarrow> nat"
+    V :: "'v set" and
+    f :: "'v \<Rightarrow> nat"
   assumes
     "finite A" and
-    "finite B" and
-    "(\<Sum> x \<in> B. f x) = card A"
-  shows "\<exists> \<X>. A = \<Union> {\<X> i | i. i \<in> B} \<and> (\<forall> i \<in> B. card (\<X> i) = f i) \<and>
-                (\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B \<and> j \<in> B \<longrightarrow> \<X> i \<inter> \<X> j = {})"
+    "finite V" and
+    "(\<Sum> v :: 'v \<in> V. f v) = card A"
+  shows "\<exists> \<B> :: 'v \<Rightarrow> 'a set.
+    A = \<Union> {\<B> v | v :: 'v. v \<in> V} \<and> (\<forall> v :: 'v \<in> V. card (\<B> v) = f v)
+    \<and> (\<forall> v v' :: 'v. v \<noteq> v' \<longrightarrow> v \<in> V \<and> v' \<in> V \<longrightarrow> \<B> v \<inter> \<B> v' = {})"
   using assms
-proof (induction "card B" arbitrary: A B)
+proof (induction "card V" arbitrary: A V)
   case 0
   fix
     A :: "'a set" and
-    B :: "'b set"
-  let ?\<X> = "\<lambda> y. {}"
+    V :: "'v set"
+  let ?\<B> = "\<lambda> v :: 'v. {}"
   assume
-    "finite B" and
-    "0 = card B"
-  hence Y_empty: "B = {}"
+    "finite V" and
+    "0 = card V"
+  hence V_empty: "V = {}"
     using 0
     by simp
-  hence "(\<Sum> x \<in> B. f x) = 0"
+  hence "(\<Sum> v :: 'v \<in> V. f v) = 0"
     by simp
   moreover assume
     "finite A" and
-    "(\<Sum> x \<in> B. f x) = card A"
+    "(\<Sum> v :: 'v \<in> V. f v) = card A"
   ultimately have "A = {}"
     by simp
-  hence "A = \<Union> {?\<X> i | i. i \<in> B}"
+  hence "A = \<Union> {?\<B> v | v :: 'v. v \<in> V}"
     by blast
-  moreover have "\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B \<and> j \<in> B \<longrightarrow> ?\<X> i \<inter> ?\<X> j = {}"
+  moreover have "\<forall> v v' :: 'v. v \<noteq> v' \<longrightarrow> v \<in> V \<and> v' \<in> V \<longrightarrow> ?\<B> v \<inter> ?\<B> v' = {}"
     by blast
   ultimately show
-    "\<exists> \<X>. A = \<Union> {\<X> i | i. i \<in> B} \<and>
-                (\<forall> i \<in> B. card (\<X> i) = f i) \<and>
-                (\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B \<and> j \<in> B \<longrightarrow> \<X> i \<inter> \<X> j = {})"
-    using Y_empty
+    "\<exists> \<B> :: 'v \<Rightarrow> 'a set.
+      A = \<Union> {\<B> v | v :: 'v. v \<in> V} \<and> (\<forall> v :: 'v \<in> V. card (\<B> v) = f v)
+      \<and> (\<forall> v v' :: 'v. v \<noteq> v' \<longrightarrow> v \<in> V \<and> v' \<in> V \<longrightarrow> \<B> v \<inter> \<B> v' = {})"
+    using V_empty
     by simp
 next
-  case (Suc x)
+  case (Suc n)
   fix
-    x :: "nat" and
+    n :: "nat" and
     A :: "'a set" and
-    B :: "'b set"
+    V :: "'v set"
   assume
-    card_B: "Suc x = card B" and
-    fin_B: "finite B" and
+    card_V: "Suc n = card V" and
+    fin_V: "finite V" and
     fin_A: "finite A" and
-    card_A: "(\<Sum> x \<in> B. f x) = card A" and
+    card_A: "(\<Sum> v :: 'v \<in> V. f v) = card A" and
     hyp:
-      "\<And> Y (X :: 'a set).
-         x = card Y \<Longrightarrow>
-         finite X \<Longrightarrow>
-         finite Y \<Longrightarrow>
-         (\<Sum> y \<in> Y. f y) = card X \<Longrightarrow>
-         \<exists> \<X>.
-          X = \<Union> {\<X> i | i. i \<in> Y} \<and>
-                  (\<forall> i \<in> Y. card (\<X> i) = f i) \<and>
-                  (\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> Y \<and> j \<in> Y \<longrightarrow> \<X> i \<inter> \<X> j = {})"
+      "\<And> V' (A' :: 'a set).
+         n = card V' \<Longrightarrow>
+         finite A' \<Longrightarrow>
+         finite V' \<Longrightarrow>
+         (\<Sum> v :: 'v \<in> V'. f v) = card A' \<Longrightarrow>
+         \<exists> \<B> :: 'v \<Rightarrow> 'a set.
+          A' = \<Union> {\<B> v | v :: 'v. v \<in> V'} \<and>
+                  (\<forall> v :: 'v \<in> V'. card (\<B> v) = f v) \<and>
+                  (\<forall> v v' :: 'v. v \<noteq> v' \<longrightarrow> v \<in> V' \<and> v' \<in> V' \<longrightarrow> \<B> v \<inter> \<B> v' = {})"
   then obtain
-    B' :: "'b set" and
-    y :: "'b" where
-    ins_B: "B = insert y B'" and
-    card_B': "card B' = x" and
-    fin_B': "finite B'" and
-    y_not_in_B': "y \<notin> B'"
+    V' :: "'v set" and
+    v :: "'v" where
+    ins_V: "V = insert v V'" and
+    card_V': "card V' = n" and
+    fin_V': "finite V'" and
+    v_not_in_V': "v \<notin> V'"
     using card_Suc_eq_finite
     by (metis (no_types, lifting))
-  hence "f y \<le> card A"
+  hence "f v \<le> card A"
     using card_A le_add1 n_not_Suc_n sum.insert
     by metis
   then obtain A' :: "'a set" where
-    X'_in_X: "A' \<subseteq> A" and
-    card_X': "card A' = f y"
+    A'_in_A: "A' \<subseteq> A" and
+    card_A': "card A' = f v"
     using fin_A ex_card
     by metis
-  hence "finite (A - A') \<and> card (A - A') = (\<Sum> y \<in> B'. f y)"
-    using card_B card_A fin_A ins_B card_B' fin_B' Suc_n_not_n
+  hence "finite (A - A') \<and> card (A - A') = (\<Sum> v' :: 'v \<in> V'. f v')"
+    using card_V card_A fin_A ins_V card_V' fin_V' Suc_n_not_n
           add_diff_cancel_left' card_Diff_subset card_insert_if
           finite_Diff finite_subset sum.insert
     by metis
-  then obtain \<X> :: "'b \<Rightarrow> 'a set" where
-    part: "A - A' = \<Union> {\<X> i | i. i \<in> B'}" and
-    disj: "\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B' \<and> j \<in> B' \<longrightarrow> \<X> i \<inter> \<X> j = {}" and
-    card: "\<forall> i \<in> B'. card (\<X> i) = f i"
-    using hyp[of B' "A - A'"] fin_B' card_B'
+  then obtain \<B> :: "'v \<Rightarrow> 'a set" where
+    part: "A - A' = \<Union> {\<B> v' | v' :: 'v. v' \<in> V'}" and
+    disj: "\<forall> v' v'' :: 'v. v' \<noteq> v'' \<longrightarrow> v' \<in> V' \<and> v'' \<in> V' \<longrightarrow> \<B> v' \<inter> \<B> v'' = {}" and
+    card: "\<forall> v' :: 'v \<in> V'. card (\<B> v') = f v'"
+    using hyp[of V' "A - A'"] fin_V' card_V'
     by auto
-  then obtain \<X>' :: "'b \<Rightarrow> 'a set" where
-    map': "\<X>' = (\<lambda> z. if z = y then A' else \<X> z)"
+  then obtain \<B>' :: "'v \<Rightarrow> 'a set" where
+    map': "\<B>' = (\<lambda> z :: 'v. if z = v then A' else \<B> z)"
     by simp
-  hence eq_\<X>: "\<forall> i \<in> B'. \<X>' i = \<X> i"
-    using y_not_in_B'
+  hence eq_\<B>: "\<forall> v' :: 'v \<in> V'. \<B>' v' = \<B> v'"
+    using v_not_in_V'
     by simp
-  have "B = {y} \<union> B'"
-    using ins_B
+  have "V = {v} \<union> V'"
+    using ins_V
     by simp
-  hence "\<Union> {\<X>' i | i. i \<in> B} = \<X>' y \<union> \<Union> {\<X>' i | i. i \<in> B'}"
+  hence "\<Union> {\<B>' v' | v' :: 'v. v' \<in> V} = \<B>' v \<union> \<Union> {\<B>' v' | v' :: 'v. v' \<in> V'}"
     by blast
-  also have "\<dots> = A' \<union> \<Union> {\<X> i | i. i \<in> B'}"
-    using map' eq_\<X>
+  also have "\<dots> = A' \<union> \<Union> {\<B> v' | v' :: 'v. v' \<in> V'}"
+    using map' eq_\<B>
     by fastforce
-  finally have part': "A = \<Union> {\<X>' i | i. i \<in> B}"
-    using part Diff_partition X'_in_X
+  finally have part': "A = \<Union> {\<B>' v' | v' :: 'v. v' \<in> V}"
+    using part Diff_partition A'_in_A
     by metis
-  have "\<forall> i \<in> B'. \<X>' i \<subseteq> A - A'"
-    using part eq_\<X> Setcompr_eq_image UN_upper
+  have "\<forall> v' :: 'v \<in> V'. \<B>' v' \<subseteq> A - A'"
+    using part eq_\<B> Setcompr_eq_image UN_upper
     by metis
-  hence "\<forall> i \<in> B'. \<X>' i \<inter> A' = {}"
+  hence "\<forall> v' :: 'v \<in> V'. \<B>' v' \<inter> A' = {}"
     by blast
-  hence "\<forall> i \<in> B'. \<X>' i \<inter> \<X>' y = {}"
+  hence "\<forall> v' :: 'v \<in> V'. \<B>' v' \<inter> \<B>' v = {}"
     using map'
     by simp
-  hence "\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B \<and> j \<in> B \<longrightarrow> \<X>' i \<inter> \<X>' j = {}"
-    using map' disj ins_B inf.commute insertE
+  hence "\<forall> v' v'' :: 'v. v' \<noteq> v'' \<longrightarrow> v' \<in> V \<and> v'' \<in> V \<longrightarrow> \<B>' v' \<inter> \<B>' v'' = {}"
+    using map' disj ins_V inf.commute insertE
     by (metis (no_types, lifting))
-  moreover have "\<forall> i \<in> B. card (\<X>' i) = f i"
-    using map' card card_X' ins_B
+  moreover have "\<forall> v' :: 'v \<in> V. card (\<B>' v') = f v'"
+    using map' card card_A' ins_V
     by simp
   ultimately show
-    "\<exists> \<X>. A = \<Union> {\<X> i | i. i \<in> B} \<and>
-                (\<forall> i \<in> B. card (\<X> i) = f i) \<and>
-                    (\<forall> i j. i \<noteq> j \<longrightarrow> i \<in> B \<and> j \<in> B \<longrightarrow> \<X> i \<inter> \<X> j = {})"
+    "\<exists> \<B> :: 'v \<Rightarrow> 'a set.
+      A = \<Union> {\<B> v' | v' :: 'v. v' \<in> V} \<and> (\<forall> v' :: 'v \<in> V. card (\<B> v') = f v')
+      \<and> (\<forall> v' v'' :: 'v. v' \<noteq> v'' \<longrightarrow> v' \<in> V \<and> v'' \<in> V \<longrightarrow> \<B> v' \<inter> \<B> v'' = {})"
     using part'
     by blast
 qed
@@ -153,11 +154,11 @@ fun anonymity\<^sub>\<Q> :: "'a set \<Rightarrow> ('a, 'v) Election set set" whe
 \<comment> \<open>Here, we count the occurrences of a ballot per election in a set of elections for which
     the occurrences of the ballot per election coincide for all elections in the set.\<close>
 fun vote_count\<^sub>\<Q> :: "'a Preference_Relation \<Rightarrow> ('a, 'v) Election set \<Rightarrow> nat" where
-  "vote_count\<^sub>\<Q> p = \<pi>\<^sub>\<Q> (vote_count p)"
+  "vote_count\<^sub>\<Q> r = \<pi>\<^sub>\<Q> (vote_count r)"
 
 fun anonymity_class :: "('a :: finite, 'v) Election set \<Rightarrow>
         (nat, 'a Ordered_Preference) vec" where
-  "anonymity_class X = (\<chi> p. vote_count\<^sub>\<Q> (ord2pref p) X)"
+  "anonymity_class \<C> = (\<chi> p. vote_count\<^sub>\<Q> (ord2pref p) \<C>)"
 
 lemma anon_rel_equiv: "equiv (elections_\<A> UNIV) (anonymity\<^sub>\<R> (elections_\<A> UNIV))"
 proof -
@@ -1027,12 +1028,12 @@ qed
 subsubsection \<open>Simplex Bijection\<close>
 
 text \<open>
-  We assume all our elections to consist of a fixed finite alternative set of size n and
-  finite subsets of an infinite voter universe. Profiles are linear orders on the alternatives.
-  Then we can work on the standard simplex of dimension n! instead of the equivalence
-  classes of the equivalence relation for anonymous + homogeneous voting rules (anon hom):
-  Each dimension corresponds to one possible linear order on the alternative set,
-  i.e., the possible preferences.
+  We assume all our elections to consist of a fixed finite set of \<open>n\<close> alternatives and finite
+  subsets of an infinite universe of voters. Profiles are linear orders on the alternatives.
+  Then we can work on the standard simplex of dimension \<open>n!\<close> instead of the equivalence
+  classes of the equivalence relation for anonymous and homogeneous voting rules:
+  Each dimension corresponds to one possible linear order on the alternative set, i.e.,
+  the possible preferences.
   Each equivalence class of elections corresponds to a vector whose entries denote the fraction
   of voters per election in that class who vote the respective corresponding preference.
 \<close>
@@ -1046,16 +1047,15 @@ proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
   fix X Y :: "('a, 'v) Election set"
   assume
     class_X: "X \<in> anonymity_homogeneity\<^sub>\<Q> UNIV" and
-    class_Y: "Y \<in> anonymity_homogeneity\<^sub>\<Q> UNIV" and
-    eq_vec: "anonymity_homogeneity_class X = anonymity_homogeneity_class Y"
-  have equiv:
+    class_Y: "Y \<in> anonymity_homogeneity\<^sub>\<Q> UNIV"
+  moreover have equiv:
     "equiv (elections_\<A> UNIV) (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV))"
     using anonymity_homogeneity_is_equivalence CollectD IntD1 inf_commute
     unfolding elections_\<A>.simps
     by (metis (no_types, lifting))
-  hence subset:
+  ultimately have subset:
     "X \<noteq> {} \<and> X \<subseteq> elections_\<A> UNIV \<and> Y \<noteq> {} \<and> Y \<subseteq> elections_\<A> UNIV"
-    using class_X class_Y in_quotient_imp_non_empty in_quotient_imp_subset
+    using in_quotient_imp_non_empty in_quotient_imp_subset
     unfolding anonymity_homogeneity\<^sub>\<Q>.simps
     by blast
   then obtain E E' :: "('a, 'v) Election" where
@@ -1066,66 +1066,69 @@ proof (unfold bij_betw_def inj_on_def, intro conjI ballI impI)
     using class_X equiv Image_singleton_iff equiv_class_eq quotientE
     unfolding anonymity_homogeneity\<^sub>\<Q>.simps
     by (metis (no_types, opaque_lifting))
-  hence "\<forall> F \<in> X. (E, F) \<in> anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)"
-    unfolding Image_def
-    by blast
-  hence "\<forall> F \<in> X. \<forall> p. vote_fraction p F = vote_fraction p E"
+  hence "\<forall> F :: ('a, 'v) Election \<in> X. \<forall> p :: 'a Preference_Relation.
+            vote_fraction p F = vote_fraction p E"
     unfolding anonymity_homogeneity\<^sub>\<R>.simps
     by fastforce
-  hence "\<forall> p. vote_fraction p ` X = {vote_fraction p E}"
+  hence "\<forall> p :: 'a Preference_Relation.
+            vote_fraction p ` X = {vote_fraction p E}"
     using E_in_X
     by blast
-  hence "\<forall> p. vote_fraction\<^sub>\<Q> p X = vote_fraction p E"
+  hence "\<forall> p :: 'a Preference_Relation.
+            vote_fraction\<^sub>\<Q> p X = vote_fraction p E"
     using is_singletonI singleton_set_def_if_card_one the_elem_eq
     unfolding is_singleton_altdef vote_fraction\<^sub>\<Q>.simps \<pi>\<^sub>\<Q>.simps singleton_set.simps
     by metis
-  hence eq_X_E:
-    "\<forall> p. (anonymity_homogeneity_class X)$p = vote_fraction (ord2pref p) E"
+  hence "\<forall> p :: 'a Ordered_Preference.
+            (anonymity_homogeneity_class X)$p = vote_fraction (ord2pref p) E"
     unfolding anonymity_homogeneity_class.simps
     using vec_lambda_beta
     by metis
-  have class_Y_E': "anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV) `` {E'} = Y"
+  moreover assume
+    "anonymity_homogeneity_class X = anonymity_homogeneity_class Y"
+  moreover have class_Y_E': "anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV) `` {E'} = Y"
     using class_Y equiv E'_in_Y Image_singleton_iff equiv_class_eq quotientE
     unfolding anonymity_homogeneity\<^sub>\<Q>.simps
     by (metis (no_types, opaque_lifting))
-  hence "\<forall> F \<in> Y. (E', F) \<in> anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)"
-    unfolding Image_def
-    by blast
-  hence "\<forall> F \<in> Y. \<forall> p. vote_fraction p E' = vote_fraction p F"
+  hence "\<forall> F :: ('a, 'v) Election \<in> Y. \<forall> p :: 'a Preference_Relation.
+            vote_fraction p E' = vote_fraction p F"
     unfolding anonymity_homogeneity\<^sub>\<R>.simps
     by blast
-  hence "\<forall> p. vote_fraction p ` Y = {vote_fraction p E'}"
+  hence "\<forall> p :: 'a Preference_Relation.
+            vote_fraction p ` Y = {vote_fraction p E'}"
     using E'_in_Y
     by fastforce
-  hence "\<forall> p. vote_fraction\<^sub>\<Q> p Y = vote_fraction p E'"
+  hence "\<forall> p :: 'a Preference_Relation. vote_fraction\<^sub>\<Q> p Y = vote_fraction p E'"
     using is_singletonI singleton_set_def_if_card_one the_elem_eq
     unfolding is_singleton_altdef vote_fraction\<^sub>\<Q>.simps \<pi>\<^sub>\<Q>.simps singleton_set.simps
     by metis
   hence eq_Y_E':
-    "\<forall> p. (anonymity_homogeneity_class Y)$p = vote_fraction (ord2pref p) E'"
+    "\<forall> p :: 'a Ordered_Preference.
+        (anonymity_homogeneity_class Y)$p = vote_fraction (ord2pref p) E'"
     unfolding anonymity_homogeneity_class.simps
     using vec_lambda_beta
     by metis
-  hence "\<forall> p. vote_fraction (ord2pref p) E = vote_fraction (ord2pref p) E'"
-    using eq_X_E eq_vec
-    by metis
-  hence eq_ord: "\<forall> p. linear_order p \<longrightarrow> vote_fraction p E = vote_fraction p E'"
+  ultimately have "\<forall> p :: 'a Preference_Relation.
+        linear_order p \<longrightarrow> vote_fraction p E = vote_fraction p E'"
     using mem_Collect_eq pref2ord_inverse
     by metis
-  have "(\<forall> v. v \<in> voters_\<E> E \<longrightarrow> linear_order (profile_\<E> E v)) \<and>
-      (\<forall> v. v \<in> voters_\<E> E' \<longrightarrow> linear_order (profile_\<E> E' v))"
+  moreover have
+    "(\<forall> v :: 'v. v \<in> voters_\<E> E \<longrightarrow> linear_order (profile_\<E> E v)) \<and>
+      (\<forall> v :: 'v. v \<in> voters_\<E> E' \<longrightarrow> linear_order (profile_\<E> E' v))"
     using subset E_in_X E'_in_Y
     unfolding elections_\<A>.simps well_formed_elections_def profile_def
     by fastforce
-  hence "\<forall> p. \<not> linear_order p \<longrightarrow> vote_count p E = 0 \<and> vote_count p E' = 0"
+  hence "\<forall> p :: 'a Preference_Relation.
+            \<not> linear_order p \<longrightarrow> vote_count p E = 0 \<and> vote_count p E' = 0"
     unfolding vote_count.simps
     using card.infinite card_0_eq Collect_empty_eq
     by (metis (mono_tags, lifting))
-  hence "\<forall> p. \<not> linear_order p \<longrightarrow> vote_fraction p E = 0 \<and> vote_fraction p E' = 0"
+  hence "\<forall> p :: 'a Preference_Relation.
+            \<not> linear_order p \<longrightarrow> vote_fraction p E = 0 \<and> vote_fraction p E' = 0"
     using int_ops rat_number_collapse
     by simp
-  hence "\<forall> p. vote_fraction p E = vote_fraction p E'"
-    using eq_ord
+  ultimately have "\<forall> p :: 'a Preference_Relation.
+            vote_fraction p E = vote_fraction p E'"
     by metis
   hence "(E, E') \<in> anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)"
     using subset E_in_X E'_in_Y elections_\<A>.simps
@@ -1140,74 +1143,62 @@ next
         ` anonymity_homogeneity\<^sub>\<Q> UNIV = vote_simplex"
   proof (unfold vote_simplex_def, safe)
     fix X :: "('a, 'v) Election set"
-    assume
-      quot: "X \<in> anonymity_homogeneity\<^sub>\<Q> UNIV" and
-      not_simplex:
-      "anonymity_homogeneity_class X \<notin> rat_vector_set (convex hull standard_basis)"
-    have equiv_rel:
-      "equiv (elections_\<A> UNIV) (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV))"
+    assume "X \<in> anonymity_homogeneity\<^sub>\<Q> UNIV"
+    moreover have "equiv (elections_\<A> UNIV) (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV))"
       using anonymity_homogeneity_is_equivalence elections_\<A>.simps
       by blast
-    then obtain E :: "('a, 'v) Election" where
+    ultimately obtain E :: "('a, 'v) Election" where
       E_in_X: "E \<in> X" and
-      "X = anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV) `` {E}"
-      using quot anonymity_homogeneity\<^sub>\<Q>.simps equiv_Eps_in proj_Eps
+      rel: "\<forall> E' \<in> X. (E, E') \<in> anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)"
+      using anonymity_homogeneity\<^sub>\<Q>.simps equiv_Eps_in proj_Eps
       unfolding proj_def
-      by metis
-    hence rel: "\<forall> E' \<in> X. (E, E') \<in> anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)"
-      by simp
-    hence "\<forall> p. \<forall> E' \<in> X.
+      by blast
+    hence "\<forall> p :: 'a Ordered_Preference. \<forall> E' \<in> X.
         vote_fraction (ord2pref p) E' = vote_fraction (ord2pref p) E"
       unfolding anonymity_homogeneity\<^sub>\<R>.simps
       by fastforce
-    hence "\<forall> p. vote_fraction (ord2pref p) ` X = {vote_fraction (ord2pref p) E}"
+    hence "\<forall> p :: 'a Ordered_Preference.
+        vote_fraction (ord2pref p) ` X = {vote_fraction (ord2pref p) E}"
       using E_in_X
       by blast
-    hence repr: "\<forall> p. vote_fraction\<^sub>\<Q> (ord2pref p) X = vote_fraction (ord2pref p) E"
+    hence repr: "\<forall> p :: 'a Ordered_Preference.
+        vote_fraction\<^sub>\<Q> (ord2pref p) X = vote_fraction (ord2pref p) E"
       using is_singletonI singleton_set_def_if_card_one the_elem_eq
       unfolding vote_fraction\<^sub>\<Q>.simps \<pi>\<^sub>\<Q>.simps is_singleton_altdef
       by metis
-    have "\<forall> p. vote_count (ord2pref p) E \<ge> 0"
-      by simp
-    hence "\<forall> p. card (voters_\<E> E) > 0 \<longrightarrow>
-        Fract (int (vote_count (ord2pref p) E)) (int (card (voters_\<E> E))) \<ge> 0"
-      using zero_le_Fract_iff
-      by simp
-    hence "\<forall> p. vote_fraction (ord2pref p) E \<ge> 0"
+    hence "\<forall> p :: 'a Ordered_Preference. vote_fraction\<^sub>\<Q> (ord2pref p) X \<ge> 0"
+      using zero_le_Fract_iff Orderings.order_eq_iff card_eq_0_iff
+            of_nat_le_0_iff of_nat_less_0_iff linorder_not_less
       unfolding vote_fraction.simps card_gt_0_iff
-      by simp
-    hence "\<forall> p. vote_fraction\<^sub>\<Q> (ord2pref p) X \<ge> 0"
-      using repr
-      by simp
-    hence geq_zero: "\<forall> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X) \<ge> 0"
+      by metis
+    hence geq_zero: "\<forall> p :: 'a Ordered_Preference.
+        real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X) \<ge> 0"
       using zero_le_of_rat_iff
       by blast
-    have "voters_\<E> E = {} \<or> infinite (voters_\<E> E) \<longrightarrow>
-        (\<forall> p. real_of_rat (vote_fraction p E) = 0)"
-      by simp
-    hence zero_case:
+    have zero_case:
       "voters_\<E> E = {} \<or> infinite (voters_\<E> E) \<longrightarrow>
-        (\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X)) = 0"
+        (\<chi> p :: 'a Ordered_Preference.
+          real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X)) = 0"
       using repr
       unfolding zero_vec_def
       by simp
-    let ?vote_sum = "(\<Sum> p \<in> UNIV. vote_count p E)"
-    have "finite (UNIV :: ('a \<times> 'a) set)"
+    let ?vote_sum = "(\<Sum> r :: 'a Preference_Relation \<in> UNIV. vote_count r E)"
+    have "finite (UNIV :: 'a Preference_Relation)"
       by simp
     hence eq_card: "finite (voters_\<E> E) \<longrightarrow> card (voters_\<E> E) = ?vote_sum"
       using vote_count_sum
       by metis
     hence "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {} \<longrightarrow>
-        (\<Sum> p \<in> UNIV. vote_fraction p E) =
-          (\<Sum> p \<in> UNIV. Fract (vote_count p E) ?vote_sum)"
+        (\<Sum> r :: 'a Preference_Relation \<in> UNIV. vote_fraction r E) =
+          (\<Sum> r :: 'a Preference_Relation \<in> UNIV. Fract (vote_count r E) ?vote_sum)"
       unfolding vote_fraction.simps
       by presburger
     moreover have fin_imp_sum_gt_zero:
       "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {} \<longrightarrow> ?vote_sum > 0"
-      using eq_card
       by fastforce
     hence "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {} \<longrightarrow>
-      (\<Sum> p \<in> UNIV. Fract (vote_count p E) ?vote_sum) = Fract ?vote_sum ?vote_sum"
+      (\<Sum> r :: 'a Preference_Relation \<in> UNIV.
+        Fract (vote_count r E) ?vote_sum) = Fract ?vote_sum ?vote_sum"
       using fract_distr[of UNIV ?vote_sum] card_0_eq eq_card of_nat_eq_0_iff
             finite_class.finite_UNIV of_nat_sum sum.cong
       by (metis (no_types, lifting))
@@ -1217,87 +1208,109 @@ next
             of_nat_0_less_iff order_le_less order_less_irrefl
       by metis
     ultimately have fin_imp_sum_eq_one:
-      "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {}
-        \<longrightarrow> (\<Sum> p \<in> UNIV. vote_fraction p E) = 1"
+      "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {} \<longrightarrow>
+        (\<Sum> r :: 'a Preference_Relation \<in> UNIV. vote_fraction r E) = 1"
       by presburger
-    have "\<forall> p. \<not> linear_order p \<longrightarrow> vote_count p E = 0"
+    have "\<forall> r :: 'a Preference_Relation. \<not> linear_order r \<longrightarrow> vote_count r E = 0"
       using E_in_X rel
-      unfolding anonymity_homogeneity\<^sub>\<Q>.simps quotient_def vote_count.simps
-                elections_\<A>.simps well_formed_elections_def profile_def
+      unfolding elections_\<A>.simps well_formed_elections_def profile_def
       by fastforce
-    hence "\<forall> p. \<not> linear_order p \<longrightarrow> vote_fraction p E = 0"
+    hence "\<forall> r :: 'a Preference_Relation. \<not> linear_order r \<longrightarrow> vote_fraction r E = 0"
       using rat_number_collapse
       by simp
-    moreover have "(\<Sum> p \<in> UNIV. vote_fraction p E) =
-      (\<Sum> p \<in> {r. linear_order r}. vote_fraction p E) +
-      (\<Sum> p \<in> UNIV - {r. linear_order r}. vote_fraction p E)"
+    moreover have "(\<Sum> r :: 'a Preference_Relation \<in> UNIV. vote_fraction r E) =
+      (\<Sum> r :: 'a Preference_Relation \<in> {s :: 'a Preference_Relation. linear_order s}.
+        vote_fraction r E) +
+      (\<Sum> r :: 'a Preference_Relation
+          \<in> UNIV - {s :: 'a Preference_Relation. linear_order s}.
+        vote_fraction r E)"
       using finite CollectD Collect_mono UNIV_I add.commute
             sum.subset_diff top_set_def
       by metis
-    ultimately have "(\<Sum> p \<in> UNIV. vote_fraction p E) =
-      (\<Sum> p \<in> {r. linear_order r}. vote_fraction p E)"
+    ultimately have "(\<Sum> r :: 'a Preference_Relation \<in> UNIV. vote_fraction r E) =
+      (\<Sum> r :: 'a rel \<in> {s :: 'a Preference_Relation. linear_order s}. vote_fraction r E)"
       by simp
-    moreover have "bij_betw ord2pref UNIV {p. linear_order p}"
+    moreover have "bij_betw ord2pref UNIV {r :: 'a Preference_Relation. linear_order r}"
       using inj_def ord2pref_inject range_ord2pref
       unfolding bij_betw_def
       by blast
     ultimately have
-      "(\<Sum> p \<in> UNIV. vote_fraction p E) =
-          (\<Sum> p \<in> UNIV. vote_fraction (ord2pref p) E)"
-      using comp_def sum_comp
-      by auto
-    hence "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {}
-        \<longrightarrow> (\<Sum> p \<in> UNIV. real_of_rat (vote_fraction (ord2pref p) E)) = 1"
+      "(\<Sum> r :: 'a Preference_Relation \<in> UNIV. vote_fraction r E) =
+          (\<Sum> r :: 'a Ordered_Preference \<in> UNIV. vote_fraction (ord2pref r) E)"
+      using sum_comp
+      by simp
+    hence "finite (voters_\<E> E) \<and> voters_\<E> E \<noteq> {} \<longrightarrow>
+      (\<Sum> p :: 'a Ordered_Preference \<in> UNIV.
+        real_of_rat (vote_fraction (ord2pref p) E)) = 1"
       using fin_imp_sum_eq_one of_rat_1 of_rat_sum
       by metis
-    hence "(\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X)) = 0 \<or>
-        ((\<forall> p. (\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))$p \<ge> 0)
-        \<and> (\<Sum> x \<in> UNIV. (\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))$x) = 1)"
+    hence "(\<chi> p :: 'a Ordered_Preference. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X)) = 0
+      \<or> ((\<forall> p :: 'a Ordered_Preference. (\<chi> q :: 'a Ordered_Preference.
+            real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref q) X))$p \<ge> 0)
+        \<and> (\<Sum> p :: 'a Ordered_Preference \<in> UNIV.
+            (\<chi> q. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref q) X))$p) = 1)"
       using zero_case repr geq_zero
       by force
     moreover have
-      "\<forall> p. (\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))$p \<in> \<rat>"
+      "\<forall> p :: 'a Ordered_Preference.
+          (\<chi> q :: 'a Ordered_Preference.
+        real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref q) X))$p \<in> \<rat>"
       by simp
     ultimately have simplex_el:
-      "(\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))
-          \<in> {x \<in> insert 0 (convex hull standard_basis). \<forall> i. x$i \<in> \<rat>}"
+      "(\<chi> p :: 'a Ordered_Preference. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))
+          \<in> {x \<in> insert 0 (convex hull standard_basis).
+              \<forall> p :: 'a Ordered_Preference. x$p \<in> \<rat>}"
       using standard_simplex_rewrite
       by blast
     moreover have
-      "\<forall> p. (rat_vector (\<chi> p. of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X)))$p =
-          the_inv real_of_rat ((\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))$p)"
+      "\<forall> p :: 'a Ordered_Preference.
+        (rat_vector (\<chi> q :: 'a Ordered_Preference.
+        of_rat (vote_fraction\<^sub>\<Q> (ord2pref q) X)))$p =
+          the_inv real_of_rat ((\<chi> q :: 'a Ordered_Preference.
+            real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref q) X))$p)"
       unfolding rat_vector.simps
       using vec_lambda_beta
       by blast
     moreover have
-      "\<forall> p. the_inv real_of_rat
-          ((\<chi> p. real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))$p) =
+      "\<forall> p :: 'a Ordered_Preference. the_inv real_of_rat
+          ((\<chi> q :: 'a Ordered_Preference.
+            real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref q) X))$p) =
         the_inv real_of_rat (real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))"
       by simp
-    moreover have inv_of_rat: "\<forall> x \<in> \<rat>. the_inv of_rat (of_rat x) = x"
-      unfolding Rats_def
+    moreover have inv_of_rat:
+      "\<forall> x :: rat \<in> \<rat>. the_inv of_rat (of_rat x) = x"
       using the_inv_f_f injI of_rat_eq_iff
       by metis
-    hence "\<forall> p. the_inv real_of_rat (real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X)) =
+    hence "\<forall> p :: 'a Ordered_Preference.
+      the_inv real_of_rat (real_of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X)) =
         vote_fraction\<^sub>\<Q> (ord2pref p) X"
       using Rats_eq_range_nat_to_rat_surj surj_nat_to_rat_surj
       by blast
     moreover have
-      "\<forall> p. vote_fraction\<^sub>\<Q> (ord2pref p) X = (anonymity_homogeneity_class X)$p"
+      "\<forall> p :: 'a Ordered_Preference.
+      vote_fraction\<^sub>\<Q> (ord2pref p) X = (anonymity_homogeneity_class X)$p"
       by simp
     ultimately have
-      "\<forall> p. (rat_vector (\<chi> p. of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X)))$p =
-            (anonymity_homogeneity_class X)$p"
+      "\<forall> p :: 'a Ordered_Preference.
+        (rat_vector (\<chi> q :: 'a Ordered_Preference.
+          of_rat (vote_fraction\<^sub>\<Q> (ord2pref q) X)))$p =
+      (anonymity_homogeneity_class X)$p"
       by metis
-    hence "rat_vector (\<chi> p. of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X))
-            = anonymity_homogeneity_class X"
+    hence "rat_vector
+      (\<chi> p :: 'a Ordered_Preference. of_rat (vote_fraction\<^sub>\<Q> (ord2pref p) X)) =
+      anonymity_homogeneity_class X"
       by simp
-    hence "\<exists> x \<in> {x \<in> insert 0 (convex hull standard_basis). \<forall> i. x$i \<in> \<rat>}.
+    hence "\<exists> x :: (real, 'a Ordered_Preference) vec
+      \<in> {y :: (real, 'a Ordered_Preference) vec
+          \<in> insert 0 (convex hull standard_basis). \<forall> p :: 'a Ordered_Preference.
+        y$p \<in> \<rat>}.
         rat_vector x = anonymity_homogeneity_class X"
       using simplex_el
       by blast
-    hence "rat_vector 0 = anonymity_homogeneity_class X"
-      using not_simplex image_iff insertE mem_Collect_eq
+    moreover assume
+      "anonymity_homogeneity_class X \<notin> rat_vector_set (convex hull standard_basis)"
+    ultimately have "rat_vector 0 = anonymity_homogeneity_class X"
+      using image_iff insertE mem_Collect_eq
       unfolding rat_vector_set.simps
       by (metis (mono_tags, lifting))
     thus "anonymity_homogeneity_class X = 0"
@@ -1305,45 +1318,38 @@ next
       using Rats_0 inv_of_rat of_rat_0 vec_lambda_unique zero_index
       by (metis (no_types, lifting))
   next
-    have "\<forall> E \<in> (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV))
-          `` {(UNIV, {}, (\<lambda> v. {}))}. \<forall> r. vote_fraction r E = 0"
-      unfolding anonymity_homogeneity\<^sub>\<R>.simps
-      by force
-    moreover have
-      "\<forall> E \<in> (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV))
-          `` {(UNIV, {}, (\<lambda> v. {}))}. finite (voters_\<E> E)"
+    have all_zero:
+      "\<forall> r :: 'a Preference_Relation.
+        \<forall> (E :: ('a, 'c) Election)
+          \<in> (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)) `` {(UNIV, {}, (\<lambda> v :: 'c. {}))}.
+      vote_fraction r E = 0"
       unfolding Image_def anonymity_homogeneity\<^sub>\<R>.simps
       by fastforce
-    ultimately have all_zero:
-      "\<forall> r. \<forall> E \<in> (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV))
-          `` {(UNIV, {}, (\<lambda> v. {}))}. vote_fraction r E = 0"
-      by blast
-    moreover have "(UNIV, {}, \<lambda> v. {})
-          \<in> (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, {}, \<lambda> v. {})})"
-      unfolding anonymity_homogeneity\<^sub>\<R>.simps Image_def elections_\<A>.simps
-                well_formed_elections_def profile_def
+    moreover have "(UNIV, {}, \<lambda> v :: 'c. {})
+          \<in> (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, {}, \<lambda> v :: 'c. {})})"
+      unfolding elections_\<A>.simps well_formed_elections_def profile_def
       by simp
-    ultimately have "\<forall> r. 0 \<in> vote_fraction r
+    ultimately have
+      "\<forall> r :: 'a Preference_Relation. 0 \<in> vote_fraction r
             ` (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV))
-                `` {(UNIV, {}, (\<lambda> v. {}))}"
+                `` {(UNIV, {}, (\<lambda> v :: 'c. {}))}"
       using image_eqI
       by (metis (mono_tags, lifting))
     hence
-      "\<forall> r. vote_fraction r
+      "\<forall> r :: 'a Preference_Relation. vote_fraction r
         ` (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)
-            `` {(UNIV, {}, \<lambda> v. {})}) = {0}"
+            `` {(UNIV, {}, \<lambda> v :: 'c. {})}) = {0}"
       using all_zero
       by blast
     hence "\<forall> r :: 'a Ordered_Preference. vote_fraction\<^sub>\<Q> (ord2pref r)
           (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)
-            `` {(UNIV, {}, \<lambda> v. {})}) = 0"
+            `` {(UNIV, {}, \<lambda> v :: 'c. {})}) = 0"
       using is_singletonI singleton_insert_inj_eq' singleton_set_def_if_card_one
-      unfolding vote_fraction\<^sub>\<Q>.simps \<pi>\<^sub>\<Q>.simps singleton_set.simps
-                is_singleton_altdef singleton_set.simps
+      unfolding vote_fraction\<^sub>\<Q>.simps \<pi>\<^sub>\<Q>.simps is_singleton_altdef
       by metis
     hence "\<forall> r :: 'a Ordered_Preference.
         (anonymity_homogeneity_class (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)
-            `` {(UNIV, {}, \<lambda> v. {})}))$r = 0"
+            `` {(UNIV, {}, \<lambda> v :: 'c. {})}))$r = 0"
       unfolding anonymity_homogeneity_class.simps
       using vec_lambda_beta
       by (metis (no_types))
@@ -1351,13 +1357,14 @@ next
       by simp
     ultimately have "anonymity_homogeneity_class
       (anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)
-          `` {(UNIV, {}, \<lambda> v. {})}) = (0 :: rat^'a Ordered_Preference)"
+          `` {(UNIV, {}, \<lambda> v :: 'c. {})}) = (0 :: rat^'a Ordered_Preference)"
       using vec_eq_iff
       by (metis (no_types))
-    moreover have "(UNIV, {}, \<lambda> v. {}) \<in> elections_\<A> UNIV"
+    moreover have
+      "(UNIV, {}, \<lambda> v :: 'c. {}) \<in> elections_\<A> UNIV"
       unfolding elections_\<A>.simps well_formed_elections_def profile_def
       by simp
-    hence "(anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, {}, \<lambda> v. {})})
+    hence "(anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, {}, \<lambda> v :: 'c. {})})
               \<in> anonymity_homogeneity\<^sub>\<Q> UNIV"
       unfolding anonymity_homogeneity\<^sub>\<Q>.simps quotient_def
       by blast
@@ -1369,87 +1376,91 @@ next
     assume "x \<in> rat_vector_set (convex hull standard_basis)"
     \<comment> \<open>The following converts a rational vector \<open>x\<close> to real vector \<open>x'\<close>.\<close>
     then obtain x' :: "real^'a Ordered_Preference" where
-      conv: "x' \<in> convex hull standard_basis" and
-      inv: "\<forall> p. x$p = the_inv real_of_rat (x'$p)" and
-      rat: "\<forall> p. x'$p \<in> \<rat>"
+      conv: "(\<forall> p :: 'a Ordered_Preference. 0 \<le> x'$p)
+              \<and> (\<Sum> p :: 'a Ordered_Preference \<in> UNIV. x'$p) = 1" and
+      rat_inv: "\<forall> p :: 'a Ordered_Preference.
+                  x$p = the_inv real_of_rat (x'$p) \<and>  x'$p \<in> \<rat>"
       unfolding rat_vector_set.simps rat_vector.simps
-      by force
-    hence convex: "(\<forall> p. 0 \<le> x'$p) \<and> (\<Sum> y \<in> UNIV. x'$y) = 1"
       using standard_simplex_rewrite
-      by blast
-    have map: "\<forall> p. real_of_rat (x$p) = x'$p"
-      using inv rat f_the_inv_into_f inj_onCI of_rat_eq_iff
+      by fastforce
+    have "\<forall> p :: 'a Ordered_Preference. real_of_rat (x$p) = x'$p"
+      using rat_inv f_the_inv_into_f inj_onCI of_rat_eq_iff
       unfolding Rats_def
       by (metis (no_types))
-    have "\<forall> p. \<exists> fract. Fract (fst fract) (snd fract) = x$p \<and> 0 < snd fract"
+    moreover have
+      "\<forall> p :: 'a Ordered_Preference. \<exists> fract :: int \<times> int.
+        Fract (fst fract) (snd fract) = x$p \<and> 0 < snd fract"
       using quotient_of_unique
       by metis
     then obtain fraction' :: "'a Ordered_Preference \<Rightarrow> (int \<times> int)" where
-      "\<forall> p. x$p = Fract (fst (fraction' p)) (snd (fraction' p))" and
-      pos': "\<forall> p. 0 < snd (fraction' p)"
+      "\<forall> p :: 'a Ordered_Preference.
+        x$p = Fract (fst (fraction' p)) (snd (fraction' p))" and
+      pos': "\<forall> p :: 'a Ordered_Preference. 0 < snd (fraction' p)"
       by metis
-    hence fract': "\<forall> p. x'$p = (fst (fraction' p)) / (snd (fraction' p))"
-      using map div_by_0 divide_less_cancel of_int_0 of_int_pos of_rat_rat
+    ultimately have fract':
+      "\<forall> p :: 'a Ordered_Preference. x'$p = (fst (fraction' p)) / (snd (fraction' p))"
+      using div_by_0 divide_less_cancel of_int_0 of_int_pos of_rat_rat
       by metis
-    hence "\<forall> p. (fst (fraction' p)) / (snd (fraction' p)) \<ge> 0"
-      using convex
+    hence "\<forall> p :: 'a Ordered_Preference. (fst (fraction' p)) / (snd (fraction' p)) \<ge> 0"
+      using conv
       by fastforce
-    hence "\<forall> p. fst (fraction' p) \<ge> 0"
-      using pos' not_less of_int_0_le_iff of_int_pos zero_le_divide_iff
+    hence "\<forall> p :: 'a Ordered_Preference. fst (fraction' p) \<in> \<nat> \<and> snd (fraction' p) \<in> \<nat>"
+      using pos' nonneg_int_cases of_nat_in_Nats not_less of_int_0_le_iff
+            of_int_pos zero_le_divide_iff
       by metis
-    hence "\<forall> p. fst (fraction' p) \<in> \<nat> \<and> snd (fraction' p) \<in> \<nat>"
-      using pos' nonneg_int_cases of_nat_in_Nats order_less_le
-      by metis
-    hence "\<forall> p. \<exists> (n :: nat) (m :: nat).
+    hence "\<forall> p :: 'a Ordered_Preference. \<exists> (n :: nat) (m :: nat).
       fst (fraction' p) = n \<and> snd (fraction' p) = m"
       using Nats_cases
       by metis
-    hence "\<forall> p. \<exists> m :: nat \<times> nat. fst (fraction' p) = int (fst m)
-            \<and> snd (fraction' p) = int (snd m)"
+    hence "\<forall> p :: 'a Ordered_Preference. \<exists> m :: nat \<times> nat.
+      fst (fraction' p) = int (fst m) \<and> snd (fraction' p) = int (snd m)"
       by simp
     then obtain fraction :: "'a Ordered_Preference \<Rightarrow> (nat \<times> nat)" where
-      eq: "\<forall> p. fst (fraction' p) = int (fst (fraction p)) \<and>
-                snd (fraction' p) = int (snd (fraction p))"
+      eq: "\<forall> p :: 'a Ordered_Preference.
+      fst (fraction' p) = int (fst (fraction p))
+      \<and> snd (fraction' p) = int (snd (fraction p))"
       by metis
-    hence fract: "\<forall> p. x'$p = (fst (fraction p)) / (snd (fraction p))"
+    hence fract:
+      "\<forall> p :: 'a Ordered_Preference. x'$p = (fst (fraction p)) / (snd (fraction p))"
       using fract'
       by simp
-    hence pos: "\<forall> p. 0 < snd (fraction p)"
+    hence pos: "\<forall> p :: 'a Ordered_Preference. 0 < snd (fraction p)"
       using eq pos'
       by simp
-    let ?prod = "\<Prod> p \<in> UNIV. snd (fraction p)"
-    have fin: "finite (UNIV :: 'a Ordered_Preference set)"
-      by simp
-    hence "finite {snd (fraction p) | p. p \<in> UNIV}"
-      using finite_Atleast_Atmost_nat
-      by simp
+    let ?prod = "\<Prod> p :: 'a Ordered_Preference \<in> UNIV. snd (fraction p)"
     have pos_prod: "?prod > 0"
       using pos
       by simp
-    hence "\<forall> p. ?prod mod (snd (fraction p)) = 0"
+    have "\<forall> p :: 'a Ordered_Preference. ?prod mod (snd (fraction p)) = 0"
       using finite UNIV_I mod_mod_trivial mod_prod_eq mod_self prod_zero
       by (metis (no_types, lifting))
-    hence div: "\<forall> p. (?prod div (snd (fraction p))) * (snd (fraction p)) = ?prod"
+    hence div: "\<forall> p :: 'a Ordered_Preference.
+      (?prod div (snd (fraction p))) * (snd (fraction p)) = ?prod"
       using add.commute add_0 div_mult_mod_eq
       by metis
     obtain voter_amount :: "'a Ordered_Preference \<Rightarrow> nat" where
       def_amount:
-        "voter_amount = (\<lambda> p \<in> UNIV. (fst (fraction p)) * (?prod div (snd (fraction p))))"
+        "voter_amount =
+      (\<lambda> p :: 'a Ordered_Preference \<in> UNIV. (fst (fraction p)) * (?prod div (snd (fraction p))))"
       by blast
-    let ?voter_sum = "(\<Sum> p \<in> UNIV. (fst (fraction p)) * (?prod div (snd (fraction p))))"
-    have rewrite_div: "\<forall> p. ?prod div (snd (fraction p)) = ?prod / (snd (fraction p))"
+    let ?voter_sum =
+      "(\<Sum> p :: 'a Ordered_Preference \<in> UNIV. (fst (fraction p)) * (?prod div (snd (fraction p))))"
+    have rewrite_div:
+      "\<forall> p :: 'a Ordered_Preference. ?prod div (snd (fraction p)) = ?prod / (snd (fraction p))"
       using div less_imp_of_nat_less nonzero_mult_div_cancel_right
             of_nat_less_0_iff of_nat_mult pos
       by metis
-    hence "?voter_sum = (\<Sum> p \<in> UNIV. (fst (fraction p)) * (?prod / (snd (fraction p))))"
+    hence "?voter_sum =
+      (\<Sum> p :: 'a Ordered_Preference \<in> UNIV. fst (fraction p) * (?prod / (snd (fraction p))))"
       using def_amount
       by simp
-    hence "?voter_sum = ?prod * (\<Sum> p \<in> UNIV. (fst (fraction p)) / (snd (fraction p)))"
+    hence "?voter_sum =
+      ?prod * (\<Sum> p :: 'a Ordered_Preference \<in> UNIV. fst (fraction p) / (snd (fraction p)))"
       using mult_of_nat_commute sum.cong times_divide_eq_right
             vector_space_over_itself.scale_sum_right
       by (metis (mono_tags, lifting))
     hence rewrite_sum: "?voter_sum = ?prod"
-      using fract convex mult_cancel_left1 of_nat_eq_iff sum.cong
+      using fract conv mult_cancel_left1 of_nat_eq_iff sum.cong
       by (metis (mono_tags, lifting))
     obtain V :: "'v set" where
       fin_V: "finite V" and
@@ -1457,35 +1468,30 @@ next
       using assms infinite_arbitrarily_large
       by blast
     then obtain part :: "'a Ordered_Preference \<Rightarrow> 'v set" where
-      partition: "V = \<Union> {part p | p. p \<in> UNIV}" and
-      disjoint: "\<forall> p p'. p \<noteq> p' \<longrightarrow> part p \<inter> part p' = {}" and
-      card: "\<forall> p. card (part p) = voter_amount p"
+      partition: "V = \<Union> {part p | p :: 'a Ordered_Preference. p \<in> UNIV}" and
+      disjoint: "\<forall> p p' :: 'a Ordered_Preference.
+                      p \<noteq> p' \<longrightarrow> part p \<inter> part p' = {}" and
+      card: "\<forall> p :: 'a Ordered_Preference. card (part p) = voter_amount p"
       using def_amount obtain_partition[of V UNIV voter_amount]
       by auto
-    hence exactly_one_prof: "\<forall> v \<in> V. \<exists>!p. v \<in> part p"
+    hence exactly_one_prof: "\<forall> v :: 'v \<in> V. \<exists>!p. v \<in> part p"
       by blast
     then obtain prof' :: "'v \<Rightarrow> 'a Ordered_Preference" where
-      maps_to_prof': "\<forall> v \<in> V. v \<in> part (prof' v)"
+      "\<forall> v :: 'v \<in> V. v \<in> part (prof' v)"
       by metis
-    then obtain prof :: "'v \<Rightarrow> 'a Preference_Relation" where
-      prof: "prof = (\<lambda> v. if v \<in> V then ord2pref (prof' v) else {})"
+    hence "\<forall> p :: 'a Ordered_Preference. {v :: 'v \<in> V. prof' v = p} = part p"
+      using partition exactly_one_prof
       by blast
-    hence election: "(UNIV, V, prof) \<in> elections_\<A> UNIV"
-      unfolding elections_\<A>.simps well_formed_elections_def profile_def
-      using fin_V ord2pref
-      by auto
-    have "\<forall> p. {v \<in> V. prof' v = p} = {v \<in> V. v \<in> part p}"
-      using maps_to_prof' exactly_one_prof
-      by blast
-    hence "\<forall> p. {v \<in> V. prof' v = p} = part p"
-      using partition
-      by fastforce
-    hence "\<forall> p. card {v \<in> V. prof' v = p} = voter_amount p"
+    hence "\<forall> p :: 'a Ordered_Preference.
+              card {v :: 'v \<in> V. prof' v = p} = voter_amount p"
       using card
       by presburger
-    moreover have
-      "\<forall> p. \<forall> v. (v \<in> {v \<in> V. prof' v = p}) = (v \<in> {v \<in> V. prof v = ord2pref p})"
-      using prof
+    moreover obtain prof :: "'v \<Rightarrow> 'a Preference_Relation" where
+      prof: "prof = (\<lambda> v :: 'v. if v \<in> V then ord2pref (prof' v) else {})"
+      by blast
+    hence
+      "\<forall> p :: 'a Ordered_Preference. \<forall> v :: 'v.
+        (v \<in> {v \<in> V. prof' v = p}) = (v \<in> {v \<in> V. prof v = ord2pref p})"
       by (simp add: ord2pref_inject)
     ultimately have
       "\<forall> p :: 'a Ordered_Preference.
@@ -1497,20 +1503,13 @@ next
       unfolding Fract_of_int_quotient of_rat_divide
       by simp
     moreover have
-      "\<forall> p. (voter_amount p) / (card V) =
-            ((fst (fraction p)) * (?prod div (snd (fraction p)))) / ?prod"
-      using def_amount card_V_eq_sum rewrite_sum
-      by force
-    moreover have
-      "\<forall> p. ((fst (fraction p)) * (?prod div (snd (fraction p)))) / ?prod =
-            (fst (fraction p)) / (snd (fraction p))"
-      using rewrite_div pos_prod
+      "\<forall> p. (voter_amount p) / (card V) = fst (fraction p) / snd (fraction p)"
+      using rewrite_div pos_prod def_amount card_V_eq_sum rewrite_sum
       by auto
     \<comment> \<open>The following are the percentages of voters voting for each linearly ordered
         profile in (UNIV, V, prof) that equals the entries of the given vector.\<close>
     ultimately have
-      "\<forall> p :: 'a Ordered_Preference.
-          vote_fraction (ord2pref p) (UNIV, V, prof) = x'$p"
+      "\<forall> p :: 'a Ordered_Preference. vote_fraction (ord2pref p) (UNIV, V, prof) = x'$p"
       using fract
       by presburger
     moreover have
@@ -1523,11 +1522,15 @@ next
       "\<forall> p. \<forall> E \<in> anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV)
           `` {(UNIV, V, prof)}. vote_fraction (ord2pref p) E = x$p"
       using Re_complex_of_real Re_divide_of_real of_rat.rep_eq of_real_of_int_eq
-            injI of_rat_eq_iff the_inv_f_f rat inv
+            injI of_rat_eq_iff the_inv_f_f rat_inv
       by (metis (mono_tags, opaque_lifting))
-    moreover have
+    moreover have election: "(UNIV, V, prof) \<in> elections_\<A> UNIV"
+      unfolding elections_\<A>.simps well_formed_elections_def profile_def
+      using fin_V ord2pref prof
+      by auto
+    hence
       "(UNIV, V, prof) \<in> anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, V, prof)}"
-      using anonymity_homogeneity\<^sub>\<R>.simps election
+      unfolding anonymity_homogeneity\<^sub>\<R>.simps
       by blast
     ultimately have "\<forall> p. vote_fraction (ord2pref p) `
         anonymity_homogeneity\<^sub>\<R> (elections_\<A> UNIV) `` {(UNIV, V, prof)} \<supseteq> {x$p}"
